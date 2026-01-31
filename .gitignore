@@ -2,6 +2,10 @@
 /node_modules/
 .env
 .env.local
+client_secret*.json
+*.pem
+*.p12
+storage/firebase.json
 storage/logs/*
 storage/uploads/*
 !storage/logs/.gitkeep
