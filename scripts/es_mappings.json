@@ -1,0 +1,62 @@
+{
+  "jobs_v1": {
+    "mappings": {
+      "properties": {
+        "job_id": {"type": "long"},
+        "employer_id": {"type": "long"},
+        "title": {"type": "text", "analyzer": "standard"},
+        "description": {"type": "text", "analyzer": "standard"},
+        "short_description": {"type": "text"},
+        "employment_type": {"type": "keyword"},
+        "seniority": {"type": "keyword"},
+        "salary_min": {"type": "integer"},
+        "salary_max": {"type": "integer"},
+        "currency": {"type": "keyword"},
+        "is_remote": {"type": "boolean"},
+        "status": {"type": "keyword"},
+        "company_name": {"type": "text"},
+        "company_slug": {"type": "keyword"},
+        "skills": {"type": "keyword"},
+        "skill_ids": {"type": "long"},
+        "locations": {
+          "type": "nested",
+          "properties": {
+            "city": {"type": "keyword"},
+            "state": {"type": "keyword"},
+            "country": {"type": "keyword"},
+            "coordinates": {"type": "geo_point"}
+          }
+        },
+        "publish_at": {"type": "date"},
+        "expires_at": {"type": "date"},
+        "created_at": {"type": "date"},
+        "updated_at": {"type": "date"}
+      }
+    }
+  },
+  "resumes_v1": {
+    "mappings": {
+      "properties": {
+        "application_id": {"type": "long"},
+        "job_id": {"type": "long"},
+        "employer_id": {"type": "long"},
+        "candidate_user_id": {"type": "long"},
+        "candidate_email": {"type": "keyword"},
+        "resume_url": {"type": "keyword"},
+        "cover_letter": {"type": "text", "analyzer": "standard"},
+        "expected_salary": {"type": "integer"},
+        "status": {"type": "keyword"},
+        "parsed_resume": {
+          "type": "object",
+          "properties": {
+            "skills": {"type": "keyword"},
+            "experience": {"type": "text"},
+            "education": {"type": "text"}
+          }
+        },
+        "applied_at": {"type": "date"}
+      }
+    }
+  }
+}
+

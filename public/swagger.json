@@ -1,0 +1,813 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Job Portal API",
+    "description": "Complete API documentation for Job Portal - Job listing, authentication, job creation, and more",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@jobportal.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "http://localhost/mindinfotech/public",
+      "description": "XAMPP Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Public APIs",
+      "description": "Public APIs that don't require authentication"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and registration"
+    },
+    {
+      "name": "Candidate",
+      "description": "Candidate-specific APIs"
+    },
+    {
+      "name": "Employer",
+      "description": "Employer-specific APIs"
+    },
+    {
+      "name": "Jobs",
+      "description": "Job listing and management"
+    }
+  ],
+  "paths": {
+    "/api/job-titles/search": {
+      "get": {
+        "tags": ["Public APIs"],
+        "summary": "Job Titles Autocomplete",
+        "description": "Search and get suggestions for job titles",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search query (minimum 2 characters)",
+            "schema": {
+              "type": "string",
+              "minLength": 2
+            },
+            "example": "web"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Number of results (1-50)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "integer"},
+                          "title": {"type": "string"},
+                          "slug": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "suggestions": [
+                    {"id": 1, "title": "Web Developer", "slug": "web-developer"},
+                    {"id": 2, "title": "Web Designer", "slug": "web-designer"}
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/locations/search": {
+      "get": {
+        "tags": ["Public APIs"],
+        "summary": "Location Autocomplete",
+        "description": "Search and get suggestions for job locations",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search query (minimum 2 characters)",
+            "schema": {
+              "type": "string",
+              "minLength": 2
+            },
+            "example": "bangalore"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Number of results (1-50)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "city": {"type": "string"},
+                          "state": {"type": "string"},
+                          "country": {"type": "string"},
+                          "display": {"type": "string"},
+                          "job_count": {"type": "integer"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "suggestions": [
+                    {
+                      "city": "Bengaluru",
+                      "state": "Karnataka",
+                      "country": "India",
+                      "display": "Bengaluru, Karnataka",
+                      "job_count": 150
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Login",
+        "description": "Authenticate user and create session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  }
+                }
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string"},
+                  "password": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful - redirects to dashboard"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/register-employer": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register Employer",
+        "description": "Create a new employer account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "company_name"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6
+                  },
+                  "company_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration successful"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/register-candidate": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register Candidate",
+        "description": "Create a new candidate account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "first_name"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6
+                  },
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration successful"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/candidate/jobs": {
+      "get": {
+        "tags": ["Candidate", "Jobs"],
+        "summary": "Browse Jobs",
+        "description": "Get list of jobs with filters and pagination",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {"type": "string"},
+            "description": "Search keyword"
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "schema": {"type": "string"},
+            "description": "Location filter"
+          },
+          {
+            "name": "salary_min",
+            "in": "query",
+            "schema": {"type": "integer"},
+            "description": "Minimum salary"
+          },
+          {
+            "name": "salary_max",
+            "in": "query",
+            "schema": {"type": "integer"},
+            "description": "Maximum salary"
+          },
+          {
+            "name": "experience",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["0", "0-1", "1-3", "3-5", "5-10", "10+"]},
+            "description": "Experience filter"
+          },
+          {
+            "name": "job_type[]",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {"type": "string", "enum": ["full_time", "part_time", "contract", "internship"]}
+            },
+            "description": "Job type filter (array)"
+          },
+          {
+            "name": "work_mode[]",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {"type": "string", "enum": ["office", "hybrid", "remote"]}
+            },
+            "description": "Work mode filter (array)"
+          },
+          {
+            "name": "location_filter[]",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "description": "Location filter (array)"
+          },
+          {
+            "name": "salary_range",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["0-3", "3-6", "6-10", "10-15", "15+"]},
+            "description": "Salary range"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["relevance", "date", "salary_high", "salary_low"]},
+            "description": "Sort order"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1},
+            "description": "Page number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobs": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/Job"}
+                    },
+                    "pagination": {"$ref": "#/components/schemas/Pagination"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"sessionAuth": []}]
+      }
+    },
+    "/candidate/jobs/{id}": {
+      "get": {
+        "tags": ["Candidate", "Jobs"],
+        "summary": "View Job Details",
+        "description": "Get detailed information about a specific job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "Job ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job details",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Job"}
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        },
+        "security": [{"sessionAuth": []}]
+      }
+    },
+    "/candidate/jobs/{id}/apply": {
+      "post": {
+        "tags": ["Candidate", "Jobs"],
+        "summary": "Apply for Job",
+        "description": "Submit application for a job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cover_letter": {"type": "string"},
+                  "expected_salary": {"type": "integer"},
+                  "resume": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"},
+                    "application_id": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      }
+    },
+    "/candidate/jobs/{id}/bookmark": {
+      "post": {
+        "tags": ["Candidate", "Jobs"],
+        "summary": "Bookmark Job",
+        "description": "Save or unsave a job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "bookmarked": {"type": "boolean"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      }
+    },
+    "/employer/jobs": {
+      "get": {
+        "tags": ["Employer", "Jobs"],
+        "summary": "List Employer Jobs",
+        "description": "Get all jobs posted by the employer",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["draft", "published", "paused", "closed"]}
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of jobs"
+          }
+        },
+        "security": [{"sessionAuth": []}]
+      },
+      "post": {
+        "tags": ["Employer", "Jobs"],
+        "summary": "Create Job",
+        "description": "Create a new job posting",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/CreateJobRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "job_id": {"type": "integer"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Subscription required or limit reached"
+          }
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      }
+    },
+    "/employer/jobs/{id}": {
+      "get": {
+        "tags": ["Employer", "Jobs"],
+        "summary": "View Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Job details"}
+        },
+        "security": [{"sessionAuth": []}]
+      },
+      "put": {
+        "tags": ["Employer", "Jobs"],
+        "summary": "Update Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/CreateJobRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Job updated"}
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      },
+      "delete": {
+        "tags": ["Employer", "Jobs"],
+        "summary": "Delete Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Job deleted"}
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      }
+    },
+    "/employer/applications": {
+      "get": {
+        "tags": ["Employer"],
+        "summary": "List Applications",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "schema": {"type": "integer"}
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["applied", "shortlisted", "rejected", "interview"]}
+          }
+        ],
+        "responses": {
+          "200": {"description": "List of applications"}
+        },
+        "security": [{"sessionAuth": []}]
+      }
+    },
+    "/employer/applications/{id}": {
+      "get": {
+        "tags": ["Employer"],
+        "summary": "View Application Details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Application details"}
+        },
+        "security": [{"sessionAuth": []}]
+      }
+    },
+    "/employer/subscription/plans": {
+      "get": {
+        "tags": ["Employer"],
+        "summary": "View Subscription Plans",
+        "responses": {
+          "200": {"description": "List of subscription plans"}
+        },
+        "security": [{"sessionAuth": []}]
+      }
+    },
+    "/employer/subscription/subscribe": {
+      "post": {
+        "tags": ["Employer"],
+        "summary": "Subscribe to Plan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plan_slug": {"type": "string"},
+                  "billing_cycle": {"type": "string", "enum": ["monthly", "quarterly", "annual"]},
+                  "discount_code": {"type": "string"},
+                  "auto_renew": {"type": "boolean"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Subscription created"}
+        },
+        "security": [{"sessionAuth": []}, {"csrfToken": []}]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "title": {"type": "string"},
+          "company_name": {"type": "string"},
+          "location_display": {"type": "string"},
+          "salary_min": {"type": "integer"},
+          "salary_max": {"type": "integer"},
+          "employment_type": {"type": "string"},
+          "employment_type_display": {"type": "string"},
+          "is_remote": {"type": "integer"},
+          "description": {"type": "string"},
+          "vacancies": {"type": "integer"},
+          "match_score": {"type": "integer"},
+          "is_bookmarked": {"type": "boolean"},
+          "created_at_formatted": {"type": "string"}
+        }
+      },
+      "CreateJobRequest": {
+        "type": "object",
+        "required": ["title", "description", "employment_type"],
+        "properties": {
+          "title": {"type": "string"},
+          "description": {"type": "string"},
+          "short_description": {"type": "string"},
+          "employment_type": {"type": "string", "enum": ["full_time", "part_time", "contract", "internship", "freelance"]},
+          "seniority": {"type": "string", "enum": ["entry", "mid", "senior", "lead", "manager"]},
+          "salary_min": {"type": "integer"},
+          "salary_max": {"type": "integer"},
+          "currency": {"type": "string", "default": "INR"},
+          "is_remote": {"type": "integer", "enum": [0, 1]},
+          "location": {
+            "type": "object",
+            "properties": {
+              "city": {"type": "string"},
+              "state": {"type": "string"},
+              "country": {"type": "string"}
+            }
+          },
+          "vacancies": {"type": "integer", "default": 1},
+          "skills": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "job_timings": {"type": "string"},
+          "interview_timings": {"type": "string"}
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {"type": "integer"},
+          "per_page": {"type": "integer"},
+          "total": {"type": "integer"},
+          "total_pages": {"type": "integer"}
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Session-based authentication. Login first to get session cookie."
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "CSRF token from meta tag or session"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,820 @@
+<?php 
+$base = $base ?? '/'; 
+// Auto-detect base if default or root
+if ($base === '/' || $base === '') {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    
+    // CRITICAL FIX: If REQUEST_URI contains /public/, always set base to root
+    // This handles the case where URLs show /public/jobs instead of /jobs
+    if (strpos($requestUri, '/public/') !== false) {
+        $base = '/';
+    } else {
+        // Normal detection from script name
+        $scriptDir = dirname($scriptName);
+        $base = rtrim($scriptDir, '/\\') . '/';
+        
+        // Remove /public/ from base if it exists
+        if (strpos($base, '/public/') !== false) {
+            $base = str_replace('/public/', '/', $base);
+        }
+        
+        // If script is in /public/ directory, ensure base is root
+        if (strpos($scriptName, '/public/') !== false) {
+            $base = '/';
+        }
+    }
+    
+    // Final cleanup: ensure base doesn't contain /public/ anywhere
+    $base = str_replace('/public/', '/', $base);
+    $base = rtrim($base, '/') . '/';
+    
+    // Ensure base is at least '/'
+    if ($base === '' || $base === '//' || $base === '/public/') {
+        $base = '/';
+    }
+}
+
+// Fetch dynamic data for Mega Menu
+$popularCategories = [];
+$popularLocations = [];
+$jobsInDemand = [
+    ['label' => 'Fresher jobs', 'url' => 'jobs?experience=0-1'],
+    ['label' => 'MNC jobs', 'url' => 'jobs?keyword=MNC'],
+    ['label' => 'Remote jobs', 'url' => 'jobs?is_remote=1'],
+    ['label' => 'Work from home jobs', 'url' => 'jobs?keyword=Work%20from%20home'],
+    ['label' => 'Walk-in jobs', 'url' => 'jobs?keyword=Walk-in'],
+    ['label' => 'Part-time jobs', 'url' => 'jobs?job_type=part_time']
+];
+
+try {
+    // Only attempt DB connection if we can find the class
+    if (class_exists('\\App\\Core\\Database')) {
+        $db = \App\Core\Database::getInstance();
+        
+        // Fetch Categories (limit 6)
+        // Check if categories table exists first or just try query
+        try {
+            $cats = $db->fetchAll("SELECT name FROM categories ORDER BY id ASC LIMIT 6");
+            foreach ($cats as $c) {
+                $popularCategories[] = ['label' => $c['name'] . ' jobs', 'url' => 'jobs?industry=' . urlencode($c['name'])];
+            }
+        } catch (\Exception $e) {
+            // Fallback if table doesn't exist
+            $popularCategories = [
+                ['label' => 'IT jobs', 'url' => 'jobs?keyword=IT'],
+                ['label' => 'Sales jobs', 'url' => 'jobs?keyword=Sales'],
+                ['label' => 'Marketing jobs', 'url' => 'jobs?keyword=Marketing'],
+                ['label' => 'Data Science jobs', 'url' => 'jobs?keyword=Data%20Science'],
+                ['label' => 'HR jobs', 'url' => 'jobs?keyword=HR'],
+                ['label' => 'Engineering jobs', 'url' => 'jobs?keyword=Engineering']
+            ];
+        }
+
+        // Fetch Locations (limit 6)
+        try {
+            $locs = $db->fetchAll("
+                SELECT c.name as city, COUNT(jl.id) as count 
+                FROM job_locations jl 
+                JOIN cities c ON jl.city_id = c.id 
+                GROUP BY c.id, c.name 
+                ORDER BY count DESC 
+                LIMIT 6
+            ");
+            foreach ($locs as $l) {
+                $popularLocations[] = ['label' => 'Jobs in ' . $l['city'], 'url' => 'jobs?location=' . urlencode($l['city'])];
+            }
+        } catch (\Exception $e) {
+             // Fallback
+             $popularLocations = [
+                ['label' => 'Jobs in Delhi', 'url' => 'jobs?location=Delhi'],
+                ['label' => 'Jobs in Mumbai', 'url' => 'jobs?location=Mumbai'],
+                ['label' => 'Jobs in Bangalore', 'url' => 'jobs?location=Bangalore'],
+                ['label' => 'Jobs in Hyderabad', 'url' => 'jobs?location=Hyderabad'],
+                ['label' => 'Jobs in Chennai', 'url' => 'jobs?location=Chennai'],
+                ['label' => 'Jobs in Pune', 'url' => 'jobs?location=Pune']
+            ];
+        }
+    }
+} catch (\Exception $e) {
+    // Silent fail, use defaults
+}
+
+// Ensure arrays are not empty if DB failed completely
+if (empty($popularCategories)) {
+    $popularCategories = [
+        ['label' => 'IT jobs', 'url' => 'jobs?keyword=IT'],
+        ['label' => 'Sales jobs', 'url' => 'jobs?keyword=Sales'],
+        ['label' => 'Marketing jobs', 'url' => 'jobs?keyword=Marketing'],
+        ['label' => 'Data Science jobs', 'url' => 'jobs?keyword=Data%20Science'],
+        ['label' => 'HR jobs', 'url' => 'jobs?keyword=HR'],
+        ['label' => 'Engineering jobs', 'url' => 'jobs?keyword=Engineering']
+    ];
+}
+if (empty($popularLocations)) {
+    $popularLocations = [
+        ['label' => 'Jobs in Delhi', 'url' => 'jobs?location=Delhi'],
+        ['label' => 'Jobs in Mumbai', 'url' => 'jobs?location=Mumbai'],
+        ['label' => 'Jobs in Bangalore', 'url' => 'jobs?location=Bangalore'],
+        ['label' => 'Jobs in Hyderabad', 'url' => 'jobs?location=Hyderabad'],
+        ['label' => 'Jobs in Chennai', 'url' => 'jobs?location=Chennai'],
+        ['label' => 'Jobs in Pune', 'url' => 'jobs?location=Pune']
+    ];
+}
+?>
+<header class="bg-white border-b sticky top-0 z-50" x-data="{ mobileMenuOpen: false, showUserMenu: false }">
+    <div class="container mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+             <!-- Mobile Menu Button -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                    class="lg:hidden text-gray-800 focus:outline-none p-2 -ml-2 rounded-lg hover:bg-gray-100 transition"
+                    :class="{'bg-gray-100': mobileMenuOpen}">
+                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <?php 
+            $dashboardLink = '#';
+            if (isset($_SESSION['user_role'])) {
+                $role = $_SESSION['user_role'];
+                if ($role === 'candidate') $dashboardLink = $base . 'candidate/dashboard';
+                elseif ($role === 'employer') $dashboardLink = $base . 'employer/dashboard';
+                elseif ($role === 'admin') $dashboardLink = $base . 'admin/dashboard';
+            }
+            ?>
+            <a href="<?php echo isset($_SESSION['user_id']) ? $dashboardLink : $base; ?>" class="flex items-center gap-3">
+                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Mindware Infotech" class="h-10 md:h-12 w-auto" />
+                <span class="sr-only">Mindware Infotech</span>
+            </a>
+        </div>
+        
+        <?php if (!isset($_SESSION['user_id'])): ?>
+        <nav class="hidden lg:flex items-center gap-4">
+            <div class="relative" x-data="{ open:false }" @mouseenter="open=true" @mouseleave="open=false">
+                <a href="<?php echo $base; ?>jobs" class="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 font-medium hover:border-blue-600 hover:text-blue-600 transition bg-white">Jobs</a>
+                
+            </div>
+            <a href="<?php echo $base; ?>company/featured" class="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 font-medium hover:border-blue-600 hover:text-blue-600 transition bg-white">Featured Companies</a>
+            <!-- <a href="<?php //echo $base; ?>blog" class="text-gray-800 hover:text-blue-600 font-medium">Blogs</a> -->
+         
+            <a href="<?php echo $base; ?>social-services" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-600 text-gray-700 font-medium hover:border-blue-600 hover:text-blue-600 transition bg-white" target="_blank">Social Services Jobs</a>
+
+        </nav>
+        <?php endif; ?>
+        
+        <div class="hidden lg:flex items-center gap-2">
+            <!-- <a href="#" class="hidden md:flex items-center gap-2 text-orange-500 font-medium hover:text-orange-600 transition">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+                <span>Download App</span>
+            </a> -->
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php 
+                    $dashboardLink = '#';
+                    $role = $_SESSION['user_role'] ?? null;
+                    $unreadMsgs = isset($unreadMessages) ? (int)$unreadMessages : 0;
+                    $unreadNotifs = isset($unreadNotifications) ? (int)$unreadNotifications : 0;
+                    if (isset($_SESSION['user_role'])) {
+                        if ($role === 'candidate') $dashboardLink = $base . 'candidate/dashboard';
+                        elseif ($role === 'employer') $dashboardLink = $base . 'employer/dashboard';
+                        elseif ($role === 'admin') $dashboardLink = $base . 'admin/dashboard';
+                    }
+                ?>
+                <?php if ($role === 'candidate'): ?>
+                    <a href="<?php echo $base; ?>candidate/jobs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 transition font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <span>All Jobs</span>
+                    </a>
+                    <a href="<?php echo $base; ?>candidate/jobs/saved" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 transition font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-4-7 4V5z"></path></svg>
+                        <span>Saved Jobs</span>
+                    </a>
+                    <a href="<?php echo $base; ?>candidate/resume/builder" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 transition font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>Resume Builder</span>
+                    </a>
+                    <a href="<?php echo $base; ?>candidate/notifications" class="relative flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 7 7.388 7 8.75V14.16c0 .54-.214 1.06-.595 1.44L5 17h5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+                        <?php if ($unreadNotifs > 0): ?>
+                            <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"><?php echo $unreadNotifs; ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    
+                    <!-- User Dropdown -->
+                    <div class="relative" x-data="{ showUserMenu: false }" @click.away="showUserMenu = false">
+                        <button @click="showUserMenu = !showUserMenu" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 transition">
+                            <?php 
+                            if (isset($candidate)) {
+                                $candidateName = $candidate->attributes['full_name'] ?? null;
+                                $user = $candidate->user();
+                                if (empty($candidateName) && $user) {
+                                    $candidateName = $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? null;
+                                }
+                                $displayName = $candidateName ?: 'User';
+                                $initials = strtoupper(substr($displayName, 0, 1));
+                                $userEmail = $user->attributes['email'] ?? '';
+                            } else {
+                                // Fallback if candidate not available
+                                $user = \App\Models\User::find($_SESSION['user_id'] ?? 0);
+                                $displayName = $user ? ($user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? $user->attributes['email'] ?? 'User') : 'User';
+                                $initials = strtoupper(substr($displayName, 0, 1));
+                                $userEmail = $user ? ($user->attributes['email'] ?? '') : '';
+                            }
+                            ?>
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                <?= $initials ?>
+                            </div>
+                            <div class="hidden md:flex items-center gap-2">
+                                <span class="text-sm"><?= htmlspecialchars($displayName) ?></span>
+                                <?php if (isset($candidate) && $candidate->isPremium()): ?>
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                    PREMIUM
+                                </span>
+                                <?php endif; ?>
+                            </div>
+                            <svg class="w-4 h-4 hidden lg:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="showUserMenu" 
+                             x-transition
+                             class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                             style="display: none;">
+                            <!-- Email Display -->
+                            <div class="px-4 py-3 border-b border-gray-200">
+                                <p class="text-sm font-medium text-gray-900"><?= htmlspecialchars($userEmail) ?></p>
+                            </div>
+                            
+                            <!-- Menu Items -->
+                            <a href="<?php echo $base; ?>candidate/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Profile</span>
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>candidate/chat" class="relative flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span>Messages</span>
+                                <?php if ($unreadMsgs > 0): ?>
+                                <span class="ml-auto bg-blue-600 text-white text-xs rounded-full px-2 py-0.5 font-semibold"><?= $unreadMsgs ?></span>
+                                <?php endif; ?>
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>candidate/reviews" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                </svg>
+                                <span>My reviews</span>
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>candidate/premium/plans" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <span>Upgrade to Premium</span>
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>candidate/premium/billing" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Billing & Receipts</span>
+                            </a>
+                            <a href="<?php echo $base; ?>candidate/profile/complete" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>Settings</span>
+                            </a>
+                            <a href="<?php echo $base; ?>candidate/help" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Help</span>
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>candidate/privacy" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>Privacy Centre</span>
+                            </a>
+                            
+                            <!-- Separator -->
+                            <div class="border-t border-gray-200 my-2"></div>
+                            
+                            <!-- Copyright -->
+                            <div class="px-4 py-2 text-xs text-gray-500">
+                                <p>© <?= date('Y') ?> Mindware Infotech - <a href="<?php echo $base; ?>candidate/terms" class="underline hover:text-gray-700">Terms</a></p>
+                            </div>
+                            
+                            <!-- Separator -->
+                            <div class="border-t border-gray-200 my-2"></div>
+                            
+                            <!-- Sign Out -->
+                            <a href="<?php echo $base; ?>logout" class="flex items-center justify-center px-4 py-2.5 text-sm font-bold text-blue-600 hover:bg-blue-50 transition">
+                                Sign out
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <!-- <a href="<?php //echo $dashboardLink; ?>" class="flex items-center gap-2 px-5 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 shadow-md hover:shadow-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span>Dashboard</span>
+                </a> -->
+                <!-- <a href="<?php // echo $base; ?>logout" class="flex items-center gap-2 px-5 py-2 rounded-lg border border-orange-500 text-orange-600 font-medium hover:bg-orange-50 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span>Logout</span>
+                </a> -->
+            <?php else: ?>
+                <a href="<?php echo $base; ?>login" class="flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 hover:text-white shadow-md hover:shadow-lg transition">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Post a Job</span>
+                </a>
+                <a href="<?php echo $base; ?>login" class="flex items-center gap-2 px-5 py-2 rounded-lg border border-blue-600 text-blue-600 font-medium hover:bg-blue-50 transition">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4 0-7 2-7 5h14c0-3-3-5-7-5z" />
+                    </svg>
+                    <span>Employee Login</span>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Backdrop -->
+    <div x-show="mobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileMenuOpen = false"
+         class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 top-[64px] md:top-[72px]" x-cloak></div>
+    
+    <!-- Mobile Menu Drawer - Professional Sidebar -->
+    <div x-show="mobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-x-full"
+         x-transition:enter-end="opacity-100 translate-x-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 -translate-x-full"
+         @click.away="mobileMenuOpen = false"
+         class="lg:hidden fixed inset-y-0 left-0 top-[64px] md:top-[72px] w-80 bg-white shadow-2xl z-50 overflow-y-auto text-gray-800" x-cloak>
+        <div class="flex flex-col h-full">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if (($_SESSION['user_role'] ?? null) === 'candidate'): ?>
+                    <?php
+                    // Get candidate data for profile section
+                    $candidateName = 'User';
+                    $profilePicture = null;
+                    $isPremiumUser = false;
+                    if (isset($candidate)) {
+                        $candidateName = $candidate->attributes['full_name'] ?? null;
+                        $profilePicture = $candidate->attributes['profile_picture'] ?? null;
+                        $isPremiumUser = $candidate->isPremium() ?? false;
+                        $user = $candidate->user();
+                        if (empty($candidateName) && $user) {
+                            $candidateName = $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? 'User';
+                        }
+                    } else {
+                        $user = \App\Models\User::find($_SESSION['user_id'] ?? 0);
+                        if ($user) {
+                            $candidate = \App\Models\Candidate::findByUserId((int)$_SESSION['user_id']);
+                            if ($candidate) {
+                                $candidateName = $candidate->attributes['full_name'] ?? $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? 'User';
+                                $profilePicture = $candidate->attributes['profile_picture'] ?? null;
+                                $isPremiumUser = $candidate->isPremium() ?? false;
+                            } else {
+                                $candidateName = $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? 'User';
+                            }
+                        }
+                    }
+                    $initials = strtoupper(substr($candidateName, 0, 2));
+                    ?>
+                    
+                    <!-- Profile Section at Top -->
+                    <div class="bg-blue-50 px-6 py-6 border-b border-blue-100">
+                        <div class="flex flex-col items-center text-center">
+                            <!-- Profile Picture or Logo -->
+                            <div class="mb-4">
+                                <?php if ($profilePicture): ?>
+                                    <img src="<?= htmlspecialchars($profilePicture) ?>" 
+                                         alt="<?= htmlspecialchars($candidateName) ?>" 
+                                         class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
+                                <?php else: ?>
+                                    <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-md border-4 border-white">
+                                        <?= $initials ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <!-- Name -->
+                            <h3 class="text-lg font-bold text-gray-900 mb-1"><?= htmlspecialchars($candidateName) ?></h3>
+                            <p class="text-sm text-gray-600 mb-4">Member since <?= date('Y') ?></p>
+                            
+                            <!-- View Profile Link -->
+                            <a href="<?php echo $base; ?>candidate/profile" 
+                               @click="mobileMenuOpen = false"
+                               class="text-sm text-blue-600 hover:text-blue-700 font-medium mb-3">
+                                View & update profile →
+                            </a>
+                            
+                            <!-- Premium Upgrade Button -->
+                            <?php if (!$isPremiumUser): ?>
+                            <a href="<?php echo $base; ?>candidate/premium/plans" 
+                               @click="mobileMenuOpen = false"
+                               class="w-full px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition">
+                                ⭐ Upgrade to Premium
+                            </a>
+                            <?php else: ?>
+                            <div class="w-full px-4 py-2 bg-blue-100 text-blue-700 font-bold rounded-lg shadow-md flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                Premium Member
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Menu Items -->
+                    <div class="flex-1 px-4 py-4 space-y-1">
+                        <?php $uri = $_SERVER['REQUEST_URI'] ?? ''; ?>
+                        
+                        <!-- All Jobs -->
+                        <?php $isActive = (strpos($uri, '/candidate/jobs') !== false && strpos($uri, '/candidate/jobs/saved') === false); ?>
+                        <a href="<?php echo $base; ?>candidate/jobs" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>All Jobs</span>
+                        </a>
+                        
+                        <!-- Saved Jobs -->
+                        <?php $isActive = strpos($uri, '/candidate/jobs/saved') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/jobs/saved" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-4-7 4V5z"/>
+                            </svg>
+                            <span>Saved Jobs</span>
+                        </a>
+                        
+                        <!-- Resume Builder -->
+                        <?php $isActive = strpos($uri, '/candidate/resume/builder') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/resume/builder" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span>Resume Builder</span>
+                        </a>
+                        
+                        <!-- My Applications -->
+                        <?php $isActive = strpos($uri, '/candidate/applications') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/applications" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <span>My Applications</span>
+                        </a>
+
+                        <!-- My Reviews -->
+                        <?php $isActive = strpos($uri, '/candidate/reviews') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/reviews" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                            <span>My Reviews</span>
+                        </a>
+                        
+                        <!-- Notifications -->
+                        <?php $isActive = strpos($uri, '/candidate/notifications') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/notifications" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-between gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 7 7.388 7 8.75V14.16c0 .54-.214 1.06-.595 1.44L5 17h5m5 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                </svg>
+                                <span>Notifications</span>
+                            </div>
+                            <?php if ((isset($unreadNotifications) ? (int)$unreadNotifications : 0) > 0): ?>
+                                <span class="bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                                    <?php echo (int)($unreadNotifications ?? 0); ?>
+                                </span>
+                            <?php endif; ?>
+                        </a>
+                        
+                        <!-- Profile -->
+                        <?php $isActive = strpos($uri, '/candidate/profile') !== false; ?>
+                        <a href="<?php echo $base; ?>candidate/profile" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 font-medium rounded-lg transition <?php echo $isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50'; ?>">
+                            <svg class="w-6 h-6 <?php echo $isActive ? 'text-blue-600' : 'text-gray-600'; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>Profile</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Logout Button at Bottom -->
+                    <div class="px-4 py-4 border-t border-gray-200">
+                        <a href="<?php echo $base; ?>logout" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                <?php elseif (($_SESSION['user_role'] ?? null) === 'employer'): ?>
+                    <?php
+                    // Get employer data
+                    $companyName = 'Employer';
+                    $logoUrl = null;
+                    if (isset($employer)) {
+                        $companyName = $employer['company_name'] ?? 'Employer';
+                        $logoUrl = $employer['logo_url'] ?? null;
+                    } else {
+                        $user = \App\Models\User::find($_SESSION['user_id'] ?? 0);
+                        $employerModel = \App\Models\Employer::findByUserId((int)$_SESSION['user_id']);
+                        if ($employerModel) {
+                            $companyName = $employerModel->company_name ?? 'Employer';
+                            $logoUrl = $employerModel->logo_url ?? null;
+                        }
+                    }
+                    $initials = strtoupper(substr($companyName, 0, 1));
+                    ?>
+                    
+                    <!-- Employer Profile Section -->
+                    <div class="bg-blue-50 px-6 py-6 border-b border-blue-100">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="mb-4">
+                                <?php if ($logoUrl): ?>
+                                    <img src="<?= htmlspecialchars($logoUrl) ?>" 
+                                         alt="<?= htmlspecialchars($companyName) ?>" 
+                                         class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
+                                <?php else: ?>
+                                    <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-md border-4 border-white">
+                                        <?= $initials ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-gray-900 mb-1"><?= htmlspecialchars($companyName) ?></h3>
+                            
+                            <a href="<?php echo $base; ?>employer/dashboard" 
+                               @click="mobileMenuOpen = false"
+                               class="text-sm text-blue-600 hover:text-blue-700 font-medium mb-3">
+                                Go to Dashboard →
+                            </a>
+                            
+                            <a href="<?php echo $base; ?>employer/jobs/create" 
+                               @click="mobileMenuOpen = false"
+                               class="w-full px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition">
+                                + Post a Job
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Employer Menu Items -->
+                    <div class="flex-1 px-4 py-4 space-y-1">
+                        <a href="<?php echo $base; ?>employer/dashboard" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                        
+                        <a href="<?php echo $base; ?>employer/jobs" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>My Jobs</span>
+                        </a>
+                        
+                        <a href="<?php echo $base; ?>employer/applications" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            <span>Applications</span>
+                        </a>
+                        
+                        <a href="<?php echo $base; ?>employer/messages" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                            <span>Messages</span>
+                        </a>
+                        
+                        <a href="<?php echo $base; ?>employer/company/profile" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            <span>Company Profile</span>
+                        </a>
+                        
+                        <a href="<?php echo $base; ?>employer/settings" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+                    </div>
+                    
+                    <div class="px-4 py-4 border-t border-gray-200">
+                        <a href="<?php echo $base; ?>logout" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                <?php endif; ?>
+                <?php else: ?>
+                <!-- Guest Menu Items -->
+                <div class="flex-1 px-4 py-4 space-y-1">
+                    <a href="<?php echo $base; ?>" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span>Home</span>
+                    </a>
+                    <div x-data="{ jobsOpen: false, catsOpen: false, demandOpen: false, locOpen: false }">
+                        <button @click="jobsOpen = !jobsOpen" class="w-full flex items-center justify-between px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span>Jobs</span>
+                            </div>
+                            <svg :class="{'rotate-180': jobsOpen}" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="jobsOpen" x-collapse class="pl-11 pr-4 py-2 space-y-2 bg-gray-50 rounded-b-lg mb-2">
+                            <button @click="catsOpen = !catsOpen" class="w-full flex items-center justify-between px-3 py-2 rounded hover:bg-gray-100">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Popular categories</span>
+                                <svg :class="{'rotate-180': catsOpen}" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <ul x-show="catsOpen" x-collapse class="space-y-2 px-3">
+                                <?php foreach ($popularCategories as $item): ?>
+                                <li>
+                                    <a href="<?php echo $base . $item['url']; ?>" class="block text-sm text-gray-600 hover:text-blue-600">
+                                        <?php echo htmlspecialchars($item['label']); ?>
+                                    </a>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <button @click="demandOpen = !demandOpen" class="w-full flex items-center justify-between px-3 py-2 rounded hover:bg-gray-100">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobs in demand</span>
+                                <svg :class="{'rotate-180': demandOpen}" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <ul x-show="demandOpen" x-collapse class="space-y-2 px-3">
+                                <?php foreach ($jobsInDemand as $item): ?>
+                                <li>
+                                    <a href="<?php echo $base . $item['url']; ?>" class="block text-sm text-gray-600 hover:text-blue-600">
+                                        <?php echo htmlspecialchars($item['label']); ?>
+                                    </a>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <button @click="locOpen = !locOpen" class="w-full flex items-center justify-between px-3 py-2 rounded hover:bg-gray-100">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobs by location</span>
+                                <svg :class="{'rotate-180': locOpen}" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <ul x-show="locOpen" x-collapse class="space-y-2 px-3">
+                                <?php foreach ($popularLocations as $item): ?>
+                                <li>
+                                    <a href="<?php echo $base . $item['url']; ?>" class="block text-sm text-gray-600 hover:text-blue-600">
+                                        <?php echo htmlspecialchars($item['label']); ?>
+                                    </a>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <div class="pt-2 border-t border-gray-200">
+                                <a href="<?php echo $base; ?>jobs" class="block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 py-1">
+                                    View All Jobs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="<?php echo $base; ?>company/featured" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                        </svg>
+                        <span>Companies</span>
+                    </a>
+                    <a href="#" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                        <span>Services</span>
+                    </a>
+                    <a href="<?php echo $base; ?>about" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>About Us</span>
+                    </a>
+                     <!-- <a href="<?php //echo $base; ?>blog" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                        </svg>
+                        <span>Blogs</span>
+                    </a> -->
+                    <a href="<?php echo $base; ?>contact" 
+                       @click="mobileMenuOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-gray-700 font-medium hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Contact</span>
+                    </a>
+                </div>
+                <div class="px-6 py-8 space-y-3 border-t border-gray-200">
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="<?php echo $base; ?>login" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-sm">
+                            <span>Employee Login</span>
+                        </a>
+                        <a href="<?php echo $base; ?>login" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-sm">
+                            <span>Employer Login</span>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="<?php echo $base; ?>register-candidate" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md text-sm">
+                            <span>Register Employee</span>
+                        </a>
+                        <a href="<?php echo $base; ?>register-employer" 
+                           @click="mobileMenuOpen = false"
+                           class="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md text-sm">
+                            <span>Register Employer</span>
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</header>
