@@ -89,7 +89,9 @@ $router->post('/api/push/test', function(Request $request, Response $response) {
 });
 
 $router->post('/api/notifications/preferences', function(Request $request, Response $response) {
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     if (!$userId) {
         $response->json(['error' => 'Unauthorized'], 401);

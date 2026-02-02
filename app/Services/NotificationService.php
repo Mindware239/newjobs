@@ -258,15 +258,61 @@ class NotificationService
                 return false;
             }
             $client = new Client();
-            $client->setAuthConfig($credentialsPath);
-            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
-            $t = $client->fetchAccessTokenWithAssertion();
-            $accessToken = $t['access_token'] ?? null;
+            
+            // SSL Fix: Use local cacert.pem if available
+            $cacert = realpath(__DIR__ . '/../../storage/cacert.pem');
+            $verifySsl = false; // Default to false for local dev fallback
+            
+            if ($cacert && file_exists($cacert)) {
+                $verifySsl = $cacert;
+            }
+
+            // Manually fetch token using Firebase JWT to control SSL verification
+            // This bypasses Google\Client's internal HTTP handler which can be problematic on XAMPP
+            $jsonKey = json_decode(file_get_contents($credentialsPath), true);
+            
+            // Check if firebase/php-jwt is available (it should be via composer)
+            if (class_exists('Firebase\JWT\JWT')) {
+                $now = time();
+                $jwtPayload = [
+                    'iss' => $jsonKey['client_email'],
+                    'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+                    'aud' => 'https://oauth2.googleapis.com/token',
+                    'exp' => $now + 3600,
+                    'iat' => $now
+                ];
+                
+                $jwt = \Firebase\JWT\JWT::encode($jwtPayload, $jsonKey['private_key'], 'RS256');
+                
+                // Exchange JWT for access token using Guzzle with explicit verify setting
+                $httpClient = new \GuzzleHttp\Client(['verify' => $verifySsl]);
+                $response = $httpClient->post('https://oauth2.googleapis.com/token', [
+                    'form_params' => [
+                        'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                        'assertion' => $jwt
+                    ]
+                ]);
+                
+                $tokenData = json_decode((string)$response->getBody(), true);
+                $accessToken = $tokenData['access_token'] ?? null;
+            } else {
+                // Fallback to Google Client (might fail on XAMPP)
+                $client = new Client();
+                $client->setAuthConfig($credentialsPath);
+                $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+                if (class_exists('GuzzleHttp\Client')) {
+                    $client->setHttpClient(new \GuzzleHttp\Client(['verify' => $verifySsl]));
+                }
+                $t = $client->fetchAccessTokenWithAssertion();
+                $accessToken = $t['access_token'] ?? null;
+            }
+
             if (!$accessToken) {
                 return false;
             }
-            $json = json_decode(file_get_contents($credentialsPath), true);
-            $projectId = $json['project_id'] ?? '';
+            
+            // Extract project ID (already have it)
+            $projectId = $jsonKey['project_id'] ?? '';
             if (empty($projectId)) {
                 return false;
             }
@@ -312,6 +358,7 @@ class NotificationService
             );
             return $success;
         } catch (\Throwable $e) {
+            error_log("FCM Send Error: " . $e->getMessage());
             return false;
         }
     }

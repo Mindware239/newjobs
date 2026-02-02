@@ -119,13 +119,7 @@ class CandidateController extends BaseController
 
         // Check for auto-redirect if profile is complete
         if ($candidate) {
-             $profileStrength = (int)($candidate->attributes['profile_strength'] ?? 0);
-             $isEditMode = $request->get('edit') === '1';
-             
-             if ($profileStrength >= 100 && !$isEditMode) {
-                 $response->redirect('/candidate/dashboard');
-                 return;
-             }
+             // Logic removed to prevent infinite redirect loop on dashboard
         }
 
         if (!$candidate) {
