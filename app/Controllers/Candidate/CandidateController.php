@@ -116,6 +116,18 @@ class CandidateController extends BaseController
 
         // Directly fetch candidate from database to get fresh data
         $candidate = Candidate::findByUserId((int)$userId);
+
+        // Check for auto-redirect if profile is complete
+        if ($candidate) {
+             $profileStrength = (int)($candidate->attributes['profile_strength'] ?? 0);
+             $isEditMode = $request->get('edit') === '1';
+             
+             if ($profileStrength >= 100 && !$isEditMode) {
+                 $response->redirect('/candidate/dashboard');
+                 return;
+             }
+        }
+
         if (!$candidate) {
             // Create candidate profile if doesn't exist
             $candidate = Candidate::createForUser((int)$userId);
@@ -731,6 +743,15 @@ class CandidateController extends BaseController
                 error_log("Profile Complete - After updateProfileStrength reload:");
                 error_log("  - Full Name: " . ($candidate->attributes['full_name'] ?? 'NULL'));
                 error_log("  - Profile Strength: " . ($candidate->attributes['profile_strength'] ?? 'NULL'));
+                
+                // Check if profile is complete and redirect if not in edit mode
+                $profileStrength = (int)($candidate->attributes['profile_strength'] ?? 0);
+                $isEditMode = $request->get('edit') === '1';
+                
+                if ($profileStrength >= 100 && !$isEditMode) {
+                     $response->redirect('/candidate/dashboard');
+                     return;
+                }
             }
         }
 

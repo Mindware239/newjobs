@@ -434,7 +434,7 @@
                                 </svg>
                                 View Profile
                             </a>
-                            <a href="/candidate/profile/complete" 
+                            <a href="/candidate/profile/complete?edit=1" 
                                class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">    
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-6m-1.414-5.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>

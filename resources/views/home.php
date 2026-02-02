@@ -62,6 +62,58 @@ if (!function_exists('fix_url')) {
                             this.selectedValue = cur ? cur.value : '';
                         });
                     }
+
+                    // Request Location Permission & Auto-select
+                    if ("geolocation" in navigator) {
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => this.handleGeoSuccess(pos),
+                            (err) => console.log("Location access denied or error:", err)
+                        );
+                    }
+
+                    // Request Notification Permission
+                    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === "granted") {
+                                console.log("Notification permission granted");
+                                // Optional: Register push subscription here if needed
+                            }
+                        });
+                    }
+                },
+                handleGeoSuccess(pos) {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    // Use OpenStreetMap Nominatim for reverse geocoding (Client-side)
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.address) {
+                                const country = data.address.country || '';
+                                const city = data.address.city || data.address.town || data.address.village || '';
+                                const state = data.address.state || '';
+                                
+                                // Try to find a match in the dropdown items
+                                // Priority: City, State, Country
+                                const match = this.items.find(i => {
+                                    const label = i.label.toLowerCase();
+                                    return (city && label.includes(city.toLowerCase())) ||
+                                           (state && label.includes(state.toLowerCase())) ||
+                                           (country && label === country.toLowerCase());
+                                });
+
+                                if (match) {
+                                    this.selectItem(match);
+                                    // Also update the native select to trigger any server-side logic if needed
+                                    const sel = this.$refs.native;
+                                    if (sel) {
+                                        sel.value = match.value;
+                                        sel.dispatchEvent(new Event('change'));
+                                    }
+                                }
+                            }
+                        })
+                        .catch(e => console.error("Geocoding error:", e));
                 },
                 filteredItems() {
                     const q = this.q.trim().toLowerCase();

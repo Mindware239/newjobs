@@ -1,6 +1,5 @@
 /vendor/
 /node_modules/
-.env
 .env.local
 client_secret*.json
 *.pem
