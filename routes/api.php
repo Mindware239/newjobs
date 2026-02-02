@@ -12,12 +12,14 @@ $router->get('/api/fcm-web-config', function(Request $request, Response $respons
         'projectId' => $_ENV['FCM_WEB_PROJECT_ID'] ?? '',
         'messagingSenderId' => $_ENV['FCM_WEB_MESSAGING_SENDER_ID'] ?? '',
         'appId' => $_ENV['FCM_WEB_APP_ID'] ?? '',
-        'vapidKey' => $_ENV['FCM_VAPID_KEY'] ?? ''
+        'vapidKey' => $_ENV['FCM_VAPID_KEY'] ?? ($_ENV['FCM_WEB_VAPID_KEY'] ?? '')
     ]);
 });
 
 $router->post('/api/push/register', function(Request $request, Response $response) {
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     if (!$userId) {
         $response->json(['error' => 'Unauthorized'], 401);
@@ -53,7 +55,9 @@ $router->post('/api/push/register', function(Request $request, Response $respons
 });
 
 $router->post('/api/push/unsubscribe', function(Request $request, Response $response) {
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     if (!$userId) {
         $response->json(['error' => 'Unauthorized'], 401);
@@ -78,7 +82,9 @@ $router->post('/api/push/unsubscribe', function(Request $request, Response $resp
 });
 
 $router->post('/api/push/test', function(Request $request, Response $response) {
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     if (!$userId) {
         $response->json(['error' => 'Unauthorized'], 401);

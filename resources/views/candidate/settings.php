@@ -74,10 +74,6 @@
                                 Saving...
                             </span>
                         </button>
-                        <div class="ml-4 flex items-center gap-3">
-                            <button type="button" @click="enablePush()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Enable Browser Push</button>
-                            <button type="button" @click="disablePush()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Disable Browser Push</button>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -189,24 +185,7 @@ function candidateSettings() {
                 this.isSubmitting = false;
             }
         },
-        async enablePush() {
-            try {
-                if (!('serviceWorker' in navigator) || !window.Notification || !window.firebase) return;
-                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                await Notification.requestPermission();
-                const messaging = window.firebase.messaging();
-                const token = await messaging.getToken({ serviceWorkerRegistration: registration });
-                if (token) {
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                    await fetch('/api/push/register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-                        body: JSON.stringify({ token })
-                    });
-                    alert('Browser push enabled');
-                }
-            } catch (e) {}
-        },
+        
         async disablePush() {
             try {
                 if (!window.firebase) return;

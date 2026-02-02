@@ -81,7 +81,7 @@ if (empty($_SESSION['csrf_token'])) {
                 projectId: "<?= htmlspecialchars($_ENV['FCM_WEB_PROJECT_ID'] ?? '') ?>",
                 messagingSenderId: "<?= htmlspecialchars($_ENV['FCM_WEB_MESSAGING_SENDER_ID'] ?? '') ?>",
                 appId: "<?= htmlspecialchars($_ENV['FCM_WEB_APP_ID'] ?? '') ?>",
-                vapidKey: "<?= htmlspecialchars($_ENV['FCM_VAPID_KEY'] ?? '') ?>"
+                vapidKey: "<?= htmlspecialchars($_ENV['FCM_VAPID_KEY'] ?? ($_ENV['FCM_WEB_VAPID_KEY'] ?? '')) ?>"
             };
             const hasCfg = cfg.apiKey && cfg.projectId && cfg.messagingSenderId && cfg.appId;
             if (!hasCfg) { console.warn('FCM web config missing; push disabled'); return; }
@@ -100,15 +100,36 @@ if (empty($_SESSION['csrf_token'])) {
                         });
                         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
                         const messaging = firebase.messaging();
+                        
+                        // Handle foreground messages
+                        messaging.onMessage((payload) => {
+                            console.log('Message received. ', payload);
+                            const title = (payload.notification && payload.notification.title) || 'Notification';
+                            const body = (payload.notification && payload.notification.body) || '';
+                            const icon = (payload.notification && payload.notification.icon) || '/uploads/Mindware-infotech.png';
+                            const link = (payload.data && payload.data.link) || '/';
+                            
+                            if (Notification.permission === 'granted') {
+                                const n = new Notification(title, { body, icon });
+                                n.onclick = function(event) {
+                                    event.preventDefault();
+                                    window.open(link, '_blank');
+                                    n.close();
+                                };
+                            }
+                        });
+
                         await Notification.requestPermission();
                         const token = await messaging.getToken({ vapidKey: cfg.vapidKey, serviceWorkerRegistration: registration });
-                        if (token) {
+                        const prev = localStorage.getItem('fcm_token');
+                        if (token && token !== prev) {
                             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
                             await fetch('/api/push/register', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
                                 body: JSON.stringify({ token })
                             });
+                            localStorage.setItem('fcm_token', token);
                         }
                     } catch (err) { console.warn('Push init failed', err); }
                 });

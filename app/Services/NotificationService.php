@@ -300,9 +300,13 @@ class NotificationService
                 $client = new Client();
                 $client->setAuthConfig($credentialsPath);
                 $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
-                if (class_exists('GuzzleHttp\Client')) {
-                    $client->setHttpClient(new \GuzzleHttp\Client(['verify' => $verifySsl]));
-                }
+                
+                // Fix for local SSL certificate issues (cURL error 60)
+                $guzzleClient = new \GuzzleHttp\Client([
+                    'verify' => false, // Disable SSL verification for local development
+                ]);
+                $client->setHttpClient($guzzleClient);
+                
                 $t = $client->fetchAccessTokenWithAssertion();
                 $accessToken = $t['access_token'] ?? null;
             }
@@ -483,6 +487,23 @@ HTML;
         $candidateName = htmlspecialchars((string)($data['candidate_name'] ?? 'Candidate'), ENT_QUOTES, 'UTF-8');
         
         switch ($key) {
+            case 'application_update':
+                $job = htmlspecialchars((string)($data['job_title'] ?? 'Application'), ENT_QUOTES, 'UTF-8');
+                $status = htmlspecialchars((string)($data['status'] ?? 'updated'), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? ($appUrl . '/candidate/applications')), ENT_QUOTES, 'UTF-8');
+                $subject = "Application Update – {$job}";
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>Your application has been {$status}</h2>
+                    <p style='margin:8px 0 16px;'>Great news! Your application for <strong>{$job}</strong> has been {$status}.</p>
+                    <div class='info-box'>
+                        <p style='margin:5px 0;'><strong>Role:</strong> {$job}</p>
+                        <p style='margin:5px 0;'><strong>Status:</strong> {$status}</p>
+                    </div>
+                    <center><a href='{$link}' class='btn'>View Application</a></center>
+                    <p style='margin-top:16px; font-size:12px; color:#6b7280;'>Keep your profile updated to improve match scores and speed up decisions.</p>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
             case 'candidate_invite':
                 $subject = 'Verify Your Account – Complete Your Profile';
                 $verifyLink = htmlspecialchars((string)($data['verify_link'] ?? ($appUrl . '/verify-account')), ENT_QUOTES, 'UTF-8');
@@ -521,6 +542,76 @@ HTML;
                     <p>Thank you for registering as an employer. We are here to help you hire the best talent.</p>
                     <p>Start by posting your first job.</p>
                     <center><a href='{$appUrl}/employer/jobs/create' class='btn'>Post a Job</a></center>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
+            case 'message':
+                $from = htmlspecialchars((string)($data['from_name'] ?? 'Employer'), ENT_QUOTES, 'UTF-8');
+                $preview = htmlspecialchars((string)($data['preview'] ?? 'You have a new message'), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? ($appUrl . '/candidate/chat')), ENT_QUOTES, 'UTF-8');
+                $subject = "New Message from {$from}";
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>You have a new message</h2>
+                    <p><strong>{$from}</strong> sent you a message.</p>
+                    <div class='info-box'>
+                        <p style='margin:5px 0;'>{$preview}</p>
+                    </div>
+                    <center><a href='{$link}' class='btn'>Open Messages</a></center>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
+            case 'profile_view':
+                $viewer = htmlspecialchars((string)($data['employer_name'] ?? 'An employer'), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? ($appUrl . '/candidate/profile/complete')), ENT_QUOTES, 'UTF-8');
+                $subject = 'Your Profile Was Viewed';
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>{$viewer} viewed your profile</h2>
+                    <p style='margin:8px 0 16px;'>Increase your chances by keeping your profile complete and up-to-date.</p>
+                    <div class='info-box'>
+                        <p style='margin:5px 0;'>Add missing education, skills, or recent experience to improve match scores.</p>
+                    </div>
+                    <center><a href='{$link}' class='btn'>Update Profile</a></center>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
+            case 'job_match':
+                $job = htmlspecialchars((string)($data['job_title'] ?? 'New Job'), ENT_QUOTES, 'UTF-8');
+                $score = htmlspecialchars((string)($data['match_score'] ?? ''), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? $appUrl), ENT_QUOTES, 'UTF-8');
+                $subject = "New Match – {$job}";
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>New job matches your profile</h2>
+                    <p><strong>{$job}</strong> is a good fit for you.</p>
+                    <div class='info-box'>
+                        <p style='margin:5px 0;'><strong>Match Score:</strong> {$score}%</p>
+                    </div>
+                    <center><a href='{$link}' class='btn'>View Job</a></center>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
+            case 'low_match_suggestion':
+                $job = htmlspecialchars((string)($data['job_title'] ?? 'Job'), ENT_QUOTES, 'UTF-8');
+                $score = htmlspecialchars((string)($data['match_score'] ?? ''), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? ($appUrl . '/candidate/profile/edit')), ENT_QUOTES, 'UTF-8');
+                $subject = "Improve Your Match for {$job}";
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>Improve your match score</h2>
+                    <p>Your match score for <strong>{$job}</strong> is {$score}%.</p>
+                    <div class='info-box'>
+                        <p style='margin:5px 0;'>Update skills and experience to get better results.</p>
+                    </div>
+                    <center><a href='{$link}' class='btn'>Update Profile</a></center>
+                ";
+                return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
+
+            case 'abandoned_job_view':
+                $job = htmlspecialchars((string)($data['job_title'] ?? 'Job'), ENT_QUOTES, 'UTF-8');
+                $link = htmlspecialchars((string)($data['link'] ?? $appUrl), ENT_QUOTES, 'UTF-8');
+                $subject = "Still interested in {$job}?";
+                $content = "
+                    <h2 style='color:#111827; margin-top:0;'>You viewed this job recently</h2>
+                    <p>You can apply in minutes. Stand out by completing your profile.</p>
+                    <center><a href='{$link}' class='btn'>Apply Now</a></center>
                 ";
                 return ['subject' => $subject, 'body' => self::wrapHtml($subject, $content, $data)];
 
@@ -698,51 +789,41 @@ HTML;
             'offer' => 'offer received',
             'rejected' => 'rejected'
         ];
-        
-        self::notify(
-            $userId,
-            'application_update',
-            'Application Update',
-            "Your application for '{$jobTitle}' has been " . (isset($statusLabels[$status]) ? $statusLabels[$status] : $status) . ".",
-            '/candidate/applications'
-        );
+        $msg = "Your application for '{$jobTitle}' has been " . (isset($statusLabels[$status]) ? $statusLabels[$status] : $status) . ".";
+        self::send($userId, 'application_update', 'Application Update', $msg, [
+            'job_title' => $jobTitle,
+            'status' => $status,
+            'link' => '/candidate/applications'
+        ], '/candidate/applications', ['in_app','email','push']);
     }
 
     public static function notifyInterviewScheduled(int $userId, string $jobTitle, string $dateTime): void
     {
-        self::notify(
-            $userId,
-            'interview_scheduled',
-            'Interview Scheduled',
-            "Your interview for '{$jobTitle}' is scheduled for {$dateTime}.",
-            '/candidate/applications'
-        );
+        $msg = "Your interview for '{$jobTitle}' is scheduled for {$dateTime}.";
+        self::send($userId, 'interview_scheduled', 'Interview Scheduled', $msg, [
+            'job_title' => $jobTitle,
+            'scheduled_time' => $dateTime,
+            'link' => '/candidate/applications'
+        ], '/candidate/applications', ['in_app','email','push']);
     }
 
     public static function notifyNewMessage(int $userId, string $employerName): void
     {
-        self::notify(
-            $userId,
-            'message',
-            'New Message',
-            "You have a new message from {$employerName}.",
-            '/candidate/chat'
-        );
+        $msg = "You have a new message from {$employerName}.";
+        self::send($userId, 'message', 'New Message', $msg, [
+            'from_name' => $employerName,
+            'preview' => $msg,
+            'link' => '/candidate/chat'
+        ], '/candidate/chat', ['in_app','email','push']);
     }
 
     public static function notifyProfileView(int $userId, string $employerName): void
     {
-        $candidate = Candidate::findByUserId($userId);
-        if ($candidate && !$candidate->isPremium()) {
-            return;
-        }
-        self::notify(
-            $userId,
-            'profile_view',
-            'Profile Viewed',
-            "Your profile was viewed by {$employerName}.",
-            '/candidate/profile/complete'
-        );
+        $msg = "Your profile was viewed by {$employerName}.";
+        self::send($userId, 'profile_view', 'Profile Viewed', $msg, [
+            'employer_name' => $employerName,
+            'link' => '/candidate/profile/complete'
+        ], '/candidate/profile/complete', ['in_app','email','push']);
     }
 
     /* ========================== ✅ WHATSAPP & SMS ========================== */

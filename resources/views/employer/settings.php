@@ -510,6 +510,28 @@ function settingsPage() {
                 this.isSubmitting = false;
             }
         },
+        async disablePush() {
+            try {
+                if (!window.firebase) return;
+                const messaging = window.firebase.messaging();
+                const token = await messaging.getToken(); // might fail if no token
+                
+                if (token) {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    await fetch('/api/push/unsubscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+                        body: JSON.stringify({ token })
+                    });
+                    try { await messaging.deleteToken(token); } catch (_) {}
+                    alert('Browser push disabled');
+                } else {
+                    alert('No active push token found');
+                }
+            } catch (e) {
+                console.error('Error disabling push:', e);
+            }
+        },
         showSuccess(message) {
             // Create and show success notification
             const notification = document.createElement('div');
