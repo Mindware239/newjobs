@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS blog_category_map (
+  blog_id BIGINT UNSIGNED NOT NULL,
+  category_id BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY (blog_id, category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

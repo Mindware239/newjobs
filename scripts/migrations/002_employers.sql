@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS employers (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  company_name VARCHAR(255) NOT NULL,
+  company_slug VARCHAR(255) NOT NULL UNIQUE,
+  website VARCHAR(255) NULL,
+  logo_url VARCHAR(512) NULL,
+  description TEXT NULL,
+  industry VARCHAR(128) NULL,
+  size ENUM('1-10','11-50','51-200','201-500','501-1000','1001+') NULL,
+  address JSON NULL,
+  country VARCHAR(64) NULL,
+  state VARCHAR(128) NULL,
+  city VARCHAR(128) NULL,
+  postal_code VARCHAR(32) NULL,
+  verified TINYINT(1) DEFAULT 0,
+  kyc_status ENUM('not_submitted','pending','approved','rejected') DEFAULT 'not_submitted',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX(user_id),
+  INDEX(company_name),
+  INDEX(kyc_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

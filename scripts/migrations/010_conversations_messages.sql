@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS conversations (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employer_id BIGINT UNSIGNED NOT NULL,
+  candidate_user_id BIGINT UNSIGNED NOT NULL,
+  last_message_id BIGINT UNSIGNED NULL,
+  unread_employer INT DEFAULT 0,
+  unread_candidate INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE CASCADE,
+  FOREIGN KEY (candidate_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX(employer_id),
+  INDEX(candidate_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS messages (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  conversation_id BIGINT UNSIGNED NOT NULL,
+  sender_user_id BIGINT UNSIGNED NOT NULL,
+  body TEXT,
+  attachments JSON NULL,
+  is_read TINYINT(1) DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX(conversation_id),
+  INDEX(sender_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

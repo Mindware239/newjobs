@@ -17,7 +17,6 @@ composer.lock
 public/storage/uploads/**
 public/uploads/**
 .phpunit.result.cache
-*.sql
 *.zip
 .env
 client_secret_*.json
