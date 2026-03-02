@@ -248,6 +248,15 @@ class CandidatesController extends BaseController
             ['user_id' => $candidate['user_id']]
         );
 
+        $employmentDocuments = $db->fetchAll(
+            "SELECT d.*, er.company_name 
+             FROM employment_documents d
+             INNER JOIN employment_records er ON er.id = d.employment_id
+             WHERE er.candidate_id = :cid
+             ORDER BY d.uploaded_at DESC",
+            ['cid' => $id]
+        );
+
         $nearbyJobs = [];
         $location = trim(implode(' ', array_filter([
             (string)($candidate['city'] ?? ''),
@@ -299,6 +308,7 @@ class CandidatesController extends BaseController
             'experience' => $experience,
             'qualityScores' => $qualityScores,
             'loginHistory' => $loginHistory,
+            'employmentDocuments' => $employmentDocuments,
             'nearbyJobs' => $nearbyJobs,
             'activeEmployers' => $activeEmployers,
             'user' => $this->currentUser
@@ -557,27 +567,24 @@ class CandidatesController extends BaseController
                     throw new \Exception('User creation failed - could not retrieve ID');
                 }
 
-                // Create Candidate
-                $candidate = new Candidate();
-                $candidate->fill([
-                    'user_id' => $userId,
+                // Create Candidate via Single Source of Truth
+                $service = new \App\Services\CandidateCreationService();
+                $init = [
                     'full_name' => $data['name'],
                     'mobile' => $data['phone'] ?? null,
                     'city' => $data['location'] ?? null,
                     'created_by' => 'admin',
                     'source' => $data['source'] ?? 'walk_in',
-                    'profile_status' => 'inactive',
-                    'visibility' => 'private',
+                    'profile_status' => 'unverified',
+                    'visibility' => 'limited',
                     'profile_strength' => 0,
                     'is_profile_complete' => 0
-                ]);
-                
+                ];
                 if (!empty($data['skills'])) {
                     $skills = array_map('trim', explode(',', $data['skills']));
-                    $candidate->fill(['skills_data' => json_encode($skills)]);
+                    $init['skills_data'] = json_encode($skills);
                 }
-                
-                $candidate->save();
+                $candidate = $service->ensureCandidateForUser((int)$userId, $init);
                 $candidateId = $candidate->id ?? null;
                 if (!$candidateId) {
                     $cRow = $db->fetchOne("SELECT id FROM candidates WHERE user_id = :uid", ['uid' => $userId]);
@@ -626,16 +633,19 @@ class CandidatesController extends BaseController
                         
                         $resetLink .= "?token=" . $token . "&email=" . urlencode($data['email']);
 
-                        NotificationService::sendEmail(
-                            $data['email'], 
+                        NotificationService::send(
+                            (int)$userId, 
+                            'candidate_invite',
                             'Welcome to ' . ($_ENV['APP_NAME'] ?? 'Job Portal'), 
-                            'candidate_invite', 
+                            "Welcome, {$data['name']}! Please verify your account.",
                             [
                                 'candidate_name' => $data['name'], 
                                 'verify_link' => $verifyLink,
                                 'reset_link' => $resetLink,
-                                'password' => 'Set via link'
-                            ]
+                                'password' => 'Set via link',
+                                'email_template' => 'candidate_invite'
+                            ],
+                            $verifyLink
                         );
                     } catch (\Exception $e) {
                         error_log("Failed to send welcome email to {$data['email']}: " . $e->getMessage());
@@ -705,7 +715,7 @@ class CandidatesController extends BaseController
                 return;
             }
 
-            $uploadDir = __DIR__ . '/../../../../public/storage/uploads/resumes/';
+            $uploadDir = __DIR__ . '/../../../../storage/uploads/resumes/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -796,7 +806,7 @@ class CandidatesController extends BaseController
             return;
         }
 
-        $uploadDir = __DIR__ . '/../../../../public/storage/uploads/imports/';
+        $uploadDir = __DIR__ . '/../../../../storage/uploads/imports/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }

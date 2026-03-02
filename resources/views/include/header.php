@@ -120,6 +120,133 @@ if (empty($popularLocations)) {
     ];
 }
 ?>
+<script>
+function loadMetaPixel(){
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1224562812671558');fbq('track','PageView');
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  try{
+    var marketingConsent = localStorage.getItem('mw_cookie_consent_marketing');
+    if(marketingConsent === 'true'){ loadMetaPixel(); }
+  }catch(e){}
+});
+</script>
+<script>
+window.MWMarketing = (function(){
+  window.MW_DL = window.MW_DL || [];
+  var RECENT = {}; // dedupe within short window per signature
+  var DEDUPE_MS = 2000;
+  function consent(){
+    try{return localStorage.getItem('mw_cookie_consent_marketing')==='true'}catch(e){return false}
+  }
+  function ensure(){
+    if(!consent()) return false;
+    if(typeof fbq!=='function'){ try{ loadMetaPixel(); }catch(e){} }
+    return typeof fbq==='function';
+  }
+  function pushDL(evt, payload){ try{ window.MW_DL.push({event:evt, payload:payload||{}, ts:Date.now()}); }catch(e){} }
+  function sig(evt, d){
+    try{
+      var keyParts = [evt];
+      if(d){
+        if(d.content_ids) keyParts.push(String(d.content_ids));
+        if(d.content_name) keyParts.push(String(d.content_name));
+        if(d.search_string) keyParts.push(String(d.search_string));
+        if(d.location) keyParts.push(String(d.location));
+        if(d.content_type) keyParts.push(String(d.content_type));
+      }
+      return keyParts.join('|').toLowerCase();
+    }catch(_){ return evt }
+  }
+  function allow(evt, d){
+    var s = sig(evt, d), now = Date.now();
+    if(RECENT[s] && (now - RECENT[s] < DEDUPE_MS)) return false;
+    RECENT[s] = now;
+    return true;
+  }
+  return {
+    trackSearch: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      if(!allow('Search', d)) return;
+      try{ fbq('track','Search', d); }catch(e){} pushDL('Search', d);
+    },
+    trackCategoryView: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      d = Object.assign({content_type:'category'}, d||{});
+      if(!allow('ViewCategory', d)) return;
+      try{ fbq('track','ViewContent', d); }catch(e){} pushDL('ViewCategory', d);
+    },
+    trackJobView: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      d = Object.assign({content_type:'job'}, d||{});
+      if(!allow('JobView', d)) return;
+      try{ fbq('track','ViewContent', d); }catch(e){} pushDL('JobView', d);
+    },
+    trackApply: function(meta){ // apply click
+      if(!ensure()) return;
+      var d = meta || {};
+      d = Object.assign({content_type:'job'}, d||{});
+      if(!allow('ApplyClick', d)) return;
+      try{ fbq('track','Lead', d); }catch(e){} pushDL('ApplyClick', d);
+    },
+    trackApplicationSubmitted: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      d = Object.assign({content_type:'job'}, d||{});
+      if(!allow('ApplicationSubmitted', d)) return;
+      try{ fbq('track','SubmitApplication', d); }catch(e){} pushDL('ApplicationSubmitted', d);
+    },
+    trackSavedJob: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      d = Object.assign({content_type:'job'}, d||{});
+      if(!allow('JobSaved', d)) return;
+      try{ fbq('track','AddToWishlist', d); }catch(e){} pushDL('JobSaved', d);
+    },
+    trackResumeUpload: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      if(!allow('ResumeUpload', d)) return;
+      try{ fbq('trackCustom','ResumeUpload', d); }catch(e){} pushDL('ResumeUpload', d);
+    },
+    trackInitiateRegistration: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      if(!allow('InitiateRegistration', d)) return;
+      try{ fbq('trackCustom','InitiateRegistration', d); }catch(e){} pushDL('InitiateRegistration', d);
+    },
+    trackCompleteRegistration: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      if(!allow('CompleteRegistration', d)) return;
+      try{ fbq('track','CompleteRegistration', d); }catch(e){} pushDL('CompleteRegistration', d);
+    },
+    trackEmployerPostJob: function(meta){
+      if(!ensure()) return;
+      var d = meta || {};
+      if(!allow('EmployerPostJob', d)) return;
+      try{ fbq('track','SubmitApplication', d); }catch(e){} pushDL('EmployerPostJob', d);
+    }
+  };
+})();
+(function(){
+  try{
+    var qs = window.location.search || '';
+    if (qs.indexOf('registered=1') !== -1) {
+      window.MWMarketing && window.MWMarketing.trackCompleteRegistration();
+    }
+  }catch(e){}
+})();
+</script>
 <!-- Header Component -->
 <header class="sticky top-0 z-50 transition-all duration-300" x-data="{ mobileMenuOpen: false, showUserMenu: false }">
     <!-- Background & Border Layer (Absolute) -->
@@ -337,7 +464,7 @@ if (empty($popularLocations)) {
                 <?php endif; ?>
             <?php else: ?>
                 <!-- Not Logged In Actions -->
-                <a href="<?php echo $base; ?>login" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 text-white font-medium  hover:text-white hover:bg-blue-700 shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all duration-200">
+                <a href="<?php echo $base; ?>login?role=employer&redirect=/employer/jobs/create" class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 text-white font-medium  hover:text-white hover:bg-blue-700 shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all duration-200">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
@@ -528,20 +655,11 @@ if (empty($popularLocations)) {
                 <div class="p-5 border-t border-gray-100 bg-gray-50/50 space-y-3 shrink-0">
                     <?php if (!isset($_SESSION['user_id'])): ?>
                         <div class="grid grid-cols-2 gap-3">
+                             <a href="<?php echo $base; ?>login?role=employer&redirect=/employer/jobs/create" class="flex items-center justify-center px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all">
+                                 Post a Job
+                             </a>
                              <a href="<?php echo $base; ?>login" class="flex items-center justify-center px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
                                  Employee Login
-                             </a>
-
-                             <a href="<?php echo $base; ?>login?role=employer" class="flex items-center justify-center px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-                                 Employer Login
-                             </a>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                             <a href="<?php echo $base; ?>register-candidate" class="flex items-center justify-center px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all">
-                                 Register Employee
-                             </a>
-                             <a href="<?php echo $base; ?>register-employer" class="flex items-center justify-center px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all">
-                                 Register Employer
                              </a>
                         </div>
                     <?php else: ?>

@@ -49,6 +49,29 @@ class Employer extends Model
         return ($this->attributes['kyc_status'] ?? '') === 'approved';
     }
 
+    public function isProfileComplete(): bool
+    {
+        $company = trim((string)($this->attributes['company_name'] ?? ''));
+        $size = trim((string)($this->attributes['size'] ?? ''));
+        $country = trim((string)($this->attributes['country'] ?? ''));
+        $state = trim((string)($this->attributes['state'] ?? ''));
+        $city = trim((string)($this->attributes['city'] ?? ''));
+        $postal = trim((string)($this->attributes['postal_code'] ?? ''));
+        if ($country === '' || $state === '' || $city === '' || $postal === '') {
+            $addrRaw = $this->attributes['address'] ?? null;
+            $addr = is_string($addrRaw) ? json_decode($addrRaw, true) : (is_array($addrRaw) ? $addrRaw : null);
+            if (is_array($addr)) {
+                $country = $country !== '' ? $country : trim((string)($addr['country'] ?? ''));
+                $state = $state !== '' ? $state : trim((string)($addr['state'] ?? ''));
+                $city = $city !== '' ? $city : trim((string)($addr['city'] ?? ''));
+                $postal = $postal !== '' ? $postal : trim((string)($addr['postal_code'] ?? ''));
+            }
+        }
+        if ($company === '' || $size === '') return false;
+        if ($country === '' || $state === '' || $city === '' || $postal === '') return false;
+        return true;
+    }
+
     public function generateSlug(string $name): string
     {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));

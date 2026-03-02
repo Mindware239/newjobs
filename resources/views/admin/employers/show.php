@@ -147,10 +147,12 @@ function __fmt_phone($number, $country) {
 
                         <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <form method="POST" action="/admin/employers/<?= (int)($employer['id'] ?? 0) ?>/kyc-documents/<?= (int)($doc['id'] ?? 0) ?>/approve">
+                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                                 <input type="text" name="notes" placeholder="Add approval note (optional)" class="w-full mb-2 px-3 py-2 border rounded-md" />
                                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Approve</button>
                             </form>
                             <form method="POST" action="/admin/employers/<?= (int)($employer['id'] ?? 0) ?>/kyc-documents/<?= (int)($doc['id'] ?? 0) ?>/reject">
+                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                                 <input type="text" name="notes" placeholder="Rejection reason" class="w-full mb-2 px-3 py-2 border rounded-md" />
                                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
                             </form>
@@ -169,11 +171,13 @@ function __fmt_phone($number, $country) {
                 <div class="space-y-2">
                     <?php if (($employer['kyc_status'] ?? '') === 'pending'): ?>
                         <form method="POST" action="/admin/employers/<?= $employer['id'] ?>/approve-kyc">
+                            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                             <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                                 Approve KYC
                             </button>
                         </form>
                         <form method="POST" action="/admin/employers/<?= $employer['id'] ?>/reject-kyc" class="mt-2">
+                            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                             <input type="text" name="reason" placeholder="Rejection reason" class="w-full mb-2 px-3 py-2 border rounded-md">
                             <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                 Reject KYC
@@ -188,12 +192,14 @@ function __fmt_phone($number, $country) {
                 <div class="space-y-2">
                     <?php if (($employer['user_status'] ?? '') === 'active'): ?>
                         <form method="POST" action="/admin/employers/<?= $employer['id'] ?>/block">
+                            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                             <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                 Block Employer
                             </button>
                         </form>
                     <?php else: ?>
                         <form method="POST" action="/admin/employers/<?= $employer['id'] ?>/unblock">
+                            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                             <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                                 Unblock Employer
                             </button>

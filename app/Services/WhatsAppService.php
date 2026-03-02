@@ -55,23 +55,37 @@ class WhatsAppService
         ];
 
         try {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_USERPWD, "{$sid}:{$token}");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $error    = curl_error($ch);
-            curl_close($ch);
+            if (class_exists('\\GuzzleHttp\\Client')) {
+                $verify = self::resolveCaBundle();
+                $client = new \GuzzleHttp\Client([
+                    'timeout' => 10,
+                    'verify'  => $verify,
+                    'auth'    => [$sid, $token],
+                ]);
+                $resp = $client->post($url, ['form_params' => $data]);
+                $httpCode = $resp->getStatusCode();
+                $response = (string) $resp->getBody();
+            } else {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_USERPWD, "{$sid}:{$token}");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+                $ca = self::resolveCaBundle();
+                if (is_string($ca)) {
+                    curl_setopt($ch, CURLOPT_CAINFO, $ca);
+                } elseif ($ca === false) {
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                }
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            }
 
             if ($httpCode >= 200 && $httpCode < 300) {
                 return ['success' => true, 'response' => json_decode((string)$response, true)];
-            } else {
-                error_log("WhatsApp Send Error ({$httpCode}): {$response}");
-                return ['success' => false, 'error' => "HTTP {$httpCode}: {$response}"];
             }
+            error_log("WhatsApp Send Error ({$httpCode}): {$response}");
+            return ['success' => false, 'error' => "HTTP {$httpCode}: {$response}"];
 
         } catch (\Throwable $e) {
             error_log("WhatsApp Service Exception: " . $e->getMessage());
@@ -89,5 +103,26 @@ class WhatsAppService
         // Construct message from template
         // For simple integration, we'll just send text.
         return self::sendText($to, "Template: $templateName " . json_encode($variables));
+    }
+
+    private static function resolveCaBundle(): string|bool
+    {
+        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
+        $possible = [
+            $envPath,
+            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
+            'E:/xampp/php/extras/ssl/cacert.pem',
+            'C:/xampp/php/extras/ssl/cacert.pem',
+            'E:/xampp/apache/bin/curl-ca-bundle.crt',
+            'C:/xampp/apache/bin/curl-ca-bundle.crt',
+            ini_get('curl.cainfo'),
+            ini_get('openssl.cafile'),
+        ];
+        foreach ($possible as $p) {
+            if ($p && file_exists((string)$p)) {
+                return (string)$p;
+            }
+        }
+        return true;
     }
 }

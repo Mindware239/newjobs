@@ -12,9 +12,20 @@ use App\Controllers\SocialServiceController;
 use App\Middleware\AuthMiddleware;
 use App\Controllers\NotificationController;
 use App\Services\NotificationService;
+use App\Controllers\Front\LegalController;
+use App\Controllers\EmployerAccountController;
+use App\Controllers\Social\SocialJobsController;
+use App\Controllers\SEOController;
+use App\Middlewares\CsrfMiddleware;
+use App\Middlewares\RateLimitMiddleware;
+
 
 $router = \App\Core\Router::getInstance();
 
+// Security middlewares
+$csrfMiddleware = new CsrfMiddleware();
+$loginRateLimit = new RateLimitMiddleware(5, 60);
+$formRateLimit = new RateLimitMiddleware(30, 60);
 // Notification Tracking
 $router->get('/notifications/track/open', [NotificationController::class, 'trackOpen']);
 $router->get('/notifications/track/click', [NotificationController::class, 'trackClick']);
@@ -33,7 +44,6 @@ $router->get('/verify-account', [AuthController::class, 'verifyAccount'], []);
 $router->post('/verify-account', [AuthController::class, 'processVerification'], []);
 
 // SEO Routes
-use App\Controllers\SEOController;
 $router->get('/sitemap.xml', [SEOController::class, 'index']);
 $router->get('/sitemap-main.xml', [SEOController::class, 'main']);
 $router->get('/sitemap-jobs.xml', [SEOController::class, 'jobs']);
@@ -47,9 +57,9 @@ $router->get('/sitemap-companies.xml', [SEOController::class, 'companies']);
 $router->get('/robots.txt', [SEOController::class, 'robots']);
 
 // Job Categories Page
-$router->get('/job-categories', function(Request $request, Response $response) {
+$router->get('/job-categories', function (Request $request, Response $response) {
     $db = \App\Core\Database::getInstance();
-    
+
     // Fetch all active categories with job counts
     $sql = "SELECT 
             jc.name,
@@ -60,9 +70,9 @@ $router->get('/job-categories', function(Request $request, Response $response) {
         WHERE jc.is_active = 1
         GROUP BY jc.id, jc.name, jc.slug
         ORDER BY jc.name ASC";
-        
+
     $categories = $db->fetchAll($sql);
-    
+
     // Group by first letter
     $grouped = [];
     foreach ($categories as $cat) {
@@ -71,7 +81,7 @@ $router->get('/job-categories', function(Request $request, Response $response) {
         if (!ctype_alpha($firstLetter)) $firstLetter = '#';
         $grouped[$firstLetter][] = $cat;
     }
-    
+
     $response->view('job-categories', [
         'groupedCategories' => $grouped,
         'pageTitle' => 'Browse Jobs by Category'
@@ -79,7 +89,7 @@ $router->get('/job-categories', function(Request $request, Response $response) {
 });
 
 // Home page
-$router->get('/', function(Request $request, Response $response) {
+$router->get('/', function (Request $request, Response $response) {
     // Redirect logged-in users to their dashboard
     if (isset($_SESSION['user_id']) && isset($_SESSION['user_role'])) {
         if ($_SESSION['user_role'] === 'candidate') {
@@ -95,7 +105,7 @@ $router->get('/', function(Request $request, Response $response) {
     }
 
     $db = \App\Core\Database::getInstance();
-    
+
     // Fetch recent published jobs (limit 6 for home page)
     $recentJobs = [];
     try {
@@ -105,21 +115,21 @@ $router->get('/', function(Request $request, Response $response) {
                 WHERE j.status = 'published'
                 ORDER BY j.created_at DESC
                 LIMIT 6";
-        
+
         $results = $db->fetchAll($sql);
-        
+
         // Enrich job data similar to JobController
         foreach ($results as $row) {
             if (empty($row)) continue;
-            
+
             $jobData = $row;
-            
+
             // Ensure job ID and slug
             $jobData['id'] = (int)($row['id'] ?? 0);
             if (empty($jobData['slug']) && !empty($jobData['title'])) {
                 $jobData['slug'] = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $jobData['title'])));
             }
-            
+
             // Get job locations
             $locationStrings = [];
             try {
@@ -134,7 +144,7 @@ $router->get('/', function(Request $request, Response $response) {
                         WHERE jl.job_id = :job_id",
                         ['job_id' => $jobId]
                     );
-                    
+
                     foreach ($locationRows as $locRow) {
                         $locParts = array_filter([
                             trim($locRow['city'] ?? ''),
@@ -149,7 +159,7 @@ $router->get('/', function(Request $request, Response $response) {
             } catch (\Exception $e) {
                 error_log("Error getting job locations: " . $e->getMessage());
             }
-            
+
             if (empty($locationStrings) && !empty($jobData['locations'])) {
                 $locationsJson = json_decode($jobData['locations'], true);
                 if (is_array($locationsJson)) {
@@ -169,10 +179,10 @@ $router->get('/', function(Request $request, Response $response) {
                     }
                 }
             }
-            $jobData['location_display'] = !empty($locationStrings) 
-                ? implode(' | ', $locationStrings) 
+            $jobData['location_display'] = !empty($locationStrings)
+                ? implode(' | ', $locationStrings)
                 : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
-            
+
             // Format employment type
             $employmentType = $jobData['employment_type'] ?? 'full_time';
             $employmentTypeMap = [
@@ -183,12 +193,12 @@ $router->get('/', function(Request $request, Response $response) {
                 'freelance' => 'Freelance'
             ];
             $jobData['employment_type_display'] = $employmentTypeMap[$employmentType] ?? ucfirst(str_replace('_', ' ', $employmentType));
-            
+
             // Format salary
             $jobData['salary_min'] = isset($jobData['salary_min']) && $jobData['salary_min'] !== null ? (int)$jobData['salary_min'] : null;
             $jobData['salary_max'] = isset($jobData['salary_max']) && $jobData['salary_max'] !== null ? (int)$jobData['salary_max'] : null;
             $jobData['currency'] = $jobData['currency'] ?? 'INR';
-            
+
             // Format created date
             if (!empty($jobData['created_at'])) {
                 $createdTime = strtotime($jobData['created_at']);
@@ -197,7 +207,7 @@ $router->get('/', function(Request $request, Response $response) {
                 $minutes = floor($diff / 60);
                 $hours = floor($diff / 3600);
                 $days = floor($diff / 86400);
-                
+
                 if ($minutes < 1) {
                     $jobData['time_ago'] = 'Just now';
                 } elseif ($minutes < 60) {
@@ -210,19 +220,19 @@ $router->get('/', function(Request $request, Response $response) {
             } else {
                 $jobData['time_ago'] = 'Recently';
             }
-            
+
             // Ensure all fields have defaults
             $jobData['company_name'] = $jobData['company_name'] ?? 'Company Name Not Available';
             $jobData['company_logo'] = $jobData['company_logo'] ?? null;
             $jobData['industry'] = $jobData['industry'] ?? 'Industry';
             $jobData['is_remote'] = (int)($jobData['is_remote'] ?? 0);
-            
+
             $recentJobs[] = $jobData;
         }
     } catch (\Exception $e) {
         error_log("Error fetching recent jobs for home page: " . $e->getMessage());
     }
-    
+
     // Fetch categories for Browse by Category section
     $categories = [];
     try {
@@ -243,7 +253,7 @@ $router->get('/', function(Request $request, Response $response) {
     } catch (\Exception $e) {
         error_log("Error fetching categories: " . $e->getMessage());
     }
-    
+
     // Fetch stats
     $stats = [];
     try {
@@ -254,7 +264,7 @@ $router->get('/', function(Request $request, Response $response) {
         error_log("Error fetching stats: " . $e->getMessage());
         $stats = ['jobs' => 25850, 'candidates' => 10250, 'companies' => 18400];
     }
-    
+
     $clientTestimonials = [];
     $candidateTestimonials = [];
     $homeBlogs = [];
@@ -277,26 +287,22 @@ $router->get('/', function(Request $request, Response $response) {
             ORDER BY b.is_featured DESC, b.published_at DESC
             LIMIT 8
         ");
-        $locations = $db->fetchAll("
-            SELECT DISTINCT
-                TRIM(CONCAT_WS(', ',
-                    NULLIF(c.name, ''),
-                    NULLIF(s.name, ''),
-                    NULLIF(cnt.name, '')
-                )) AS display_name,
-                COALESCE(c.name, '') AS city,
-                COALESCE(s.name, '') AS state,
-                COALESCE(cnt.name, '') AS country
-            FROM job_locations jl
-            LEFT JOIN cities c ON jl.city_id = c.id
-            LEFT JOIN states s ON jl.state_id = s.id
-            LEFT JOIN countries cnt ON jl.country_id = cnt.id
-            WHERE (c.name IS NOT NULL AND c.name <> '')
-               OR (s.name IS NOT NULL AND s.name <> '')
-               OR (cnt.name IS NOT NULL AND cnt.name <> '')
-            ORDER BY cnt.name, s.name, c.name
-            LIMIT 50
-        ");
+        $rawLocs = \App\Models\JobLocation::getDistinctRaw();
+        $locations = [];
+        foreach ($rawLocs as $r) {
+            $city = trim((string)($r['city'] ?? ''));
+            $state = trim((string)($r['state'] ?? ''));
+            $country = trim((string)($r['country'] ?? ''));
+            $parts = array_filter([$city, $state, $country]);
+            if (!empty($parts)) {
+                $locations[] = [
+                    'city' => $city,
+                    'state' => $state,
+                    'country' => $country,
+                    'display_name' => implode(', ', $parts)
+                ];
+            }
+        }
         $employerLogos = $db->fetchAll("
             SELECT company_name, logo_url
             FROM employers
@@ -310,13 +316,14 @@ $router->get('/', function(Request $request, Response $response) {
             if ($t !== '') $typedRoles[] = $t;
         }
         if (count($typedRoles) < 5) {
-            $fallback = ['Blockchain Engineer','Data Scientist','Frontend Developer','Backend Developer','DevOps Engineer','Mobile Developer'];
+            $fallback = ['Blockchain Engineer', 'Data Scientist', 'Frontend Developer', 'Backend Developer', 'DevOps Engineer', 'Mobile Developer'];
             $typedRoles = array_values(array_unique(array_merge($typedRoles, $fallback)));
         } else {
             $typedRoles = array_values(array_unique($typedRoles));
         }
-    } catch (\Throwable $t) {}
-    
+    } catch (\Throwable $t) {
+    }
+
     // Initialize SEO
     $seo = \App\Services\SeoService::getInstance()->resolve('home', [
         'job_count' => $stats['jobs'] ?? 0,
@@ -341,7 +348,7 @@ $router->get('/', function(Request $request, Response $response) {
 // Dynamic SEO Routes
 
 // Jobs in Location (Country/State/City): /jobs-in-{location}
-$router->get('/jobs-in-{location}', function(Request $request, Response $response, array $params) {
+$router->get('/jobs-in-{location}', function (Request $request, Response $response, array $params) {
     $slug = $params['location'];
     $synonyms = [
         'new-delhi' => 'delhi',
@@ -352,7 +359,7 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
     ];
     $slugCanonical = $synonyms[$slug] ?? $slug;
     $db = \App\Core\Database::getInstance();
-    
+
     try {
         // Try City
         $locationType = 'city';
@@ -376,7 +383,7 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
         }
 
         if (!$location) {
-            $response->redirect('/jobs'); 
+            $response->redirect('/jobs');
             return;
         }
 
@@ -399,7 +406,7 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
         $jobCount = $db->fetchOne(
             "SELECT COUNT(*) as cnt FROM job_locations jl 
              JOIN jobs j ON j.id = jl.job_id 
-             WHERE $whereClause AND j.status = 'published'", 
+             WHERE $whereClause AND j.status = 'published'",
             $params
         )['cnt'] ?? 0;
 
@@ -423,14 +430,14 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
             'job_count' => $jobCount,
             'top_titles' => $topTitles
         ]);
-        
+
         // Build Breadcrumbs
         $breadcrumbs = [];
         $breadcrumbs[] = ['name' => 'Home', 'url' => '/'];
         $breadcrumbs[] = ['name' => 'Jobs', 'url' => '/jobs'];
 
         if ($locationType === 'city') {
-             $cityFull = $db->fetchOne("
+            $cityFull = $db->fetchOne("
                 SELECT c.name as city_name, c.slug as city_slug,
                        s.name as state_name, s.slug as state_slug,
                        cnt.name as country_name, cnt.slug as country_slug
@@ -439,18 +446,18 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
                 LEFT JOIN countries cnt ON s.country_id = cnt.id
                 WHERE c.id = :id
              ", ['id' => $location['id']]);
-             
-             if ($cityFull) {
-                 if (!empty($cityFull['country_name'])) {
-                     $breadcrumbs[] = ['name' => $cityFull['country_name'], 'url' => '/jobs-in-' . $cityFull['country_slug']];
-                 }
-                 if (!empty($cityFull['state_name'])) {
-                     $breadcrumbs[] = ['name' => $cityFull['state_name'], 'url' => '/jobs-in-' . $cityFull['state_slug']];
-                 }
-                 $breadcrumbs[] = ['name' => $cityFull['city_name'], 'url' => '/jobs-in-' . $cityFull['city_slug']];
-             }
+
+            if ($cityFull) {
+                if (!empty($cityFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['country_name'], 'url' => '/jobs-in-' . $cityFull['country_slug']];
+                }
+                if (!empty($cityFull['state_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['state_name'], 'url' => '/jobs-in-' . $cityFull['state_slug']];
+                }
+                $breadcrumbs[] = ['name' => $cityFull['city_name'], 'url' => '/jobs-in-' . $cityFull['city_slug']];
+            }
         } elseif ($locationType === 'state') {
-             $stateFull = $db->fetchOne("
+            $stateFull = $db->fetchOne("
                 SELECT s.name as state_name, s.slug as state_slug,
                        cnt.name as country_name, cnt.slug as country_slug
                 FROM states s
@@ -458,14 +465,14 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
                 WHERE s.id = :id
              ", ['id' => $location['id']]);
 
-             if ($stateFull) {
-                 if (!empty($stateFull['country_name'])) {
-                     $breadcrumbs[] = ['name' => $stateFull['country_name'], 'url' => '/jobs-in-' . $stateFull['country_slug']];
-                 }
-                 $breadcrumbs[] = ['name' => $stateFull['state_name'], 'url' => '/jobs-in-' . $stateFull['state_slug']];
-             }
+            if ($stateFull) {
+                if (!empty($stateFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $stateFull['country_name'], 'url' => '/jobs-in-' . $stateFull['country_slug']];
+                }
+                $breadcrumbs[] = ['name' => $stateFull['state_name'], 'url' => '/jobs-in-' . $stateFull['state_slug']];
+            }
         } else {
-             $breadcrumbs[] = ['name' => $location['name'], 'url' => '/jobs-in-' . $location['slug']];
+            $breadcrumbs[] = ['name' => $location['name'], 'url' => '/jobs-in-' . $location['slug']];
         }
 
         // Pagination
@@ -528,7 +535,7 @@ $router->get('/jobs-in-{location}', function(Request $request, Response $respons
 });
 
 // Role/Skill Jobs in Location: /{role}-jobs-in-{location}
-$router->get('/{role}-jobs-in-{location}', function(Request $request, Response $response) {
+$router->get('/{role}-jobs-in-{location}', function (Request $request, Response $response) {
     $params = $request->getParams();
     $roleSlug = $params['role'];
     $locationSlug = $params['location'];
@@ -540,9 +547,9 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
         'madras' => 'chennai',
     ];
     $locationSlugCanonical = $synonyms[$locationSlug] ?? $locationSlug;
-    
+
     $db = \App\Core\Database::getInstance();
-    
+
     try {
         // Resolve Location (City -> State -> Country)
         $locationType = 'city';
@@ -564,16 +571,16 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
         // Check if role is a Skill or Category or just a string
         $skill = $db->fetchOne("SELECT * FROM skills WHERE slug = :slug", ['slug' => $roleSlug]);
         $roleName = $skill ? $skill['name'] : ucfirst(str_replace('-', ' ', $roleSlug));
-        
+
         $locationName = $location['name'];
-        
+
         // Build Breadcrumbs
         $breadcrumbs = [];
         $breadcrumbs[] = ['name' => 'Home', 'url' => '/'];
         $breadcrumbs[] = ['name' => 'Jobs', 'url' => '/jobs'];
 
         if ($locationType === 'city') {
-             $cityFull = $db->fetchOne("
+            $cityFull = $db->fetchOne("
                 SELECT c.name as city_name, c.slug as city_slug,
                        s.name as state_name, s.slug as state_slug,
                        cnt.name as country_name, cnt.slug as country_slug
@@ -582,18 +589,18 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
                 LEFT JOIN countries cnt ON s.country_id = cnt.id
                 WHERE c.id = :id
              ", ['id' => $location['id']]);
-             
-             if ($cityFull) {
-                 if (!empty($cityFull['country_name'])) {
-                     $breadcrumbs[] = ['name' => $cityFull['country_name'], 'url' => '/jobs-in-' . $cityFull['country_slug']];
-                 }
-                 if (!empty($cityFull['state_name'])) {
-                     $breadcrumbs[] = ['name' => $cityFull['state_name'], 'url' => '/jobs-in-' . $cityFull['state_slug']];
-                 }
-                 $breadcrumbs[] = ['name' => $cityFull['city_name'], 'url' => '/jobs-in-' . $cityFull['city_slug']];
-             }
+
+            if ($cityFull) {
+                if (!empty($cityFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['country_name'], 'url' => '/jobs-in-' . $cityFull['country_slug']];
+                }
+                if (!empty($cityFull['state_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['state_name'], 'url' => '/jobs-in-' . $cityFull['state_slug']];
+                }
+                $breadcrumbs[] = ['name' => $cityFull['city_name'], 'url' => '/jobs-in-' . $cityFull['city_slug']];
+            }
         } elseif ($locationType === 'state') {
-             $stateFull = $db->fetchOne("
+            $stateFull = $db->fetchOne("
                 SELECT s.name as state_name, s.slug as state_slug,
                        cnt.name as country_name, cnt.slug as country_slug
                 FROM states s
@@ -601,16 +608,16 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
                 WHERE s.id = :id
              ", ['id' => $location['id']]);
 
-             if ($stateFull) {
-                 if (!empty($stateFull['country_name'])) {
-                     $breadcrumbs[] = ['name' => $stateFull['country_name'], 'url' => '/jobs-in-' . $stateFull['country_slug']];
-                 }
-                 $breadcrumbs[] = ['name' => $stateFull['state_name'], 'url' => '/jobs-in-' . $stateFull['state_slug']];
-             }
+            if ($stateFull) {
+                if (!empty($stateFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $stateFull['country_name'], 'url' => '/jobs-in-' . $stateFull['country_slug']];
+                }
+                $breadcrumbs[] = ['name' => $stateFull['state_name'], 'url' => '/jobs-in-' . $stateFull['state_slug']];
+            }
         } else {
-             $breadcrumbs[] = ['name' => $location['name'], 'url' => '/jobs-in-' . $location['slug']];
+            $breadcrumbs[] = ['name' => $location['name'], 'url' => '/jobs-in-' . $location['slug']];
         }
-        
+
         // Add Role crumb
         $breadcrumbs[] = ['name' => "$roleName Jobs", 'url' => "/$roleSlug-jobs-in-$locationSlug"];
 
@@ -626,7 +633,7 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
         $sql = "SELECT j.*, e.company_name, e.logo_url FROM jobs j 
                 JOIN job_locations jl ON j.id = jl.job_id 
                 JOIN employers e ON j.employer_id = e.id ";
-        
+
         $queryParams = [];
         $where = ["j.status = 'published'"];
 
@@ -667,7 +674,7 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
 
         // Fetch jobs (paginated) - inline numeric LIMIT/OFFSET to avoid binding issues
         $sql .= " WHERE " . implode(' AND ', $where) . " ORDER BY j.created_at DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
-        
+
         $jobs = $db->fetchAll($sql, $queryParams);
         foreach ($jobs as &$job) {
             $job['is_bookmarked'] = false;
@@ -713,7 +720,7 @@ $router->get('/{role}-jobs-in-{location}', function(Request $request, Response $
 });
 
 // Jobs by Category: /jobs-in-category/{slug}
-$router->get('/jobs-in-category/{slug}', function(Request $request, Response $response, array $params) {
+$router->get('/jobs-in-category/{slug}', function (Request $request, Response $response, array $params) {
     $slug = $params['slug'] ?? '';
     $db = \App\Core\Database::getInstance();
     try {
@@ -727,16 +734,16 @@ $router->get('/jobs-in-category/{slug}', function(Request $request, Response $re
             return;
         }
         $categoryName = $category['name'];
-        
+
         // Count jobs
         $countRow = $db->fetchOne("SELECT COUNT(DISTINCT j.id) as cnt FROM jobs j WHERE j.status = 'published' AND j.category = :cat", ['cat' => $categoryName]);
         $totalJobs = (int)($countRow['cnt'] ?? 0);
-        
+
         // Pagination
         $page = max(1, (int)$request->get('page', 1));
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
-        
+
         // Fetch jobs
         $jobs = $db->fetchAll(
             "SELECT j.*, e.company_name, e.logo_url as company_logo 
@@ -747,7 +754,7 @@ $router->get('/jobs-in-category/{slug}', function(Request $request, Response $re
              LIMIT " . (int)$perPage . " OFFSET " . (int)$offset,
             ['cat' => $categoryName]
         );
-        
+
         foreach ($jobs as &$job) {
             $job['is_bookmarked'] = false;
             $job['salary_min'] = (int)($job['salary_min'] ?? 0);
@@ -769,20 +776,20 @@ $router->get('/jobs-in-category/{slug}', function(Request $request, Response $re
             }
             $job['location_display'] = !empty($locStrings) ? implode(' | ', $locStrings) : ($job['is_remote'] == 1 ? 'Remote' : 'Location not specified');
         }
-        
+
         // SEO
         \App\Services\SeoService::getInstance()->resolve('category_jobs', [
             'category' => $categoryName,
             'job_count' => $totalJobs
         ]);
-        
+
         // Breadcrumbs
         $breadcrumbs = [
             ['name' => 'Home', 'url' => '/'],
             ['name' => 'Jobs', 'url' => '/jobs'],
             ['name' => "Jobs in {$categoryName}", 'url' => '/jobs-in-category/' . ($category['slug'] ?? $slug)]
         ];
-        
+
         $response->view('candidate/jobs/index', [
             'jobs' => $jobs,
             'filters' => ['category' => $categoryName],
@@ -795,7 +802,7 @@ $router->get('/jobs-in-category/{slug}', function(Request $request, Response $re
                 'total_pages' => max(1, (int)ceil($totalJobs / $perPage))
             ]
         ], 200, 'layout');
-        
+
     } catch (\Exception $e) {
         error_log("Error in category jobs route: " . $e->getMessage());
         $response->redirect('/jobs');
@@ -805,7 +812,7 @@ $router->get('/jobs-in-category/{slug}', function(Request $request, Response $re
 $router->get('/job/{slug}', [\App\Controllers\Front\JobController::class, 'show']);
 
 // Swagger UI
-$router->get('/swagger', function(Request $request, Response $response) {
+$router->get('/swagger', function (Request $request, Response $response) {
     $swaggerPath = __DIR__ . '/../public/swagger-ui.html';
     if (file_exists($swaggerPath)) {
         $swaggerHtml = file_get_contents($swaggerPath);
@@ -819,7 +826,7 @@ $router->get('/swagger', function(Request $request, Response $response) {
 });
 
 // Swagger JSON
-$router->get('/swagger.json', function(Request $request, Response $response) {
+$router->get('/swagger.json', function (Request $request, Response $response) {
     $swaggerPath = __DIR__ . '/../public/swagger.json';
     if (file_exists($swaggerPath)) {
         $swaggerJson = file_get_contents($swaggerPath);
@@ -834,30 +841,31 @@ $router->get('/swagger.json', function(Request $request, Response $response) {
 
 // Auth routes
 $router->get('/login', [AuthController::class, 'login']);
-$router->post('/login', [AuthController::class, 'login']);
+$router->post('/login', [AuthController::class, 'login'], [$loginRateLimit, $csrfMiddleware]);
 $router->get('/auth/google', [AuthController::class, 'googleLogin']);
 $router->get('/auth/google/callback', [AuthController::class, 'googleCallback']);
 $router->get('/auth/apple', [AuthController::class, 'appleLogin']);
 $router->post('/auth/apple/callback', [AuthController::class, 'appleCallback']);
 $router->get('/auth/apple/callback', [AuthController::class, 'appleCallback']);
 $router->get('/register-employer', [AuthController::class, 'registerEmployer']);
-$router->post('/register-employer', [AuthController::class, 'registerEmployer']);
+$router->post('/register-employer', [AuthController::class, 'registerEmployer'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/register-candidate', [AuthController::class, 'registerCandidate']);
-$router->post('/register-candidate', [AuthController::class, 'registerCandidate']);
-$router->post('/register', [AuthController::class, 'register']);
+$router->post('/register-candidate', [AuthController::class, 'registerCandidate'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/register', [AuthController::class, 'register'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/logout', [AuthController::class, 'logout']);
-$router->post('/logout', [AuthController::class, 'logout']);
+$router->post('/logout', [AuthController::class, 'logout'], [$csrfMiddleware]);
 $router->get('/forgot-password', [AuthController::class, 'forgotPassword']);
-$router->post('/forgot-password', [AuthController::class, 'forgotPassword']);
+$router->post('/forgot-password', [AuthController::class, 'forgotPassword'], [$loginRateLimit, $csrfMiddleware]);
 $router->get('/reset-password', [AuthController::class, 'resetPassword']);
-$router->post('/reset-password', [AuthController::class, 'resetPassword']);
-$router->post('/contact', [ContactController::class, 'submitForm']);
+$router->post('/reset-password', [AuthController::class, 'resetPassword'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/contact', [ContactController::class, 'submitForm'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/contact', [ContactController::class, 'index']);
 // About page
 $router->get('/about', [AboutController::class, 'index']);
 
 // Gateway webhooks
 use App\Controllers\Gateway\RazorpayWebhookController;
+
 $router->post('/webhook/razorpay', [RazorpayWebhookController::class, 'handle']);
 // Sales Panels
 $router->get('/sales-manager/dashboard', [\App\Controllers\SalesManager\DashboardController::class, 'index'], [new \App\Middlewares\SalesRoleMiddleware()]);
@@ -921,6 +929,24 @@ $router->post('/support-exec/tickets/escalate', [\App\Controllers\SupportExecuti
 
 $router->get('/finance/payments', [\App\Controllers\FinanceManager\PaymentsController::class, 'index'], [new \App\Middlewares\RbacMiddleware('payments.view')]);
 $router->get('/finance/payments/{id}', [\App\Controllers\FinanceManager\PaymentsController::class, 'show'], [new \App\Middlewares\RbacMiddleware('payments.view')]);
+use App\Controllers\CookieController;
+use App\Controllers\TrackingController;
+use App\Middlewares\CookieConsentMiddleware;
+use App\Middlewares\CsrfMiddleware as CsrfMW;
+$cookieCsrf = new CsrfMW();
+$cookieConsentMw = new CookieConsentMiddleware();
+$router->get('/cookie/status', [CookieController::class, 'getConsentStatus'], [$cookieConsentMw]);
+$router->post('/cookie/consent', [CookieController::class, 'saveConsent'], [$cookieCsrf, $cookieConsentMw]);
+$router->post('/cookie/withdraw', [CookieController::class, 'withdrawConsent'], [$cookieCsrf, $cookieConsentMw]);
+$router->get('/js/consent-manager.js', [CookieController::class, 'serveConsentJS']);
+$router->get('/js/script-loader.js', [CookieController::class, 'serveScriptLoaderJS']);
+$router->get('/cookie/policy', [CookieController::class, 'policy']);
+$router->get('/track/visitor', [TrackingController::class, 'trackVisitor'], [$cookieConsentMw]);
+$router->post('/track/session/start', [TrackingController::class, 'startSession'], [$cookieConsentMw]);
+$router->post('/track/session/end', [TrackingController::class, 'endSession'], [$cookieConsentMw]);
+$router->post('/track/event', [TrackingController::class, 'trackEvent'], [$cookieConsentMw, $cookieCsrf]);
+$router->post('/track/heatmap', [TrackingController::class, 'trackHeatmap'], [$cookieConsentMw, $cookieCsrf]);
+$router->get('/cookie/scripts', [CookieController::class, 'getScriptControls']);
 $router->post('/finance/payments/approve', [\App\Controllers\FinanceManager\PaymentsController::class, 'approve'], [new \App\Middlewares\RbacMiddleware('payments.approve')]);
 $router->post('/finance/payments/refund', [\App\Controllers\FinanceManager\PaymentsController::class, 'refund'], [new \App\Middlewares\RbacMiddleware('payments.refund')]);
 
@@ -933,22 +959,29 @@ $router->get('/blog/tag/{slug}', [BlogController::class, 'tag']);
 // Public job routes (no login required)
 use App\Controllers\Front\JobController;
 use App\Controllers\Candidate\JobController as CandidateJobController;
+
 // Route /jobs to candidate job listing (now public, no login required)
 $router->get('/jobs', [CandidateJobController::class, 'index']);
 $router->get('/job/{slug}', [JobController::class, 'show']);
 
 // Public company routes (no login required)
 use App\Controllers\Company\CompanyController;
+
 $router->get('/company/featured', [CompanyController::class, 'featured']);
 $router->get('/company/{slug}', [CompanyController::class, 'show']);
 $router->get('/company/{slug}/{tab}', [CompanyController::class, 'show']);
 
 // Company follow routes
 use App\Controllers\Company\CompanyFollowController;
-$router->post('/company/follow', [CompanyFollowController::class, 'toggle']);
+
+$router->post('/company/follow', [CompanyFollowController::class, 'toggle'], [$formRateLimit, $csrfMiddleware]);
+
 use App\Controllers\Company\CompanyReviewController;
-$router->post('/company/{id}/review', [CompanyReviewController::class, 'store']);
-///social
+use App\Controllers\GeoController;
+
+$router->post('/company/{id}/review', [CompanyReviewController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+
+//social
 $router->get('/social-services', [SocialServiceController::class, 'index']);
 $router->get('/find-a-job', [SocialServiceController::class, 'findjob']);
 $router->get('/roles', [SocialServiceController::class, 'roles']);
@@ -962,9 +995,141 @@ $router->get('/newsubscriptions', [SocialServiceController::class, 'newsubscript
 $router->get('/employers', [SocialServiceController::class, 'employers']);
 $router->get('/pricing', [SocialServiceController::class, 'pricing']);
 $router->get('/aboutus', [SocialServiceController::class, 'aboutus']);
+$router->get('/aboutuss', [SocialServiceController::class, 'aboutuss']);
 $router->get('/supports', [SocialServiceController::class, 'supports']);
 $router->get('/specials', [SocialServiceController::class, 'specials']);
-use App\Controllers\Front\LegalController;
+$router->get('/social-employer/application', [SocialServiceController::class, 'application']);
+$router->post('/social-employer/application/status', [SocialServiceController::class, 'applicationStatus'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/social-services/cart', [SocialServiceController::class, 'cart']);
+$router->post('/social-services/cart/save', [SocialServiceController::class, 'saveCart'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/social-services/checkout', [SocialServiceController::class, 'checkout']);
+
+use App\Controllers\Social\SocialOrganizationsController;
+
+$router->get('/social-employer/organisation', [SocialOrganizationsController::class, 'index']);
+$router->get('/social-employer/orgnisation', [SocialOrganizationsController::class, 'index']); // alias for misspelling
+$router->post('/social/organizations/store', [SocialOrganizationsController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/social/organizations/search', [SocialOrganizationsController::class, 'search']);
+$router->get('/social/organizations/{id}/edit', [SocialOrganizationsController::class, 'edit']);
+$router->post('/social/organizations/{id}/update', [SocialOrganizationsController::class, 'update'], [$formRateLimit, $csrfMiddleware]);
+
+use App\Controllers\Social\SocialEmployerPaymentsController;
+
+$router->get('/social/payments', [SocialEmployerPaymentsController::class, 'index']);
+$router->post('/social/payments/store', [SocialEmployerPaymentsController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+// Social Service / Social Employer Routes (Public)
+$router->get('/social-employer/newlisting', [SocialServiceController::class, 'newlisting']);
+$router->post('/social-employer/newlisting', [SocialServiceController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/social-employer/listings', [SocialServiceController::class, 'listings']);
+$router->get('/social-employer/organisation', [SocialServiceController::class, 'organisation']);
+
+// Legal pages
 $router->get('/terms', [LegalController::class, 'terms']);
 $router->get('/privacy', [LegalController::class, 'privacy']);
 $router->get('/grievances', [LegalController::class, 'grievances']);
+
+// HR Verification Portal
+use App\Controllers\Front\HRVerificationController;
+
+$router->get('/hr/verify', [HRVerificationController::class, 'show']);
+$router->post('/hr/verify', [HRVerificationController::class, 'submit'], [$formRateLimit, $csrfMiddleware]);
+
+// Merge social routes here 
+//candidate
+
+use App\Controllers\JobAlertsController;
+
+// show page
+$router->get('/job-alerts', [JobAlertsController::class, 'index']);
+
+// store form
+$router->post('/job-alerts/store', [JobAlertsController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+
+// Checkout
+$router->get('/social-employer/checkout', function (Request $request, Response $response) {
+    $amount = 0;
+    try {
+        $amount = isset($_GET['amount']) ? floatval($_GET['amount']) : 0;
+    } catch (\Throwable $t) {
+    }
+    $response->view('social-employer/checkout', [
+        'total' => $amount,
+        'cartItems' => []
+    ]);
+}, []);
+// Account & profile
+$router->get('/social-employer/account', [EmployerAccountController::class, 'account']);
+$router->post('/social-employer/account-save', [EmployerAccountController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/social-employer/account-update', [EmployerAccountController::class, 'update'], [$formRateLimit, $csrfMiddleware]);
+// Geo proxy (CORS-safe) for OpenStreetMap Nominatim
+$router->get('/api/geo/reverse', [GeoController::class, 'reverse']);
+$router->get('/api/geo/search', [GeoController::class, 'search']);
+$router->post('/social-employer/account-update', [EmployerAccountController::class, 'update'], [$formRateLimit, $csrfMiddleware]);
+// Editing and management
+$router->get('/social-employer/job/{id}/edit', [SocialJobsController::class, 'edit']);
+$router->post('/social-employer/job/{id}/update', [SocialJobsController::class, 'update'], [$formRateLimit, $csrfMiddleware]);
+
+$router->post('/social-employer/job/{id}/delete', [SocialJobsController::class, 'delete'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/social-employer/job/{id}/status', [SocialJobsController::class, 'status'], [$formRateLimit, $csrfMiddleware]);
+
+use App\Controllers\SocialServiceController as SocialDetailsController;
+
+$router->get('/job-details', [SocialDetailsController::class, 'jobdetails']);
+
+
+$router->get('/terms', [LegalController::class, 'terms']);
+$router->get('/privacy', [LegalController::class, 'privacy']);
+$router->get('/grievances', [LegalController::class, 'grievances']);
+
+
+$router->get('/social-candidate/candidatesubscriptions', [SocialServiceController::class, 'candidatesubscriptions']);
+
+$router->post('/social-candidate/candidatesubscriptions/save', [SocialServiceController::class, 'savecandidatesubscription'], [$formRateLimit, $csrfMiddleware]);
+
+///ravi//
+use App\Controllers\Social\CandidatesController;
+
+$router->get('/social-candidate/candidate', [CandidatesController::class, 'candidate']);
+$router->post('/candidate/submit-application', [CandidatesController::class, 'submitApplication'], [$formRateLimit, $csrfMiddleware]);
+// Candidate listing page (applications)
+$router->get('/candidatelisting', [CandidatesController::class, 'appliedJobs']);
+
+use App\Controllers\Social\SocialAccountCandidateController;
+
+$router->get('/social-candidate/accountcandidate', [SocialAccountCandidateController::class, 'accountcandidate']);
+$router->post('/social-candidate/accountcandidate/save', [SocialAccountCandidateController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
+//anupan routes//
+// Social Service routes
+$router->get('/candidate', [SocialServiceController::class, 'candidate']);
+$router->get('/listings', [SocialServiceController::class, 'listings']);
+$router->get('/subscriptions', [SocialServiceController::class, 'subscriptions']);
+$router->get('/newsubscriptions', [SocialServiceController::class, 'newsubscriptions']);
+$router->get('/employers', [SocialServiceController::class, 'employers']);
+$router->get('/pricing', [SocialServiceController::class, 'pricing']);
+$router->get('/aboutus', [SocialServiceController::class, 'aboutus']);
+$router->get('/supports', [SocialServiceController::class, 'supports']);
+$router->get('/specials', [SocialServiceController::class, 'specials']);
+$router->get('/index', [SocialServiceController::class, 'index']);
+$router->get('/cart', [SocialServiceController::class, 'cart']);
+$router->get('/searchEmployers', [SocialServiceController::class, 'searchEmployers']);
+$router->get('/organizationDetails', [SocialServiceController::class, 'organizationDetails']);
+$router->get('/hiringInsight', [SocialServiceController::class, 'hiringInsight']);
+$router->get('/hiringInsight/article', [SocialServiceController::class, 'hiringInsightArticle']);
+$router->get('/hiringInsightSignUp', [SocialServiceController::class, 'hiringInsightSignUp']);
+$router->get('/contactus', [SocialServiceController::class, 'contactus']);
+$router->get('/frequentlyCandidateAskedQuestions', [SocialServiceController::class, 'frequentlyCandidateAskedQuestions']);
+$router->get('/frequentlyEmployerAskedQuestions', [SocialServiceController::class, 'frequentlyEmployerAskedQuestions']);
+
+$router->get('/social-services/login', [\App\Controllers\SocialAuth\AuthController::class, 'login']);
+$router->post('/social-services/login', [\App\Controllers\SocialAuth\AuthController::class, 'login'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/social-services/register', [\App\Controllers\SocialAuth\AuthController::class, 'register'], [$formRateLimit, $csrfMiddleware]);
+// Social services forgot password
+$router->get('/social-services/forgot-password', [SocialServiceController::class, 'forgotPassword']);
+$router->post('/social-services/forgot-password', [SocialServiceController::class, 'forgotPasswordSend'], [$formRateLimit, $csrfMiddleware]);
+// Social services logout
+$router->get('/social-services/logout', [\App\Controllers\SocialAuth\AuthController::class, 'logout']);
+$router->post('/social-services/logout', [\App\Controllers\SocialAuth\AuthController::class, 'logout'], [$csrfMiddleware]);
+$router->get('/supportss', [SocialServiceController::class, 'supportss']);
+
+// Fallback static file serving for /storage/uploads when Apache static serving is unavailable
+// Static files under /uploads are served directly by web server (no route needed)

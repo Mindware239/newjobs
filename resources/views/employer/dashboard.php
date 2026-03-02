@@ -44,6 +44,27 @@ $currentDate = date('M d, Y');
         </div>
        
     </div>
+    <?php
+        $needsCompletion = false;
+        if (isset($employer) && method_exists($employer, 'isProfileComplete')) {
+            $needsCompletion = !$employer->isProfileComplete();
+        }
+    ?>
+    <?php if ($needsCompletion): ?>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20h.01M7 20h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v11a2 2 0 002 2z"></path></svg>
+        </div>
+        <div class="flex-1">
+            <h3 class="text-sm font-bold text-amber-800">Complete your company profile</h3>
+            <p class="text-sm text-amber-700 mt-1">Add company details and address to unlock job posting and messaging features.</p>
+        </div>
+        <a href="/employer/profile" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Complete Profile
+        </a>
+    </div>
+    <?php endif; ?>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

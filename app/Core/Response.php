@@ -8,6 +8,34 @@ class Response
 {
     private int $statusCode = 200;
     private array $headers = [];
+    private bool $securityHeadersSent = false;
+    
+    private function ensureSecurityHeaders(): void
+    {
+        if ($this->securityHeadersSent) {
+            return;
+        }
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+        header('X-Frame-Options: DENY');
+        header('X-Content-Type-Options: nosniff');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        header('Permissions-Policy: geolocation=(self), camera=(), microphone=()');
+        $csp = "default-src 'self'; "
+             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.gstatic.com https://connect.facebook.net https://snap.licdn.com https://www.googletagmanager.com https://cdn.quilljs.com https://cdnjs.cloudflare.com https://checkout.razorpay.com; "
+             . "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdnjs.cloudflare.com https://cdnjs.cloudflare.com; "
+             . "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; "
+             . "img-src 'self' data: https: https://www.facebook.com https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://*.razorpay.com; "
+             . "connect-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com https://*.gstatic.com https://www.googleapis.com https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://www.facebook.com https://connect.facebook.net https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://nominatim.openstreetmap.org https://countriesnow.space https://*.razorpay.com; "
+             . "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
+             . "frame-ancestors 'none'; "
+             . "base-uri 'self'; "
+             . "form-action 'self'";
+        header('Content-Security-Policy: ' . $csp);
+        if ($isHttps) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+        }
+        $this->securityHeadersSent = true;
+    }
 
     public function setStatusCode(int $code): void
     {
@@ -17,12 +45,16 @@ class Response
 
     public function setHeader(string $name, string $value): void
     {
-        $this->headers[$name] = $value;
-        header("$name: $value");
+        // Guard against header injection/newlines
+        $safeName = str_replace(["\r", "\n"], '', $name);
+        $safeValue = str_replace(["\r", "\n"], '', $value);
+        $this->headers[$safeName] = $safeValue;
+        header($safeName . ': ' . $safeValue);
     }
 
     public function json(array $data, int $code = 200): void
     {
+        $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Content-Type', 'application/json; charset=utf-8');
         
@@ -37,15 +69,23 @@ class Response
 
     public function view(string $view, array $data = [], int $code = 200, string $layout = null): void
     {
+        $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Content-Type', 'text/html; charset=utf-8');
         
+        $viewTemplate = $view;
         extract($data);
-        $viewPath = __DIR__ . '/../../resources/views/' . $view . '.php';
-        
+        $viewPath = __DIR__ . '/../../resources/views/' . $viewTemplate . '.php';
+
         if (!file_exists($viewPath)) {
+            if ($layout) {
+                $this->view('admin/error', [
+                    'title' => 'Error',
+                    'errorMessage' => "View not found: {$viewTemplate}"
+                ], 500, $layout);
+            }
             $this->setStatusCode(500);
-            echo "View not found: $view";
+            echo "View not found: $viewTemplate";
             exit;
         }
 
@@ -69,6 +109,7 @@ class Response
 
     public function redirect(string $url, int $code = 302): void
     {
+        $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Location', $url);
         exit;
@@ -76,6 +117,7 @@ class Response
 
     public function download(string $filePath, string $filename = null): void
     {
+        $this->ensureSecurityHeaders();
         if (!file_exists($filePath)) {
             $this->setStatusCode(404);
             echo "File not found";
@@ -93,6 +135,7 @@ class Response
 
     public function setBody(string $content): void
     {
+        $this->ensureSecurityHeaders();
         echo $content;
         exit;
     }

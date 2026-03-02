@@ -9,12 +9,13 @@ class SubscriptionPlan extends Model
     protected string $table = 'subscription_plans';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'name', 'slug', 'tier', 'description', 'price_monthly', 'price_quarterly', 'price_annual',
+        'name', 'slug', 'tier', 'description', 'plan_for', 'default_billing_cycle',
+        'price_monthly', 'price_quarterly', 'price_annual',
         'currency', 'max_job_posts', 'max_contacts_per_month', 'max_resume_downloads', 'max_chat_messages',
         'job_post_boost', 'priority_support', 'advanced_filters', 'candidate_mobile_visible',
         'resume_download_enabled', 'chat_enabled', 'ai_matching', 'analytics_dashboard',
         'custom_branding', 'api_access', 'trial_days', 'trial_enabled', 'discount_percentage',
-        'discount_valid_until', 'is_active', 'is_featured', 'sort_order'
+        'discount_valid_until', 'is_active', 'is_featured', 'sort_order', 'features'
     ];
 
     public static function findBySlug(string $slug): ?self
@@ -39,6 +40,22 @@ class SubscriptionPlan extends Model
         }
         
         // Convert to model instances
+        return array_map(function($row) {
+            return new self($row);
+        }, $results);
+    }
+
+    public static function getActivePlansFor(string $for): array
+    {
+        $for = strtolower(trim($for));
+        $instance = new self();
+        $db = $instance->getDb();
+        $sql = "SELECT * FROM subscription_plans WHERE plan_for = :pf AND (is_active = 1 OR is_active IS NULL) ORDER BY sort_order ASC, price_monthly ASC";
+        $results = $db->fetchAll($sql, ['pf' => $for]);
+        if (empty($results)) {
+            $sql = "SELECT * FROM subscription_plans WHERE plan_for = :pf ORDER BY sort_order ASC, price_monthly ASC";
+            $results = $db->fetchAll($sql, ['pf' => $for]);
+        }
         return array_map(function($row) {
             return new self($row);
         }, $results);

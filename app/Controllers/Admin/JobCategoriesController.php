@@ -126,7 +126,8 @@ class JobCategoriesController extends BaseController
             if ($file) {
                 try {
                     $storage = new Storage();
-                    $filePath = $storage->store($file, 'job-categories');
+                    // Keep uploads under a common /uploads namespace
+                    $filePath = $storage->store($file, 'uploads/job-categories');
                     $imageUrl = $storage->url($filePath);
                 } catch (\Exception $e) {
                     error_log("JobCategoriesController::store - Image upload error: " . $e->getMessage());
@@ -269,7 +270,7 @@ class JobCategoriesController extends BaseController
                             $storage->delete($oldPath);
                         }
                         
-                        $filePath = $storage->store($file, 'job-categories');
+                        $filePath = $storage->store($file, 'uploads/job-categories');
                         $imageUrl = $storage->url($filePath);
                     } catch (\Exception $e) {
                         error_log("JobCategoriesController::update - Image upload error: " . $e->getMessage());

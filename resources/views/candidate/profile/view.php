@@ -16,7 +16,7 @@
 <body class="bg-gray-50">
     <?php $base = '/'; require __DIR__ . '/../../include/header.php'; ?>
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Profile Header -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
             <div class="flex items-start gap-6">
@@ -92,12 +92,13 @@
                                 Premium Member
                             </span>
                             <?php endif; ?>
-                            <?php if ($candidate->attributes['is_verified'] ?? 0): ?>
-                            <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-200 flex items-center gap-1">
+                            <?php $badge = ($candidate->attributes['is_verified'] ?? 0) || (!empty($hasEmploymentVerified)); ?>
+                            <?php if ($badge): ?>
+                            <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-200 flex items-center gap-1" title="Verified by previous employer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                Verified
+                                Employment Verified
                             </span>
                             <?php endif; ?>
                         </div>
@@ -476,7 +477,196 @@
             </div>
             </div>
 
-            <!-- Bottom Grid -->
+            <!-- Certificates & Verification Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Certificates -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"></path>
+                        </svg>
+                        Certificates
+                    </h2>
+                    <?php if (empty($certificates)): ?>
+                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Certificates
+                    </a>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($certificates)): ?>
+                <div class="space-y-6">
+                    <?php foreach ($certificates as $cert): ?>
+                    <div class="relative pl-8 border-l-2 border-indigo-200 hover:border-indigo-500 transition-colors duration-300">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-100 border-2 border-indigo-500"></div>
+                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-indigo-50 transition-colors duration-300 group">
+                            <h3 class="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors"><?= htmlspecialchars($cert['name'] ?? '') ?></h3>
+                            <p class="text-indigo-600 font-medium"><?= htmlspecialchars($cert['issuing_organization'] ?? '') ?></p>
+                            
+                            <?php if (!empty($cert['credential_url'])): ?>
+                            <div class="mt-2">
+                                <a href="<?= htmlspecialchars($cert['credential_url']) ?>" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    View Credential
+                                </a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <p class="text-gray-500 mb-3">No certificates added yet</p>
+                    <a href="/candidate/profile/complete" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                        Add Certificates
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Employer Verification -->
+            <?php
+            // Calculate Total Verified Experience
+            $verifiedExperience = '0 Years';
+            if (!empty($verification['employments'])) {
+                $totalMonths = 0;
+                foreach ($verification['employments'] as $emp) {
+                    if (!empty($emp['start_date'])) {
+                        $start = new DateTime($emp['start_date']);
+                        $end = (!empty($emp['is_current'])) ? new DateTime() : ((!empty($emp['end_date'])) ? new DateTime($emp['end_date']) : new DateTime());
+                        
+                        // Calculate difference in months
+                        $interval = $start->diff($end);
+                        $months = ($interval->y * 12) + $interval->m;
+                        if ($months > 0) $totalMonths += $months;
+                    }
+                }
+                $years = floor($totalMonths / 12);
+                $remainingMonths = $totalMonths % 12;
+                
+                $parts = [];
+                if ($years > 0) $parts[] = $years . ' ' . ($years == 1 ? 'Year' : 'Years');
+                if ($remainingMonths > 0) $parts[] = $remainingMonths . ' ' . ($remainingMonths == 1 ? 'Month' : 'Months');
+                
+                if (!empty($parts)) $verifiedExperience = implode(' ', $parts);
+            }
+            ?>
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Employer Verification
+                    </h2>
+                    <?php if (empty($verification) || empty($verification['need_verification'])): ?>
+                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Request Verification
+                    </a>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($verification) && !empty($verification['need_verification'])): ?>
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center gap-2 text-blue-800 font-semibold mb-1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Verification Requested
+                            </div>
+                            <p class="text-sm text-blue-600">Total Verified Experience: <strong><?= $verifiedExperience ?></strong></p>
+                        </div>
+                        <div class="hidden sm:block">
+                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                Pending Review
+                             </span>
+                        </div>
+                    </div>
+                </div>
+
+                <?php if (!empty($verification['employments'])): ?>
+                    <div class="space-y-6">
+                        <?php foreach ($verification['employments'] as $emp): ?>
+                        <div class="border border-gray-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-900"><?= htmlspecialchars($emp['role'] ?? '') ?></h3>
+                                    <div class="text-indigo-600 font-medium"><?= htmlspecialchars($emp['company'] ?? '') ?></div>
+                                    <div class="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                                        <span class="bg-gray-100 px-2 py-0.5 rounded text-xs"><?= htmlspecialchars($emp['type'] ?? 'Full-time') ?></span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 whitespace-nowrap">
+                                    <?php if (!empty($emp['start_date'])): ?>
+                                    <span><?= date('M Y', strtotime($emp['start_date'])) ?></span>
+                                    <?php endif; ?>
+                                    <span> - </span>
+                                    <?php if (!empty($emp['is_current'])): ?>
+                                    <span class="text-indigo-600 font-semibold">Present</span>
+                                    <?php elseif (!empty($emp['end_date'])): ?>
+                                    <span><?= date('M Y', strtotime($emp['end_date'])) ?></span>
+                                    <?php else: ?>
+                                    <span>Present</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                    <?php 
+                    $eid = (int)($emp['employment_id'] ?? 0);
+                    $st = $employmentStatuses[$eid]['status'] ?? '';
+                    $bd = (int)($employmentStatuses[$eid]['badge'] ?? 0);
+                    if ($eid && (($st === 'verified') || $bd === 1)): ?>
+                    <div class="mt-2 flex items-center gap-2 text-sm text-green-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Verified by HR – <?= htmlspecialchars($emp['company'] ?? 'Company') ?></span>
+                    </div>
+                    <?php endif; ?>
+
+                            <?php if (!empty($emp['documents']) && array_filter($emp['documents'])): ?>
+                            <div class="border-t border-gray-100 pt-4 mt-4">
+                                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Verified Documents</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <?php foreach ($emp['documents'] as $type => $url): ?>
+                                        <?php if (!empty($url)): ?>
+                                        <a href="<?= htmlspecialchars($url) ?>" target="_blank" class="group flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-indigo-500 hover:shadow-sm transition-all text-sm">
+                                            <svg class="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                            <span class="text-gray-700 group-hover:text-indigo-700 capitalize"><?= str_replace('_', ' ', $type) ?></span>
+                                            <svg class="w-3 h-3 text-gray-400 group-hover:text-indigo-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                        </a>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p class="text-gray-500 text-sm">Verification requested but no employment details added.</p>
+                    </div>
+                <?php endif; ?>
+
+                <?php else: ?>
+                <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <p class="text-gray-500 mb-3">No verification requested</p>
+                    <a href="/candidate/profile/complete" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                        Request Verification
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Skills -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">

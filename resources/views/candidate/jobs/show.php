@@ -102,12 +102,8 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        .map-container {
-            height: 200px;
-            width: 100%;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
+        .map-container { height: 260px; width: 100%; border-radius: 0.75rem; overflow: hidden; }
+        @media (max-width: 1024px) { .map-container { height: 240px; } }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -576,11 +572,7 @@
                                             }).addTo(map);
                                             
                                             // Try to geocode and show location
-                                            fetch('https://nominatim.openstreetmap.org/search?q=<?= urlencode($mapLocation['address']) ?>&format=json&limit=1', {
-                                                headers: {
-                                                    'User-Agent': 'MindwareInfotech/1.0'
-                                                }
-                                            })
+                                            fetch('/api/geo/search?q=<?= urlencode($mapLocation['address']) ?>&limit=1')
                                             .then(response => response.json())
                                             .then(data => {
                                                 if (data && data.length > 0) {
@@ -1074,6 +1066,15 @@
                         const data = await response.json();
                         if (data.success) {
                             this.job.is_bookmarked = data.bookmarked;
+                            try {
+                                if (window.MWMarketing && data.bookmarked) {
+                                    window.MWMarketing.trackSavedJob({
+                                        content_type:'job',
+                                        content_ids:[this.job.id],
+                                        content_name:this.job.title||''
+                                    });
+                                }
+                            } catch(_) {}
                         }
                     } catch (error) {
                         console.error('Bookmark error:', error);
@@ -1097,6 +1098,17 @@
                             this.job.has_applied = true;
                             this.showApplyModal = false;
                             alert('Application submitted successfully!');
+                            try {
+                                if (window.MWMarketing) {
+                                    window.MWMarketing.trackApplicationSubmitted({
+                                        content_type:'job',
+                                        content_ids:[this.job.id],
+                                        content_name:this.job.title||'',
+                                        value: this.job.expected_salary || null,
+                                        currency: 'INR'
+                                    });
+                                }
+                            } catch(_) {}
                         } else {
                             alert(data.error || 'Failed to submit application');
                         }
@@ -1126,6 +1138,11 @@
                         const data = await response.json();
                         if (data.success) {
                             this.applicationData.resume_url = data.url;
+                            try {
+                                if (window.MWMarketing) {
+                                    window.MWMarketing.trackResumeUpload({status:'success'});
+                                }
+                            } catch(_) {}
                         }
                     } catch (error) {
                         console.error('Upload error:', error);

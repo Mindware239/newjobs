@@ -15,23 +15,10 @@ class RazorpayController extends BaseController
     private function configureSslCa(): void
     {
         $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possible = [
-            $envPath,
-            __DIR__ . '/../../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        foreach ($possible as $path) {
-            if ($path && file_exists((string)$path)) {
-                @ini_set('curl.cainfo', (string)$path);
-                @putenv('CURL_CA_BUNDLE=' . (string)$path);
-                @putenv('SSL_CERT_FILE=' . (string)$path);
-                break;
-            }
+        if ($envPath && file_exists((string)$envPath)) {
+            @ini_set('curl.cainfo', (string)$envPath);
+            @putenv('CURL_CA_BUNDLE=' . (string)$envPath);
+            @putenv('SSL_CERT_FILE=' . (string)$envPath);
         }
     }
 
@@ -81,10 +68,11 @@ class RazorpayController extends BaseController
         $db->beginTransaction();
         try {
             $db->query(
-                'INSERT INTO employer_payments (employer_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at)
-                 VALUES (:employer_id, :amount, :currency, :gateway, :payment_method, :status, :txn_id, :meta, NOW())',
+                'INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at)
+                 VALUES (:employer_id, :subscription_payment_id, :amount, :currency, :gateway, :payment_method, :status, :txn_id, :meta, NOW())',
                 [
                     'employer_id' => (int)$employer->id,
+                    'subscription_payment_id' => $paymentId,
                     'amount' => $amount,
                     'currency' => 'INR',
                     'gateway' => 'razorpay',
@@ -130,7 +118,7 @@ class RazorpayController extends BaseController
             $response->view('employer/billing/failed', [
                 'title' => 'Payment Failed',
                 'employer' => $employer,
-                'reason' => 'Payment initialization error: ' . $e->getMessage()
+                'reason' => 'Payment initialization failed'
             ], 200, 'employer/layout');
             return;
         }
@@ -149,13 +137,14 @@ class RazorpayController extends BaseController
 
     public function verify(Request $request, Response $response): void
     {
-        if (!$this->requireRole('employer', $request, $response)) { return; }
-        
-        // CSRF Check manually if middleware is missing or for extra safety
+        if (!$this->requireRole('employer', $request, $response)) { 
+            return; 
+        }
         $token = $request->header('X-CSRF-Token') ?? $request->post('_token');
-        if (empty($token) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-             $response->redirect('/employer/billing/failed?reason=csrf_mismatch');
-             return;
+        if (empty($token) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token))
+        {
+                $response->redirect('/employer/billing/failed?reason=csrf_mismatch');
+                return;
         }
 
         $employer = $this->currentUser->employer();
@@ -167,11 +156,32 @@ class RazorpayController extends BaseController
         $paymentId = (string)($request->post('razorpay_payment_id') ?? $request->get('razorpay_payment_id'));
         $orderId = (string)($request->post('razorpay_order_id') ?? $request->get('razorpay_order_id'));
         $signature = (string)($request->post('razorpay_signature') ?? $request->get('razorpay_signature'));
-        $empPayId = (int)($request->post('emp_pay_id') ?? $request->get('emp_pay_id'));
         $subscriptionPaymentId = (int)($request->post('subscription_payment_id') ?? $request->get('subscription_payment_id'));
 
-        if (!$paymentId || !$orderId || !$signature || $empPayId <= 0) {
+        if (!$paymentId || !$orderId || !$signature) {
             $response->redirect('/employer/billing/failed?reason=invalid_request');
+            return;
+        }
+
+        $db->beginTransaction();
+        try {
+            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE txn_id = :oid AND employer_id = :eid FOR UPDATE', [
+                'oid' => $orderId,
+                'eid' => (int)$employer->id
+            ]);
+            if (!$empPay) {
+                $db->rollback();
+                $response->redirect('/employer/billing/failed?reason=payment_record_missing');
+                return;
+            }
+            if (($empPay['status'] ?? '') === 'success') {
+                $db->rollback();
+                $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+                return;
+            }
+        } catch (\Throwable $t) {
+            $db->rollback();
+            $response->redirect('/employer/billing/failed?reason=payment_record_error');
             return;
         }
 
@@ -192,6 +202,18 @@ class RazorpayController extends BaseController
             if ($rzpPayment->order_id !== $orderId) {
                 throw new \Exception('Order ID mismatch');
             }
+            if (strtoupper((string)$rzpPayment->currency) !== 'INR') {
+                throw new \Exception('Currency mismatch');
+            }
+            $notes = (array)($rzpPayment->notes ?? []);
+            $noteSub = isset($notes['subscription_payment_id']) ? (int)$notes['subscription_payment_id'] : 0;
+            $noteEmp = isset($notes['employer_id']) ? (int)$notes['employer_id'] : 0;
+            if ($subscriptionPaymentId > 0 && $noteSub !== $subscriptionPaymentId) {
+                throw new \Exception('Subscription note mismatch');
+            }
+            if ((int)$employer->id > 0 && $noteEmp !== (int)$employer->id) {
+                throw new \Exception('Employer note mismatch');
+            }
             if ($rzpPayment->status !== 'captured' && $rzpPayment->status !== 'authorized') {
                 // If authorized but not captured, capture it
                 if ($rzpPayment->status === 'authorized') {
@@ -205,20 +227,7 @@ class RazorpayController extends BaseController
              return;
         }
 
-        $db->beginTransaction();
         try {
-            // Lock the record to prevent race conditions
-            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE id = :id AND employer_id = :eid FOR UPDATE', [
-                'id' => $empPayId,
-                'eid' => (int)$employer->id
-            ]);
-            
-            if (!$empPay) { 
-                $db->rollback();
-                $response->redirect('/employer/billing/failed?reason=payment_record_missing'); 
-                return; 
-            }
-            
             // Verify Amount
             $storedAmount = (int)round((float)$empPay['amount'] * 100);
             if ($storedAmount !== (int)$rzpPayment->amount) {
@@ -227,15 +236,16 @@ class RazorpayController extends BaseController
                  return;
             }
 
-            if (($empPay['status'] ?? '') === 'success') {
-                $db->rollback();
-                $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
-                return;
-            }
             // Order ID must match the previously stored Razorpay order id
             if ((string)($empPay['txn_id'] ?? '') !== $orderId) {
                 $db->rollback();
                 $response->redirect('/employer/billing/failed?reason=order_mismatch');
+                return;
+            }
+            $existing = $db->fetchOne('SELECT id FROM employer_payments WHERE txn_id = :pid AND status = "success"', ['pid' => $paymentId]);
+            if ($existing) {
+                $db->rollback();
+                $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
                 return;
             }
 
@@ -245,7 +255,7 @@ class RazorpayController extends BaseController
             $db->query('UPDATE employer_payments SET status = "success", txn_id = :txn, meta = :meta, gateway = "razorpay", payment_method = "checkout" WHERE id = :id', [
                 'txn' => $paymentId,
                 'meta' => json_encode($meta),
-                'id' => $empPayId
+                'id' => (int)$empPay['id']
             ]);
 
             $invoiceId = \App\Services\InvoiceService::generate((int)$employer->id, $amount, 'INR', [
@@ -255,7 +265,7 @@ class RazorpayController extends BaseController
             ]);
 
             if ($invoiceId) {
-                $db->query('UPDATE employer_payments SET invoice_id = :inv WHERE id = :id', ['inv' => $invoiceId, 'id' => $empPayId]);
+                $db->query('UPDATE employer_payments SET invoice_id = :inv WHERE id = :id', ['inv' => $invoiceId, 'id' => (int)$empPay['id']]);
             }
 
             if ($subscriptionPaymentId > 0) {
@@ -301,14 +311,25 @@ class RazorpayController extends BaseController
             return;
         }
 
-        $empUser = $db->fetchOne('SELECT u.email FROM users u INNER JOIN employers e ON e.user_id = u.id WHERE e.id = :eid', ['eid' => (int)$employer->id]);
-        $toEmail = $empUser['email'] ?? '';
-        if ($toEmail) {
-            $subject = 'Payment Receipt';
-            $body = '<p>Thank you for your payment.</p><p>Payment ID: ' . htmlspecialchars($paymentId) . '</p>' .
-                '<p>Amount: ₹' . number_format($amount, 2) . '</p>' .
-                '<p><a href="' . htmlspecialchars('/employer/invoices/' . (int)$subscriptionPaymentId) . '">View Invoice</a></p>';
-            \App\Services\MailService::sendEmail($toEmail, $subject, $body);
+        $empUser = $db->fetchOne('SELECT u.id as user_id, u.email FROM users u INNER JOIN employers e ON e.user_id = u.id WHERE e.id = :eid', ['eid' => (int)$employer->id]);
+        $userId = (int)($empUser['user_id'] ?? 0);
+        if ($userId > 0) {
+            $invoiceUrl = '/employer/invoices/' . (int)$subscriptionPaymentId;
+            \App\Services\NotificationService::send(
+                $userId,
+                'payment_receipt',
+                'Payment Receipt',
+                "Thank you for your payment. Payment ID: {$paymentId}. Amount: ₹" . number_format($amount, 2),
+                [
+                    'payment_id' => $paymentId,
+                    'amount' => $amount,
+                    'currency' => 'INR',
+                    'invoice_url' => $invoiceUrl,
+                    'email_template' => 'payment_receipt'
+                ],
+                $invoiceUrl,
+                ['email','in_app','push']
+            );
         }
 
         $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);

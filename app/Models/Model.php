@@ -12,6 +12,7 @@ abstract class Model
     protected string $primaryKey = 'id';
     protected array $fillable = [];
     protected array $hidden = [];
+    protected array $casts = [];
     protected array $attributes = [];
 
     public function getTable(): string
@@ -115,6 +116,22 @@ abstract class Model
                 VALUES (" . implode(', ', $placeholders) . ")";
         
         $params = array_intersect_key($this->attributes, array_flip($fields));
+        foreach ($params as $key => $value) {
+            if (isset($this->casts[$key])) {
+                $cast = $this->casts[$key];
+                if ($cast === 'array' || $cast === 'json') {
+                    $params[$key] = json_encode($value);
+                } elseif ($cast === 'datetime') {
+                    if ($value instanceof \DateTimeInterface) {
+                        $params[$key] = $value->format('Y-m-d H:i:s');
+                    }
+                } elseif ($cast === 'bool' || $cast === 'boolean') {
+                    $params[$key] = $value ? 1 : 0;
+                }
+            } elseif (is_array($value)) {
+                $params[$key] = json_encode($value);
+            }
+        }
         
         try {
             $this->getDb()->execute($sql, $params);
@@ -153,6 +170,22 @@ abstract class Model
         $sql = "UPDATE {$this->table} SET " . implode(', ', $set) . " WHERE {$this->primaryKey} = :id";
         
         $params = array_intersect_key($this->attributes, array_flip($fields));
+        foreach ($params as $key => $value) {
+            if (isset($this->casts[$key])) {
+                $cast = $this->casts[$key];
+                if ($cast === 'array' || $cast === 'json') {
+                    $params[$key] = json_encode($value);
+                } elseif ($cast === 'datetime') {
+                    if ($value instanceof \DateTimeInterface) {
+                        $params[$key] = $value->format('Y-m-d H:i:s');
+                    }
+                } elseif ($cast === 'bool' || $cast === 'boolean') {
+                    $params[$key] = $value ? 1 : 0;
+                }
+            } elseif (is_array($value)) {
+                $params[$key] = json_encode($value);
+            }
+        }
         $params['id'] = $id;
         
         try {

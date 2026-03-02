@@ -10,17 +10,22 @@ use App\Core\Response;
 use App\Models\User;
 use App\Core\Database;
 use App\Services\MailService;
+use App\Services\CookieService;
 
 class AuthController extends BaseController
 {
     public function showLogin(Request $request, Response $response): void
     {
-        if ($this->currentUser && $this->currentUser->isAdmin()) {
-            $response->redirect('/admin/dashboard');
-            return;
+        $error = $request->get('error');
+        if ($this->currentUser) {
+            $isAdminBasic = $this->currentUser->isAdmin();
+            $hasRbacAdmin = $this->currentUser->hasRole('admin') || $this->currentUser->hasRole('super_admin');
+            if ($isAdminBasic && $hasRbacAdmin && $error !== 'access_denied') {
+                $response->redirect('/admin/dashboard');
+                return;
+            }
         }
 
-        $error = $request->get('error');
         $redirect = $request->get('redirect', '/admin/dashboard');
 
         // Clear any old captcha
@@ -92,6 +97,18 @@ class AuthController extends BaseController
         }
 
         // At this point email & password are correct and user is admin and active.
+        if ((string)($_ENV['ADMIN_DISABLE_2FA'] ?? getenv('ADMIN_DISABLE_2FA') ?? '') === '1') {
+            $_SESSION['user_id'] = $user->id;
+            $_SESSION['user_role'] = $user->role;
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_login_time'] = time();
+            $user->last_login = date('Y-m-d H:i:s');
+            $user->save();
+            try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
+            $this->logSuccessfulLogin($user, $request);
+            $response->redirect($request->post('redirect', '/admin/dashboard'));
+            return;
+        }
         // Generate OTP for email-based 2FA.
         $otp = str_pad((string)rand(100000, 999999), 6, '0', STR_PAD_LEFT);
 
@@ -160,6 +177,7 @@ class AuthController extends BaseController
         // Update last login
         $user->last_login = date('Y-m-d H:i:s');
         $user->save();
+        try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
 
         // Log successful login
         $this->logSuccessfulLogin($user, $request);

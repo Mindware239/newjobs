@@ -1,3 +1,18 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$now = time();
+$issued = (int)($_SESSION['csrf_token_time'] ?? 0);
+if (empty($_SESSION['csrf_token']) || ($issued > 0 && ($now - $issued) > 1800)) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    $_SESSION['csrf_token_time'] = $now;
+}
+if (!headers_sent()) {
+    $ttl = 86400;
+    setcookie('XSRF-TOKEN', $_SESSION['csrf_token'] ?? '', $now + $ttl, '/', '', false, false);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +22,8 @@
     <title><?= htmlspecialchars($title ?? 'Candidate Dashboard') ?> - Mindware Infotech</title>
     <link rel="icon" type="image/png" href="/uploads/Mindware-infotech.png">
     <link href="/css/output.css" rel="stylesheet">
+    <script defer src="/js/consent-manager.js"></script>
+    <script defer src="/js/script-loader.js"></script>
     <script>
         // Define candidateNav function before Alpine.js loads
         function candidateNav() {

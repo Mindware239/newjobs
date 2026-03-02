@@ -24,11 +24,19 @@ class SystemSetting extends Model
     public static function set(string $key, $value, string $group = 'general'): void
     {
         $db = Database::getInstance();
+        // PDO::ATTR_EMULATE_PREPARES is false, so we cannot reuse named parameters.
+        // We must use unique parameter names for each placeholder.
         $db->query(
             "INSERT INTO system_settings (setting_key, setting_value, setting_group) 
-             VALUES (:key, :value, :group) 
-             ON DUPLICATE KEY UPDATE setting_value = :value, setting_group = :group",
-            ['key' => $key, 'value' => $value, 'group' => $group]
+             VALUES (:key, :val_ins, :grp_ins) 
+             ON DUPLICATE KEY UPDATE setting_value = :val_upd, setting_group = :grp_upd",
+            [
+                'key' => $key, 
+                'val_ins' => $value, 
+                'grp_ins' => $group,
+                'val_upd' => $value,
+                'grp_upd' => $group
+            ]
         );
     }
 }

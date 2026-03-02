@@ -25,6 +25,14 @@ class CompanyController
             'experience' => (string)$request->get('experience', ''),
         ];
         $companies = $model->getFeaturedCompaniesFiltered($filters, 48);
+        // Fallback: if no featured match and user has applied any filter, search all companies
+        $hasUserFilters = trim(implode('', [
+            $filters['q'], $filters['industry'], $filters['year_from'], $filters['year_to'],
+            $filters['location'], $filters['department'], $filters['experience']
+        ])) !== '';
+        if (empty($companies) && $hasUserFilters) {
+            $companies = $model->searchCompanies($filters, 48);
+        }
         foreach ($companies as $idx => $co) {
             $stats = $model->getStats((int)($co['id'] ?? 0)) ?: [];
             $companies[$idx]['rating'] = (float)($stats['rating'] ?? 0);

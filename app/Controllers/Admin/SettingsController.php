@@ -8,6 +8,7 @@ use App\Controllers\BaseController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
+use App\Models\SystemSetting;
 
 class SettingsController extends BaseController
 {
@@ -17,20 +18,19 @@ class SettingsController extends BaseController
             return;
         }
 
-        $db = Database::getInstance();
-        $db->execute(
-            "CREATE TABLE IF NOT EXISTS system_settings (
-                id TINYINT(1) PRIMARY KEY,
-                platform_name VARCHAR(255) NULL,
-                maintenance_mode TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
-        );
-        $row = $db->fetchOne("SELECT * FROM system_settings WHERE id = 1") ?? [];
+        // Retrieve settings using the Model (Key-Value store)
+        $settings = [
+            'platform_name' => SystemSetting::get('platform_name', 'Mindware Infotech'),
+            'maintenance_mode' => (int)SystemSetting::get('maintenance_mode', 0),
+            'notifications_email' => (int)SystemSetting::get('notifications_email', 1),
+            'notifications_push' => (int)SystemSetting::get('notifications_push', 1),
+            'notifications_in_app' => (int)SystemSetting::get('notifications_in_app', 1),
+            'notifications_whatsapp' => (int)SystemSetting::get('notifications_whatsapp', 0)
+        ];
 
         $response->view('admin/settings/index', [
             'title' => 'System Settings',
-            'settings' => $row,
+            'settings' => $settings,
             'user' => $this->currentUser
         ], 200, 'admin/layout');
     }
@@ -41,39 +41,30 @@ class SettingsController extends BaseController
             return;
         }
 
-        $db = Database::getInstance();
-        $db->execute(
-            "CREATE TABLE IF NOT EXISTS system_settings (
-                id TINYINT(1) PRIMARY KEY,
-                platform_name VARCHAR(255) NULL,
-                maintenance_mode TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
-        );
-        
-        // Ensure platform_name column exists (migration)
-        try {
-            $db->query("SELECT platform_name FROM system_settings LIMIT 1");
-        } catch (\Exception $e) {
-            $db->execute("ALTER TABLE system_settings ADD COLUMN platform_name VARCHAR(255) NULL AFTER id");
-        }
-
         $platformName = (string)($request->post('platform_name', 'Job Portal'));
         $maintenanceMode = $request->post('maintenance_mode') ? 1 : 0;
+        
+        $notificationsEmail = $request->post('notifications_email') ? 1 : 0;
+        $notificationsPush = $request->post('notifications_push') ? 1 : 0;
+        $notificationsInApp = $request->post('notifications_in_app') ? 1 : 0;
+        $notificationsWhatsapp = $request->post('notifications_whatsapp') ? 1 : 0;
 
-        $db->execute(
-            "INSERT INTO system_settings (id, platform_name, maintenance_mode)
-             VALUES (1, :platform_name, :maintenance_mode)
-             ON DUPLICATE KEY UPDATE platform_name = :platform_name, maintenance_mode = :maintenance_mode",
-            [
-                'platform_name' => $platformName,
-                'maintenance_mode' => $maintenanceMode
-            ]
-        );
+        // Save settings using the Model (Key-Value store)
+        SystemSetting::set('platform_name', $platformName, 'general');
+        SystemSetting::set('maintenance_mode', (string)$maintenanceMode, 'general');
+        
+        SystemSetting::set('notifications_email', (string)$notificationsEmail, 'general');
+        SystemSetting::set('notifications_push', (string)$notificationsPush, 'general');
+        SystemSetting::set('notifications_in_app', (string)$notificationsInApp, 'general');
+        SystemSetting::set('notifications_whatsapp', (string)$notificationsWhatsapp, 'general');
 
         $this->logAction('update_settings', [
             'platform_name' => $platformName,
-            'maintenance_mode' => $maintenanceMode
+            'maintenance_mode' => $maintenanceMode,
+            'notifications_email' => $notificationsEmail,
+            'notifications_push' => $notificationsPush,
+            'notifications_in_app' => $notificationsInApp,
+            'notifications_whatsapp' => $notificationsWhatsapp
         ]);
 
         $response->redirect('/admin/settings');

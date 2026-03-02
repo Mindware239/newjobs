@@ -88,7 +88,8 @@ class JobMatchService
                                 'job_title' => $job->title,
                                 'match_count' => 1,
                                 'dashboard_link' => $link,
-                                'email_template' => 'generic_notification'
+                                'email_template' => 'generic_notification',
+                                'reference_id' => "cand_{$candidate->id}_job_{$job->id}" // Unique ref for this pair
                             ],
                             $link
                         );
@@ -131,7 +132,8 @@ class JobMatchService
                         'job_title' => $job->title,
                         'match_score' => (int)$match['overall_match_score'],
                         'link' => $link,
-                        'email_template' => 'generic_notification'
+                        'email_template' => 'generic_notification',
+                        'reference_id' => "cand_{$candidate->id}_job_{$job->id}" // Unique ref for this pair
                     ],
                     $link
                 );
@@ -176,7 +178,8 @@ class JobMatchService
                 'match_score' => $score,
                 'link' => $link,
                 'is_high_salary' => $isHighSalary,
-                'email_template' => 'generic_notification'
+                'email_template' => 'generic_notification',
+                'reference_id' => "cand_{$candidate->id}_job_{$job->id}" // Unique ref for this pair
             ],
             $link
         );

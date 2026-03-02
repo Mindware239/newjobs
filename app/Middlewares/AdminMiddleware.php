@@ -52,7 +52,7 @@ class AdminMiddleware implements MiddlewareInterface
             );
             $hasRbacAdmin = (bool)$row;
         } catch (\Throwable $t) {}
-        if (!$user->isAdmin() || !$hasRbacAdmin) {
+        if (!$user->isAdmin() && !$hasRbacAdmin) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') === false && $request->getMethod() === 'GET') {
                 $response->redirect('/admin/login?error=access_denied');

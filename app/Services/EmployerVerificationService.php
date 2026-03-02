@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Core\Database;
 use App\Models\Employer;
-use App\Services\MailService;
 
 class EmployerVerificationService
 {

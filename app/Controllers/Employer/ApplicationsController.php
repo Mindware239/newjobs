@@ -606,6 +606,43 @@ class ApplicationsController extends BaseController
             ->orderBy('title', 'ASC')
             ->get();
 
+        $candidateIds = array_values(array_unique(array_map(fn($r) => (int)($r['candidate_id'] ?? 0), $applications)));
+        $verifiedMap = [];
+        $unlockedEmploymentIds = [];
+        if (!empty($candidateIds)) {
+            $placeholders = implode(',', array_fill(0, count($candidateIds), '?'));
+            $rows = $db->fetchAll(
+                "SELECT er.id as employment_id, er.candidate_id 
+                 FROM employment_records er 
+                 WHERE er.candidate_id IN ({$placeholders}) AND er.status_overall = 'verified'",
+                $candidateIds
+            );
+            $employmentIds = array_values(array_unique(array_map(fn($r) => (int)$r['employment_id'], $rows)));
+            foreach ($rows as $r) {
+                $cid = (int)($r['candidate_id'] ?? 0);
+                if ($cid) {
+                    if (!isset($verifiedMap[$cid])) $verifiedMap[$cid] = [];
+                    $verifiedMap[$cid][] = (int)$r['employment_id'];
+                }
+            }
+            if (!empty($employmentIds)) {
+                $ph = implode(',', array_fill(0, count($employmentIds), '?'));
+                $params = array_merge([$employer->id], $employmentIds);
+                $unlockRows = $db->fetchAll(
+                    "SELECT employment_id FROM employer_unlocks WHERE employer_id = ? AND status = 'paid' AND employment_id IN ({$ph})",
+                    $params
+                );
+                $unlockedEmploymentIds = array_values(array_unique(array_map(fn($r) => (int)$r['employment_id'], $unlockRows)));
+            }
+            foreach ($applications as &$app) {
+                $cid = (int)($app['candidate_id'] ?? 0);
+                $empIds = $verifiedMap[$cid] ?? [];
+                $app['verified_badge'] = !empty($empIds) ? 1 : 0;
+                $app['verification_unlocked'] = !empty(array_intersect($empIds, $unlockedEmploymentIds)) ? 1 : 0;
+            }
+            unset($app);
+        }
+
         // Subscription gating info
         $featureAccess = [
             'has_subscription' => (bool)$subscription,
@@ -802,6 +839,13 @@ class ApplicationsController extends BaseController
                     $cv->save();
                     
                     // Notify Candidate about profile view (Real-time)
+                    $companySlug = $employer->attributes['company_slug'] ?? $employer->company_slug ?? null;
+                    if (!$companySlug || trim((string)$companySlug) === '') {
+                        $name = (string)($employer->company_name ?? 'company');
+                        $companySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+                        $companySlug = trim($companySlug, '-');
+                    }
+                    $companyLink = '/company/' . $companySlug;
                     \App\Services\NotificationService::send(
                         (int)$candidateUserId,
                         'profile_view',
@@ -809,9 +853,11 @@ class ApplicationsController extends BaseController
                         "{$employer->company_name} viewed your profile.",
                         [
                             'employer_id' => $employer->id,
-                            'company_name' => $employer->company_name
+                            'company_name' => $employer->company_name,
+                            'company_slug' => $companySlug,
+                            'link' => $companyLink
                         ],
-                        '/candidate/profile/views' // Assuming this route exists or will exist
+                        $companyLink
                     );
                 } catch (\Throwable $e) {
                     // Ignore duplicate entry or other errors to not break the flow
@@ -939,6 +985,13 @@ class ApplicationsController extends BaseController
             $cv->save();
             
             // Notify Candidate
+            $companySlug = $employer->attributes['company_slug'] ?? $employer->company_slug ?? null;
+            if (!$companySlug || trim((string)$companySlug) === '') {
+                $name = (string)($employer->company_name ?? 'company');
+                $companySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+                $companySlug = trim($companySlug, '-');
+            }
+            $companyLink = '/company/' . $companySlug;
              \App\Services\NotificationService::send(
                 (int)$candidate->user_id,
                 'profile_view',
@@ -946,9 +999,11 @@ class ApplicationsController extends BaseController
                 "{$employer->company_name} viewed your profile.",
                 [
                     'employer_id' => $employer->id,
-                    'company_name' => $employer->company_name
+                    'company_name' => $employer->company_name,
+                    'company_slug' => $companySlug,
+                    'link' => $companyLink
                 ],
-                '/candidate/profile/views'
+                $companyLink
             );
 
             $response->json(['success' => true]);
@@ -997,6 +1052,13 @@ class ApplicationsController extends BaseController
 
         // Notify Candidate
         try {
+            $companySlug = $employer->attributes['company_slug'] ?? $employer->company_slug ?? null;
+            if (!$companySlug || trim((string)$companySlug) === '') {
+                $name = (string)($employer->company_name ?? 'company');
+                $companySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+                $companySlug = trim($companySlug, '-');
+            }
+            $companyLink = '/company/' . $companySlug;
              \App\Services\NotificationService::send(
                 (int)$candidate->user_id,
                 'resume_downloaded',
@@ -1004,9 +1066,11 @@ class ApplicationsController extends BaseController
                 "{$employer->company_name} downloaded your resume.",
                 [
                     'employer_id' => $employer->id,
-                    'company_name' => $employer->company_name
+                    'company_name' => $employer->company_name,
+                    'company_slug' => $companySlug,
+                    'link' => $companyLink
                 ],
-                '/candidate/profile/views'
+                $companyLink
             );
         } catch (\Throwable $e) {}
 

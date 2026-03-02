@@ -236,7 +236,11 @@ class EmployersController extends BaseController
         $db = Database::getInstance();
 
         $db->query(
-            "UPDATE employers SET kyc_status = 'approved', kyc_approved_at = NOW() WHERE id = :id",
+            "UPDATE employers 
+             SET kyc_status = 'approved', 
+                 kyc_rejection_reason = NULL, 
+                 updated_at = NOW() 
+             WHERE id = :id",
             ['id' => $id]
         );
 

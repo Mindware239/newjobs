@@ -17,7 +17,8 @@ class MailService
         string $subject,
         string $htmlBody,
         ?string $fromEmail = null,
-        ?string $fromName = null
+        ?string $fromName = null,
+        array $attachments = []
     ): bool {
 
         $mail = new PHPMailer(true);
@@ -28,6 +29,11 @@ class MailService
             $mail->isSMTP();
             $mail->Host       = $_ENV['MAIL_HOST'] ?? 'localhost';
             $mail->Port       = (int)($_ENV['MAIL_PORT'] ?? 587);
+            // Optional EHLO/Hostname override
+            $mail->Hostname   = $_ENV['MAIL_EHLO_DOMAIN'] ?? 'localhost';
+            if (!empty($mail->Hostname)) {
+                $mail->Helo = $mail->Hostname;
+            }
             $mail->CharSet    = 'UTF-8';
             
             // Configure authentication (only if credentials are provided)
@@ -41,11 +47,32 @@ class MailService
                 $mail->SMTPAuth = false;
             }
             
-            // Configure encryption based on port and openssl availability
+            // Configure encryption based on env or port and openssl availability
             $mailPort = (int)($_ENV['MAIL_PORT'] ?? 587);
             $hasOpenssl = extension_loaded('openssl');
+            $enc = strtolower((string)($_ENV['MAIL_ENCRYPTION'] ?? ''));
+            if ($enc === 'ssl' || $enc === 'smtps') {
+                if ($hasOpenssl) {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                } else {
+                    error_log("Mail Error: SSL encryption requested but openssl extension is missing");
+                    $mail->SMTPAutoTLS = false;
+                    $mail->SMTPSecure = false;
+                }
+            } elseif ($enc === 'tls' || $enc === 'starttls') {
+                if ($hasOpenssl) {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                } else {
+                    error_log("Mail Warning: TLS requested but openssl missing, attempting without encryption");
+                    $mail->SMTPAutoTLS = false;
+                    $mail->SMTPSecure = false;
+                }
+            } else {
+                // Fallback to port-based defaults
+                $enc = '';
+            }
             
-            if ($mailPort == 465) {
+            if ($enc === '' && $mailPort == 465) {
                 // Port 465 requires SSL/TLS
                 if ($hasOpenssl) {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
@@ -53,7 +80,7 @@ class MailService
                     error_log("Mail Error: Port 465 requires SSL/TLS but openssl extension is missing");
                     throw new Exception("Port 465 requires openssl extension");
                 }
-            } elseif ($mailPort == 587) {
+            } elseif ($enc === '' && $mailPort == 587) {
                 // Port 587 typically uses STARTTLS
                 if ($hasOpenssl) {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
@@ -63,11 +90,11 @@ class MailService
                     $mail->SMTPSecure = false;
                     error_log("Mail Warning: openssl extension not available, attempting to send without encryption on port 587");
                 }
-            } elseif ($mailPort == 25) {
+            } elseif ($enc === '' && $mailPort == 25) {
                 // Port 25 is typically unencrypted
                 $mail->SMTPAutoTLS = false;
                 $mail->SMTPSecure = false;
-            } else {
+            } elseif ($enc === '') {
                 // For other ports, try STARTTLS if openssl is available
                 if ($hasOpenssl) {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
@@ -89,6 +116,58 @@ class MailService
             $mail->Subject = $subject;
             $mail->Body    = $htmlBody;
             $mail->AltBody = strip_tags($htmlBody);
+
+            // Optional debug output to PHP error log
+            $mailDebug = strtolower((string)($_ENV['MAIL_DEBUG'] ?? 'false')) === 'true';
+            if (!$mailDebug && strtolower((string)($_ENV['APP_ENV'] ?? 'local')) === 'local') {
+                $mailDebug = true;
+            }
+            if ($mailDebug) {
+                $mail->SMTPDebug = 2;
+                $mail->Debugoutput = function ($str, $level) {
+                    error_log("Mail Debug [{$level}]: " . $str);
+                };
+            }
+
+            // Attachments (local path or URL content)
+            if (!empty($attachments) && is_array($attachments)) {
+                foreach ($attachments as $att) {
+                    $name = (string)($att['name'] ?? '');
+                    if (!empty($att['path'])) {
+                        $path = (string)$att['path'];
+                        if (is_file($path)) {
+                            $mail->addAttachment($path, $name ?: basename($path));
+                        }
+                    } elseif (!empty($att['url'])) {
+                        // For local/dev reliability, skip remote URL attachments by default.
+                        // HR emails already include document links in the body.
+                        $allowRemote = strtolower((string)($_ENV['MAIL_ATTACH_REMOTE'] ?? 'false')) === 'true';
+                        if ($allowRemote) {
+                            $url = (string)$att['url'];
+                            $mime = (string)($att['mime'] ?? 'application/octet-stream');
+                            $timeout = (int)($_ENV['MAIL_REMOTE_ATTACH_TIMEOUT'] ?? 5);
+                            $ctx = stream_context_create([
+                                'http' => [
+                                    'timeout' => $timeout,
+                                    'user_agent' => 'MindwareMailer/1.0',
+                                ],
+                                'ssl' => [
+                                    'verify_peer' => false,
+                                    'verify_peer_name' => false,
+                                ]
+                            ]);
+                            $content = @file_get_contents($url, false, $ctx);
+                            if ($content !== false) {
+                                $mail->addStringAttachment($content, $name ?: basename(parse_url($url, PHP_URL_PATH) ?: 'document'), $encoding = 'base64', $mime);
+                            } else {
+                                error_log("Mail Warning: Skipping unreachable remote attachment: {$url}");
+                            }
+                        } else {
+                            error_log("Mail Info: Remote attachment skipped (MAIL_ATTACH_REMOTE=false)");
+                        }
+                    }
+                }
+            }
 
             // SEND EMAIL
             $mail->send();

@@ -17,6 +17,7 @@ $workerMap = [
     'index_job' => \App\Workers\IndexJobWorker::class,
     'email' => \App\Workers\EmailWorker::class,
     'webhook' => \App\Workers\WebhookWorker::class,
+    'resume_parse' => \App\Workers\ResumeParseWorker::class,
 ];
 
 if (!isset($workerMap[$queueName])) {

@@ -33,7 +33,7 @@ class SubscriptionController extends BaseController
             return;
         }
 
-        $plans = SubscriptionPlan::getActivePlans();
+        $plans = SubscriptionPlan::getActivePlansFor('employer');
         
         // Debug: Log plans count
         error_log("SubscriptionController::plans() - Found " . count($plans) . " plans");
@@ -41,7 +41,7 @@ class SubscriptionController extends BaseController
         // If still empty, try direct SQL query as fallback
         if (empty($plans)) {
             $db = \App\Core\Database::getInstance();
-            $sql = "SELECT * FROM subscription_plans ORDER BY sort_order ASC, price_monthly ASC LIMIT 10";
+            $sql = "SELECT * FROM subscription_plans WHERE plan_for = 'employer' ORDER BY sort_order ASC, price_monthly ASC LIMIT 10";
             $results = $db->fetchAll($sql);
             $plans = array_map(function($row) {
                 return new SubscriptionPlan($row);
@@ -63,7 +63,9 @@ class SubscriptionController extends BaseController
 
         // Check if should hide free plan (after first job posting)
         $hideFree = $request->get('hide_free') === '1';
-        $postedJobsCount = \App\Models\Job::where('employer_id', '=', $employer->id)->count();
+        $postedJobsCount = \App\Models\Job::where('employer_id', '=', $employer->id)
+            ->where('status', '=', 'published')
+            ->count();
         try {
             $db = \App\Core\Database::getInstance();
             $usedRow = $db->fetchOne(
@@ -74,7 +76,31 @@ class SubscriptionController extends BaseController
         } catch (\Throwable $t) {
             $hasConsumedFree = false;
         }
-        if ($postedJobsCount > 0 || $hasConsumedFree) {
+        // Identity-based consumption: match by email/phone across employers
+        $hasConsumedByIdentity = false;
+        try {
+            $email = (string)($this->currentUser->attributes['email'] ?? '');
+            $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
+            $phone = preg_replace('/\D+/', '', $phoneRaw);
+            if ($email !== '' || $phone !== '') {
+                $params = [];
+                $where = [];
+                if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
+                if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
+                if (!empty($where)) {
+                    $sql = "SELECT l.id 
+                            FROM subscription_usage_logs l 
+                            INNER JOIN employers e ON e.id = l.employer_id 
+                            INNER JOIN users u ON u.id = e.user_id 
+                            WHERE l.action_type = 'free_job_used' 
+                            AND (" . implode(' OR ', $where) . ")
+                            LIMIT 1";
+                    $exists = $db->fetchOne($sql, $params);
+                    $hasConsumedByIdentity = $exists !== null;
+                }
+            }
+        } catch (\Throwable $t) {}
+        if ($postedJobsCount > 0 || $hasConsumedFree || $hasConsumedByIdentity) {
             $hideFree = true; // Hide free plan after first job or once consumed
         }
 
@@ -86,6 +112,11 @@ class SubscriptionController extends BaseController
             $planAttrs = is_array($plan) ? $plan : ($plan->attributes ?? []);
             $planId = $planAttrs['id'] ?? null;
             $planSlug = $planAttrs['slug'] ?? '';
+            $planFor = strtolower((string)($planAttrs['plan_for'] ?? ''));
+            // Filter by audience if column exists
+            if ($planFor !== '' && $planFor !== 'employer') {
+                continue;
+            }
             
             // Skip free plan if hide_free is true
             if ($hideFree && $planSlug === 'free') {
@@ -108,6 +139,26 @@ class SubscriptionController extends BaseController
                 $planAttrs['ai_matching'] = (int)($planAttrs['ai_matching'] ?? 0);
                 $planAttrs['analytics_dashboard'] = (int)($planAttrs['analytics_dashboard'] ?? 0);
                 $planAttrs['is_featured'] = (int)($planAttrs['is_featured'] ?? 0);
+                // Dynamic features list from JSON column (admin-managed)
+                $featuresJson = $planAttrs['features'] ?? '[]';
+                if (is_string($featuresJson)) {
+                    $decoded = json_decode($featuresJson, true);
+                    if (is_array($decoded)) {
+                        $planAttrs['features_list'] = array_values(array_filter(array_map(function ($item) {
+                            if (is_string($item)) return trim($item);
+                            if (is_array($item)) {
+                                $text = (string)($item['feature_text'] ?? '');
+                                $enabled = (int)($item['is_enabled'] ?? 1);
+                                return $enabled === 1 ? trim($text) : '';
+                            }
+                            return '';
+                        }, $decoded)));
+                    } else {
+                        $planAttrs['features_list'] = [];
+                    }
+                } else {
+                    $planAttrs['features_list'] = [];
+                }
                 $plansData[] = $planAttrs;
             }
         }
@@ -200,17 +251,80 @@ class SubscriptionController extends BaseController
             return;
         }
 
-        // Check if already has active subscription - allow upgrade/downgrade
+        // Check current subscription to enforce single active plan
         $currentSubscription = EmployerSubscription::getCurrentForEmployer($employer->id);
         if ($currentSubscription && $currentSubscription->isActive()) {
-            // Allow plan change if it's a different plan (upgrade/downgrade)
             $currentPlan = $currentSubscription->plan();
             if ($currentPlan && $currentPlan->id === $plan->id) {
-                $response->json(['error' => 'You are already subscribed to this plan. Use "Change Plan" to switch billing cycles.'], 400);
+                // Same plan -> treat as renewal (extend), not a new row
+                $basePrice = $plan->getPrice($billingCycle);
+                $discountAmount = 0.00;
+                $discount = null;
+                if ($discountCode) {
+                    $discount = DiscountCode::findByCode($discountCode);
+                    if (!$discount || !$discount->isValid() || !$discount->isApplicableToPlan($plan->id, $billingCycle)) {
+                        $response->json(['error' => 'Invalid discount code'], 400);
+                        return;
+                    }
+                    $discountAmount = $discount->calculateDiscount($basePrice);
+                }
+                $finalPrice = $basePrice - $discountAmount;
+                $db = Database::getInstance();
+                $db->beginTransaction();
+                try {
+                    if ($finalPrice > 0) {
+                        // Create payment tied to existing subscription
+                        $payment = new SubscriptionPayment();
+                        $payment->fill([
+                            'subscription_id' => (int)$currentSubscription->attributes['id'],
+                            'employer_id' => (int)$employer->id,
+                            'amount' => $finalPrice,
+                            'currency' => 'INR',
+                            'billing_cycle' => $billingCycle,
+                            'status' => 'pending'
+                        ]);
+                        $payment->save();
+                        if ($discount) { $discount->incrementUsage(); }
+                        if ($db->inTransaction()) { $db->commit(); }
+                        $response->json([
+                            'success' => true,
+                            'subscription_id' => (int)$currentSubscription->attributes['id'],
+                            'payment_id' => (int)$payment->attributes['id'],
+                            'amount' => $finalPrice,
+                            'requires_payment' => true,
+                            'payment_gateway' => $this->initiatePayment($payment, $employer)
+                        ]);
+                    } else {
+                        // Free renewal: extend immediately from max(expires_at, now)
+                        $currentExpiry = $currentSubscription->attributes['expires_at'] ?? null;
+                        $baseTs = $currentExpiry ? max(strtotime($currentExpiry), time()) : time();
+                        $startDate = date('Y-m-d H:i:s', $baseTs);
+                        $newExpiry = $this->calculateExpiryDate($startDate, $billingCycle);
+                        $currentSubscription->attributes['expires_at'] = $newExpiry;
+                        $currentSubscription->attributes['status'] = 'active';
+                        $currentSubscription->attributes['next_billing_date'] = $currentSubscription->attributes['auto_renew'] ? $newExpiry : null;
+                        $currentSubscription->save();
+                        if ($db->inTransaction()) { $db->commit(); }
+                        $response->json([
+                            'success' => true,
+                            'subscription_id' => (int)$currentSubscription->attributes['id'],
+                            'requires_payment' => false,
+                            'message' => 'Subscription renewed successfully'
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    if ($db->inTransaction()) { $db->rollback(); }
+                    $response->json(['error' => 'Failed to process renewal: ' . $e->getMessage()], 500);
+                }
                 return;
             }
-            // If different plan, use changePlan method instead
-            // But for now, allow direct subscription (will create new subscription)
+            // Different plan -> end current and create new subscription row (upgrade/downgrade)
+            $dbTmp = \App\Core\Database::getInstance();
+            try {
+                $dbTmp->query("UPDATE employer_subscriptions SET status = 'inactive', grace_period_ends_at = NULL, cancelled_at = NOW() WHERE id = :id", [
+                    'id' => (int)$currentSubscription->attributes['id']
+                ]);
+            } catch (\Throwable $t) {}
         }
 
         // Calculate price
@@ -258,7 +372,7 @@ class SubscriptionController extends BaseController
         $db->beginTransaction();
 
         try {
-            // Create subscription
+            // Create new subscription (no duplicate active rows)
             $subscription = new EmployerSubscription();
             $startDate = date('Y-m-d H:i:s');
             
@@ -385,10 +499,8 @@ class SubscriptionController extends BaseController
                 return;
             }
 
-            // Find linked employer_payment (ledger) to ensure consistency with Webhook
-            // We use the same logic as Webhook to find it via meta
-            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE meta LIKE :like AND employer_id = :eid FOR UPDATE', [
-                'like' => '%"subscription_payment_id":' . $paymentId . '%',
+            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE subscription_payment_id = :sid AND employer_id = :eid FOR UPDATE', [
+                'sid' => $paymentId,
                 'eid' => $payment->attributes['employer_id']
             ]);
 
@@ -427,9 +539,9 @@ class SubscriptionController extends BaseController
                          'id' => $empPay['id']
                      ]);
                 } else {
-                    // Create employer payment record if missing
-                    $db->query('INSERT INTO employer_payments (employer_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) VALUES (:eid, :amt, :curr, "razorpay", "checkout", "success", :txn, :meta, NOW())', [
+                    $db->query('INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) VALUES (:eid, :sid, :amt, :curr, "razorpay", "checkout", "success", :txn, :meta, NOW())', [
                         'eid' => $payment->attributes['employer_id'],
+                        'sid' => $paymentId,
                         'amt' => $payment->attributes['amount'],
                         'curr' => $payment->attributes['currency'],
                         'txn' => $gatewayPaymentId,
@@ -440,7 +552,14 @@ class SubscriptionController extends BaseController
                 // Activate subscription
                 $subscription = \App\Models\EmployerSubscription::find((int)($payment->attributes['subscription_id'] ?? 0));
                 if ($subscription) {
+                    $cycle = strtolower((string)($subscription->attributes['billing_cycle'] ?? 'monthly'));
+                    $base = $subscription->attributes['expires_at'] ?? null;
+                    $baseTs = $base ? max(strtotime((string)$base), time()) : time();
+                    $startDate = date('Y-m-d H:i:s', $baseTs);
+                    $newExpiry = $this->calculateExpiryDate($startDate, $cycle);
                     $subscription->attributes['status'] = 'active';
+                    $subscription->attributes['expires_at'] = $newExpiry;
+                    $subscription->attributes['next_billing_date'] = $subscription->attributes['auto_renew'] ? $newExpiry : null;
                     $subscription->save();
                 }
 

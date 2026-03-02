@@ -44,6 +44,18 @@ class DashboardController extends BaseController
             }
         }
 
+        if (method_exists($employer, 'isProfileComplete') && !$employer->isProfileComplete()) {
+            $_SESSION['profile_required_message'] = 'Please complete your company profile to continue.';
+            $response->redirect('/employer/profile?setup=1&complete_required=1');
+            return;
+        }
+
+        if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
+            $_SESSION['profile_required_message'] = 'Your profile is awaiting admin verification. Please submit KYC documents.';
+            $response->redirect('/employer/kyc');
+            return;
+        }
+
         $redis = RedisClient::getInstance();
         $cacheKey = "employer:dashboard:{$employer->id}";
         

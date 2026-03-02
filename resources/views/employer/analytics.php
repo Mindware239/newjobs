@@ -419,7 +419,18 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script>
+// Silence known Edge tracking prevention warnings to keep console clean
+(function(){
+  var ow = console.warn;
+  console.warn = function(){
+    var msg = arguments && arguments[0] ? String(arguments[0]) : '';
+    if (msg.indexOf('Tracking Prevention blocked access to storage') !== -1) return;
+    return ow.apply(console, arguments);
+  };
+})();
+</script>
 <script>
 function analyticsDashboard() {
     return {
@@ -515,9 +526,9 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/funnel?${params}`);
-                this.funnelData = await response.json();
-                this.$nextTick(() => setTimeout(() => this._renderFunnelChartInternal(), 100));
-            } catch (e) { console.error(e); }
+                this.funnelData = response.ok ? await response.json() : {};
+            } catch (e) { this.funnelData = {}; }
+            this.$nextTick(() => setTimeout(() => this._renderFunnelChartInternal(), 100));
         },
 
         _renderFunnelChartInternal() {
@@ -567,9 +578,9 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/time-to-hire?${params}`);
-                this.timeToHireData = await response.json();
-                this.$nextTick(() => setTimeout(() => this.renderTimeToHireChart(), 100));
-            } catch (e) { console.error(e); }
+                this.timeToHireData = response.ok ? await response.json() : {};
+            } catch (e) { this.timeToHireData = {}; }
+            this.$nextTick(() => setTimeout(() => this.renderTimeToHireChart(), 100));
         },
 
         renderTimeToHireChart() {
@@ -608,9 +619,9 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/location?${params}`);
-                this.locationData = await response.json();
-                this.$nextTick(() => setTimeout(() => this.renderLocationChart(), 100));
-            } catch (e) { console.error(e); }
+                this.locationData = response.ok ? await response.json() : {};
+            } catch (e) { this.locationData = {}; }
+            this.$nextTick(() => setTimeout(() => this.renderLocationChart(), 100));
         },
 
         renderLocationChart() {
@@ -641,9 +652,9 @@ function analyticsDashboard() {
             try {
                 const days = this.filters.timeframe === '7d' ? 7 : 30;
                 const response = await fetch(`/api/employer/analytics/activity?days=${days}`);
-                this.activityData = await response.json();
-                this.$nextTick(() => setTimeout(() => this.renderActivityChart(), 100));
-            } catch (e) { console.error(e); }
+                this.activityData = response.ok ? await response.json() : {};
+            } catch (e) { this.activityData = {}; }
+            this.$nextTick(() => setTimeout(() => this.renderActivityChart(), 100));
         },
 
         renderActivityChart() {
@@ -682,9 +693,9 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/sources?${params}`);
-                this.sourcesData = await response.json();
-                this.$nextTick(() => setTimeout(() => this.renderSourcesChart(), 100));
-            } catch (e) { console.error(e); }
+                this.sourcesData = response.ok ? await response.json() : {};
+            } catch (e) { this.sourcesData = {}; }
+            this.$nextTick(() => setTimeout(() => this.renderSourcesChart(), 100));
         },
 
         renderSourcesChart() {
@@ -718,7 +729,6 @@ function analyticsDashboard() {
                 this.$nextTick(() => setTimeout(() => this.renderOutcomesChart(), 100));
                 this.outcomesLoaded = true;
             } catch (e) { 
-                console.error(e); 
                 this.outcomesLoaded = true;
             }
         },
@@ -760,16 +770,16 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams({ job_id: this.filters.job_id });
                 const response = await fetch(`/api/employer/analytics/job-engagement?${params}`);
-                this.jobEngagementData = await response.json();
-            } catch (e) { console.error(e); }
+                this.jobEngagementData = response.ok ? await response.json() : [];
+            } catch (e) { this.jobEngagementData = []; }
         },
 
         async loadCandidateQuality() {
             try {
                 const params = new URLSearchParams({ job_id: this.filters.job_id });
                 const response = await fetch(`/api/employer/analytics/candidate-quality?${params}`);
-                this.candidateQualityData = await response.json();
-            } catch (e) { console.error(e); }
+                this.candidateQualityData = response.ok ? await response.json() : [];
+            } catch (e) { this.candidateQualityData = []; }
         },
         
         getQualityScore(jobId, type) {
@@ -784,8 +794,8 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/communication?${params}`);
-                this.communicationData = await response.json();
-            } catch (e) { console.error(e); }
+                this.communicationData = response.ok ? await response.json() : {};
+            } catch (e) { this.communicationData = {}; }
         },
 
         calculateReadRate() {
@@ -797,9 +807,9 @@ function analyticsDashboard() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/notifications?${params}`);
-                this.notificationData = await response.json();
-                this.$nextTick(() => setTimeout(() => this.renderNotificationChart(), 100));
-            } catch (e) { console.error(e); }
+                this.notificationData = response.ok ? await response.json() : {};
+            } catch (e) { this.notificationData = {}; }
+            this.$nextTick(() => setTimeout(() => this.renderNotificationChart(), 100));
         },
 
         renderNotificationChart() {
@@ -833,25 +843,25 @@ function analyticsDashboard() {
         async loadSubscription() {
             try {
                 const response = await fetch(`/api/employer/analytics/subscription-roi`);
-                this.subscriptionData = await response.json();
-            } catch (e) { console.error(e); }
+                this.subscriptionData = response.ok ? await response.json() : {};
+            } catch (e) { this.subscriptionData = {}; }
         },
 
         async loadSecurityLogs() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/security-logs?${params}`);
-                this.securityLogs = await response.json();
-            } catch (e) { console.error(e); }
+                this.securityLogs = response.ok ? await response.json() : {};
+            } catch (e) { this.securityLogs = {}; }
         },
 
         async loadOfferData() {
             try {
                 const params = new URLSearchParams(this.filters);
                 const response = await fetch(`/api/employer/analytics/offer-acceptance?${params}`);
-                this.offerData = await response.json();
-                this.acceptanceLoaded = true;
-            } catch (e) { console.error(e); }
+                this.offerData = response.ok ? await response.json() : {};
+            } catch (e) { this.offerData = {}; }
+            this.acceptanceLoaded = true;
         },
 
         exportReport() {

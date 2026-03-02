@@ -16,9 +16,8 @@ class ResumePDFService
 
     public function __construct()
     {
-        // Set storage paths - PDFs stored in public/storage/resumes/
         $baseDir = dirname(__DIR__, 2);
-        $this->storagePath = $baseDir . '/public/storage/resumes/';
+        $this->storagePath = $baseDir . '/storage/resumes/';
         $this->publicPath = '/storage/resumes/';
         
         // Ensure directory exists

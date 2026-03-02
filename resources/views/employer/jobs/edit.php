@@ -100,7 +100,7 @@ document.getElementById('edit-job-form').addEventListener('submit', async functi
     const data = Object.fromEntries(formData);
     
     try {
-        const response = await fetch('/employer/jobs/<?= $job['id'] ?? '' ?>', {
+        const response = await fetch('/employer/jobs/<?= htmlspecialchars($job['slug'] ?? '') ?>', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ document.getElementById('edit-job-form').addEventListener('submit', async functi
         const result = await response.json();
         
         if (response.ok && result.success) {
-            window.location.href = '/employer/jobs/<?= $job['id'] ?? '' ?>';
+            window.location.href = '/employer/jobs/<?= htmlspecialchars($job['slug'] ?? '') ?>';
         } else {
             alert('Error: ' + (result.error || 'Failed to update job'));
         }

@@ -50,15 +50,14 @@ class InvoiceService
         $dompdf->render();
         $pdfOutput = $dompdf->output();
 
-        $dir = __DIR__ . '/../../public/storage/uploads/employers/' . $employerId;
+        $dir = __DIR__ . '/../../storage/uploads/employers/' . $employerId;
         if (!is_dir($dir)) { @mkdir($dir, 0777, true); }
         $pdfPath = $dir . '/' . $invoiceNumber . '.pdf';
         file_put_contents($pdfPath, $pdfOutput);
 
-        $relPath = '/public/storage/uploads/employers/' . $employerId . '/' . $invoiceNumber . '.pdf';
+        $relPath = '/storage/uploads/employers/' . $employerId . '/' . $invoiceNumber . '.pdf';
         $db->query('UPDATE invoices SET pdf_path = :pdf WHERE id = :id', ['pdf' => $relPath, 'id' => $invoiceId]);
 
         return $invoiceId;
     }
 }
-

@@ -22,23 +22,50 @@ if ($count > 0) {
 } else {
     echo "No plans found. Inserting default plans...\n";
     
-    // Insert default plans
-    $sql = "INSERT INTO subscription_plans (name, slug, tier, description, price_monthly, price_quarterly, price_annual, 
+    // Insert default plans (Employer and Candidate)
+    $sql = "INSERT INTO subscription_plans (
+      name, slug, tier, description, plan_for,
+      price_monthly, price_quarterly, price_annual, default_billing_cycle,
       max_job_posts, max_contacts_per_month, max_resume_downloads, max_chat_messages,
       job_post_boost, priority_support, advanced_filters, candidate_mobile_visible, 
-      resume_download_enabled, chat_enabled, ai_matching, analytics_dashboard, is_active, is_featured, sort_order) VALUES
-    ('Free', 'free', 'free', 'Perfect for startups and small businesses', 0.00, 0.00, 0.00,
+      resume_download_enabled, chat_enabled, ai_matching, analytics_dashboard,
+      is_active, is_featured, sort_order
+    ) VALUES
+    ('Free', 'free', 'free', 'Perfect for startups and small businesses', 'employer',
+      0.00, 0.00, 0.00, 'monthly',
       1, 50, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1),
-    ('Basic', 'basic', 'basic', 'Essential features for growing businesses', 400.00, 1100.00, 4000.00,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      1, 0, 1),
+    ('Basic', 'basic', 'basic', 'Essential features for growing businesses', 'employer',
+      400.00, 1100.00, 4000.00, 'monthly',
       5, 200, 10, 100,
-      0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 2),
-    ('Premium', 'premium', 'premium', 'Advanced features for established companies', 850.00, 2300.00, 8500.00,
+      0, 0, 1, 0, 1, 1, 0, 0,
+      1, 0, 2),
+    ('Premium', 'premium', 'premium', 'Advanced features for established companies', 'employer',
+      850.00, 2300.00, 8500.00, 'monthly',
       -1, -1, -1, -1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3),
-    ('Enterprise', 'enterprise', 'enterprise', 'Custom solutions for large organizations', 1650.00, 4500.00, 16500.00,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 3),
+    ('Enterprise', 'enterprise', 'enterprise', 'Custom solutions for large organizations', 'employer',
+      1650.00, 4500.00, 16500.00, 'monthly',
       -1, -1, -1, -1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 4)";
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 0, 4),
+    ('Basic', 'candidate-basic', 'basic', 'Entry plan for candidates', 'candidate',
+      400.00, 1100.00, 4000.00, 'monthly',
+      0, 0, 0, 0,
+      0, 0, 1, 0, 1, 1, 0, 0,
+      1, 0, 5),
+    ('Premium', 'candidate-premium', 'premium', 'Premium plan for candidates', 'candidate',
+      850.00, 2300.00, 8500.00, 'monthly',
+      0, 0, 0, 0,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 6),
+    ('Enterprise', 'candidate-enterprise', 'enterprise', 'Enterprise plan for candidates', 'candidate',
+      1650.00, 4500.00, 16500.00, 'monthly',
+      0, 0, 0, 0,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 0, 7)";
     
     try {
         $db->query($sql);

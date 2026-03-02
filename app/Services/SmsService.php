@@ -48,16 +48,39 @@ class SmsService
             'Body' => $message
         ];
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, "{$sid}:{$token}");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
+        try {
+            // Prefer Guzzle if available to avoid curl_* deprecation warnings
+            if (class_exists('\\GuzzleHttp\\Client')) {
+                $verify = self::resolveCaBundle();
+                $client = new \GuzzleHttp\Client([
+                    'timeout' => 10,
+                    'verify'  => $verify,
+                    'auth'    => [$sid, $token],
+                ]);
+                $resp = $client->post($url, ['form_params' => $data]);
+                $httpCode = $resp->getStatusCode();
+                $response = (string) $resp->getBody();
+                $error = '';
+            } else {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_USERPWD, "{$sid}:{$token}");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+                // Try to use CA bundle if configured
+                $ca = self::resolveCaBundle();
+                if (is_string($ca)) {
+                    curl_setopt($ch, CURLOPT_CAINFO, $ca);
+                } elseif ($ca === false) {
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                }
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $error = curl_error($ch);
+            }
+        } catch (\Throwable $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
 
         if ($error) {
             return ['success' => false, 'error' => $error];
@@ -70,5 +93,31 @@ class SmsService
         }
 
         return ['success' => false, 'error' => $result['message'] ?? 'Unknown error'];
+    }
+
+    /**
+     * Resolve CA bundle path to satisfy SSL verification on Windows/XAMPP.
+     * Returns string path, true to use defaults, or false to disable verification (dev only).
+     */
+    private static function resolveCaBundle(): string|bool
+    {
+        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
+        $possible = [
+            $envPath,
+            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
+            'E:/xampp/php/extras/ssl/cacert.pem',
+            'C:/xampp/php/extras/ssl/cacert.pem',
+            'E:/xampp/apache/bin/curl-ca-bundle.crt',
+            'C:/xampp/apache/bin/curl-ca-bundle.crt',
+            ini_get('curl.cainfo'),
+            ini_get('openssl.cafile'),
+        ];
+        foreach ($possible as $p) {
+            if ($p && file_exists((string)$p)) {
+                return (string)$p;
+            }
+        }
+        // If none found, return true (let library defaults work). In dev, you may return false.
+        return true;
     }
 }

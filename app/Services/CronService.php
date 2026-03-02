@@ -505,29 +505,42 @@ class CronService
     {
         try {
             $db = Database::getInstance();
-            // Find candidates with incomplete profiles created more than 24h ago
-            // Limit to 50 per run
+            // Candidates with incomplete profiles; schedule nudges at 1, 2, 5, 10 days
             $candidates = $db->fetchAll(
-                "SELECT c.id, c.user_id, c.full_name, c.profile_strength, c.resume_url, c.skills_data, c.education_data, u.email
+                "SELECT c.id, c.user_id, c.full_name, c.profile_strength, c.resume_url, c.skills_data, c.education_data, c.experience_data, c.city, c.created_at, u.email
                  FROM candidates c
                  JOIN users u ON c.user_id = u.id
                  WHERE (c.is_profile_complete = 0 OR c.profile_strength < 80)
-                   AND c.created_at <= DATE_SUB(NOW(), INTERVAL 24 HOUR)
                    AND u.status = 'active'
-                 LIMIT 50"
+                 LIMIT 100"
             );
 
             foreach ($candidates as $cand) {
-                // Check if notified recently (7 days)
-                $exists = $db->fetchOne(
-                    "SELECT id FROM notification_logs
-                     WHERE candidate_id = :cid
-                       AND template_key = 'profile_nudge'
-                       AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
-                    ['cid' => (int) $cand['user_id']]
-                );
+                // Determine how many nudges already sent
+                $sent = (int)($db->fetchOne(
+                    "SELECT COUNT(*) as c FROM notification_logs
+                     WHERE candidate_id = :cid AND template_key = 'profile_nudge'",
+                    ['cid' => (int)$cand['user_id']]
+                )['c'] ?? 0);
 
-                if ($exists) {
+                // Days since candidate created
+                $daysSince = 0;
+                if (!empty($cand['created_at'])) {
+                    $daysSince = (int)floor((time() - strtotime($cand['created_at'])) / 86400);
+                }
+
+                // Schedule thresholds based on count
+                $shouldSend = false;
+                if ($sent === 0 && $daysSince >= 1) { // initial after 1 day
+                    $shouldSend = true;
+                } elseif ($sent === 1 && $daysSince >= 2) {
+                    $shouldSend = true;
+                } elseif ($sent === 2 && $daysSince >= 5) {
+                    $shouldSend = true;
+                } elseif ($sent === 3 && $daysSince >= 10) {
+                    $shouldSend = true;
+                }
+                if (!$shouldSend) {
                     continue;
                 }
 
@@ -544,6 +557,15 @@ class CronService
                 $edu = json_decode($cand['education_data'] ?? '[]', true);
                 if (empty($edu)) {
                     $missing[] = 'Education';
+                }
+
+                $exp = json_decode($cand['experience_data'] ?? '[]', true);
+                if (empty($exp)) {
+                    $missing[] = 'Experience';
+                }
+
+                if (empty($cand['city'])) {
+                    $missing[] = 'Address/Location';
                 }
 
                 if (empty($missing) && (int) $cand['profile_strength'] < 80) {
@@ -563,7 +585,8 @@ class CronService
                             'missing_fields'   => $missing,
                             'profile_strength' => $cand['profile_strength'],
                             'link'             => '/candidate/profile/edit',
-                            'email_template'   => 'generic_notification',
+                            'email_template'   => 'profile_nudge',
+                            'variant'          => $sent, // rotate subject lines
                         ],
                         '/candidate/profile/edit'
                     );
@@ -571,6 +594,64 @@ class CronService
             }
         } catch (\Throwable $t) {
             error_log("Cron Error (notify_incomplete_profiles): " . $t->getMessage());
+        }
+    }
+
+    private function sendDailyDigest(): void
+    {
+        try {
+            // Global toggle to enable digest; default OFF
+            $enabled = \App\Models\SystemSetting::get('notifications_daily_digest', '0') === '1';
+            if (!$enabled) return;
+
+            $db = Database::getInstance();
+            // Get candidate users active in the last day (received any notifications)
+            $rows = $db->fetchAll(
+                "SELECT DISTINCT nl.user_id
+                 FROM notification_logs nl
+                 JOIN users u ON u.id = nl.user_id
+                 WHERE nl.sent_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                   AND u.role = 'candidate'
+                   AND u.status = 'active'
+                 LIMIT 500"
+            );
+
+            foreach ($rows as $r) {
+                $uid = (int)($r['user_id'] ?? 0);
+                if ($uid <= 0) continue;
+
+                // Aggregate counts by event_type
+                $stats = $db->fetchAll(
+                    "SELECT event_type, COUNT(*) as c
+                     FROM notification_logs
+                     WHERE user_id = :uid
+                       AND sent_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                     GROUP BY event_type",
+                    ['uid' => $uid]
+                );
+                if (empty($stats)) continue;
+
+                $summary = [];
+                foreach ($stats as $s) {
+                    $summary[$s['event_type']] = (int)$s['c'];
+                }
+
+                \App\Services\NotificationService::send(
+                    $uid,
+                    'daily_digest',
+                    'Your Daily Summary',
+                    'Here is your activity summary for the last 24 hours.',
+                    [
+                        'summary' => $summary,
+                        'email_template' => 'daily_digest',
+                        'link' => '/candidate/notifications'
+                    ],
+                    '/candidate/notifications',
+                    ['email','in_app']
+                );
+            }
+        } catch (\Throwable $t) {
+            error_log("Cron Error (send_daily_digest): " . $t->getMessage());
         }
     }
 

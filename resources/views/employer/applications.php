@@ -163,15 +163,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                 <h1 class="text-2xl font-bold text-foreground">All Candidates</h1>
                 <p class="text-muted-foreground text-sm mt-1">Manage and review all job applications</p>
             </div>
-            <button onclick="window.location.href='/employer/candidates/add'" class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus h-4 w-4">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <line x1="19" x2="19" y1="8" y2="14"></line>
-                    <line x1="22" x2="16" y1="11" y2="11"></line>
-                </svg>
-                Add Candidate
-            </button>
+            
         </div>
 
         <!-- Subscription Warning -->
@@ -586,6 +578,25 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                                                     class="text-xl font-bold text-foreground hover:text-primary transition-colors truncate">
                                                     <?= htmlspecialchars($app['full_name'] ?? $app['candidate_email'] ?? 'Unknown') ?>
                                                 </a>
+                                                <?php if (!empty($app['verified_badge'])): ?>
+                                                    <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"></path>
+                                                        </svg>
+                                                        Employment Verified
+                                                    </span>
+                                                    <?php if (empty($app['verification_unlocked'])): ?>
+                                                        <a href="/employer/verification?candidate_id=<?= (int)($app['candidate_id'] ?? 0) ?>"
+                                                           class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700">
+                                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a2 2 0 01-2-2v-3a2 2 0 114 0v3a2 2 0 01-2 2z"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10V7a5 5 0 0110 0v3"></path>
+                                                                <rect x="5" y="10" width="14" height="10" rx="2" ry="2" stroke-width="2"></rect>
+                                                            </svg>
+                                                            Unlock verification
+                                                        </a>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
                                                 <span class="text-sm text-muted-foreground"><?= htmlspecialchars($app['experience_years'] ?? '2') ?>Yrs, <?= htmlspecialchars($app['gender'] ?? 'Male') ?></span>
 
                                                 <?php if (!empty($app['overall_match_score'])): ?>

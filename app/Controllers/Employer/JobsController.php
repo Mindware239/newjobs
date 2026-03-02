@@ -120,18 +120,25 @@ class JobsController extends BaseController
             return;
         }
 
-        // Check KYC status
-        if (!$employer->isKycApproved()) {
-            $response->view('employer/kyc-pending', [
-                'title' => 'KYC Pending',
-                'employer' => $employer,
-                'message' => 'Your KYC documents are under review. You can post jobs once approved.'
-            ]);
+        // Require profile completion using model helper
+        if (method_exists($employer, 'isProfileComplete') && !$employer->isProfileComplete()) {
+            $_SESSION['profile_required_message'] = 'Please complete your company profile before posting jobs.';
+            $response->redirect('/employer/profile?setup=1&complete_required=1');
             return;
         }
+        if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
+            $_SESSION['profile_required_message'] = 'Your profile is awaiting admin verification. Please complete KYC.';
+            $response->redirect('/employer/kyc');
+            return;
+        }
+        // Address and company checks handled by isProfileComplete()
 
-        // Check if employer has posted any jobs before
-        $postedJobsCount = Job::where('employer_id', '=', $employer->id)->count();
+        
+
+        // Check if employer has posted any published jobs before
+        $postedJobsCount = Job::where('employer_id', '=', $employer->id)
+            ->where('status', '=', 'published')
+            ->count();
         // Check if free job was already consumed (persistent, even if job deleted)
         $hasConsumedFree = false;
         try {
@@ -141,9 +148,34 @@ class JobsController extends BaseController
             );
             $hasConsumedFree = $row !== null;
         } catch (\Throwable $t) {}
+        // Identity-based consumption: match by email/phone across employers
+        $hasConsumedByIdentity = false;
+        try {
+            $email = (string)($this->currentUser->attributes['email'] ?? '');
+            $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
+            $phone = preg_replace('/\D+/', '', $phoneRaw);
+            if ($email !== '' || $phone !== '') {
+                $db = \App\Core\Database::getInstance();
+                $params = [];
+                $where = [];
+                if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
+                if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
+                if (!empty($where)) {
+                    $sql = "SELECT l.id 
+                            FROM subscription_usage_logs l 
+                            INNER JOIN employers e ON e.id = l.employer_id 
+                            INNER JOIN users u ON u.id = e.user_id 
+                            WHERE l.action_type = 'free_job_used' 
+                            AND (" . implode(' OR ', $where) . ")
+                            LIMIT 1";
+                    $exists = $db->fetchOne($sql, $params);
+                    $hasConsumedByIdentity = $exists !== null;
+                }
+            }
+        } catch (\Throwable $t) {}
         
         // After first job OR once free job consumed, subscription is required
-        if ($postedJobsCount > 0 || $hasConsumedFree) {
+        if ($postedJobsCount > 0 || $hasConsumedFree || $hasConsumedByIdentity) {
             $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
             
             if (!$subscription) {
@@ -787,9 +819,23 @@ class JobsController extends BaseController
             $response->json(['error' => 'Employer profile not found'], 404);
             return;
         }
+        if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
+            $isAjax = strpos($request->header('Accept') ?? '', 'application/json') !== false ||
+                      strpos($request->header('Content-Type') ?? '', 'application/json') !== false;
+            $msg = 'Admin verification required before posting jobs. Please submit KYC.';
+            if ($isAjax) {
+                $response->json(['error' => 'kyc_required', 'message' => $msg, 'redirect' => '/employer/kyc'], 403);
+            } else {
+                $_SESSION['profile_required_message'] = $msg;
+                $response->redirect('/employer/kyc');
+            }
+            return;
+        }
 
-        // Check if employer has posted any jobs before
-        $postedJobsCount = Job::where('employer_id', '=', $employer->id)->count();
+        // Check if employer has posted any published jobs before
+        $postedJobsCount = Job::where('employer_id', '=', $employer->id)
+            ->where('status', '=', 'published')
+            ->count();
         // Persistent free job consumption flag
         $hasConsumedFree = false;
         try {
@@ -799,9 +845,34 @@ class JobsController extends BaseController
             );
             $hasConsumedFree = $row !== null;
         } catch (\Throwable $t) {}
+        // Identity-based consumption: match by email/phone across employers
+        $hasConsumedByIdentity = false;
+        try {
+            $email = (string)($this->currentUser->attributes['email'] ?? '');
+            $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
+            $phone = preg_replace('/\D+/', '', $phoneRaw);
+            if ($email !== '' || $phone !== '') {
+                $db = \App\Core\Database::getInstance();
+                $params = [];
+                $where = [];
+                if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
+                if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
+                if (!empty($where)) {
+                    $sql = "SELECT l.id 
+                            FROM subscription_usage_logs l 
+                            INNER JOIN employers e ON e.id = l.employer_id 
+                            INNER JOIN users u ON u.id = e.user_id 
+                            WHERE l.action_type = 'free_job_used' 
+                            AND (" . implode(' OR ', $where) . ")
+                            LIMIT 1";
+                    $exists = $db->fetchOne($sql, $params);
+                    $hasConsumedByIdentity = $exists !== null;
+                }
+            }
+        } catch (\Throwable $t) {}
         
-        // First job is free only if not consumed and count is zero
-        if (!$hasConsumedFree && $postedJobsCount === 0) {
+        // First job is free only if not consumed and count is zero and identity not consumed
+        if (!$hasConsumedFree && !$hasConsumedByIdentity && $postedJobsCount === 0) {
             // Allow first job posting without subscription
             // Continue to job creation below
         } else {
@@ -982,7 +1053,7 @@ class JobsController extends BaseController
             if (!$hasConsumedFree) {
                 try {
                     \App\Models\SubscriptionUsageLog::logUsage(
-                        0,
+                        null,
                         (int)$employer->id,
                         'free_job_used',
                         null,
@@ -1134,7 +1205,12 @@ class JobsController extends BaseController
             // Return JSON for API calls, redirect for form submissions
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') !== false || $request->header('Content-Type') === 'application/json') {
-                $response->json(['success' => true, 'job' => $job->toArray(), 'message' => 'Job created successfully'], 201);
+                $response->json([
+                    'success' => true,
+                    'job' => $job->toArray(),
+                    'job_id' => (int)($job->attributes['id'] ?? $job->id ?? 0),
+                    'message' => 'Job created successfully'
+                ], 201);
             } else {
                 $response->redirect('/employer/jobs');
             }
@@ -1267,7 +1343,78 @@ class JobsController extends BaseController
         
         // Update status if provided
         if (isset($data['status'])) {
-            $job->status = $data['status'];
+            $desiredStatus = (string)$data['status'];
+            if ($desiredStatus === 'published') {
+                // Enforce free-job gating before allowing publish
+                $postedJobsCount = Job::where('employer_id', '=', $employer->id)
+                    ->where('status', '=', 'published')
+                    ->count();
+                $hasConsumedFree = false;
+                try {
+                    $row = \App\Core\Database::getInstance()->fetchOne(
+                        "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
+                        ['eid' => (int)$employer->id]
+                    );
+                    $hasConsumedFree = $row !== null;
+                } catch (\Throwable $t) {}
+                // Identity-based consumption: match by email/phone across employers
+                $hasConsumedByIdentity = false;
+                try {
+                    $email = (string)($this->currentUser->attributes['email'] ?? '');
+                    $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
+                    $phone = preg_replace('/\D+/', '', $phoneRaw);
+                    if ($email !== '' || $phone !== '') {
+                        $db = \App\Core\Database::getInstance();
+                        $params = [];
+                        $where = [];
+                        if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
+                        if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
+                        if (!empty($where)) {
+                            $sql = "SELECT l.id 
+                                    FROM subscription_usage_logs l 
+                                    INNER JOIN employers e ON e.id = l.employer_id 
+                                    INNER JOIN users u ON u.id = e.user_id 
+                                    WHERE l.action_type = 'free_job_used' 
+                                    AND (" . implode(' OR ', $where) . ")
+                                    LIMIT 1";
+                            $exists = $db->fetchOne($sql, $params);
+                            $hasConsumedByIdentity = $exists !== null;
+                        }
+                    }
+                } catch (\Throwable $t) {}
+                
+                if (!$hasConsumedFree && !$hasConsumedByIdentity && $postedJobsCount === 0) {
+                    // First publish is free; proceed
+                    $job->status = 'published';
+                } else {
+                    // Require active subscription with available job posts
+                    $subscription = \App\Models\EmployerSubscription::getCurrentForEmployer($employer->id);
+                    if (!$subscription || (!$subscription->isActive() && !$subscription->isInGracePeriod())) {
+                        $response->json([
+                            'error' => 'subscription_required',
+                            'message' => 'You have used your free job posting. Please subscribe to a plan to publish more jobs.',
+                            'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
+                            'subscription_required' => true
+                        ], 402);
+                        return;
+                    }
+                    if (!$subscription->canUseFeature('max_job_posts')) {
+                        $plan = $subscription->plan();
+                        $used = (int)($subscription->attributes['job_posts_used'] ?? 0);
+                        $limit = $plan ? $plan->getLimit('max_job_posts') : 0;
+                        $response->json([
+                            'error' => 'limit_reached',
+                            'message' => "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan.",
+                            'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
+                            'subscription_required' => true
+                        ], 402);
+                        return;
+                    }
+                    $job->status = 'published';
+                }
+            } else {
+                $job->status = $desiredStatus;
+            }
         }
         
         if (!$job->save()) {
@@ -1279,9 +1426,45 @@ class JobsController extends BaseController
         
         error_log("Job Update - Job saved successfully. ID: " . ($job->attributes['id'] ?? $job->id));
 
-        // Trigger Job Matching if published
+        // Usage logging and matching when published
         try {
             if ($job->status === 'published') {
+                 // Increment subscription usage or mark free consumed
+                 $postedJobsCount = Job::where('employer_id', '=', $employer->id)
+                     ->where('status', '=', 'published')
+                     ->count();
+                 $hasConsumedFree = false;
+                 try {
+                     $row = \App\Core\Database::getInstance()->fetchOne(
+                         "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
+                         ['eid' => (int)$employer->id]
+                     );
+                     $hasConsumedFree = $row !== null;
+                 } catch (\Throwable $t) {}
+                 if (!$hasConsumedFree && $postedJobsCount === 1) {
+                     // First publish path: mark free consumed for persistence
+                     try {
+                         \App\Models\SubscriptionUsageLog::logUsage(
+                             null,
+                             (int)$employer->id,
+                             'free_job_used',
+                             null,
+                             (int)($job->attributes['id'] ?? $job->id ?? 0),
+                             null,
+                             ['source' => 'first_free']
+                         );
+                     } catch (\Throwable $t) {
+                         error_log('JobsController::update - Failed to log free job usage: ' . $t->getMessage());
+                     }
+                 } else {
+                     // Subscription path: increment usage if subscription exists
+                     try {
+                         $subscription = \App\Models\EmployerSubscription::getCurrentForEmployer($employer->id);
+                         if ($subscription) {
+                             $subscription->incrementUsage('max_job_posts');
+                         }
+                     } catch (\Throwable $t) {}
+                 }
                  $matchService = new \App\Services\JobMatchService();
                  $matchService->findAndNotifyCandidates($job);
             }
@@ -1476,6 +1659,10 @@ class JobsController extends BaseController
 
         if (!$job || $job->attributes['employer_id'] !== $employer->id) {
             $response->json(['error' => 'Job not found or unauthorized'], 404);
+            return;
+        }
+        if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
+            $response->json(['error' => 'kyc_required', 'message' => 'Admin verification required to publish jobs'], 403);
             return;
         }
 

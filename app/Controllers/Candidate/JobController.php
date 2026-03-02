@@ -235,13 +235,15 @@ class JobController extends BaseController
         }
         
         if ($salaryMin) {
-            $whereConditions[] = "(j.salary_max >= :salary_min OR j.salary_min >= :salary_min)";
-            $params['salary_min'] = $salaryMin;
+            $whereConditions[] = "(j.salary_max >= :salary_min_a OR j.salary_min >= :salary_min_b)";
+            $params['salary_min_a'] = $salaryMin;
+            $params['salary_min_b'] = $salaryMin;
         }
         
         if ($salaryMax && $salaryMax < 999999999) {
-            $whereConditions[] = "(j.salary_min <= :salary_max OR j.salary_max <= :salary_max)";
-            $params['salary_max'] = $salaryMax;
+            $whereConditions[] = "(j.salary_min <= :salary_max_a OR j.salary_max <= :salary_max_b)";
+            $params['salary_max_a'] = $salaryMax;
+            $params['salary_max_b'] = $salaryMax;
         }
         
         if ($experience && $experience !== 'Experience') {
@@ -1505,11 +1507,21 @@ class JobController extends BaseController
             }
         }
 
-        // Get applied jobs
+        // Get applied jobs (not limited to saved/bookmarked)
         $appliedJobs = [];
-        foreach ($savedJobs as $job) {
-            if (isset($applications[$job['id']])) {
-                $appliedJobs[] = $job;
+        if (!empty($applications)) {
+            $appliedJobIds = array_keys($applications);
+            foreach ($appliedJobIds as $jid) {
+                /** @var \App\Models\Job|null $job */
+                $job = Job::find((int)$jid);
+                if (!$job || ($job->attributes['status'] ?? '') !== 'published') {
+                    continue;
+                }
+                $jobData = $job->attributes;
+                $employer = $job->employer();
+                $jobData['company_name'] = $employer ? $employer->attributes['company_name'] : '';
+                $jobData['company_logo'] = $employer ? $employer->attributes['logo_url'] : null;
+                $appliedJobs[] = $jobData;
             }
         }
 

@@ -114,7 +114,7 @@ function __fmt_phone($number, $country) {
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         <?php $co = $companies[$employer['id']] ?? null; ?>
                         <form method="POST" action="/admin/employers/<?= (int)$employer['id'] ?>/feature" class="flex items-center gap-2">
-                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                             <label class="flex items-center gap-2">
                                 <input type="checkbox" name="is_featured" value="1" <?= !empty($co['is_featured']) ? 'checked' : '' ?> class="rounded border-gray-300">
                                 <span>Featured</span>

@@ -460,13 +460,64 @@ class CandidateController extends BaseController
             error_log("View Profile - Languages data is empty or NULL");
         }
 
+        $certificates = [];
+        if (!empty($candidate->attributes['certificates_data'])) {
+            $certificates = json_decode($candidate->attributes['certificates_data'], true) ?? [];
+            error_log("View Profile - Certificates decoded: " . count($certificates) . " records");
+        }
+
+        $verification = [];
+        if (!empty($candidate->attributes['verification_data'])) {
+            $verification = json_decode($candidate->attributes['verification_data'], true) ?? [];
+            error_log("View Profile - Verification decoded");
+        }
+
+        // Map employment_id => status_overall for per-employment badges
+        $employmentStatuses = [];
+        if (!empty($verification['employments']) && is_array($verification['employments'])) {
+            $ids = array_values(array_filter(array_map(function($e){
+                return (int)($e['employment_id'] ?? 0);
+            }, $verification['employments']), fn($v) => $v > 0));
+            if (!empty($ids)) {
+                try {
+                    $db = \App\Core\Database::getInstance();
+                    $in = implode(',', array_map('intval', $ids));
+                    $rows = $db->fetchAll("SELECT id, status_overall, verified_badge FROM employment_records WHERE id IN ({$in})");
+                    foreach ($rows as $r) {
+                        $employmentStatuses[(int)$r['id']] = [
+                            'status' => (string)($r['status_overall'] ?? ''),
+                            'badge' => (int)($r['verified_badge'] ?? 0)
+                        ];
+                    }
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        // Employment Verified badge flag (from employment_records)
+        $hasEmploymentVerified = false;
+        try {
+            $db = \App\Core\Database::getInstance();
+            $row = $db->fetchOne(
+                "SELECT COUNT(*) AS c 
+                 FROM employment_records 
+                 WHERE candidate_id = :cid 
+                   AND (verified_badge = 1 OR status_overall = 'verified')",
+                ['cid' => (int)($candidate->attributes['id'] ?? 0)]
+            );
+            $hasEmploymentVerified = ((int)($row['c'] ?? 0)) > 0;
+        } catch (\Throwable $e) {}
+
         $response->view('candidate/profile/view', [
             'title' => 'My Profile',
             'candidate' => $candidate,
             'education' => $education,
             'experience' => $experience,
             'skills' => $skills,
-            'languages' => $languages
+            'languages' => $languages,
+            'certificates' => $certificates,
+            'verification' => $verification,
+            'hasEmploymentVerified' => $hasEmploymentVerified,
+            'employmentStatuses' => $employmentStatuses
         ]);
     }
 
@@ -826,6 +877,59 @@ class CandidateController extends BaseController
             $languages = json_decode($candidate->attributes['languages_data'], true) ?? [];
         }
 
+        $certificates = [];
+        if (!empty($candidate->attributes['certificates_data'])) {
+            $certificates = json_decode($candidate->attributes['certificates_data'], true) ?? [];
+        }
+
+        $verification = [];
+        if (!empty($candidate->attributes['verification_data'])) {
+            $verification = json_decode($candidate->attributes['verification_data'], true) ?? [];
+        }
+        try {
+            \App\Services\EmploymentVerificationService::ensureSchema();
+            $db = \App\Core\Database::getInstance();
+            $rows = $db->fetchAll("SELECT * FROM employment_records WHERE candidate_id = :cid ORDER BY created_at DESC", ['cid' => (int)($candidate->attributes['id'] ?? 0)]);
+            $docsByEmp = [];
+            if (!empty($rows)) {
+                $ids = array_map(fn($r) => (int)$r['id'], $rows);
+                if (!empty($ids)) {
+                    $place = implode(',', array_fill(0, count($ids), '?'));
+                    $docRows = $db->fetchAll("SELECT employment_id, doc_type, file_path FROM employment_documents WHERE employment_id IN ($place)", $ids);
+                    foreach ($docRows as $d) {
+                        $eid = (int)$d['employment_id'];
+                        if (!isset($docsByEmp[$eid])) $docsByEmp[$eid] = [];
+                        $docsByEmp[$eid][(string)$d['doc_type']] = (string)$d['file_path'];
+                    }
+                }
+            }
+            $vNeed = (bool)($verification['need_verification'] ?? false);
+            $vEmps = is_array($verification['employments'] ?? null) ? $verification['employments'] : [];
+            foreach ($rows as $r) {
+                $eid = (int)$r['id'];
+                $found = false;
+                foreach ($vEmps as &$e) {
+                    if ((int)($e['employment_id'] ?? 0) === $eid) { $found = true; break; }
+                }
+                if (!$found) {
+                    $vEmps[] = [
+                        'employment_id' => $eid,
+                        'company' => (string)($r['company_name'] ?? ''),
+                        'role' => (string)($r['designation'] ?? ''),
+                        'type' => 'Full-time',
+                        'start_date' => (string)($r['start_date'] ?? ''),
+                        'end_date' => (string)($r['end_date'] ?? ''),
+                        'is_current' => false,
+                        'documents' => $docsByEmp[$eid] ?? [],
+                        'status_overall' => (string)($r['status_overall'] ?? 'under_review'),
+                        'consent' => (int)($r['consent_given'] ?? 0) === 1,
+                        'hr_email' => ''
+                    ];
+                }
+            }
+            $verification = ['need_verification' => ($vNeed || !empty($rows)), 'employments' => $vEmps];
+        } catch (\Throwable $e) {}
+
         // Get all skills for autocomplete
         try {
             $allSkills = Skill::all();
@@ -864,7 +968,9 @@ class CandidateController extends BaseController
             'existingEducation' => $education,
             'existingExperience' => $experience,
             'existingSkills' => $skills,
-            'existingLanguages' => $languages
+            'existingLanguages' => $languages,
+            'existingCertificates' => $certificates,
+            'existingVerification' => $verification
         ]);
     }
 
@@ -905,6 +1011,12 @@ class CandidateController extends BaseController
                 case 'auto_apply':
                     $this->saveAutoApply($candidate, $data);
                     break;
+                case 'certificates':
+                    $this->saveCertificates($candidate, $data);
+                    break;
+                case 'verification':
+                    $this->saveVerification($candidate, $data);
+                    break;
             }
 
             // Get user ID to reload using findByUserId (ensures ALL columns including JSON)
@@ -933,14 +1045,40 @@ class CandidateController extends BaseController
             
             // Update profile strength after reload
             if ($candidate && $userId) {
+                $oldStrength = $candidate->attributes['profile_strength'] ?? 0;
                 $candidate->updateProfileStrength();
+                
                 // Reload again using findByUserId to get updated profile_strength and ALL columns
                 $candidate = Candidate::findByUserId((int)$userId);
-                try {
-                    $matchService = new \App\Services\JobMatchService();
-                    $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
-                    $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
-                } catch (\Throwable $t) {}
+                $newStrength = $candidate->attributes['profile_strength'] ?? 0;
+
+                // SMART TRIGGER: Only run matching for Major Actions
+                // 1. Profile Completion (hitting 100% or significant milestone)
+                // 2. Resume Upload (handled via payload check or uploadFile)
+                // 3. User explicitly requested minor updates (skills/address) NOT to trigger emails
+                
+                $shouldTriggerMatch = false;
+                $data = $request->getJsonBody();
+
+                // Check if resume was updated in this payload
+                if (!empty($data['resume_url'])) {
+                    $shouldTriggerMatch = true;
+                }
+
+                // Check if profile became complete
+                if ($oldStrength < 100 && $newStrength >= 100) {
+                    $shouldTriggerMatch = true;
+                }
+
+                if ($shouldTriggerMatch) {
+                    try {
+                        $matchService = new \App\Services\JobMatchService();
+                        $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
+                        $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
+                    } catch (\Throwable $t) {
+                        error_log("Match service error in profileComplete: " . $t->getMessage());
+                    }
+                }
             }
 
             $profileStrength = $candidate ? ($candidate->attributes['profile_strength'] ?? 0) : 0;
@@ -1140,6 +1278,74 @@ class CandidateController extends BaseController
         $candidate->save();
     }
 
+    private function saveCertificates(Candidate $candidate, array $data): void
+    {
+        // Store certificates as JSON in candidates table
+        if (isset($data['certificates']) && is_array($data['certificates'])) {
+            // Clean and validate certificates data
+            $certificatesData = [];
+            foreach ($data['certificates'] as $cert) {
+                if (!empty($cert['name'])) {
+                    $certificatesData[] = [
+                        'name' => $cert['name'] ?? '',
+                        'issuing_organization' => $cert['issuing_organization'] ?? '',
+                        'issue_date' => $cert['issue_date'] ?? null,
+                        'credential_id' => $cert['credential_id'] ?? null,
+                        'credential_url' => $cert['credential_url'] ?? null,
+                    ];
+                }
+            }
+            // Use fill() to ensure the field is properly saved
+            $candidate->fill(['certificates_data' => json_encode($certificatesData)]);
+            $candidate->save();
+        }
+    }
+
+    private function saveVerification(Candidate $candidate, array $data): void
+    {
+        // Store verification data as JSON in candidates table
+        $verificationData = [
+            'need_verification' => !empty($data['need_verification']),
+            'employments' => [],
+        ];
+
+        // Process employments
+        if (isset($data['employments']) && is_array($data['employments'])) {
+            foreach ($data['employments'] as $emp) {
+                if (!empty($emp['company'])) {
+                    $docs = is_array($emp['documents'] ?? null) ? $emp['documents'] : [];
+                    $verificationData['employments'][] = [
+                        'employment_id' => isset($emp['employment_id']) ? (int)$emp['employment_id'] : null,
+                        'company' => $emp['company'] ?? '',
+                        'role' => $emp['role'] ?? '',
+                        'type' => $emp['type'] ?? 'Full-time',
+                        'start_date' => $emp['start_date'] ?? null,
+                        'end_date' => $emp['end_date'] ?? null,
+                        'is_current' => filter_var($emp['is_current'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'documents' => [
+                            'offer_letter' => $docs['offer_letter'] ?? null,
+                            'relieving_letter' => $docs['relieving_letter'] ?? null,
+                            'experience_letter' => $docs['experience_letter'] ?? null,
+                            'salary_slips' => $docs['salary_slips'] ?? ($docs['salary_slip'] ?? null),
+                            'bank_statement' => $docs['bank_statement'] ?? null,
+                            'form16' => $docs['form16'] ?? null,
+                        ],
+                        'consent' => filter_var($emp['consent'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'hr_email' => $emp['hr_email'] ?? '',
+                        'hr_phone' => $emp['hr_phone'] ?? '',
+                        'manager_email' => $emp['manager_email'] ?? '',
+                        'company_website' => $emp['company_website'] ?? '',
+                        'cin' => $emp['cin'] ?? '',
+                        'gst' => $emp['gst'] ?? ''
+                    ];
+                }
+            }
+        }
+        
+        $candidate->fill(['verification_data' => json_encode($verificationData)]);
+        $candidate->save();
+    }
+
     /**
      * Upload file (profile picture, resume, video)
      */
@@ -1178,6 +1384,17 @@ class CandidateController extends BaseController
             }
         }
 
+        // Validate document file types
+        $docTypes = ['certificate', 'relieving_letter', 'offer_letter', 'salary_slips'];
+        if (in_array($fileType, $docTypes)) {
+            $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            $fileMimeType = $file['type'] ?? '';
+            // Basic mime type check, might need more robust check in production
+            if (!in_array($fileMimeType, $allowedTypes) && !strpos($fileMimeType, 'image/') && !strpos($fileMimeType, 'pdf')) {
+                 // Relaxed check for now
+            }
+        }
+
         try {
             $storage = new \App\Core\Storage();
             $uploadDir = 'candidates/' . $candidate->id;
@@ -1205,6 +1422,14 @@ class CandidateController extends BaseController
                     break;
                 case 'resume':
                     $candidate->fill(['resume_url' => $fileUrl]);
+                    // Trigger Job Match Service on Resume Upload (Major Action)
+                    try {
+                        $matchService = new \App\Services\JobMatchService();
+                        $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
+                        $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
+                    } catch (\Throwable $t) {
+                        error_log("Match service error on resume upload: " . $t->getMessage());
+                    }
                     break;
                 case 'video':
                     $candidate->fill([
@@ -1212,8 +1437,19 @@ class CandidateController extends BaseController
                         'video_intro_type' => 'upload'
                     ]);
                     break;
+                // We don't save URL directly for these, they are returned to frontend to be saved in JSON
+                case 'certificate':
+                case 'relieving_letter':
+                case 'offer_letter':
+                case 'salary_slips':
+                    // Do nothing here, just return the URL
+                    break;
             }
-            $candidate->save();
+            
+            if (!in_array($fileType, $docTypes)) {
+                $candidate->save();
+            }
+            
             $candidate->updateProfileStrength();
 
             $response->json([

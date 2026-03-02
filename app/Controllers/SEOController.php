@@ -270,11 +270,23 @@ class SEOController
                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     }
 
+    // private function renderXml(Response $response, string $xml): void
+    // {
+    //     $response->setHeader('Content-Type', 'application/xml');
+    //     $response->setBody($xml);
+    // }
     private function renderXml(Response $response, string $xml): void
-    {
-        $response->setHeader('Content-Type', 'application/xml');
-        $response->setBody($xml);
+{
+    http_response_code(200);
+    header('Content-Type: application/xml; charset=utf-8');
+
+    if (ob_get_level()) {
+        ob_clean();
     }
+
+    echo $xml;
+    exit;
+}
 
     private function urlElement(string $url, string $priority, string $changefreq, ?string $lastmod = null): string
     {

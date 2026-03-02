@@ -5,7 +5,7 @@
         <p class="mt-1 text-gray-600 text-sm">Discover leading employers across industries and locations</p>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
+    <!-- <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
         <a href="/company/featured?industry=MNC" class="group rounded-2xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 p-4 flex items-center justify-between transition transform hover:-translate-y-0.5">
             <div>
                 <div class="font-semibold text-gray-900">MNCs</div>
@@ -41,7 +41,7 @@
             </div>
             <svg class="w-5 h-5 text-emerald-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </a>
-    </div>
+    </div> -->
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside class="lg:col-span-1">
@@ -50,19 +50,19 @@
                 <form method="GET" action="/company/featured" class="space-y-4">
                     <div>
                         <label class="text-xs font-medium text-gray-700">Search company</label>
-                        <input type="text" name="q" value="<?= htmlspecialchars($filters['q'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500" placeholder="Search company">
+                        <input type="text" name="q" value="<?= htmlspecialchars($filters['q'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-gray-500" placeholder="Search company">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-700">Location</label>
-                        <input type="text" name="location" value="<?= htmlspecialchars($filters['location'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500" placeholder="e.g. Mumbai">
+                        <input type="text" name="location" value="<?= htmlspecialchars($filters['location'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-gray-500" placeholder="e.g. Mumbai">        
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-700">Industry</label>
-                        <input type="text" name="industry" value="<?= htmlspecialchars($filters['industry'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500" placeholder="e.g. IT Services">
+                        <input type="text" name="industry" value="<?= htmlspecialchars($filters['industry'] ?? '') ?>" class="mt-1 w-full px-3 py-2 border border-blue-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-gray-500" placeholder="e.g. IT Services">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-700">Department</label>
-                        <select name="department" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500">
+                        <select name="department" class="mt-1 w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-gray-500">
                             <option value="" <?= (($filters['department'] ?? '') === '') ? 'selected' : '' ?>>All Departments</option>
                             <option value="Engineering - Software & QA" <?= (($filters['department'] ?? '') === 'Engineering - Software & QA') ? 'selected' : '' ?>>Engineering - Software & QA</option>
                             <option value="Sales & Business Development" <?= (($filters['department'] ?? '') === 'Sales & Business Development') ? 'selected' : '' ?>>Sales & Business Development</option>

@@ -15,6 +15,7 @@ use App\Core\RedisClient;
 use App\Services\GoogleOAuthService;
 use App\Services\AppleOAuthService;
 use App\Services\MailService;
+use App\Services\CookieService;
 
 class AuthController extends BaseController
 {
@@ -132,10 +133,6 @@ class AuthController extends BaseController
             $errors = $this->validate($data, [
                 'email' => 'required|email',
                 'password' => 'required|password_strong|min:8|max:20',
-                'company_name' => 'required',
-                'phone' => 'required',
-                'country' => 'required',
-                'company_size' => 'required',
             ]);
 
             if (!empty($errors)) {
@@ -156,7 +153,7 @@ class AuthController extends BaseController
                 'email' => $data['email'],
                 'role' => 'employer',
                 'status' => 'pending',
-                'phone' => ($data['country_code'] ?? '') . ($data['phone'] ?? '')
+                'phone' => isset($data['phone']) ? (($data['country_code'] ?? '') . ($data['phone'] ?? '')) : null
             ]);
             $user->setPassword($data['password']);
 
@@ -184,16 +181,26 @@ class AuthController extends BaseController
         }
         
         $employer = new Employer();
+        $companyName = trim((string)($data['company_name'] ?? ''));
+        if ($companyName === '') {
+            $emailLocal = '';
+            try {
+                $emailParts = explode('@', (string)($data['email'] ?? ''));
+                $emailLocal = trim((string)($emailParts[0] ?? ''));
+            } catch (\Throwable $t) {}
+            $companyName = $emailLocal !== '' ? ucfirst($emailLocal) : ('Company ' . (string)$user->id);
+        }
+        $companySlug = $companyName !== '' ? (new Employer())->generateSlug($companyName) : ('company-' . (string)$user->id);
         $employer->fill([
             'user_id' => $user->id,
-            'company_name' => $data['company_name'],
-            'company_slug' => $employer->generateSlug($data['company_name']),
+            'company_name' => $companyName,
+            'company_slug' => $companySlug,
             'website' => $data['website'] ?? null,
             'description' => $data['description'] ?? null,
             'industry' => $data['industry'] ?? null,
-            'size' => $data['company_size'],
+            'size' => isset($data['company_size']) ? $data['company_size'] : null,
             'address' => !empty($address) ? json_encode($address, JSON_UNESCAPED_UNICODE) : null,
-            'country' => $data['country'],
+            'country' => $data['country'] ?? null,
             'state' => $address['state'] ?? null,
             'city' => $address['city'] ?? null,
             'postal_code' => $address['postal_code'] ?? null,
@@ -249,6 +256,21 @@ class AuthController extends BaseController
                 $file = $request->file($fileKey);
                 if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
                     try {
+                        $allowedExt = ['pdf','jpg','jpeg','png'];
+                        $name = (string)($file['name'] ?? '');
+                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                        if (!in_array($ext, $allowedExt, true)) {
+                            throw new \Exception('Invalid file type');
+                        }
+                        $sizeBytes = (int)($file['size'] ?? 0);
+                        if ($sizeBytes <= 0 || $sizeBytes > 10 * 1024 * 1024) {
+                            throw new \Exception('File too large');
+                        }
+                        $mime = (string)($file['type'] ?? '');
+                        $allowedMime = ['application/pdf','image/jpeg','image/png'];
+                        if ($mime !== '' && !in_array($mime, $allowedMime, true)) {
+                            throw new \Exception('Invalid MIME type');
+                        }
                         // Ensure upload directory exists
                         $uploadDir = __DIR__ . '/../../storage/uploads/kyc/' . $employer->id;
                         if (!is_dir($uploadDir)) {
@@ -297,7 +319,7 @@ class AuthController extends BaseController
         error_log("✓ Session set - User ID: {$user->id}, Role: {$user->role}");
 
         // Always return JSON with redirect info for JavaScript to handle
-        $redirectUrl = count($uploadedDocs) >= 3 ? '/employer/dashboard' : '/employer/kyc';
+        $redirectUrl = '/employer/company-profile';
         
         error_log("✓ Registration complete - User ID: {$user->id}, Employer ID: {$employer->id}, Redirect: {$redirectUrl}");
         
@@ -468,6 +490,7 @@ class AuthController extends BaseController
         // Show login form
         if ($request->getMethod() === 'GET') {
             $redirect = $request->get('redirect');
+            \App\Middlewares\CsrfMiddleware::generateToken();
             $response->view('auth/login', [
                 'title' => 'Login',
                 'redirect' => $redirect
@@ -484,12 +507,42 @@ class AuthController extends BaseController
         $email = $data['email'] ?? '';
         $password = $data['password'] ?? '';
 
+        $redis = RedisClient::getInstance();
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $rateKey = 'login_attempt:' . strtolower((string)$email) . ':' . $ip;
+        $attempts = 0;
+        try {
+            $val = $redis->isAvailable() ? $redis->get($rateKey) : null;
+            $attempts = is_array($val) ? (int)($val['count'] ?? 0) : (int)($val ?? 0);
+        } catch (\Throwable $t) {}
+        if ($attempts >= 5) {
+            $response->json(['error' => 'Too many attempts. Please try again later.'], 429);
+            return;
+        }
         $user = User::where('email', '=', $email)->first();
         /** @var \App\Models\User|null $user */
-        if (!$user || !$user->verifyPassword($password)) {
+        if (!$user) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
-                $response->json(['error' => 'Invalid credentials'], 401);
+                $response->json(['error' => 'User not registered. Please create an account first.'], 404);
+            } else {
+                $response->view('auth/login', [
+                    'title' => 'Login',
+                    'error' => 'You are not registered with us. Please create an account first.',
+                    'redirect' => $request->get('redirect')
+                ]);
+            }
+            try {
+                if ($redis->isAvailable()) {
+                    $redis->set($rateKey, ['count' => $attempts + 1], 300);
+                }
+            } catch (\Throwable $t) {}
+            return;
+        }
+        if (!$user->verifyPassword($password)) {
+            $acceptHeader = $request->header('Accept') ?? '';
+            if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
+                $response->json(['error' => 'Invalid email or password'], 401);
             } else {
                 $response->view('auth/login', [
                     'title' => 'Login',
@@ -497,8 +550,18 @@ class AuthController extends BaseController
                     'redirect' => $request->get('redirect')
                 ]);
             }
+            try {
+                if ($redis->isAvailable()) {
+                    $redis->set($rateKey, ['count' => $attempts + 1], 300);
+                }
+            } catch (\Throwable $t) {}
             return;
         }
+        try {
+            if ($redis->isAvailable()) {
+                $redis->set($rateKey, 0, 300);
+            }
+        } catch (\Throwable $t) {}
 
         if ($user->status !== 'active') {
             $acceptHeader = $request->header('Accept') ?? '';
@@ -517,6 +580,9 @@ class AuthController extends BaseController
         // Update last login
         $user->last_login = date('Y-m-d H:i:s');
         $user->save();
+        if (function_exists('session_regenerate_id')) {
+            session_regenerate_id(true);
+        }
 
         // Set session
         $_SESSION['user_id'] = $user->id;
@@ -545,6 +611,7 @@ class AuthController extends BaseController
                 $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
             }
         }
+        try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
         error_log("✓ Login successful - User ID: {$user->id}, Role: {$user->role}");
 
         $acceptHeader = $request->header('Accept') ?? '';
@@ -772,6 +839,7 @@ class AuthController extends BaseController
                     $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
                 }
             }
+            try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
             
             // Determine redirect URL
             $redirect = $_SESSION['oauth_redirect'] ?? null;
@@ -970,6 +1038,7 @@ class AuthController extends BaseController
                     $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
                 }
             }
+            try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
             
             // Determine redirect URL
             $redirect = $_SESSION['oauth_redirect'] ?? null;
@@ -1395,9 +1464,10 @@ class AuthController extends BaseController
             'success' => true,
             'message' => 'If an account exists with that email, a password reset link has been sent.'
         ];
-        
-        // Only include reset_link in development (remove in production!)
-        if ($resetLink) {
+        $env = getenv('APP_ENV') ?: '';
+        $hostName = $_SERVER['HTTP_HOST'] ?? '';
+        $isLocal = in_array(strtolower($env), ['local','development','dev'], true) || in_array($hostName, ['localhost','127.0.0.1'], true);
+        if ($isLocal && $resetLink) {
             $responseData['reset_link'] = $resetLink;
         }
         

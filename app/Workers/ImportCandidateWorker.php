@@ -120,30 +120,25 @@ class ImportCandidateWorker extends BaseWorker
                     $userId = $u['id'];
                 }
 
-                // Create Candidate
-                $candidate = new Candidate();
-                $candData = [
-                    'user_id' => $userId,
+                // Create Candidate via Single Source of Truth
+                $candInit = [
                     'full_name' => $rowData['full_name'] ?? $rowData['name'] ?? 'Unknown',
                     'mobile' => $rowData['phone'] ?? $rowData['mobile'] ?? null,
                     'city' => $rowData['city'] ?? $rowData['location'] ?? null,
                     'created_by' => 'admin',
                     'source' => $data['source'] ?? 'excel',
-                    'profile_status' => 'inactive',
-                    'visibility' => 'private', // Not visible until verified
+                    'profile_status' => 'unverified',
+                    'visibility' => 'limited',
                     'profile_strength' => 0,
                     'is_profile_complete' => 0
                 ];
-                
-                // Handle Skills (tag input -> json)
                 if (!empty($rowData['skills'])) {
-                    // Assume comma separated
                     $skills = array_map('trim', explode(',', $rowData['skills']));
-                    $candData['skills_data'] = json_encode($skills);
+                    $candInit['skills_data'] = json_encode($skills);
                 }
-
-                $candidate->fill($candData);
-                $candidate->save();
+                $candidate = \App\Services\CandidateCreationService::class;
+                $service = new \App\Services\CandidateCreationService();
+                $candidate = $service->ensureCandidateForUser((int)$userId, $candInit);
 
                 $db->commit();
                 $successCount++;

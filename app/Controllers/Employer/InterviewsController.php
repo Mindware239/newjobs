@@ -357,12 +357,28 @@ class InterviewsController extends BaseController
                         WHERE a.id = :application_id";
             $info = $db->fetchOne($infoSql, ['application_id' => $applicationId]);
             if ($info && !empty($info['candidate_email'])) {
+                // Derive mode label
+                $modeLabel = 'Telephonic';
+                $type = strtolower((string)$interviewType);
+                if ($type === 'in_person' || $type === 'offline' || $type === 'physical') {
+                    $modeLabel = 'In-Person';
+                } elseif ($type === 'video') {
+                    $host = strtolower((string)(parse_url((string)$meetingLink, PHP_URL_HOST) ?: ''));
+                    if (strpos($host, 'zoom.us') !== false)          $modeLabel = 'Zoom';
+                    elseif (strpos($host, 'meet.google.com') !== false) $modeLabel = 'Google Meet';
+                    elseif (strpos($host, 'teams.microsoft.com') !== false || strpos($host, 'office.com') !== false) $modeLabel = 'Microsoft Teams';
+                    elseif (strpos($host, 'jit.si') !== false)       $modeLabel = 'Jitsi';
+                    else                                             $modeLabel = 'Video';
+                }
                 \App\Services\NotificationService::queueEmail(
                     $info['candidate_email'],
                     'interview_scheduled',
                     [
                         'job_title' => (string)($info['job_title'] ?? ''),
                         'scheduled_time' => date('M d, Y h:i A', $startTime),
+                        'interview_date' => date('M d, Y', $startTime),
+                        'interview_time' => date('h:i A', $startTime),
+                        'interview_mode' => $modeLabel,
                         'employer_id' => (int)$employer->id,
                         'candidate_user_id' => (int)$info['candidate_user_id'],
                         'interview_id' => (int)$interviewId,
@@ -370,8 +386,11 @@ class InterviewsController extends BaseController
                         'company_logo' => (string)($info['company_logo'] ?? ''),
                         'company_website' => (string)($info['company_website'] ?? ''),
                         'candidate_name' => (string)($info['candidate_name'] ?? 'Candidate'),
+                        'job_location' => (string)$location,
                         'location' => (string)$location,
-                        'meeting_link' => (string)$meetingLink
+                        'meeting_link' => (string)$meetingLink,
+                        'view_details_link' => ($_ENV['APP_URL'] ?? '') . '/candidate/applications',
+                        'add_calendar_link' => ($_ENV['APP_URL'] ?? '') . '/candidate/applications'
                 ]
             );
 

@@ -13,6 +13,12 @@ class RazorpayWebhookController
 {
     public function handle(Request $request, Response $response): void
     {
+        $len = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+        if ($len > 5000) {
+            $response->setStatusCode(413);
+            $response->json(['error' => 'payload_too_large']);
+            return;
+        }
         $payload = file_get_contents('php://input');
         $config = require __DIR__ . '/../../../config/razorpay.php';
         $secret = (string)($config['webhook_secret'] ?? '');
@@ -45,22 +51,22 @@ class RazorpayWebhookController
         $paymentId = isset($notes['subscription_payment_id']) ? (int)$notes['subscription_payment_id'] : 0;
         $employerIdNote = isset($notes['employer_id']) ? (int)$notes['employer_id'] : null;
 
-        // Optional: log inbound webhook event if table supports it
         try {
+            $eventId = (string)($gatewayPaymentId ?: ($data['payload']['refund']['entity']['id'] ?? ($orderId ?? '')));
             $db = Database::getInstance();
             $db->query(
-                'INSERT INTO webhooks (gateway, event_type, payload, processed, received_at, employer_id) 
-                 VALUES (:gateway, :event_type, :payload, 0, NOW(), :employer_id)',
+                'INSERT INTO webhooks (gateway, event_type, event_id, signature, payload, processed, received_at, employer_id) 
+                 VALUES (:gateway, :event_type, :event_id, :signature, :payload, 0, NOW(), :employer_id)',
                 [
                     'gateway' => 'razorpay',
                     'event_type' => (string)$event,
+                    'event_id' => $eventId ?: md5($payload),
+                    'signature' => $signature,
                     'payload' => json_encode($data),
                     'employer_id' => $employerIdNote
                 ]
             );
-        } catch (\Throwable $t) {
-            // silently ignore if table/columns differ
-        }
+        } catch (\Throwable $t) {}
 
         if (!$paymentId) {
             $response->json(['message' => 'ignored']);
@@ -70,7 +76,6 @@ class RazorpayWebhookController
         $db = Database::getInstance();
         $db->beginTransaction();
         try {
-            // Lock the subscription payment record
             $subPay = $db->fetchOne('SELECT * FROM subscription_payments WHERE id = :id FOR UPDATE', ['id' => $paymentId]);
             
             if (!$subPay) {
@@ -79,9 +84,8 @@ class RazorpayWebhookController
                 return;
             }
             
-            // Find linked employer_payment
-            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE meta LIKE :like AND employer_id = :eid FOR UPDATE', [
-                'like' => '%"subscription_payment_id":' . $paymentId . '%',
+            $empPay = $db->fetchOne('SELECT * FROM employer_payments WHERE subscription_payment_id = :sid AND employer_id = :eid FOR UPDATE', [
+                'sid' => $paymentId,
                 'eid' => $subPay['employer_id']
             ]);
 
@@ -136,7 +140,6 @@ class RazorpayWebhookController
                     'id' => $paymentId
                 ]);
 
-                // Update Employer Payment
                 if ($empPay) {
                      $meta = json_decode($empPay['meta'] ?? '{}', true);
                      $meta['razorpay'] = ['payment_id' => $gatewayPaymentId, 'order_id' => $orderId];
@@ -146,12 +149,13 @@ class RazorpayWebhookController
                          'id' => $empPay['id']
                      ]);
                 } else {
-                    // Create employer payment record if missing (should exist from createOrder)
-                    $db->query('INSERT INTO employer_payments (employer_id, amount, currency, gateway, payment_method, status, txn_id, created_at) VALUES (:eid, :amt, :curr, "razorpay", "webhook", "success", :txn, NOW())', [
+                    $db->query('INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) VALUES (:eid, :sid, :amt, :curr, "razorpay", "webhook", "success", :txn, :meta, NOW())', [
                         'eid' => $expectedEmployerId,
+                        'sid' => $paymentId,
                         'amt' => $subPay['amount'],
                         'curr' => $subPay['currency'],
-                        'txn' => $gatewayPaymentId
+                        'txn' => $gatewayPaymentId,
+                        'meta' => json_encode(['subscription_payment_id' => $paymentId, 'razorpay' => ['payment_id' => $gatewayPaymentId, 'order_id' => $orderId]])
                     ]);
                 }
 
@@ -161,14 +165,17 @@ class RazorpayWebhookController
                     $subscription = $db->fetchOne('SELECT * FROM employer_subscriptions WHERE id = :id', ['id' => $subscriptionId]);
                     if ($subscription) {
                         $cycle = strtolower((string)($subscription['billing_cycle'] ?? 'monthly'));
+                        $baseTs = isset($subscription['expires_at']) && $subscription['expires_at'] ? max(strtotime((string)$subscription['expires_at']), time()) : time();
+                        $start = date('Y-m-d H:i:s', $baseTs);
                         $expires = match ($cycle) {
-                            'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months')),
-                            'annual' => date('Y-m-d H:i:s', strtotime('+1 year')),
-                            default => date('Y-m-d H:i:s', strtotime('+1 month')),
+                            'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months', $baseTs)),
+                            'annual' => date('Y-m-d H:i:s', strtotime('+1 year', $baseTs)),
+                            default => date('Y-m-d H:i:s', strtotime('+1 month', $baseTs)),
                         };
-                        $db->query('UPDATE employer_subscriptions SET status = "active", expires_at = :exp, next_billing_date = :exp WHERE id = :id', [
+                        $db->query('UPDATE employer_subscriptions SET status = "active", expires_at = :exp, next_billing_date = :next WHERE id = :id', [
+                            'id' => $subscriptionId,
                             'exp' => $expires,
-                            'id' => $subscriptionId
+                            'next' => $expires
                         ]);
                     }
                 }

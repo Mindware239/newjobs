@@ -2,14 +2,18 @@
 
 use App\Core\Router;
 use App\Middlewares\AdminMiddleware;
+use App\Middlewares\CsrfMiddleware;
+use App\Middlewares\RateLimitMiddleware;
 
 $router = \App\Core\Router::getInstance();
 $adminMiddleware = new AdminMiddleware();
+$csrfMiddleware = new CsrfMiddleware();
+$adminLoginRateLimit = new RateLimitMiddleware(5, 60);
 
 // Admin Auth Routes (No middleware)
 $router->get('/admin/login', [App\Controllers\Admin\AuthController::class, 'showLogin']);
-$router->post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login']);
-$router->post('/admin/2fa/verify', [App\Controllers\Admin\AuthController::class, 'verifyOtp']);
+$router->post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login'], [$adminLoginRateLimit, $csrfMiddleware]);
+$router->post('/admin/2fa/verify', [App\Controllers\Admin\AuthController::class, 'verifyOtp'], [$adminLoginRateLimit, $csrfMiddleware]);
 $router->get('/admin/logout', [App\Controllers\Admin\AuthController::class, 'logout']);
 
 // Captcha Route (No middleware)
@@ -26,9 +30,9 @@ $router->get('/admin/error', function ($request, $response) {
 
 // Admin Forgot/Reset Password (reuse Front AuthController)
 $router->get('/admin/forgot-password', [App\Controllers\Front\AuthController::class, 'forgotPassword']);
-$router->post('/admin/forgot-password', [App\Controllers\Front\AuthController::class, 'forgotPassword']);
+$router->post('/admin/forgot-password', [App\Controllers\Front\AuthController::class, 'forgotPassword'], [$adminLoginRateLimit, $csrfMiddleware]);
 $router->get('/admin/reset-password', [App\Controllers\Front\AuthController::class, 'resetPassword']);
-$router->post('/admin/reset-password', [App\Controllers\Front\AuthController::class, 'resetPassword']);
+$router->post('/admin/reset-password', [App\Controllers\Front\AuthController::class, 'resetPassword'], [$adminLoginRateLimit, $csrfMiddleware]);
 
 // Admin Dashboard (Protected)
 $router->get('/admin/dashboard', [App\Controllers\Admin\DashboardController::class, 'index'], [$adminMiddleware]);
@@ -78,9 +82,22 @@ $router->post('/admin/payments/{id}/refund', [App\Controllers\Admin\PaymentsCont
 // Subscriptions Management (Protected)
 $router->get('/admin/subscriptions', [App\Controllers\Admin\SubscriptionsController::class, 'index'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/plans', [App\Controllers\Admin\SubscriptionsController::class, 'plans'], [$adminMiddleware]);
+$router->get('/admin/subscriptions/plans/{id}/edit', [App\Controllers\Admin\SubscriptionsController::class, 'editPlan'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/plans/{id}/duplicate', [App\Controllers\Admin\SubscriptionsController::class, 'duplicatePlan'], [$adminMiddleware]);
 $router->post('/admin/subscriptions/plans', [App\Controllers\Admin\SubscriptionsController::class, 'createPlan'], [$adminMiddleware]);
 $router->put('/admin/subscriptions/plans/{id}', [App\Controllers\Admin\SubscriptionsController::class, 'updatePlan'], [$adminMiddleware]);
 $router->delete('/admin/subscriptions/plans/{id}', [App\Controllers\Admin\SubscriptionsController::class, 'deletePlan'], [$adminMiddleware]);
+$router->get('/admin/subscriptions/{id}', [App\Controllers\Admin\SubscriptionsController::class, 'show'], [$adminMiddleware]);
+// Lifecycle actions
+$router->post('/admin/subscriptions/{id}/status', [App\Controllers\Admin\SubscriptionsController::class, 'updateStatus'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/change-plan', [App\Controllers\Admin\SubscriptionsController::class, 'changePlan'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/extend', [App\Controllers\Admin\SubscriptionsController::class, 'extend'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/auto-renew', [App\Controllers\Admin\SubscriptionsController::class, 'toggleAutoRenew'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/reset-usage', [App\Controllers\Admin\SubscriptionsController::class, 'resetUsage'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/grace', [App\Controllers\Admin\SubscriptionsController::class, 'setGrace'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/{id}/credits', [App\Controllers\Admin\SubscriptionsController::class, 'addCredit'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/payments/{payment_id}/regenerate-invoice', [App\Controllers\Admin\SubscriptionsController::class, 'regenerateInvoice'], [$adminMiddleware]);
+$router->post('/admin/subscriptions/cleanup', [App\Controllers\Admin\SubscriptionsController::class, 'cleanupDuplicates'], [$adminMiddleware]);
 
 // Reports (Protected)
 $router->get('/admin/reports', [App\Controllers\Admin\ReportsController::class, 'index'], [$adminMiddleware]);
@@ -102,6 +119,7 @@ $router->get('/admin/marketing/campaigns', [App\Controllers\Admin\BulkEmailsCont
 $router->get('/admin/marketing/campaigns/create', [App\Controllers\Admin\BulkEmailsController::class, 'create'], [$adminMiddleware]);
 $router->post('/admin/marketing/campaigns', [App\Controllers\Admin\BulkEmailsController::class, 'send'], [$adminMiddleware]);
 $router->get('/admin/marketing/campaigns/{id}', [App\Controllers\Admin\BulkEmailsController::class, 'show'], [$adminMiddleware]);
+$router->post('/admin/marketing/campaigns/{id}/delete', [App\Controllers\Admin\BulkEmailsController::class, 'delete'], [$adminMiddleware]);
 
 // Job Categories Management (Protected)
 $router->get('/admin/job-categories', [App\Controllers\Admin\JobCategoriesController::class, 'index'], [$adminMiddleware]);
@@ -163,6 +181,22 @@ $router->get('/admin/blog-tags/{id}/edit', [App\Controllers\Admin\TagController:
 $router->post('/admin/blog-tags/{id}/update', [App\Controllers\Admin\TagController::class, 'update'], [$adminMiddleware]);
 $router->post('/admin/blog-tags/{id}/delete', [App\Controllers\Admin\TagController::class, 'delete'], [$adminMiddleware]);
 
+// Career Insight Articles (Protected)
+$router->get('/admin/career-articles', [App\Controllers\Admin\CareerArticlesController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/career-articles/create', [App\Controllers\Admin\CareerArticlesController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/career-articles/store', [App\Controllers\Admin\CareerArticlesController::class, 'store'], [$adminMiddleware]);
+$router->get('/admin/career-articles/{id}/edit', [App\Controllers\Admin\CareerArticlesController::class, 'edit'], [$adminMiddleware]);
+$router->post('/admin/career-articles/{id}/update', [App\Controllers\Admin\CareerArticlesController::class, 'update'], [$adminMiddleware]);
+$router->post('/admin/career-articles/{id}/delete', [App\Controllers\Admin\CareerArticlesController::class, 'delete'], [$adminMiddleware]);
+$router->get('/admin/career-articles/{id}/preview', [App\Controllers\Admin\CareerArticlesController::class, 'preview'], [$adminMiddleware]);
+
+// Article Categories (Protected)
+$router->get('/admin/article-categories', [App\Controllers\Admin\ArticleCategoriesController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/article-categories/create', [App\Controllers\Admin\ArticleCategoriesController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/article-categories/store', [App\Controllers\Admin\ArticleCategoriesController::class, 'store'], [$adminMiddleware]);
+$router->get('/admin/article-categories/{id}/edit', [App\Controllers\Admin\ArticleCategoriesController::class, 'edit'], [$adminMiddleware]);
+$router->post('/admin/article-categories/{id}/update', [App\Controllers\Admin\ArticleCategoriesController::class, 'update'], [$adminMiddleware]);
+$router->post('/admin/article-categories/{id}/delete', [App\Controllers\Admin\ArticleCategoriesController::class, 'delete'], [$adminMiddleware]);
 // Bulk Emails (Protected)
 $router->get('/admin/bulk-emails', [App\Controllers\Admin\BulkEmailsController::class, 'index'], [$adminMiddleware]);
 $router->post('/admin/bulk-emails/send', [App\Controllers\Admin\BulkEmailsController::class, 'send'], [$adminMiddleware]);
@@ -173,3 +207,42 @@ $router->post('/admin/notification-templates', [App\Controllers\Admin\Notificati
 $router->get('/admin/notification-templates/{id}/edit', [App\Controllers\Admin\NotificationTemplatesController::class, 'edit'], [$adminMiddleware]);
 $router->post('/admin/notification-templates/{id}', [App\Controllers\Admin\NotificationTemplatesController::class, 'update'], [$adminMiddleware]);
 $router->post('/admin/notification-templates/{id}/delete', [App\Controllers\Admin\NotificationTemplatesController::class, 'delete'], [$adminMiddleware]);
+
+// Bulk Uploaders
+$router->get('/admin/bulk-uploaders', [App\Controllers\Admin\BulkUploadersController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/bulk-uploaders/create', [App\Controllers\Admin\BulkUploadersController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/create', [App\Controllers\Admin\BulkUploadersController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/{id}/toggle', [App\Controllers\Admin\BulkUploadersController::class, 'toggleStatus'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/{id}/reset', [App\Controllers\Admin\BulkUploadersController::class, 'resetLimit'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/{id}/password', [App\Controllers\Admin\BulkUploadersController::class, 'resetPassword'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/{id}/delete', [App\Controllers\Admin\BulkUploadersController::class, 'deleteAccount'], [$adminMiddleware]);
+$router->get('/admin/bulk-uploaders/{id}/batches', [App\Controllers\Admin\BulkUploadersController::class, 'batches'], [$adminMiddleware]);
+$router->post('/admin/bulk-uploaders/{id}/credits', [App\Controllers\Admin\BulkUploadersController::class, 'addCredits'], [$adminMiddleware]);
+$router->get('/admin/resumes/{id}/download', [App\Controllers\Admin\BulkUploadersController::class, 'downloadFile'], [$adminMiddleware]);
+$router->get('/admin/resumes/{id}', [App\Controllers\Admin\BulkUploadersController::class, 'showFile'], [$adminMiddleware]);
+
+use App\Controllers\Admin\AdminCookieController;
+use App\Middlewares\CsrfMiddleware as AdmCsrf;
+$admCsrf = new AdmCsrf();
+$router->get('/admin/cookies', [AdminCookieController::class, 'index'], [$adminMiddleware]);
+$router->post('/admin/cookies/category/toggle', [AdminCookieController::class, 'toggleCategory'], [$adminMiddleware, $admCsrf]);
+$router->post('/admin/cookies/definition/upsert', [AdminCookieController::class, 'upsertDefinition'], [$adminMiddleware, $admCsrf]);
+$router->post('/admin/cookies/policy/update', [AdminCookieController::class, 'updatePolicy'], [$adminMiddleware, $admCsrf]);
+$router->post('/admin/cookies/policy/force-reconsent', [AdminCookieController::class, 'forceReconsent'], [$adminMiddleware, $admCsrf]);
+$router->get('/admin/cookies/export', [AdminCookieController::class, 'exportLogs'], [$adminMiddleware]);
+$router->post('/admin/cookies/consent/delete', [AdminCookieController::class, 'deleteConsent'], [$adminMiddleware, $admCsrf]);
+$router->get('/admin/cookies/heatmap', [AdminCookieController::class, 'heatmap'], [$adminMiddleware]);
+$router->post('/admin/resumes/{id}/approve', [App\Controllers\Admin\BulkUploadersController::class, 'approveFile'], [$adminMiddleware]);
+$router->post('/admin/resumes/{id}/reject', [App\Controllers\Admin\BulkUploadersController::class, 'rejectFile'], [$adminMiddleware]);
+$router->get('/admin/bulk-uploaders/{id}/candidates/export', [App\Controllers\Admin\BulkUploadersController::class, 'exportCandidates'], [$adminMiddleware]);
+$router->post('/admin/resumes/{id}/delete', [App\Controllers\Admin\BulkUploadersController::class, 'deleteFile'], [$adminMiddleware]);
+
+// Employment Verification (Admin)
+use App\Controllers\Admin\EmploymentVerificationController as AdminVerificationController;
+$router->get('/admin/verification', [AdminVerificationController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/verification/{id}', [AdminVerificationController::class, 'show'], [$adminMiddleware]);
+$router->post('/admin/verification/{id}/approve', [AdminVerificationController::class, 'approve'], [$adminMiddleware]);
+$router->post('/admin/verification/{id}/reject', [AdminVerificationController::class, 'reject'], [$adminMiddleware]);
+$router->post('/admin/verification/{id}/resend', [AdminVerificationController::class, 'resendHr'], [$adminMiddleware]);
+$router->post('/admin/verification/{id}/report', [AdminVerificationController::class, 'generateReport'], [$adminMiddleware]);
+$router->post('/admin/verification/{id}/delete', [AdminVerificationController::class, 'delete'], [$adminMiddleware]);

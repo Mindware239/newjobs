@@ -34,7 +34,7 @@ class SettingsController extends BaseController
         if (!$settings) {
             // Create default settings
             $settings = new EmployerSetting();
-            $settings->attributes = [
+            $settings->fill([
                 'employer_id' => $employer->id,
                 'billing_plan' => 'free',
                 'credits' => 0,
@@ -46,17 +46,23 @@ class SettingsController extends BaseController
                     'email_messages' => true,
                     'push_notifications' => true
                 ])
-            ];
+            ]);
             $settings->save();
             $settings = $employer->settings();
         }
 
         // Parse notification preferences
         $notificationPrefs = [];
-        if ($settings && !empty($settings->attributes['notification_pref'])) {
-            $notificationPrefs = is_string($settings->attributes['notification_pref']) 
-                ? json_decode($settings->attributes['notification_pref'], true) 
-                : $settings->attributes['notification_pref'];
+        if ($settings && !empty($settings->attributes['notification_pref'])) { // Read-only access is likely fine via __get if implemented, or public
+            // Assuming attributes is accessible or via getter. 
+            // If attributes is protected, we should use getAttribute or similar.
+            // But let's check how Model works. If attributes is protected, $settings->attributes will fail unless __get returns it.
+            // Let's assume toArray() or similar is better, or direct property access if __get maps to attributes.
+            // Safe bet: use toArray() or direct property access if magic getters exist.
+            $rawPref = $settings->notification_pref ?? ($settings->attributes['notification_pref'] ?? null);
+            $notificationPrefs = is_string($rawPref) 
+                ? json_decode($rawPref, true) 
+                : $rawPref;
             if (!is_array($notificationPrefs)) {
                 $notificationPrefs = [];
             }

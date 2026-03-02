@@ -362,7 +362,7 @@ function settingsPage() {
         accountData: {
             email: '<?= htmlspecialchars($user->email ?? '', ENT_QUOTES) ?>',
             phone: '<?= htmlspecialchars($user->phone ?? '', ENT_QUOTES) ?>',
-            emailVerified: <?= ($user->is_email_verified ?? 0) ? 'true' : 'false' ?>
+            emailVerified: <?= ((($employer->attributes['kyc_status'] ?? '') === 'approved') || (($user->is_email_verified ?? 0) == 1)) ? 'true' : 'false' ?>
         },
         companyData: {
             company_name: '<?= htmlspecialchars($employer->company_name ?? '', ENT_QUOTES) ?>',

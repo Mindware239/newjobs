@@ -8,4 +8,3 @@ if (!file_exists('.env') && file_exists('.env.example')) {
 } else {
     echo ".env file already exists or .env.example not found\n";
 }
-

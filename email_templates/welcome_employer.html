@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to {{brand_name}}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f4f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;background:#f1f4f9;">
+  <tr>
+    <td align="center">
+      <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 12px 26px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#2563eb;padding:22px 30px;color:#ffffff;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td><img src="{{logo_url}}" alt="{{brand_name}}" width="140" height="36" style="display:block;object-fit:contain;"></td>
+                <td align="right"><span style="font-size:14px;opacity:0.9;">Welcome</span></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:34px 32px;">
+            <h3 style="margin-top:0;color:#111;font-size:20px;">Hello {{user_name}},</h3>
+            <p style="color:#555;font-size:15px;line-height:1.6;">
+              Welcome to {{brand_name}}. Post jobs, manage candidates, and hire faster with smart matching.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0;background:#f6f8ff;border-radius:14px;padding:18px;border:1px solid #dbe1ff;">
+              <tr>
+                <td style="color:#111;font-size:14px;">
+                  Your first job posting is free. Reach verified candidates and track responses in real time.
+                </td>
+              </tr>
+            </table>
+            <div style="text-align:center;margin:28px 0 6px;">
+              <a href="{{cta_link}}" style="background:#2563eb;color:#ffffff;padding:14px 28px;border-radius:12px;font-weight:bold;text-decoration:none;display:inline-block;">Post Your First Job</a>
+            </div>
+            <p style="color:#6b7280;font-size:13px;text-align:center;margin:10px 0 0;">
+              Benefits: Smart matching • Interview scheduling • Team collaboration • Analytics
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f7f9fc;padding:22px 30px;color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;">
+            <div style="margin-bottom:8px;"><strong style="color:#111827;">Support</strong> {{support_email}} • {{support_phone}}</div>
+            <div style="margin-bottom:8px;"><a href="{{unsubscribe_link}}" style="color:#2563eb;text-decoration:none;">Unsubscribe</a></div>
+            <div>© {{year}} {{brand_name}}. All rights reserved.</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

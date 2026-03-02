@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Models\User;
 use App\Models\Candidate;
 use App\Models\CandidatePremiumPurchase;
+use App\Models\SubscriptionPlan;
 use Razorpay\Api\Api;
 use Dompdf\Dompdf;
 
@@ -74,61 +75,82 @@ class PremiumController extends BaseController
         $candidateName = (string)($candidate->attributes['full_name'] ?? '');
         $candidatePhone = (string)($candidate->attributes['mobile'] ?? '');
 
-        $plans = [
-            [
-                'id' => 'boost_7days',
-                'name' => 'Profile Boost (7 Days)',
-                'price' => 1,
-                'duration' => 7,
-                'features' => [
-                    'Show profile at top to recruiters',
-                    'Higher visibility in search results',
-                    'Priority in job recommendations',
-                    '7 days validity'
-                ]
-            ],
-            [
-                'id' => 'boost_30days',
-                'name' => 'Profile Boost (30 Days)',
-                'price' => 299,
-                'duration' => 30,
-                'features' => [
-                    'Show profile at top to recruiters',
-                    'Higher visibility in search results',
-                    'Priority in job recommendations',
-                    '30 days validity',
-                    '10% discount'
-                ]
-            ],
-            [
-                'id' => 'premium_monthly',
-                'name' => 'Premium Membership (Monthly)',
-                'price' => 499,
-                'duration' => 30,
-                'features' => [
-                    'All Boost features',
-                    'Verified badge',
-                    'Unlimited job applications',
-                    'Advanced analytics',
-                    'Priority support',
-                    'Monthly renewal'
-                ]
-            ],
-            [
-                'id' => 'premium_yearly',
-                'name' => 'Premium Membership (Yearly)',
-                'price' => 999,
-                'duration' => 365,
-                'features' => [
-                    'All Boost features',
-                    'Verified badge',
-                    'Unlimited job applications',
-                    'Advanced analytics',
-                    'Priority support',
-                    '2 months free (save ₹3000)'
-                ]
-            ]
-        ];
+        $models = SubscriptionPlan::getActivePlansFor('candidate');
+        $plans = [];
+        foreach ($models as $m) {
+            $attrs = is_array($m) ? $m : ($m->attributes ?? []);
+            $slug = (string)($attrs['slug'] ?? '');
+            $name = (string)($attrs['name'] ?? '');
+            $priceMonthly = (float)($attrs['price_monthly'] ?? 0);
+            $planFor = strtolower((string)($attrs['plan_for'] ?? ''));
+            if ($planFor !== '' && $planFor !== 'candidate') {
+                continue;
+            }
+            // Prefer admin-managed dynamic features JSON if available
+            $featuresJson = $attrs['features'] ?? '[]';
+            $featureStrings = [];
+            if (is_string($featuresJson)) {
+                $decoded = json_decode($featuresJson, true);
+                if (is_array($decoded)) {
+                    $featureStrings = array_values(array_filter(array_map(function ($item) {
+                        if (is_string($item)) return trim($item);
+                        if (is_array($item)) {
+                            $text = (string)($item['feature_text'] ?? '');
+                            $enabled = (int)($item['is_enabled'] ?? 1);
+                            return $enabled === 1 ? trim($text) : '';
+                        }
+                        return '';
+                    }, $decoded)));
+                }
+            }
+            $featuresMap = [
+                'priority_support' => 'Priority support',
+                'advanced_filters' => 'Advanced analytics',
+                'chat_enabled' => 'Chat with recruiters',
+                'ai_matching' => 'AI-powered recommendations',
+                'candidate_mobile_visible' => 'Higher visibility in searches',
+                'resume_download_enabled' => 'Better resume tools',
+                'job_post_boost' => 'Profile boost',
+                'analytics_dashboard' => 'Insights dashboard',
+                'custom_branding' => 'Enhanced profile branding',
+                'api_access' => 'API access'
+            ];
+            if (empty($featureStrings)) {
+                foreach ($featuresMap as $key => $label) {
+                    $val = $attrs[$key] ?? 0;
+                    if ((int)$val === 1) {
+                        $featureStrings[] = $label;
+                    }
+                }
+            }
+            if ($slug !== '' && $name !== '' && $priceMonthly > 0) {
+                $plans[] = [
+                    'id' => $slug,
+                    'name' => $name,
+                    'price' => $priceMonthly,
+                    'duration' => 30,
+                    'features' => !empty($featureStrings) ? $featureStrings : ['Premium benefits']
+                ];
+            }
+        }
+        if (empty($plans)) {
+            $db = \App\Core\Database::getInstance();
+            $rows = $db->fetchAll("SELECT * FROM subscription_plans WHERE plan_for = 'candidate' ORDER BY sort_order ASC, price_monthly ASC LIMIT 10");
+            foreach ($rows as $r) {
+                $slug = (string)($r['slug'] ?? '');
+                $name = (string)($r['name'] ?? '');
+                $priceMonthly = (float)($r['price_monthly'] ?? 0);
+                if ($slug !== '' && $name !== '' && $priceMonthly > 0) {
+                    $plans[] = [
+                        'id' => $slug,
+                        'name' => $name,
+                        'price' => $priceMonthly,
+                        'duration' => 30,
+                        'features' => ['Premium benefits']
+                    ];
+                }
+            }
+        }
 
         $response->view('candidate/premium/plans', [
             'title' => 'Premium Plans',
@@ -153,32 +175,23 @@ class PremiumController extends BaseController
             $planId = $data['plan_id'] ?? '';
             $paymentMethod = $data['payment_method'] ?? 'razorpay';
 
-            $planPrices = [
-                'boost_7days' => 1,
-                'boost_30days' => 299,
-                'premium_monthly' => 499,
-                'premium_yearly' => 999
-            ];
-
-            $planDurations = [
-                'boost_7days' => 7,
-                'boost_30days' => 30,
-                'premium_monthly' => 30,
-                'premium_yearly' => 365
-            ];
-
-            if (!isset($planPrices[$planId])) {
+            $planIdStr = (string)$planId;
+            $plan = SubscriptionPlan::findBySlug($planIdStr);
+            if (!$plan && is_numeric($planIdStr)) {
+                $plan = SubscriptionPlan::find((int)$planIdStr);
+            }
+            if (!$plan) {
                 $response->json(['error' => 'Invalid plan'], 400);
                 return;
             }
 
-            $amount = $planPrices[$planId];
-            $duration = $planDurations[$planId];
+            $amount = (float)$plan->getPrice('monthly');
+            $duration = 30;
 
             $purchase = new CandidatePremiumPurchase();
             $purchase->fill([
                 'candidate_id' => $candidate->id,
-                'plan_type' => $planId,
+                'plan_type' => (string)$planId,
                 'amount' => $amount,
                 'payment_method' => $paymentMethod,
                 'status' => 'pending'
@@ -331,13 +344,11 @@ class PremiumController extends BaseController
 
     private function getPlanDuration(string $planType): int
     {
-        $durations = [
-            'boost_7days' => 7,
-            'boost_30days' => 30,
-            'premium_monthly' => 30,
-            'premium_yearly' => 365
-        ];
-        return $durations[$planType] ?? 0;
+        $plan = SubscriptionPlan::findBySlug((string)$planType);
+        if ($plan) {
+            return 30;
+        }
+        return 0;
     }
 
     private function generateReceipt(int $candidateId, CandidatePremiumPurchase $purchase, ?Candidate $candidate): string
@@ -372,13 +383,13 @@ class PremiumController extends BaseController
             $pdfOutput = $dompdf->output();
 
             $base = dirname(__DIR__, 3);
-            $dir = $base . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'candidates' . DIRECTORY_SEPARATOR . $candidateId;
+            $dir = $base . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'candidates' . DIRECTORY_SEPARATOR . $candidateId;
             if (!is_dir($dir)) { @mkdir($dir, 0777, true); }
             $file = 'receipt_' . (int)$purchase->attributes['id'] . '.pdf';
             $pdfPath = $dir . '/' . $file;
             file_put_contents($pdfPath, $pdfOutput);
             if (file_exists($pdfPath)) {
-                return '/public/storage/uploads/candidates/' . $candidateId . '/' . $file;
+                return '/storage/uploads/candidates/' . $candidateId . '/' . $file;
             }
             return '';
         } catch (\Throwable $e) {
@@ -398,7 +409,7 @@ class PremiumController extends BaseController
             ->get();
         $items = array_map(function($p) use ($candidate) {
             $row = $p->attributes;
-            $row['receipt_url'] = '/public/storage/uploads/candidates/' . (int)$candidate->attributes['id'] . '/receipt_' . (int)$row['id'] . '.pdf';
+            $row['receipt_url'] = '/storage/uploads/candidates/' . (int)$candidate->attributes['id'] . '/receipt_' . (int)$row['id'] . '.pdf';
             return $row;
         }, $purchases);
 

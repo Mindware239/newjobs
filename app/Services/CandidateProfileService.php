@@ -31,21 +31,44 @@ class CandidateProfileService
         // Update JSON columns
         $updates = [];
 
-        if (!empty($parsedData['skills'])) {
-            // Convert to format matching existing structure
+        if (!empty($parsedData['skills_data']) && is_array($parsedData['skills_data'])) {
+            $skillsData = array_map(function($s) {
+                return [
+                    'skill_id' => $s['skill_id'] ?? null,
+                    'name' => $s['name'] ?? '',
+                    'proficiency_level' => $s['proficiency'] ?? ($s['proficiency_level'] ?? 'intermediate'),
+                    'years_of_experience' => $s['years_of_experience'] ?? null
+                ];
+            }, $parsedData['skills_data']);
+            $updates['skills_data'] = json_encode($skillsData, JSON_UNESCAPED_UNICODE);
+        } elseif (!empty($parsedData['skills'])) {
             $skillsData = array_map(function($skillName) {
                 return [
                     'skill_id' => null,
                     'name' => $skillName,
-                    'proficiency_level' => 'intermediate', // Default, can be enhanced
+                    'proficiency_level' => 'intermediate',
                     'years_of_experience' => null
                 ];
             }, $parsedData['skills']);
             $updates['skills_data'] = json_encode($skillsData, JSON_UNESCAPED_UNICODE);
         }
 
-        if (!empty($parsedData['education'])) {
-            // Convert to format matching existing structure
+        if (!empty($parsedData['education_data']) && is_array($parsedData['education_data'])) {
+            $educationData = array_map(function($edu) {
+                $yr = $edu['year'] ?? null;
+                return [
+                    'degree' => $edu['degree'] ?? '',
+                    'field_of_study' => $edu['field_of_study'] ?? '',
+                    'institution' => $edu['institution'] ?? '',
+                    'start_date' => $yr ? $this->formatYearToDate((int)$yr) : null,
+                    'end_date' => $yr ? $this->formatYearToDate((int)$yr) : null,
+                    'is_current' => false,
+                    'grade' => $edu['grade'] ?? null,
+                    'description' => $edu['description'] ?? null
+                ];
+            }, $parsedData['education_data']);
+            $updates['education_data'] = json_encode($educationData, JSON_UNESCAPED_UNICODE);
+        } elseif (!empty($parsedData['education'])) {
             $educationData = array_map(function($edu) {
                 return [
                     'degree' => $edu['degree'] ?? '',
@@ -61,8 +84,20 @@ class CandidateProfileService
             $updates['education_data'] = json_encode($educationData, JSON_UNESCAPED_UNICODE);
         }
 
-        if (!empty($parsedData['experience'])) {
-            // Convert to format matching existing structure
+        if (!empty($parsedData['experience_data']) && is_array($parsedData['experience_data'])) {
+            $experienceData = array_map(function($exp) {
+                return [
+                    'job_title' => $exp['job_title'] ?? '',
+                    'company_name' => $exp['company_name'] ?? '',
+                    'location' => $exp['location'] ?? '',
+                    'start_date' => $exp['start_date'] ?? '',
+                    'end_date' => $exp['end_date'] ?? null,
+                    'is_current' => $exp['is_current'] ?? false,
+                    'description' => $exp['description'] ?? ($exp['summary'] ?? '')
+                ];
+            }, $parsedData['experience_data']);
+            $updates['experience_data'] = json_encode($experienceData, JSON_UNESCAPED_UNICODE);
+        } elseif (!empty($parsedData['experience'])) {
             $experienceData = array_map(function($exp) {
                 return [
                     'job_title' => $exp['job_title'] ?? '',
@@ -77,8 +112,15 @@ class CandidateProfileService
             $updates['experience_data'] = json_encode($experienceData, JSON_UNESCAPED_UNICODE);
         }
 
-        if (!empty($parsedData['languages'])) {
-            // Convert to format matching existing structure
+        if (!empty($parsedData['languages_data']) && is_array($parsedData['languages_data'])) {
+            $languagesData = array_map(function($lang) {
+                return [
+                    'language' => $lang['language'] ?? ($lang['name'] ?? ''),
+                    'proficiency' => $lang['proficiency'] ?? null
+                ];
+            }, $parsedData['languages_data']);
+            $updates['languages_data'] = json_encode($languagesData, JSON_UNESCAPED_UNICODE);
+        } elseif (!empty($parsedData['languages'])) {
             $languagesData = array_map(function($lang) {
                 return [
                     'language' => $lang['name'] ?? '',
@@ -86,6 +128,16 @@ class CandidateProfileService
                 ];
             }, $parsedData['languages']);
             $updates['languages_data'] = json_encode($languagesData, JSON_UNESCAPED_UNICODE);
+        }
+ 
+        if (!empty($parsedData['certificates_data']) && is_array($parsedData['certificates_data'])) {
+            $certData = array_map(function($c) {
+                return [
+                    'name' => $c['name'] ?? '',
+                    'issuer' => $c['issuer'] ?? null
+                ];
+            }, $parsedData['certificates_data']);
+            $updates['certificates_data'] = json_encode($certData, JSON_UNESCAPED_UNICODE);
         }
 
         // Update self_introduction if summary_profile is provided

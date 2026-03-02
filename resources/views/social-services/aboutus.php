@@ -1,3 +1,4 @@
+<?php $base = $base ?? '/'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,69 +11,86 @@
 <body class="bg-white text-gray-800">
 
 <!-- ================= HEADER (FINAL – ALL DEVICES) ================= -->
-<header class="border-b border-gray-200 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-
-        <!-- LOGO -->
-        <a href="<?= $base ?>" class="flex items-center gap-3 shrink-0">
-            <img src="<?= $base ?>uploads/Mindware-infotech.png"
-                 class="h-10 sm:h-12 w-auto"
-                 alt="Mindware Infotech">
-        </a>
-
-        <!-- DESKTOP NAV -->
-        <nav class="hidden md:flex items-center gap-8 text-sm">
-            <a href="<?= rtrim($base,'/') ?>/employers" class="font-medium hover:text-[#5b6bd5]">Home</a>
-            <a href="<?= rtrim($base,'/') ?>/pricing" class="font-medium hover:text-[#5b6bd5]">Pricing</a>
-            <a href="<?= rtrim($base,'/') ?>/aboutus" class="font-medium hover:text-[#5b6bd5]">About us</a>
-            <a href="<?= rtrim($base,'/') ?>/supports" class="font-medium hover:text-[#5b6bd5]">Support</a>
-            <a href="<?= rtrim($base,'/') ?>/specials" class="font-medium hover:text-[#5b6bd5]">Specials</a>
-        </nav>
-
-        <!-- DESKTOP ACTIONS -->
-        <div class="hidden md:flex items-center gap-3 text-sm">
-            <span class="text-gray-600">Employers:</span>
-            <a href="#" class="text-red-500 hover:underline">Login</a>
-            <span>/</span>
-            <a href="#" class="text-red-500 hover:underline">Create account</a>
-
-            <a href="/social-services"
-               class="ml-2 px-4 py-2 rounded-md text-white transition"
-               style="background-color:#5b6bd5;"
-               onmouseover="this.style.backgroundColor='#4a59c8'"
-               onmouseout="this.style.backgroundColor='#5b6bd5'">
-              Employers
+<header class="w-full bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+    <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 h-20 md:h-24 flex items-center justify-between">
+        <div class="flex-shrink-0">
+            <a href="<?php echo $base; ?>">
+                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
             </a>
         </div>
 
-        <!-- MOBILE MENU BUTTON -->
-        <button class="md:hidden text-gray-700 text-2xl"
-                onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
-            ☰
+        <div class="hidden min-[900px]:flex items-center gap-8">
+            <div class="text-[14px]">
+                <span class="text-black font-medium mr-2">Candidates & Job Seekers:</span>
+                <a href="/social-services/login" class="text-red-400 font-semibold hover:underline">Login/CreateAccount</a>
+                
+            </div>
+            <a href="employers" 
+               class="bg-red-400 text-white px-7 py-3 rounded-[4px] text-[13px] font-bold tracking-wider uppercase hover:bg-white  hover:border-red-500 border-2 hover:text-red-400">
+                Employers
+            </a>
+        </div>
+
+        <button @click="mobileMenu = !mobileMenu" class="min-[900px]:hidden p-2 text-[#333]">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="!mobileMenu" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                <path x-show="mobileMenu" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
         </button>
     </div>
 
-    <!-- MOBILE MENU -->
-    <div id="mobileMenu" class="hidden md:hidden border-t border-gray-200 bg-white">
-        <div class="px-4 py-4 flex flex-col gap-4 text-sm">
+  <nav class="hidden min-[900px]:block border-t border-gray-50">
+<div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 flex gap-10">
 
-            <a href="<?= rtrim($base,'/') ?>/employers" class="hover:text-[#5b6bd5]">Home</a>
-            <a href="<?= rtrim($base,'/') ?>/pricing" class="hover:text-[#5b6bd5]">Pricing</a>
-            <a href="<?= rtrim($base,'/') ?>/aboutus" class="hover:text-[#5b6bd5]">About us</a>
-            <a href="<?= rtrim($base,'/') ?>/supports" class="hover:text-[#5b6bd5]">Support</a>
-            <a href="<?= rtrim($base,'/') ?>/specials" class="hover:text-[#5b6bd5]">Specials</a>
+<?php 
+$current_page = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/");
+if ($current_page === '') $current_page = 'index';
 
-            <hr>
+$navItems = [
+    ['label' => 'Home', 'url' => 'index'],
+    ['label'=> 'Find a job','url'=> 'find-a-job'],
+    ['label'=> 'Create job alerts','url'=> 'social-services/login'],
+    ['label'=> 'Search Employers','url'=> 'searchEmployers'],
+    ['label' => 'Career Insight', 'url' => 'hiringInsight'],
+    ['label' => 'About Us', 'url' => 'aboutus'],
+    ['label' => 'Support', 'url' => 'supports'],
+];
 
-            <a href="#" class="text-red-500">Employer Login</a>
-            <a href="#" class="text-red-500">Create account</a>
+foreach($navItems as $item): 
 
-            <a href="/social-services"
-               class="mt-2 inline-block text-center px-4 py-2 rounded-md text-white"
-               style="background-color:#5b6bd5;">
-                Jobseekers
-            </a>
-        </div>
+$isActive = ($current_page === $item['url']);
+
+$class = $isActive
+    ? 'text-[#e15f55] border-b-2 border-[#e15f55]'
+    : 'text-black border-b-2 border-transparent hover:text-[#e15f55] hover:border-[#e15f55]';
+?>
+
+<a href="<?= $base . $item['url']; ?>"
+   class="py-4 text-[15px] font-semibold transition-all duration-300 <?= $class ?>">
+   <?= $item['label']; ?>
+</a>
+
+<?php endforeach; ?>
+
+</div>
+</nav>
+
+    <div x-show="mobileMenu" x-cloak x-transition id="mobileNav" class="min-[900px]:hidden bg-gray-50 px-4 border-t">
+        <ul class="py-4 space-y-1">
+            <?php foreach($navItems as $item): ?>
+            <li>
+                <a href="<?= $item['url'] ?>" class="block py-3 text-[15px] font-medium border-b border-gray-100 hover:text-[#e15f55]">
+                    <?= $item['label'] ?>
+                </a>
+            </li>
+            <?php endforeach; ?>
+            <li class="pt-4 flex flex-col gap-3">
+                <a href="candidate" class="w-full py-3 bg-[#5b6bd5] text-white text-center font-bold rounded">JOBSEEKERS</a>
+                <div class="text-center text-sm py-2">
+                    Employers: <a href="employers" class="text-[#5b6bd5] font-bold">Login</a>
+                </div>
+            </li>
+        </ul>
     </div>
 </header>
 

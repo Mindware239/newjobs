@@ -78,6 +78,59 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
     <!-- Main Content -->
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8" x-show="!isLoading" x-transition.opacity.duration.500ms>
         
+        <!-- Language/Country Modal -->
+        <div x-show="showLanguageModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Posting Settings</h3>
+                    <button @click="showLanguageModal=false" class="text-gray-500 hover:text-gray-700">&times;</button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Posting Country</label>
+                        <select x-model="formData.location.country" @change="onCountryChange" class="form-input w-full px-4 py-3.5 bg-white border-gray-300 rounded-xl focus:border-blue-500 focus:ring focus:ring-blue-200">
+                            <option value="">Select Country</option>
+                            <template x-for="c in countries" :key="c.name">
+                                <option :value="c.name" x-text="c.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                            <select x-model="formData.location.state" @change="onStateChange" :disabled="statesLoading || !formData.location.country" class="form-input w-full px-4 py-3.5 bg-white border-gray-300 rounded-xl focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:bg-gray-50">
+                                <option value="">Select State</option>
+                                <template x-for="s in states" :key="s">
+                                    <option :value="s" x-text="s"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                            <select x-model="formData.location.city" :disabled="citiesLoading || !formData.location.state" class="form-input w-full px-4 py-3.5 bg-white border-gray-300 rounded-xl focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:bg-gray-50">
+                                <option value="">Select City</option>
+                                <template x-for="ct in cities" :key="ct">
+                                    <option :value="ct" x-text="ct"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Language</label>
+                        <select x-model="formData.language" class="form-input w-full px-4 py-3.5 bg-white border-gray-300 rounded-xl focus:border-blue-500 focus:ring focus:ring-blue-200">
+                            <template x-for="lang in languages" :key="lang">
+                                <option :value="lang" x-text="lang"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button @click="showLanguageModal=false" class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button @click="showLanguageModal=false" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Header & Progress -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
@@ -304,7 +357,7 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Industry / Category <span class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select x-model="formData.category" 
+                            <select x-model="formData.category" @change="refreshSkillContextSuggestions()"
                                     class="form-input w-full px-4 py-3.5 bg-white border-gray-300 rounded-xl focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 appearance-none">
                                 <option value="">Select Industry</option>
                                 <template x-for="cat in categories" :key="cat.value">
@@ -542,12 +595,30 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                      <!-- Skills -->
                      <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Required Skills</label>
-                        <div class="relative">
-                            <input type="text" 
-                                   @keydown.enter.prevent="addSkill($event)"
-                                   @blur="addSkill($event)"
+                        <div class="relative border border-gray-300 rounded-xl">
+                            <input type="text"
+                                   x-ref="skillInput"
+                                   x-model="skillQuery"
+                                   @input="onSkillInput($event)"
+                                   @keydown="handleSkillKeyDown($event)"
+                                   @keydown.enter.prevent="addSkillFromQuery()"
+                                   @focus="if((skillQuery || '').length >= 1) searchSkills(skillQuery); skillSuggestions.show = true"
+                                   @blur="setTimeout(() => skillSuggestions.show = false, 150)"
                                    placeholder="Type skill & press Enter (e.g. Java)"
                                    class="form-input w-full px-4 py-3.5 rounded-xl border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200">
+                            <div x-show="skillSuggestions.show && skillSuggestions.list.length > 0"
+                                 x-cloak
+                                 class="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl max-h-64 overflow-auto custom-scrollbar ring-1 ring-black ring-opacity-5">
+                                <template x-for="(suggestion, index) in skillSuggestions.list" :key="suggestion.id || suggestion.name">
+                                    <div @click="selectSkillSuggestion(suggestion)"
+                                         @mouseenter="skillSuggestions.selectedIndex = index"
+                                         class="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0"
+                                         :class="skillSuggestions.selectedIndex === index ? 'bg-blue-50' : ''">
+                                        <div class="text-sm font-medium text-gray-900" x-text="suggestion.name"></div>
+                                        <div class="text-xs text-gray-500" x-show="suggestion.usage_count">Popular for this role</div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                         <div class="flex flex-wrap gap-2 mt-4">
                             <template x-for="(skill, index) in formData.skills" :key="index">
@@ -863,6 +934,9 @@ document.addEventListener('alpine:init', () => {
         languageManuallySelected: false,
         initialLanguageAutoApplied: false,
         jobTitleSuggestions: { show: false, list: [], selectedIndex: -1, searchTimeout: null },
+        skillSuggestions: { show: false, list: [], selectedIndex: -1, searchTimeout: null },
+        skillQuery: '',
+        requireSuggestionOnly: false,
         currencySymbol: '',
         showLanguageModal: false,
         symbolMap: {'INR':'₹','USD':'$','EUR':'€','GBP':'£','AUD':'$','CAD':'$'},
@@ -1031,6 +1105,7 @@ document.addEventListener('alpine:init', () => {
         selectJobTitleSuggestion(s) {
             this.formData.title = s.title;
             this.jobTitleSuggestions.show = false;
+            this.refreshSkillContextSuggestions();
         },
 
         handleJobTitleKeyDown(e) {
@@ -1040,12 +1115,68 @@ document.addEventListener('alpine:init', () => {
         selectJobType(t) { this.formData.employment_type = t; },
         setExperienceType(t) { this.formData.experience_type = t; },
 
-        addSkill(e) {
+        onSkillInput(e) {
             const val = (e.target.value || '').trim();
+            clearTimeout(this.skillSuggestions.searchTimeout);
+            if (val.length < 1) { this.skillSuggestions.list = []; return; }
+            this.skillSuggestions.searchTimeout = setTimeout(() => this.searchSkills(val), 250);
+        },
+        async searchSkills(query) {
+            const params = new URLSearchParams({
+                q: query || '',
+                title: this.formData.title || '',
+                category: this.formData.category || '',
+                limit: '8'
+            }).toString();
+            try {
+                const res = await fetch(`/api/skills/suggest?${params}`);
+                const data = await res.json();
+                this.skillSuggestions.list = (data.suggestions || []).filter(s => !this.formData.skills.includes(s.name));
+                this.skillSuggestions.show = this.skillSuggestions.list.length > 0;
+                this.skillSuggestions.selectedIndex = this.skillSuggestions.list.length > 0 ? 0 : -1;
+            } catch (e) {}
+        },
+        refreshSkillContextSuggestions() {
+            this.searchSkills('');
+        },
+        selectSkillSuggestion(s) {
+            const name = (s.name || '').trim();
+            if (name && !this.formData.skills.includes(name)) {
+                this.formData.skills.push(name);
+            }
+            this.skillQuery = '';
+            this.skillSuggestions.show = false;
+            if (this.$refs.skillInput) this.$refs.skillInput.value = '';
+        },
+        addSkillFromQuery() {
+            const val = (this.skillQuery || '').trim();
+            if (this.skillSuggestions.show && this.skillSuggestions.selectedIndex >= 0 && this.skillSuggestions.list[this.skillSuggestions.selectedIndex]) {
+                this.selectSkillSuggestion(this.skillSuggestions.list[this.skillSuggestions.selectedIndex]);
+                return;
+            }
+            if (this.requireSuggestionOnly) {
+                // Do not add manual entries when suggestion-only mode is enabled
+                return;
+            }
             if (val && !this.formData.skills.includes(val)) {
                 this.formData.skills.push(val);
             }
-            e.target.value = '';
+            this.skillQuery = '';
+            if (this.$refs.skillInput) this.$refs.skillInput.value = '';
+            this.skillSuggestions.show = false;
+        },
+        handleSkillKeyDown(e) {
+            if (!this.skillSuggestions.show || this.skillSuggestions.list.length === 0) return;
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                this.skillSuggestions.selectedIndex = Math.min(this.skillSuggestions.selectedIndex + 1, this.skillSuggestions.list.length - 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.skillSuggestions.selectedIndex = Math.max(this.skillSuggestions.selectedIndex - 1, 0);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                this.addSkillFromQuery();
+            }
         },
         removeSkill(i) { this.formData.skills.splice(i, 1); },
         escapeHtml(str) { const div = document.createElement('div'); div.innerText = str; return div.innerHTML; },
@@ -1053,18 +1184,32 @@ document.addEventListener('alpine:init', () => {
         async getCurrentLocation() {
             if (!navigator.geolocation) return;
             this.locationLoading = true;
+            const done = () => { this.locationLoading = false; };
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
                     const data = await res.json();
-                    if(data.address && data.address.country) {
-                        this.formData.location.country = data.address.country;
+                    const addr = data.address || {};
+                    const country = addr.country || '';
+                    const state = addr.state || addr.region || addr.state_district || '';
+                    const city = addr.city || addr.town || addr.village || addr.suburb || '';
+                    if (country) {
+                        this.formData.location.country = country;
                         await this.onCountryChange();
-                        // Additional logic to match state/city could be added here
+                        if (state) {
+                            this.formData.location.state = state;
+                            // If reverse state not in list, add it temporarily for selection UX
+                            if (!this.states.includes(state)) { this.states.unshift(state); }
+                            await this.onStateChange();
+                        }
+                        if (city) {
+                            this.formData.location.city = city;
+                            if (!this.cities.includes(city)) { this.cities.unshift(city); }
+                        }
                     }
-                } catch(e) {}
-                this.locationLoading = false;
-            }, () => this.locationLoading = false);
+                } catch(e) { /* swallow */ }
+                done();
+            }, done);
         },
 
         canProceed() {
@@ -1172,6 +1317,25 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await res.json();
                 if (res.ok) {
+                    try{
+                        if(window.MWMarketing){
+                            var loc = [this.formData.location.city, this.formData.location.state, this.formData.location.country].filter(Boolean).join(', ');
+                            var jid = (data && (data.job_id || (data.job && (data.job.id || (data.job.attributes && data.job.attributes.id))))) ? (data.job_id || data.job.id || (data.job.attributes && data.job.attributes.id)) : null;
+                            var ids = jid ? [parseInt(jid,10)] : [];
+                            var jtitle = (data && (data.job && (data.job.title || (data.job.attributes && data.job.attributes.title)))) ? (data.job.title || (data.job.attributes && data.job.attributes.title)) : '';
+                            var jslug = (data && (data.job && (data.job.slug || (data.job.attributes && data.job.attributes.slug)))) ? (data.job.slug || (data.job.attributes && data.job.attributes.slug)) : '';
+                            window.MWMarketing.trackEmployerPostJob({
+                                content_type: 'job_post',
+                                content_ids: ids,
+                                content_name: jtitle || '',
+                                content_category: this.formData.work_category || '',
+                                content_slug: jslug || '',
+                                location: loc || '',
+                                value: 0,
+                                currency: 'INR'
+                            });
+                        }
+                    }catch(_){}
                     window.location.href = '/employer/jobs';
                 } else {
                     alert(data.message || 'Error posting job');

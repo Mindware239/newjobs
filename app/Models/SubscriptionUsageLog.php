@@ -24,7 +24,7 @@ class SubscriptionUsageLog extends Model
     }
 
     public static function logUsage(
-        int $subscriptionId,
+        ?int $subscriptionId,
         int $employerId,
         string $actionType,
         ?int $candidateId = null,
@@ -34,7 +34,7 @@ class SubscriptionUsageLog extends Model
     ): void {
         $log = new self();
         $log->fill([
-            'subscription_id' => $subscriptionId,
+            'subscription_id' => ($subscriptionId && $subscriptionId > 0) ? $subscriptionId : null,
             'employer_id' => $employerId,
             'action_type' => $actionType,
             'candidate_id' => $candidateId,

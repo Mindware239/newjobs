@@ -10,7 +10,6 @@ use App\Core\Response;
 use App\Core\Database;
 use App\Models\Job;
 use App\Services\NotificationService;
-use App\Services\MailService;
 
 class JobsController extends BaseController
 {
@@ -168,25 +167,22 @@ class JobsController extends BaseController
                 if ($employer) {
                     $user = $employer->user();
                     if ($user) {
-                        // Create in-app notification
-                        \App\Services\NotificationService::notify(
-                            $user->id,
+                        // Use centralized NotificationService
+                        \App\Services\NotificationService::send(
+                            (int)$user->id,
                             'job_published',
                             'Job Published Successfully!',
                             "Your job posting '{$job->title}' has been approved and published. It's now live and visible to candidates.",
-                            "/employer/jobs/{$job->slug}"
-                        );
-                        
-                        NotificationService::queueEmail(
-                            $user->email,
-                            'job_published_employer',
                             [
                                 'job_title' => (string)($job->title ?? ''),
                                 'job_slug' => (string)($job->slug ?? ''),
-                                'employer_id' => (int)$employer->id
-                            ]
+                                'employer_id' => (int)$employer->id,
+                                'email_template' => 'job_published_employer',
+                                'reference_id' => (string)($job->id ?? $id)
+                            ],
+                            "/employer/jobs/{$job->slug}"
                         );
-                        error_log("✓ Job published notification queued for employer: " . $user->email);
+                        error_log("✓ Job published notification sent via service for employer: " . $user->email);
                     }
                 }
             }

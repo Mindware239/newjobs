@@ -38,12 +38,14 @@ $router->post('/candidate/jobs/{slug}/bookmark', [JobController::class, 'bookmar
 
 // Candidate Chat Routes
 use App\Controllers\Candidate\ChatController;
-$router->get('/candidate/chat', [ChatController::class, 'index']);
-$router->get('/candidate/chat/{id}', [ChatController::class, 'show']);
-$router->post('/candidate/chat/send', [ChatController::class, 'sendMessage']);
-$router->get('/candidate/chat/messages', [ChatController::class, 'getMessages']);
-$router->post('/candidate/chat/start', [ChatController::class, 'startConversation']);
-$router->get('/candidate/chat/unread-count', [ChatController::class, 'getUnreadCount']);
+use App\Middlewares\CandidateSubscriptionMiddleware;
+$candPremium = new CandidateSubscriptionMiddleware();
+$router->get('/candidate/chat', [ChatController::class, 'index'], [$candPremium]);
+$router->get('/candidate/chat/{id}', [ChatController::class, 'show'], [$candPremium]);
+$router->post('/candidate/chat/send', [ChatController::class, 'sendMessage'], [$candPremium]);
+$router->get('/candidate/chat/messages', [ChatController::class, 'getMessages'], [$candPremium]);
+$router->post('/candidate/chat/start', [ChatController::class, 'startConversation'], [$candPremium]);
+$router->get('/candidate/chat/unread-count', [ChatController::class, 'getUnreadCount'], [$candPremium]);
 
 // Candidate Resume Builder Routes
 $router->get('/candidate/resume/builder/onboarding', [ResumeBuilderController::class, 'onboarding']);
@@ -79,6 +81,13 @@ use App\Controllers\Candidate\NotificationController;
 $router->get('/candidate/notifications', [NotificationController::class, 'index']);
 $router->get('/candidate/notifications/unread', [NotificationController::class, 'getUnread']);
 $router->post('/candidate/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+// Candidate Employment Verification
+use App\Controllers\Candidate\EmploymentVerificationController as CandVerificationController;
+$router->post('/candidate/verification', [CandVerificationController::class, 'create']);
+$router->post('/candidate/verification/{id}/documents', [CandVerificationController::class, 'uploadDocument']);
+$router->post('/candidate/verification/{id}/hr', [CandVerificationController::class, 'submitHr']);
+$router->get('/api/candidate/verification/{id}/status', [CandVerificationController::class, 'status']);
 $router->post('/candidate/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 $router->post('/candidate/notifications/{id}/delete', [NotificationController::class, 'delete']);
 $router->post('/candidate/notifications/delete-read', [NotificationController::class, 'deleteRead']);

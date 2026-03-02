@@ -232,7 +232,7 @@
                         
                         <?php if ($isLoggedIn): ?>
                             <?php if (!$job['has_applied']): ?>
-                            <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" 
+                            <a id="apply-btn" href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" 
                                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
                                 Apply Now
                             </a>
@@ -242,7 +242,7 @@
                             </button>
                             <?php endif; ?>
                         <?php else: ?>
-                        <a href="/login?redirect=<?= urlencode('/candidate/jobs/' . ($job['slug'] ?? $job['id'])) ?>" 
+                        <a id="apply-btn" href="/login?redirect=<?= urlencode('/candidate/jobs/' . ($job['slug'] ?? $job['id'])) ?>" 
                            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
                             Apply Now
                         </a>
@@ -502,6 +502,32 @@
                 }
             }
         }
+        document.addEventListener('DOMContentLoaded', function(){
+            try { 
+                if (window.MWMarketing) { 
+                    var meta = {
+                        content_type:'job',
+                        content_ids:[<?= (int)($job['id'] ?? 0) ?>],
+                        content_name: <?= json_encode($job['title'] ?? '') ?>,
+                        category: <?= json_encode($job['category'] ?? '') ?>,
+                        location: <?= json_encode(($locationRows[0]['city'] ?? '') . (!empty($locationRows[0]['state']) ? ', '.$locationRows[0]['state'] : '') . (!empty($locationRows[0]['country']) ? ', '.$locationRows[0]['country'] : '')) ?>
+                    };
+                    window.MWMarketing.trackJobView(meta); 
+                } 
+            } catch(_){}
+            var btn = document.getElementById('apply-btn');
+            if (btn) { btn.addEventListener('click', function(){ 
+                try { 
+                    if (window.MWMarketing) { 
+                        window.MWMarketing.trackApply({
+                            content_type:'job',
+                            content_ids:[<?= (int)($job['id'] ?? 0) ?>],
+                            content_name: <?= json_encode($job['title'] ?? '') ?>
+                        }); 
+                    } 
+                } catch(_){} 
+            }); }
+        });
     </script>
        <?php
 require __DIR__ . '/../../include/footer.php';

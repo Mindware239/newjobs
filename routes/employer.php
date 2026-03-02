@@ -23,6 +23,8 @@ use App\Controllers\Employer\SubscriptionController;
 use App\Controllers\Employer\BillingController;
 use App\Controllers\Employer\InvoiceController;
 use App\Controllers\Gateway\RazorpayController;
+use App\Controllers\Social\SocialJobsController;
+use App\Controllers\SocialServiceController;
 
 $router = \App\Core\Router::getInstance();
 
@@ -30,6 +32,7 @@ $router = \App\Core\Router::getInstance();
 $authMiddleware = new AuthMiddleware(['role' => 'employer']);
 $csrfMiddleware = new CsrfMiddleware();
 $rateLimitMiddleware = new RateLimitMiddleware(60, 60);
+$verifyRateLimit = new RateLimitMiddleware(5, 60);
 
 // Dashboard
 $router->get('/employer/dashboard', [DashboardController::class, 'index'], [$authMiddleware]);
@@ -51,6 +54,9 @@ $router->get('/api/employer/analytics/sources', [AnalyticsController::class, 'ge
 $router->get('/api/employer/analytics/interview-outcomes', [AnalyticsController::class, 'getInterviewOutcomes'], [$authMiddleware]);
 $router->get('/api/employer/analytics/offer-acceptance', [AnalyticsController::class, 'getOfferAcceptanceRate'], [$authMiddleware]);
 $router->get('/api/employer/analytics/export', [AnalyticsController::class, 'exportReport'], [$authMiddleware]);
+
+// Social Employer Applications API
+$router->get('/api/employer/applications', [SocialServiceController::class, 'apiEmployerApplications'], [$authMiddleware]);
 
 // Interviews
 $router->get('/employer/interviews', [InterviewsController::class, 'index'], [$authMiddleware]);
@@ -104,7 +110,7 @@ $router->get('/employer/billing/failed', [BillingController::class, 'failed'], [
 $router->get('/employer/billing/invoice/{id}', [InvoiceController::class, 'download'], [$authMiddleware]);
 // Razorpay endpoints
 $router->get('/payment/create-order', [RazorpayController::class, 'createOrder'], [$authMiddleware]);
-$router->post('/payment/verify', [RazorpayController::class, 'verify'], [$authMiddleware]);
+$router->post('/payment/verify', [RazorpayController::class, 'verify'], [$authMiddleware, $csrfMiddleware, $verifyRateLimit]);
 
 // Subscription
 $router->get('/employer/subscription/plans', [SubscriptionController::class, 'plans'], [$authMiddleware]);
@@ -161,3 +167,27 @@ use App\Controllers\Employer\JobMatchingController;
 $router->get('/employer/jobs/{slug}/candidates', [JobMatchingController::class, 'getCandidatesForJob'], [$authMiddleware]);
 $router->post('/employer/jobs/{slug}/generate-scores', [JobMatchingController::class, 'generateScores'], [$authMiddleware]);
 $router->post('/employer/jobs/{slug}/candidates/{candidate_id}/score', [JobMatchingController::class, 'scoreCandidate'], [$authMiddleware]);
+
+// Employer Verification Unlock Flow
+use App\Controllers\Employer\EmploymentVerificationController as EmpVerificationController;
+$router->get('/employer/verification', [EmpVerificationController::class, 'index'], [$authMiddleware]);
+$router->get('/employer/verification/unlock/{id}', [EmpVerificationController::class, 'unlock'], [$authMiddleware]);
+$router->get('/employer/verification/checkout/{unlockId}', [EmpVerificationController::class, 'checkout'], [$authMiddleware]);
+$router->post('/employer/verification/mark-paid/{unlockId}', [EmpVerificationController::class, 'markPaid'], [$authMiddleware]);
+$router->get('/employer/verification/success', [EmpVerificationController::class, 'success'], [$authMiddleware]);
+$router->get('/employer/verification/report/{unlockId}', [EmpVerificationController::class, 'report'], [$authMiddleware]);
+$router->get('/employer/verification/invoice/{unlockId}', [EmpVerificationController::class, 'invoice'], [$authMiddleware]);
+$router->get('/employer/verification/details/{unlockId}', [EmpVerificationController::class, 'details'], [$authMiddleware]);
+
+// Social Jobs
+// Allow both employers and candidates to access social employer features
+$socialMiddleware = new AuthMiddleware(['role' => ['employer', 'candidate', 'admin', 'super_admin']]);
+
+$router->get('/employer/social-jobs', [SocialJobsController::class, 'index'], [$socialMiddleware]);
+$router->get('/employer/social-jobs/create', [SocialJobsController::class, 'create'], [$socialMiddleware]);
+$router->post('/employer/social-jobs', [SocialJobsController::class, 'store'], [$socialMiddleware]);
+$router->get('/employer/social-jobs/{id}/edit', [SocialJobsController::class, 'edit'], [$socialMiddleware]);
+$router->post('/employer/social-jobs/{id}', [SocialJobsController::class, 'update'], [$socialMiddleware]);
+$router->post('/employer/social-jobs/{id}/delete', [SocialJobsController::class, 'delete'], [$socialMiddleware]);
+// Social Employer Applications API
+$router->get('/api/employer/applications', [SocialServiceController::class, 'apiEmployerApplications'], [$authMiddleware]);

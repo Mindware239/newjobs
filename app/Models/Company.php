@@ -156,6 +156,76 @@ class Company
         }
     }
 
+    public function searchCompanies(array $filters = [], int $limit = 48, int $offset = 0): array
+    {
+        $where = ["1=1"];
+        $params = [];
+        if (!empty($filters['q'])) {
+            $where[] = "name LIKE :q";
+            $params['q'] = '%' . $filters['q'] . '%';
+        }
+        if (!empty($filters['industry'])) {
+            $where[] = "industry LIKE :industry";
+            $params['industry'] = '%' . $filters['industry'] . '%';
+        }
+        if (!empty($filters['year_from'])) {
+            $where[] = "founded_year >= :yf";
+            $params['yf'] = (int)$filters['year_from'];
+        }
+        if (!empty($filters['year_to'])) {
+            $where[] = "founded_year <= :yt";
+            $params['yt'] = (int)$filters['year_to'];
+        }
+        if (!empty($filters['location'])) {
+            $where[] = "EXISTS (
+                SELECT 1 
+                FROM jobs j 
+                WHERE j.employer_id = companies.employer_id 
+                  AND j.status = 'published'
+                  AND (j.locations LIKE :loc)
+            )";
+            $params['loc'] = '%' . $filters['location'] . '%';
+        }
+        if (!empty($filters['department'])) {
+            $where[] = "EXISTS (
+                SELECT 1 
+                FROM jobs j
+                WHERE j.employer_id = companies.employer_id 
+                  AND j.status = 'published'
+                  AND (j.category LIKE :dept OR j.title LIKE :dept)
+            )";
+            $params['dept'] = '%' . $filters['department'] . '%';
+        }
+        if (!empty($filters['experience'])) {
+            if ($filters['experience'] === 'entry') {
+                $where[] = "EXISTS (
+                    SELECT 1 FROM jobs j
+                    WHERE j.employer_id = companies.employer_id 
+                      AND j.status = 'published'
+                      AND (j.min_experience IS NULL OR j.min_experience <= 1)
+                )";
+            } elseif ($filters['experience'] === 'experienced') {
+                $where[] = "EXISTS (
+                    SELECT 1 FROM jobs j
+                    WHERE j.employer_id = companies.employer_id 
+                      AND j.status = 'published'
+                      AND (j.min_experience >= 2 OR j.max_experience >= 2)
+                )";
+            }
+        }
+        $sql = "SELECT id, name, slug, logo_url, employer_id, industry, founded_year, headquarters, company_size
+                FROM companies
+                WHERE " . implode(' AND ', $where) . "
+                ORDER BY name ASC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        try {
+            return $this->db->fetchAll($sql, $params) ?: [];
+        } catch (\Exception $e) {
+            error_log('searchCompanies failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     // ---------------- PUBLIC PROFILE ----------------
 
     public function findBySlug($slug)

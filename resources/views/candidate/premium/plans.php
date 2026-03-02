@@ -132,7 +132,7 @@
         </script>
         <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
         <style>
             [x-cloak] { display: none !important; }
         </style>
@@ -331,48 +331,100 @@
                     </div>
                 </div>
             </div>
-
             <!-- Pricing Plans Section -->
-            <div id="pricing-plans" class="mb-16">
-                <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Choose Your Plan</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <?php foreach ($plans as $index => $plan): ?>
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 transition-all hover:shadow-xl <?= strpos($plan['id'], 'premium') !== false ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300' ?>">
-                        <?php if (strpos($plan['id'], 'premium') !== false): ?>
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-center py-2.5 text-sm font-bold">
-                            MOST POPULAR
-                        </div>
-                        <?php endif; ?>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-3"><?= htmlspecialchars($plan['name']) ?></h3>
-                            <div class="mb-4">
-                                <span class="text-4xl font-bold text-gray-900">₹<?= number_format($plan['price']) ?></span>
-                                <?php if (strpos($plan['id'], 'yearly') !== false): ?>
-                                <div class="mt-1">
-                                    <span class="text-gray-500 line-through text-lg">₹<?= number_format($plan['price'] * 12) ?></span>
-                                    <span class="ml-2 text-blue-600 font-semibold">Save ₹<?= number_format(($plan['price'] * 12) - $plan['price']) ?></span>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <ul class="space-y-3 mb-6">
-                                <?php foreach ($plan['features'] as $feature): ?>
-                                <li class="flex items-start gap-2">
-                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-sm text-gray-700"><?= htmlspecialchars($feature) ?></span>
-                                </li>
-                                <?php endforeach; ?>
-                            </ul>
-                            <button @click="selectPlan('<?= $plan['id'] ?>')" 
-                                    class="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 font-semibold shadow-md hover:shadow-lg transition-all transform hover:scale-105">
-                                Choose Plan
-                            </button>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
+            <!-- Pricing Plans Section -->
+<div id="pricing-plans" class="mb-16">
+    <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">
+        Choose Your Plan
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <?php foreach ($plans as $plan): ?>
+        <?php $isPopular = strpos($plan['id'], 'premium') !== false; ?>
+
+        <div class="
+            rounded-2xl border-2 overflow-hidden
+            flex flex-col h-full
+            transition-all duration-300
+            <?= $isPopular
+                ? 'border-blue-500 ring-2 ring-blue-200 shadow-xl bg-white'
+                : 'border-gray-200 shadow-md bg-white hover:border-blue-300'
+            ?>
+        ">
+
+            <!-- Badge (fixed height for alignment) -->
+            <div class="h-10">
+                <?php if ($isPopular): ?>
+                <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-center text-sm font-bold flex items-center justify-center">
+                    MOST POPULAR
                 </div>
+                <?php endif; ?>
             </div>
+
+            <!-- Card Content -->
+            <div class="p-6 flex flex-col h-full">
+
+                <!-- Title -->
+                <h3 class="text-xl font-bold text-gray-900 mb-3">
+                    <?= htmlspecialchars($plan['name']) ?>
+                </h3>
+
+                <!-- Price -->
+                <div class="mb-5">
+                    <span class="text-4xl font-bold text-gray-900">
+                        ₹<?= number_format($plan['price']) ?>
+                    </span>
+
+                    <?php if (strpos($plan['id'], 'yearly') !== false): ?>
+                    <div class="mt-1">
+                        <span class="text-gray-500 line-through text-lg">
+                            ₹<?= number_format($plan['price'] * 12) ?>
+                        </span>
+                        <span class="ml-2 text-blue-600 font-semibold">
+                            Save ₹<?= number_format(($plan['price'] * 12) - $plan['price']) ?>
+                        </span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Features (flex-1 makes all cards equal height) -->
+                <ul class="space-y-3 mb-8 flex-1">
+                    <?php foreach ($plan['features'] as $feature): ?>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+                             fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-sm text-gray-700">
+                            <?= htmlspecialchars($feature) ?>
+                        </span>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+
+                <!-- CTA Button (always aligned) -->
+                <button
+                    @click="selectPlan('<?= $plan['id'] ?>')"
+                    class="
+                        w-full mt-auto
+                        px-4 py-3 rounded-xl
+                        font-semibold text-white
+                        bg-gradient-to-r from-blue-500 to-blue-600
+                        hover:from-blue-600 hover:to-blue-700
+                        shadow-md hover:shadow-lg
+                        transition-all transform hover:scale-[1.02]
+                    ">
+                    Choose Plan
+                </button>
+            </div>
+        </div>
+
+        <?php endforeach; ?>
+    </div>
+</div>
+
 
             <!-- FAQ Section -->
             <div class="bg-white rounded-xl shadow-lg p-8 mb-16">

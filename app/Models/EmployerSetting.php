@@ -23,22 +23,43 @@ class EmployerSetting extends Model
         }
 
         $fields = array_keys($this->attributes);
-        $placeholders = array_map(fn($f) => ":$f", $fields);
+        // Use :field_ins for insert values to avoid conflict with update values
+        $placeholders = array_map(fn($f) => ":{$f}_ins", $fields);
+        
         $updateFields = array_filter($fields, fn($f) => $f !== 'employer_id');
-        $set = array_map(fn($f) => "$f = :$f", $updateFields);
+        // Use :field_upd for update values
+        $set = array_map(fn($f) => "$f = :{$f}_upd", $updateFields);
         
         if (empty($set)) {
-            // No fields to update, just insert
+            // No fields to update, just insert (ignore if exists? or just insert)
+            // If no fields to update, we can't really do ON DUPLICATE KEY UPDATE nothing.
+            // But usually there are fields.
+            // Let's just do a simple insert.
             $sql = "INSERT INTO {$this->table} (" . implode(', ', $fields) . ") 
                     VALUES (" . implode(', ', $placeholders) . ")";
+            
+            // Map params to _ins
+            $params = [];
+            foreach ($this->attributes as $key => $val) {
+                $params["{$key}_ins"] = $val;
+            }
         } else {
             $sql = "INSERT INTO {$this->table} (" . implode(', ', $fields) . ") 
                     VALUES (" . implode(', ', $placeholders) . ")
                     ON DUPLICATE KEY UPDATE " . implode(', ', $set);
+            
+            // Map params to _ins and _upd
+            $params = [];
+            foreach ($this->attributes as $key => $val) {
+                $params["{$key}_ins"] = $val;
+                if ($key !== 'employer_id') {
+                    $params["{$key}_upd"] = $val;
+                }
+            }
         }
         
         try {
-            $this->getDb()->query($sql, $this->attributes);
+            $this->getDb()->query($sql, $params);
             return true;
         } catch (\Exception $e) {
             error_log("EmployerSetting save error: " . $e->getMessage());

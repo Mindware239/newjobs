@@ -396,6 +396,38 @@
                 <?php endif; ?>
             </div>
 
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l5.414 5.414a1 1 0 01.586 1.414V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Employment Documents
+                </h2>
+                <?php if (!empty($employmentDocuments ?? [])): ?>
+                    <div class="space-y-4">
+                        <?php foreach ($employmentDocuments as $doc): ?>
+                            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-gray-900"><?= htmlspecialchars($doc['file_name'] ?? basename((string)($doc['file_path'] ?? ''))) ?></div>
+                                    <div class="text-sm text-gray-600">
+                                        <?= htmlspecialchars($doc['doc_type'] ?? '') ?> · 
+                                        <?= number_format(((int)($doc['size_bytes'] ?? 0)) / 1024) ?> KB
+                                        <?php if (!empty($doc['company_name'])): ?>
+                                            · <?= htmlspecialchars($doc['company_name']) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <a href="<?= htmlspecialchars($doc['file_path'] ?? '') ?>" target="_blank" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                                    Download
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="text-sm text-gray-500 italic">No employment documents uploaded.</p>
+                <?php endif; ?>
+            </div>
+
             <!-- Resume & Media -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">

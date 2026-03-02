@@ -1,2 +1,70 @@
 <?php
-require __DIR__ . '/public/index.php';
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/storage/logs/php_errors.log');
+
+use App\Core\Application;
+use App\Core\Router;
+use App\Middlewares\CsrfMiddleware;
+use App\Middlewares\RateLimitMiddleware;
+
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+    || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+session_start();
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    $_SESSION['csrf_token_time'] = time();
+}
+
+setcookie('XSRF-TOKEN', $_SESSION['csrf_token'], [
+    'expires' => time() + 3600,
+    'path' => '/',
+    'secure' => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+// Load .env from public_html
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+} catch (Exception $e) {
+    // ignore
+}
+
+$app = new Application();
+
+$app->addMiddleware(new CsrfMiddleware());
+$app->addMiddleware(new RateLimitMiddleware());
+
+$router = Router::getInstance();
+
+// Load routes (NO ../)
+require_once __DIR__ . '/routes/front.php';
+require_once __DIR__ . '/routes/employer.php';
+require_once __DIR__ . '/routes/candidate.php';
+require_once __DIR__ . '/routes/admin.php';
+require_once __DIR__ . '/routes/api.php';
+require_once __DIR__ . '/routes/masteradmin.php';
+require_once __DIR__ . '/routes/sales.php';
+require_once __DIR__ . '/routes/bulk.php';
+
+$app->setRouter($router);
+$app->run();

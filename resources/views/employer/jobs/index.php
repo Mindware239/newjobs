@@ -362,7 +362,7 @@ $subscription = $subscription ?? null;
                                         <?php endif; ?>
                                         <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" 
                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Job</a>
-                                        <button onclick="deleteJob(<?= $job['id'] ?>)" 
+                                        <button onclick="deleteJob('<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>')" 
                                                 class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                                             Delete Job
                                         </button>
@@ -415,10 +415,10 @@ function updateJobStatus(jobId, status) {
     });
 }
 
-function deleteJob(jobId) {
+function deleteJob(jobSlug) {
     if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) return;
     
-    fetch('/employer/jobs/' + jobId, {
+    fetch('/employer/jobs/' + jobSlug, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

@@ -144,10 +144,10 @@ class JobMatchScorer
         $jobSkillsText = implode(', ', $jobRequirements['required_skills']);
         
         return <<<PROMPT
-You are an expert recruiter. Compare a candidate profile against a job requirement and provide match scores.
+        You are an expert recruiter. Compare a candidate profile against a job requirement and provide match scores.
 
-CANDIDATE PROFILE (JSON):
-{$candidateProfile}
+       CANDIDATE PROFILE (JSON):
+          {$candidateProfile}
 
 JOB REQUIREMENTS:
 Title: {$jobRequirements['title']}

@@ -946,7 +946,7 @@
                                 </svg>
                             </a>
                             <?php if (!empty($featuredCompanies) && is_array($featuredCompanies)): ?>
-                            <div class="mt-4 grid grid-cols-2 gap-3">
+                            <div class="mt-4 grid grid-cols-1 gap-3">
                                 <?php foreach ($featuredCompanies as $fc): ?>
                                 <a href="<?= !empty($fc['slug']) ? '/company/' . htmlspecialchars($fc['slug']) : '/candidate/jobs?company=' . urlencode($fc['company_name'] ?? '') ?>" 
                                    class="group flex items-center gap-2 p-2 rounded hover:bg-gray-50 border border-gray-100">
@@ -1025,6 +1025,20 @@
     </div>
 
     <script>
+        // Fire Search event once on load when filters are present
+        (function(){
+            try {
+                var params = new URLSearchParams(location.search||'');
+                var k = params.get('keyword')||'';
+                var l = params.get('location')||'';
+                var e = params.get('experience')||'';
+                if ((k && k.trim()) || (l && l.trim()) || (e && e.trim())) {
+                    if (window.MWMarketing) {
+                        window.MWMarketing.trackSearch({search_string:k, location:l, experience:e, content_category:'jobs'});
+                    }
+                }
+            } catch(_) {}
+        })();
         // Job Title Autocomplete Component
         function jobTitleAutocomplete() {
             return {

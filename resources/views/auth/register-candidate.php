@@ -82,6 +82,11 @@
     </style>
 </head>
 <body class="min-h-screen">
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            try{ if(window.MWMarketing){ MWMarketing.trackInitiateRegistration({role:'candidate'}); } }catch(_){}
+        });
+    </script>
     <div x-data="registrationForm()" x-cloak class="grid grid-cols-1 md:grid-cols-2 md:gap-8 min-h-screen">
         <div class="bg-white flex flex-col justify-center px-6 md:px-16 py-10">
             <a href="/" class="mb-8 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-2">
@@ -94,7 +99,7 @@
                 <div class="h-10 w-10 rounded-md bg-gray-900 text-white flex items-center justify-center font-bold">M</div>
                 <div class="text-xl font-semibold">Mindware</div>
             </div>
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Create your account</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Create your candidate account</h1>
             <p class="text-gray-600 mb-8">Join our trusted recruitment platform</p>
             <div class="max-w-md">
 

@@ -87,6 +87,106 @@ $title = $title ?? 'Create Campaign';
                             </div>
                         </div>
 
+                        <!-- Channels -->
+                        <div class="space-y-4 pt-4 border-t">
+                            <h3 class="text-lg font-medium">Channels</h3>
+                            <p class="text-xs text-muted-foreground">Choose where to send. Default is Email.</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="channels[]" value="email" checked>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-500 text-white">Email</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="channels[]" value="push">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500 text-white">Push</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="channels[]" value="whatsapp">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-500 text-white">WhatsApp</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="channels[]" value="in_app">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500 text-white">In-App</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Manual Selection -->
+                        <div class="space-y-2 pt-4 border-t">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium">Manual Selection (optional)</h3>
+                                <label class="inline-flex items-center text-sm">
+                                    <input type="checkbox" id="selectAll" class="mr-2">
+                                    Select All
+                                </label>
+                            </div>
+                            <p class="text-xs text-muted-foreground">Tick to send to specific users (overrides filters)</p>
+                            <form method="GET" class="flex items-center gap-3">
+                                <select name="role" class="flex h-9 w-44 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                    <option value="candidate" <?= ($role ?? 'candidate') === 'candidate' ? 'selected' : '' ?>>Candidates</option>
+                                    <option value="employer" <?= ($role ?? '') === 'employer' ? 'selected' : '' ?>>Employers</option>
+                                </select>
+                                <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Search email or name" class="flex h-9 w-[24rem] rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                <select name="per_page" class="flex h-9 w-28 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                    <?php $pp = (int)($perPage ?? 20); foreach ([10,20,30,50] as $opt): ?>
+                                        <option value="<?= $opt ?>" <?= $pp === $opt ? 'selected' : '' ?>><?= $opt ?>/page</option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4">Apply</button>
+                            </form>
+                            <div class="mt-3 max-h-64 overflow-auto border rounded">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-muted">
+                                            <th class="p-2 w-10"></th>
+                                            <th class="p-2 text-left">Email</th>
+                                            <th class="p-2 text-left">Name</th>
+                                            <th class="p-2 text-left">Role</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach (($usersList ?? []) as $u): ?>
+                                            <tr class="border-b">
+                                                <td class="p-2"><input type="checkbox" name="selected_user_ids[]" value="<?= (int)$u['id'] ?>"></td>
+                                                <td class="p-2"><?= htmlspecialchars((string)$u['email']) ?></td>
+                                                <td class="p-2"><?= htmlspecialchars((string)($u['first_name'] ?? '')) ?></td>
+                                                <td class="p-2"><?= htmlspecialchars((string)$u['role']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                        <?php if (empty($usersList ?? [])): ?>
+                                            <tr><td colspan="4" class="p-3 text-center text-muted-foreground">No users available</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php 
+                                $totalPages = isset($total, $perPage) && $perPage > 0 ? (int)ceil($total / $perPage) : 1; 
+                                $cur = (int)($page ?? 1); 
+                            ?>
+                            <?php if ($totalPages > 1): ?>
+                            <div class="mt-2 flex items-center justify-between">
+                                <div class="text-xs text-muted-foreground">
+                                    Showing <?= (($cur - 1) * $perPage) + 1 ?> to <?= min($cur * $perPage, $total) ?> of <?= $total ?> users
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <?php if ($cur > 1): ?>
+                                        <a href="?page=<?= $cur - 1 ?>&per_page=<?= $perPage ?>&role=<?= urlencode($role ?? 'candidate') ?>&search=<?= urlencode($search ?? '') ?>" class="px-3 py-1 border rounded hover:bg-muted">Prev</a>
+                                    <?php endif; ?>
+                                    <?php 
+                                        $start = max(1, $cur - 2);
+                                        $end = min($totalPages, $cur + 2);
+                                        for ($p = $start; $p <= $end; $p++):
+                                    ?>
+                                        <a href="?page=<?= $p ?>&per_page=<?= $perPage ?>&role=<?= urlencode($role ?? 'candidate') ?>&search=<?= urlencode($search ?? '') ?>" class="px-3 py-1 border rounded <?= $p === $cur ? 'bg-muted' : 'hover:bg-muted' ?>"><?= $p ?></a>
+                                    <?php endfor; ?>
+                                    <?php if ($cur < $totalPages): ?>
+                                        <a href="?page=<?= $cur + 1 ?>&per_page=<?= $perPage ?>&role=<?= urlencode($role ?? 'candidate') ?>&search=<?= urlencode($search ?? '') ?>" class="px-3 py-1 border rounded hover:bg-muted">Next</a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="pt-4 flex justify-end">
                             <button type="submit" id="submitBtn" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                                 Send Campaign
@@ -136,9 +236,20 @@ document.getElementById('campaignForm').addEventListener('submit', function(e) {
             if (!data.filters) data.filters = {};
             data.filters[filterKey] = value;
         } else {
-            data[key] = value;
+            if (key === 'channels[]') {
+                if (!data.channels) data.channels = [];
+                data.channels.push(value);
+            } else {
+                data[key] = value;
+            }
         }
     });
+    // Manual selected IDs
+    const selectedIds = [];
+    document.querySelectorAll('input[name=\"selected_user_ids[]\"]:checked').forEach(cb => selectedIds.push(parseInt(cb.value, 10)));
+    if (selectedIds.length > 0) {
+        data.selected_user_ids = selectedIds;
+    }
 
     fetch(this.action, {
         method: 'POST',
@@ -165,5 +276,10 @@ document.getElementById('campaignForm').addEventListener('submit', function(e) {
         btn.disabled = false;
         btn.innerText = 'Send Campaign';
     });
+});
+
+document.getElementById('selectAll').addEventListener('change', function(e) {
+    const checked = e.target.checked;
+    document.querySelectorAll('input[name=\"selected_user_ids[]\"]').forEach(cb => cb.checked = checked);
 });
 </script>

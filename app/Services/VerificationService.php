@@ -22,9 +22,20 @@ class VerificationService
             $redis->set("email_verify:{$userId}", $code, 600);
         }
         
-        // TODO: Send email with verification code
-        // $mailService = new MailService();
-        // $mailService->sendVerificationCode($email, $code);
+        // Send email with verification code using NotificationService
+        try {
+            \App\Services\NotificationService::send(
+                $userId,
+                'email_verification',
+                'Verify your email address',
+                'Your verification code is: ' . $code,
+                ['code' => $code],
+                null,
+                ['email'] // Force email channel
+            );
+        } catch (\Throwable $e) {
+            error_log("Failed to send verification email to user {$userId}: " . $e->getMessage());
+        }
         
         error_log("Email verification code for user {$userId}: {$code}");
         return $code;

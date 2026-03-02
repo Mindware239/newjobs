@@ -14,8 +14,16 @@ abstract class BaseController
 
     public function __construct()
     {
+        header('X-Frame-Options: SAMEORIGIN');
+        header('X-Content-Type-Options: nosniff');
+        header('X-XSS-Protection: 1; mode=block');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        header("Permissions-Policy: geolocation=(self), camera=()");
+        header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
         $this->loadCurrentUser();
+        $this->verifyCsrf(new Request());
     }
+    
 
     protected function loadCurrentUser(): void
     {
@@ -48,7 +56,12 @@ abstract class BaseController
         if ($this->currentUser->role !== $role) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') === false && $request->getMethod() === 'GET') {
-                $response->redirect('/register-employer?message=' . urlencode('Please register as employer'));
+                $path = $request->getPath();
+                if (strpos($path, '/admin') === 0) {
+                    $response->redirect('/admin/login?error=access_denied');
+                } else {
+                    $response->redirect('/register-employer?message=' . urlencode('Please register as employer'));
+                }
             } else {
                 $response->setStatusCode(403);
                 $response->json(['error' => 'Forbidden']);
@@ -166,6 +179,28 @@ abstract class BaseController
         }
         
         return $errors;
+    }
+
+    protected function verifyCsrf(Request $request): void
+    {
+        if (strtoupper($request->getMethod()) !== 'POST') {
+            return;
+        }
+
+        $token = $request->header('X-CSRF-Token') ?? ($_POST['_token'] ?? ($_COOKIE['XSRF-TOKEN'] ?? ''));
+        $sessionToken = $_SESSION['csrf_token'] ?? null;
+        $issuedAt = (int)($_SESSION['csrf_token_time'] ?? 0);
+
+        if (!$token || !$sessionToken || !hash_equals((string)$sessionToken, (string)$token)) {
+            http_response_code(419);
+            exit('CSRF token mismatch');
+        }
+
+        $maxAge = 86400;
+        if ($issuedAt > 0 && (time() - $issuedAt) > $maxAge) {
+            http_response_code(419);
+            exit('CSRF token expired');
+        }
     }
 }
 

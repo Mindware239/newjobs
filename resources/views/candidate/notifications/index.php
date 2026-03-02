@@ -69,6 +69,7 @@ ob_start();
                         $isRead = (int)($n['is_read'] ?? 0) === 1;
                         $id = (int)($n['id'] ?? 0);
                         $link = $n['link'] ?? '';
+                        if ($link === '/candidate/profile/views') { $link = '/candidate/profile'; }
                         $iconType = $n['icon_type'] ?? 'system';
                         
                         // Icon Colors & SVGs

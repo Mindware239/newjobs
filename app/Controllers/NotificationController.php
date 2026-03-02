@@ -47,7 +47,7 @@ class NotificationController extends BaseController
         $hash = $request->get('h');
         $url = $request->get('url');
 
-        if ($id && $hash && $this->verifyHash($id, $hash)) {
+        if ($id && $hash && $url && $this->verifyHashWithUrl($id, $hash, $url)) {
             try {
                 $db = Database::getInstance();
                 $db->query(
@@ -58,17 +58,25 @@ class NotificationController extends BaseController
                 // Ignore errors
             }
         }
-
         if ($url) {
-            $response->redirect($url);
-        } else {
-            $response->redirect('/');
+            $host = parse_url($url, PHP_URL_HOST);
+            $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+            if ($host && $host !== $currentHost) {
+                $url = '/';
+            }
         }
+        $response->redirect($url ?: '/');
     }
 
     private function verifyHash(int $id, string $hash): bool
     {
         $secret = $_ENV['APP_KEY'] ?? 'secret';
         return hash_hmac('sha256', (string)$id, $secret) === $hash;
+    }
+    
+    private function verifyHashWithUrl(int $id, string $hash, string $url): bool
+    {
+        $secret = $_ENV['APP_KEY'] ?? 'secret';
+        return hash_hmac('sha256', $id . '|' . $url, $secret) === $hash;
     }
 }
