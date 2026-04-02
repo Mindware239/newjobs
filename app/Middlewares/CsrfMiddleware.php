@@ -103,6 +103,11 @@ class CsrfMiddleware implements MiddlewareInterface
     private static function setCsrfCookie(string $token): void
     {
         if (!headers_sent()) {
+            $current = $_COOKIE['XSRF-TOKEN'] ?? '';
+            if ($current === $token) {
+                return;
+            }
+
             $ttl = 86400; // 24 hours
             $domain = self::getCookieDomain();
             $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443');

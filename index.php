@@ -61,14 +61,17 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token_time'] = time();
 }
 
-setcookie('XSRF-TOKEN', $_SESSION['csrf_token'], [
-    'expires' => time() + 3600,
-    'path' => '/',
-    'domain' => $cookieDomain,
-    'secure' => $isHttps,
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
+$currentCsrfCookie = $_COOKIE['XSRF-TOKEN'] ?? '';
+if ($currentCsrfCookie !== ($_SESSION['csrf_token'] ?? '')) {
+    setcookie('XSRF-TOKEN', $_SESSION['csrf_token'], [
+        'expires' => time() + 3600,
+        'path' => '/',
+        'domain' => $cookieDomain,
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
 
 // Load .env from public_html
 try {

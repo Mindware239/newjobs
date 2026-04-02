@@ -11,6 +11,28 @@ use App\Models\ResumeFile;
 
 class CandidateCreationService
 {
+    private const CREATED_BY_DEFAULT = 'self';
+    private const CREATED_BY_MAP = [
+        'system' => 'admin',
+        'bulk' => 'agency',
+        'oauth' => 'self',
+        'third_party' => 'agency',
+        'agency' => 'agency',
+        'admin' => 'admin',
+        'self' => 'self',
+    ];
+
+    private static function normalizeCreatedBy(string $createdBy): string
+    {
+        $value = strtolower(trim($createdBy));
+        if (isset(self::CREATED_BY_MAP[$value])) {
+            return self::CREATED_BY_MAP[$value];
+        }
+
+        // Default to self if unknown values are used to avoid db enum truncation
+        return self::CREATED_BY_DEFAULT;
+    }
+
     public function ensureCandidateForUser(int $userId, array $initial = []): Candidate
     {
         $existing = Candidate::findByUserId($userId);
@@ -18,13 +40,19 @@ class CandidateCreationService
             if (!empty($initial)) {
                 foreach ($initial as $k => $v) {
                     if ((string)$v !== '' && empty($existing->attributes[$k])) {
-                        $existing->setAttribute($k, $v);
+                        if ($k === 'created_by') {
+                            $existing->setAttribute($k, self::normalizeCreatedBy((string)$v));
+                        } else {
+                            $existing->setAttribute($k, $v);
+                        }
                     }
                 }
                 $existing->save();
             }
             return $existing;
         }
+
+        $createdBy = self::normalizeCreatedBy((string)($initial['created_by'] ?? self::CREATED_BY_DEFAULT));
         $c = new Candidate();
         $c->fill([
             'user_id' => $userId,
@@ -32,12 +60,16 @@ class CandidateCreationService
             'is_profile_complete' => 0,
             'profile_status' => 'unverified',
             'visibility' => 'limited',
-            'created_by' => 'system',
-            'source' => 'website'
+            'created_by' => $createdBy,
+            'source' => (string)($initial['source'] ?? 'website')
         ]);
         foreach ($initial as $k => $v) {
             if ((string)$v !== '') {
-                $c->setAttribute($k, $v);
+                if ($k === 'created_by') {
+                    $c->setAttribute($k, self::normalizeCreatedBy((string)$v));
+                } else {
+                    $c->setAttribute($k, $v);
+                }
             }
         }
         $c->save();
