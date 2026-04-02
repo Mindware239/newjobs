@@ -32,7 +32,7 @@ public function account(Request $request, Response $response): void
         } catch (\Throwable $t) {}
     }
 
-    if ($employerId <= 0) {
+        if ($employerId <= 0) {
         $uid = (int)($_SESSION['user_id'] ?? 0);
         if ($uid <= 0) {
             $response->redirect('/social-services/login?redirect=/social-employer/account');
@@ -43,17 +43,40 @@ public function account(Request $request, Response $response): void
             $employerId = (int)$existing->id;
             $_SESSION['employer_id'] = $employerId;
         } else {
-            $slug = 'employer-' . $uid;
-            $new = new Employer();
-            $new->fill([
-                'user_id' => $uid,
-                'company_name' => '',
-                'company_slug' => $slug,
-                'verified' => 0
-            ]);
-            $new->save();
-            $employerId = (int)($new->attributes['id'] ?? 0);
-            $_SESSION['employer_id'] = $employerId;
+                $slugBase = 'employer-' . $uid;
+                $slug = $slugBase;
+                $new = new Employer();
+                $new->fill([
+                    'user_id' => $uid,
+                    'company_name' => '',
+                    'company_slug' => $slug,
+                    'verified' => 0
+                ]);
+                try {
+                    $new->save();
+                } catch (\Throwable $t) {
+                    // Fallback: ensure unique slug if duplicate
+                    $suffix = 1;
+                    do {
+                        $slug = $slugBase . '-' . $suffix++;
+                        $new->attributes['company_slug'] = $slug;
+                        try {
+                            $new->save();
+                            break;
+                        } catch (\Throwable $e) {
+                            // continue
+                        }
+                    } while ($suffix < 10);
+                }
+                // If still not inserted, try to fetch existing by user_id
+                $employerId = (int)($new->attributes['id'] ?? 0);
+                if ($employerId <= 0) {
+                    $existing = Employer::where('user_id', '=', $uid)->first();
+                    if ($existing && isset($existing->id)) {
+                        $employerId = (int)$existing->id;
+                    }
+                }
+                $_SESSION['employer_id'] = $employerId;
         }
     }
 
@@ -93,16 +116,33 @@ public function account(Request $request, Response $response): void
                 $employerId = (int)$existing->id;
                 $_SESSION['employer_id'] = $employerId;
             } else {
-                $slug = 'employer-' . (int)$_SESSION['user_id'];
+                $uid = (int)$_SESSION['user_id'];
+                $slugBase = 'employer-' . $uid;
+                $slug = $slugBase;
                 $new = new Employer();
                 $new->fill([
-                    'user_id' => (int)$_SESSION['user_id'],
+                    'user_id' => $uid,
                     'company_name' => '',
                     'company_slug' => $slug,
                     'verified' => 0
                 ]);
-                $new->save();
+                try {
+                    $new->save();
+                } catch (\Throwable $t) {
+                    $suffix = 1;
+                    do {
+                        $slug = $slugBase . '-' . $suffix++;
+                        $new->attributes['company_slug'] = $slug;
+                        try { $new->save(); break; } catch (\Throwable $e) {}
+                    } while ($suffix < 10);
+                }
                 $employerId = (int)($new->attributes['id'] ?? 0);
+                if ($employerId <= 0) {
+                    $existing = Employer::where('user_id', '=', $uid)->first();
+                    if ($existing && isset($existing->id)) {
+                        $employerId = (int)$existing->id;
+                    }
+                }
                 $_SESSION['employer_id'] = $employerId;
             }
         }

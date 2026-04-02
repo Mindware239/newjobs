@@ -1236,7 +1236,23 @@ public function hiringInsight(Request $request, Response $response): void
             }
             // Prefer uploaded logo if present
             if ($logo === '' && !empty($r['logo_url'])) {
-                $logo = (string)$r['logo_url'];
+                $candidate = trim((string)$r['logo_url']);
+                // URL-encode filename if it contains spaces/unsafe chars
+                if ($candidate !== '' && strpos($candidate, 'http') !== 0) {
+                    $pos = strrpos($candidate, '/');
+                    if ($pos !== false) {
+                        $prefix = substr($candidate, 0, $pos + 1);
+                        $fname = substr($candidate, $pos + 1);
+                        $candidate = $prefix . rawurlencode($fname);
+                    }
+                }
+                // Normalize to public URL
+                try {
+                    $storage = new \App\Core\Storage();
+                    $logo = $storage->url(ltrim($candidate, '/'));
+                } catch (\Throwable $t) {
+                    $logo = $candidate;
+                }
             }
             if ($logo === '' && $website !== '') {
                 $host = $extractHost($website);
@@ -1310,9 +1326,26 @@ public function hiringInsight(Request $request, Response $response): void
             return $host;
         };
         $host = $extractHost($website);
-        $logo = !empty($row['logo_url'])
-            ? (string)$row['logo_url']
-            : ($host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f"));
+        $logo = '';
+        if (!empty($row['logo_url'])) {
+            $candidate = trim((string)$row['logo_url']);
+            if ($candidate !== '' && strpos($candidate, 'http') !== 0) {
+                $pos = strrpos($candidate, '/');
+                if ($pos !== false) {
+                    $prefix = substr($candidate, 0, $pos + 1);
+                    $fname = substr($candidate, $pos + 1);
+                    $candidate = $prefix . rawurlencode($fname);
+                }
+            }
+            try {
+                $storage = new \App\Core\Storage();
+                $logo = $storage->url(ltrim($candidate, '/'));
+            } catch (\Throwable $t) {
+                $logo = $candidate;
+            }
+        } else {
+            $logo = $host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
+        }
         $org = [
             'id' => (int)$row['id'],
             'name' => $name,
@@ -1553,6 +1586,3 @@ public function hiringInsight(Request $request, Response $response): void
 
 
 }
-
-
-

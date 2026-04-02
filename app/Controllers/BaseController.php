@@ -53,7 +53,8 @@ abstract class BaseController
             return false;
         }
 
-        if ($this->currentUser->role !== $role) {
+        $isAdmin = in_array($this->currentUser->role, ['admin', 'super_admin']);
+        if ($this->currentUser->role !== $role && !$isAdmin) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') === false && $request->getMethod() === 'GET') {
                 $path = $request->getPath();

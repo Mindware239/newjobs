@@ -24,6 +24,8 @@ class Sanitizer
             }
             return $tag;
         }, $clean);
+        // Linkify bare URLs into anchors
+        $clean = preg_replace('/(^|[\s>])(https?:\/\/[^\s<]+)/i', '$1<a href="$2" target="_blank" rel="nofollow noopener">$2</a>', $clean);
         return $clean ?? '';
     }
 }

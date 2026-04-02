@@ -17,16 +17,44 @@ use App\Middlewares\RateLimitMiddleware;
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
     || (($_SERVER['SERVER_PORT'] ?? '') === '443');
 
+// Determine cookie domain to keep session across subdomains (e.g., www and apex)
+$hostHeader = (string)($_SERVER['HTTP_HOST'] ?? '');
+$cookieDomain = '';
+if ($hostHeader) {
+    $hostNoPort = preg_replace('/:\d+$/', '', $hostHeader);
+
+    // For localhost and raw IPs, use host-specific session cookie (no domain wildcard)
+    if (preg_match('/^(localhost|127\.0\.0\.1)$/i', $hostNoPort) || filter_var($hostNoPort, FILTER_VALIDATE_IP)) {
+        $cookieDomain = '';
+    } else {
+        $parts = explode('.', $hostNoPort);
+        if (count($parts) >= 2) {
+            $apex = implode('.', array_slice($parts, -2));
+            $cookieDomain = '.' . $apex;
+        }
+    }
+}
+
+// Ensure session cookie is accessible and secure on live server
+ini_set('session.cookie_httponly', '1');
+if ($isHttps) {
+    ini_set('session.cookie_secure', '1');
+}
+ini_set('session.use_only_cookies', '1');
+ini_set('session.cookie_samesite', 'Lax');
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => '',
+    'domain' => $cookieDomain,
     'secure' => $isHttps,
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -36,6 +64,7 @@ if (empty($_SESSION['csrf_token'])) {
 setcookie('XSRF-TOKEN', $_SESSION['csrf_token'], [
     'expires' => time() + 3600,
     'path' => '/',
+    'domain' => $cookieDomain,
     'secure' => $isHttps,
     'httponly' => true,
     'samesite' => 'Lax',
@@ -62,6 +91,7 @@ require_once __DIR__ . '/routes/employer.php';
 require_once __DIR__ . '/routes/candidate.php';
 require_once __DIR__ . '/routes/admin.php';
 require_once __DIR__ . '/routes/api.php';
+require_once __DIR__ . '/routes/api_v1.php';
 require_once __DIR__ . '/routes/masteradmin.php';
 require_once __DIR__ . '/routes/sales.php';
 require_once __DIR__ . '/routes/bulk.php';

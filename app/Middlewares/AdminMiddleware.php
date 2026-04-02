@@ -17,7 +17,7 @@ class AdminMiddleware implements MiddlewareInterface
         $this->permissions = $permissions;
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
 
@@ -90,6 +90,8 @@ class AdminMiddleware implements MiddlewareInterface
 
         // Log admin activity
         $this->logAdminActivity($user, $request);
+
+        $next($request, $response);
     }
 
     private function getUserPermissions(User $user): array

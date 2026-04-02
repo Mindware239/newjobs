@@ -239,6 +239,8 @@ class SubscriptionController extends BaseController
         $billingCycle = $data['billing_cycle'] ?? 'monthly';
         $discountCode = $data['discount_code'] ?? '';
         $autoRenew = isset($data['auto_renew']) ? (bool)$data['auto_renew'] : false;
+        $gateway = $data['gateway'] ?? 'razorpay'; // Get gateway choice
+        
 
         if (!in_array($billingCycle, ['monthly', 'quarterly', 'annual'])) {
             $response->json(['error' => 'Invalid billing cycle'], 400);
@@ -281,6 +283,7 @@ class SubscriptionController extends BaseController
                             'amount' => $finalPrice,
                             'currency' => 'INR',
                             'billing_cycle' => $billingCycle,
+                            'gateway' => $gateway,
                             'status' => 'pending'
                         ]);
                         $payment->save();
@@ -292,7 +295,7 @@ class SubscriptionController extends BaseController
                             'payment_id' => (int)$payment->attributes['id'],
                             'amount' => $finalPrice,
                             'requires_payment' => true,
-                            'payment_gateway' => $this->initiatePayment($payment, $employer)
+                            'payment_gateway' => $this->initiatePayment($payment, $employer, $gateway)
                         ]);
                     } else {
                         // Free renewal: extend immediately from max(expires_at, now)
@@ -415,6 +418,7 @@ class SubscriptionController extends BaseController
                     'amount' => $finalPrice,
                     'currency' => 'INR',
                     'billing_cycle' => $billingCycle,
+                    'gateway' => $gateway,
                     'status' => 'pending'
                 ]);
                 $payment->save();
@@ -435,7 +439,7 @@ class SubscriptionController extends BaseController
                     'payment_id' => $payment->attributes['id'],
                     'amount' => $finalPrice,
                     'requires_payment' => true,
-                    'payment_gateway' => $this->initiatePayment($payment, $employer)
+                    'payment_gateway' => $this->initiatePayment($payment, $employer, $gateway)
                 ]);
             } else {
                 if ($db->inTransaction()) {
@@ -612,14 +616,18 @@ class SubscriptionController extends BaseController
         
         // Get usage statistics
         $usage = [
-            'contacts_used' => $subscription ? (int)$subscription->attributes['contacts_used_this_month'] : 0,
-            'contacts_limit' => $plan ? $plan->getLimit('max_contacts_per_month') : 0,
-            'resume_downloads_used' => $subscription ? (int)$subscription->attributes['resume_downloads_used_this_month'] : 0,
-            'resume_downloads_limit' => $plan ? $plan->getLimit('max_resume_downloads') : 0,
-            'chat_messages_used' => $subscription ? (int)$subscription->attributes['chat_messages_used_this_month'] : 0,
-            'chat_messages_limit' => $plan ? $plan->getLimit('max_chat_messages') : 0,
-            'job_posts_used' => $subscription ? (int)$subscription->attributes['job_posts_used'] : 0,
-            'job_posts_limit' => $plan ? $plan->getLimit('max_job_posts') : 0
+            'job_posts' => [
+                'used' => $subscription ? (int)($subscription->attributes['job_posts_used'] ?? 0) : 0,
+                'limit' => $plan ? $plan->getLimit('max_job_posts') : 0,
+            ],
+            'resume_views' => [
+                'used' => $subscription ? (int)($subscription->attributes['resume_downloads_used_this_month'] ?? 0) : 0,
+                'limit' => $plan ? $plan->getLimit('max_resume_downloads') : 0,
+            ],
+            'contacts_views' => [
+                'used' => $subscription ? (int)($subscription->attributes['contacts_used_this_month'] ?? 0) : 0,
+                'limit' => $plan ? $plan->getLimit('max_contacts_per_month') : 0,
+            ],
         ];
 
         // Get payment history
@@ -649,6 +657,7 @@ class SubscriptionController extends BaseController
         $data = $request->getJsonBody() ?? $request->all();
         $newPlanSlug = $data['plan_slug'] ?? '';
         $billingCycle = $data['billing_cycle'] ?? 'monthly';
+        $gateway = $data['gateway'] ?? 'razorpay'; // Get gateway choice
 
         $currentSubscription = EmployerSubscription::getCurrentForEmployer($employer->id);
         if (!$currentSubscription) {
@@ -698,6 +707,7 @@ class SubscriptionController extends BaseController
                     'amount' => $proratedAmount,
                     'currency' => 'INR',
                     'billing_cycle' => $billingCycle,
+                    'gateway' => $gateway,
                     'status' => 'pending',
                     'metadata' => json_encode(['type' => 'plan_change', 'prorated' => true])
                 ]);
@@ -710,7 +720,8 @@ class SubscriptionController extends BaseController
                     'message' => 'Plan changed successfully',
                     'requires_payment' => true,
                     'amount' => $proratedAmount,
-                    'payment_id' => $payment->attributes['id']
+                    'payment_id' => $payment->attributes['id'],
+                    'payment_gateway' => $this->initiatePayment($payment, $employer, $gateway)
                 ]);
             } else {
                 $db->commit();
@@ -827,7 +838,7 @@ class SubscriptionController extends BaseController
         }
     }
 
-    private function configureSslCa(): void
+    private function configureSslCa(): bool|string
     {
         $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
         $possible = [
@@ -843,11 +854,11 @@ class SubscriptionController extends BaseController
         foreach ($possible as $path) {
             if ($path && file_exists((string)$path)) {
                 @ini_set('curl.cainfo', (string)$path);
-                @putenv('CURL_CA_BUNDLE=' . (string)$path);
-                @putenv('SSL_CERT_FILE=' . (string)$path);
-                break;
+                @ini_set('openssl.cafile', (string)$path);
+                return (string)$path;
             }
         }
+        return false;
     }
 
     /**
@@ -924,8 +935,15 @@ class SubscriptionController extends BaseController
         return max(0, $charge - $refund);
     }
 
-    private function initiatePayment(SubscriptionPayment $payment, Employer $employer): array
+    private function initiatePayment(SubscriptionPayment $payment, Employer $employer, string $gateway = 'razorpay'): array
     {
+        if ($gateway === 'cashfree') {
+            return [
+                'gateway' => 'cashfree',
+                'payment_url' => '/gateway/cashfree/create-order?payment_id=' . (int)$payment->id
+            ];
+        }
+
         $config = require __DIR__ . '/../../../config/razorpay.php';
         $this->configureSslCa();
 

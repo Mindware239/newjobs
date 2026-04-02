@@ -81,6 +81,14 @@
             <label class="block text-sm font-medium mb-1">Sort Order</label>
             <input type="number" name="sort_order" value="<?= htmlspecialchars((string)($editing['sort_order'] ?? '0')) ?>" class="w-full border rounded-lg px-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500">
           </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Active</label>
+            <?php $isActive = (int)($editing['is_active'] ?? 0) === 1 ? 'checked' : ''; ?>
+            <label class="inline-flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg border w-max">
+              <span class="font-medium">Plan is Active</span>
+              <input type="checkbox" name="is_active" <?= $isActive ?> class="rounded border accent-indigo-600">
+            </label>
+          </div>
           <div data-section="employer">
             <label class="block text-sm font-medium mb-1">Max Job Posts</label>
             <input type="number" name="max_job_posts" value="<?= htmlspecialchars((string)($editing['max_job_posts'] ?? '0')) ?>" class="w-full border rounded-lg px-3 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500">
@@ -106,8 +114,7 @@
                 'job_post_boost' => 'Job post boost',
                 'ai_matching' => 'AI matching',
                 'analytics_dashboard' => 'Analytics dashboard',
-                'is_featured' => 'Featured badge',
-                'is_active' => 'Active'
+                'is_featured' => 'Featured badge'
               ];
             ?>
             <?php foreach ($toggles as $key => $label): ?>

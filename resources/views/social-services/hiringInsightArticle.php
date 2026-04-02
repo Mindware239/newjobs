@@ -10,6 +10,33 @@
 </head>
 <body class="bg-gray-50 text-[#54595f]">
 <?php include __DIR__ . '/header.php'; ?>
+<style>
+  .article-content{color:#111827;font-family: Arial, Helvetica, sans-serif}
+  .article-content h1{font-size:2rem;font-weight:800;margin:1.25rem 0}
+  .article-content h2{font-size:1.75rem;font-weight:700;margin:1rem 0}
+  .article-content h3{font-size:1.5rem;font-weight:700;margin:.85rem 0}
+  .article-content p{margin:.85rem 0;line-height:1.85}
+  .article-content ul,.article-content ol{margin:.75rem 0 1rem 1.25rem;padding:0}
+  .article-content ul{list-style:disc;padding-left:1.5rem}
+  .article-content ol{list-style:decimal;padding-left:1.5rem}
+  .article-content li{margin:.4rem 0;line-height:1.75}
+  .article-content ul li::marker,.article-content ol li::marker{color:#e15f55;font-weight:700}
+  .article-content blockquote{border-left:4px solid #e5e7eb;padding:.5rem 1rem;margin:1rem 0;color:#4b5563;background:#f9fafb}
+  .article-content table{width:100%;border-collapse:collapse;margin:1rem 0}
+  .article-content th,.article-content td{border:1px solid #e5e7eb;padding:.6rem .9rem}
+  .article-content tr:nth-child(odd){background:#fafafa}
+  .article-content a{color:#2563eb;text-decoration:none;border-bottom:1px solid #bfdbfe}
+  .article-content a:hover{color:#1d4ed8;border-bottom-color:#93c5fd}
+  .article-content hr{border:0;border-top:1px solid #e5e7eb;margin:1.5rem 0}
+  .article-content img{max-width:100%;height:auto;border-radius:.5rem;margin:1rem 0}
+  .article-content code{background:#f3f4f6;border:1px solid #e5e7eb;padding:.15rem .35rem;border-radius:.3rem}
+  .article-content pre{background:#0f172a;color:#e2e8f0;padding:1rem;border-radius:.6rem;overflow:auto}
+  .article-content p:has(> a){display:inline-block;border:1px solid #e5e7eb;background:#f9fafb;padding:.5rem .75rem;border-radius:.4rem}
+  .article-content .marker{background:#fff59e;padding:0 .25em;border-radius:.15rem}
+  .article-content .special-container{border:1px solid #e5e7eb;background:#f9fafb;padding:1rem;border-radius:.5rem;margin:1rem 0}
+  .article-content .italic-title{font-style:italic}
+  .article-content .subtitle{font-size:1.1rem;color:#6b7280}
+</style>
 <div class="border-t border-gray-200">
     <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 py-3
                 flex items-center justify-between">
@@ -63,7 +90,7 @@
                     <?php echo $article['short_description'] ?>
                 </div>
             <?php endif; ?>
-            <div class="prose max-w-none">
+            <div class="article-content">
                 <?php echo $article['content'] ?? '' ?>
             </div>
 

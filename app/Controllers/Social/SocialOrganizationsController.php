@@ -140,6 +140,16 @@ class SocialOrganizationsController
         ]);
     }
 
+    // Fallback: allow /social/organizations/edit?id=123 for hosts that strip path params
+    public function editQuery(Request $request, Response $response): void
+    {
+        $id = (int)($request->get('id') ?? 0);
+        if ($id <= 0) { $response->redirect('/social-employer/organisation'); return; }
+        // Reuse edit flow
+        $request->setParam('id', (string)$id);
+        $this->edit($request, $response);
+    }
+
     public function update(Request $request, Response $response): void
     {
         $id = (int)$request->param('id');

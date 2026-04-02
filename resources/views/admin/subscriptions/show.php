@@ -117,9 +117,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= !empty($p['created_at']) ? date('M d, Y H:i', strtotime($p['created_at'])) : '—' ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <?php if (!empty($p['invoice_url'])): ?>
-                                            <a href="<?= htmlspecialchars($p['invoice_url']) ?>" target="_blank" class="text-blue-600 hover:text-blue-800">Download</a>
-                                        <?php endif; ?>
+                                        <a href="/admin/subscriptions/payments/<?= (int)($p['id'] ?? 0) ?>/invoice" class="text-blue-600 hover:text-blue-800">Download</a>
                                         <form method="POST" action="/admin/subscriptions/payments/<?= (int)($p['id'] ?? 0) ?>/regenerate-invoice" class="inline-block ml-2">
                                             <button type="submit" class="text-gray-700 hover:text-gray-900">Regenerate</button>
                                         </form>

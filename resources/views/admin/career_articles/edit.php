@@ -20,7 +20,7 @@
         </div>
         <div>
             <label class="block text-sm font-medium">Short Description</label>
-            <textarea name="short_description" class="border px-3 py-2 rounded w-full" rows="3"><?= htmlspecialchars($article['short_description'] ?? '') ?></textarea>
+            <textarea name="short_description" class="border px-3 py-2 rounded w-full" rows="3" placeholder="Teaser (1–2 sentences) to summarize the article"><?= htmlspecialchars($article['short_description'] ?? '') ?></textarea>
         </div>
         <div>
             <label class="block text-sm font-medium">Content</label>
@@ -55,12 +55,34 @@
         </div>
     </form>
 </div>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css" rel="stylesheet">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.js"></script>
+<script src="https://cdn.ckeditor.com/4.22.1/standard-all/ckeditor.js"></script>
 <script>
-$(function(){
-  $('[name="short_description"]').summernote({height:150});
-  $('[name="content"]').summernote({height:400});
-});
+if (window.CKEDITOR) {
+  CKEDITOR.replace('short_description', {
+    allowedContent: true,
+    extraPlugins: 'pastefromword,justify,format,table,tabletools,tableselection,clipboard',
+    height: 180,
+    toolbar: [
+      { name: 'basicstyles', items: ['Bold','Italic','Underline','RemoveFormat'] },
+      { name: 'paragraph', items: ['NumberedList','BulletedList','Outdent','Indent','Blockquote','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+      { name: 'links', items: ['Link','Unlink'] },
+      { name: 'insert', items: ['HorizontalRule'] },
+      { name: 'document', items: ['Maximize'] }
+    ]
+  });
+  CKEDITOR.replace('content', {
+    allowedContent: true,
+    extraPlugins: 'pastefromword,justify,format,table,tabletools,tableselection,clipboard',
+    height: 380,
+    toolbar: [
+      { name: 'document', items: ['Source','Maximize'] },
+      { name: 'clipboard', items: ['Undo','Redo','Cut','Copy','Paste','PasteText','PasteFromWord'] },
+      { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat'] },
+      { name: 'paragraph', items: ['NumberedList','BulletedList','Outdent','Indent','Blockquote','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+      { name: 'links', items: ['Link','Unlink'] },
+      { name: 'insert', items: ['Table','HorizontalRule','SpecialChar'] },
+      { name: 'styles', items: ['Styles','Format'] }
+    ]
+  });
+}
 </script>

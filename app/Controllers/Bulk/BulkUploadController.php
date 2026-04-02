@@ -24,32 +24,40 @@ class BulkUploadController extends BaseController
     public function login(Request $request, Response $response): void
     {
         if ($request->getMethod() === 'GET') {
+            self::ensureCsrfToken();
             $response->view('bulk/login', ['title' => 'Bulk Uploader Login']);
             return;
         }
-        $username = trim((string)$request->post('username', ''));
-        $password = (string)$request->post('password', '');
+
+        $data = $request->getJsonBody() ?? $request->all();
+        $username = trim((string)($data['username'] ?? ''));
+        $password = (string)($data['password'] ?? '');
+
         $row = BulkUploadAccount::where('username', '=', $username)->first();
         if (!$row) {
-            $response->view('bulk/login', ['error' => 'Invalid credentials']);
+            $response->json(['error' => 'Invalid credentials'], 401);
             return;
         }
+
         $acc = $row;
         if (!password_verify($password, $acc->attributes['password_hash'] ?? '')) {
-            $response->view('bulk/login', ['error' => 'Invalid credentials']);
+            $response->json(['error' => 'Invalid credentials'], 401);
             return;
         }
+
         if (($acc->attributes['status'] ?? 'active') !== 'active') {
-            $response->view('bulk/login', ['error' => 'Account suspended']);
+            $response->json(['error' => 'Account suspended'], 403);
             return;
         }
+
         $exp = $acc->attributes['expires_at'] ?? null;
         if ($exp && strtotime((string)$exp) < time()) {
-            $response->view('bulk/login', ['error' => 'Account expired']);
+            $response->json(['error' => 'Account expired'], 403);
             return;
         }
+
         $_SESSION['bulk_account_id'] = $acc->id;
-        $response->redirect('/bulk/upload');
+        $response->json(['success' => true, 'redirect' => '/bulk/upload']);
     }
 
     public function logout(Request $request, Response $response): void
@@ -295,6 +303,13 @@ class BulkUploadController extends BaseController
         $f = $db->fetchOne("SELECT rf.* FROM resume_files rf INNER JOIN resume_batches rb ON rf.batch_id = rb.id WHERE rf.id = :id AND rb.bulk_account_id = :bid", ['id' => $fileId, 'bid' => (int)$acc->id]) ?? [];
         if (!$f) { $response->setStatusCode(404); $response->setBody('File not found'); return; }
         $response->download((string)$f['filepath'], (string)($f['filename'] ?? basename((string)$f['filepath'])));
+    }
+
+    private static function ensureCsrfToken(): void
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            \App\Middlewares\CsrfMiddleware::generateToken(true);
+        }
     }
 
     private function isAllowedMime(string $mime, string $ext): bool

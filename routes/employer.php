@@ -11,7 +11,6 @@ use App\Controllers\Employer\DashboardController;
 use App\Controllers\Employer\JobsController;
 use App\Controllers\Employer\ApplicationsController;
 use App\Controllers\Employer\KycController;
-use App\Controllers\Employer\WebhookController;
 use App\Controllers\Employer\AnalyticsController;
 use App\Controllers\Employer\InterviewsController;
 use App\Controllers\Employer\MessagesController;
@@ -110,16 +109,17 @@ $router->get('/employer/billing/failed', [BillingController::class, 'failed'], [
 $router->get('/employer/billing/invoice/{id}', [InvoiceController::class, 'download'], [$authMiddleware]);
 // Razorpay endpoints
 $router->get('/payment/create-order', [RazorpayController::class, 'createOrder'], [$authMiddleware]);
-$router->post('/payment/verify', [RazorpayController::class, 'verify'], [$authMiddleware, $csrfMiddleware, $verifyRateLimit]);
+$router->post('/payment/verify', [RazorpayController::class, 'verify'], [$authMiddleware, $verifyRateLimit]);
 
 // Subscription
-$router->get('/employer/subscription/plans', [SubscriptionController::class, 'plans'], [$authMiddleware]);
-$router->post('/employer/subscription/subscribe', [SubscriptionController::class, 'subscribe'], [$authMiddleware, $csrfMiddleware, $rateLimitMiddleware]);
 $router->get('/employer/subscription/dashboard', [SubscriptionController::class, 'dashboard'], [$authMiddleware]);
-$router->post('/employer/subscription/cancel', [SubscriptionController::class, 'cancel'], [$authMiddleware, $csrfMiddleware]);
-$router->post('/employer/subscription/payment/callback', [SubscriptionController::class, 'paymentCallback'], [$authMiddleware, $csrfMiddleware, $rateLimitMiddleware]);
-$router->post('/employer/subscription/renew', [SubscriptionController::class, 'renew'], [$authMiddleware, $csrfMiddleware, $rateLimitMiddleware]);
-$router->post('/employer/subscription/change-plan', [SubscriptionController::class, 'changePlan'], [$authMiddleware, $csrfMiddleware, $rateLimitMiddleware]);
+$router->get('/employer/subscription/plans', [SubscriptionController::class, 'plans'], [$authMiddleware]);
+$router->post('/employer/subscription/subscribe', [SubscriptionController::class, 'subscribe'], [$authMiddleware, $rateLimitMiddleware]);
+$router->get('/employer/subscription/dashboard', [SubscriptionController::class, 'dashboard'], [$authMiddleware]);
+$router->post('/employer/subscription/cancel', [SubscriptionController::class, 'cancel'], [$authMiddleware]);
+$router->post('/employer/subscription/payment/callback', [SubscriptionController::class, 'paymentCallback'], [$authMiddleware, $rateLimitMiddleware]);
+$router->post('/employer/subscription/renew', [SubscriptionController::class, 'renew'], [$authMiddleware, $rateLimitMiddleware]);
+$router->post('/employer/subscription/change-plan', [SubscriptionController::class, 'changePlan'], [$authMiddleware, $rateLimitMiddleware]);
 
 // Jobs
 $router->get('/employer/jobs', [JobsController::class, 'index'], [$authMiddleware]);

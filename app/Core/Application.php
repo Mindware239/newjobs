@@ -59,50 +59,76 @@ class Application
                 return;
             }
             
-            // Execute middlewares
-            foreach ($this->middlewares as $middleware) {
-                $middleware->handle($this->request, $this->response);
-            }
+            // Execute global middlewares in a chain
+            $this->runMiddlewareChain($this->request, $this->response, $this->middlewares, function($req, $res) {
+                // After all global middlewares, dispatch the router
+                $this->router->dispatch($req, $res);
+            });
 
-            // Dispatch route
-            $this->router->dispatch($this->request, $this->response);
-        } catch (\Exception $e) {
-            // Don't catch errors for captcha - let them propagate
-            if (strpos($this->request->getPath(), '/admin/captcha/generate') === 0) {
-                throw $e;
-            }
-            
-            $isAjax = $this->request->isAjax();
-            $path = $this->request->getPath();
-            $message = $_ENV['APP_DEBUG'] === 'true' ? $e->getMessage() : 'An unexpected error occurred';
-            try {
-                Database::getInstance()->query(
-                    "INSERT INTO system_logs (type, module, message, user_id, created_at)
-                     VALUES ('error', :module, :message, :user_id, NOW())",
-                    [
-                        'module' => $path,
-                        'message' => $e->getMessage(),
-                        'user_id' => (int)($_SESSION['user_id'] ?? 0)
-                    ]
-                );
-            } catch (\Throwable $ignore) {}
-            if ($isAjax) {
-                $this->response->setStatusCode(500);
-                $this->response->json([
-                    'error' => 'Internal Server Error',
-                    'message' => $message
-                ]);
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+
+    private function runMiddlewareChain(Request $request, Response $response, array $middlewares, callable $final): void
+    {
+        $index = 0;
+
+        $next = function (Request $req, Response $res) use (&$index, $middlewares, $final, &$next) {
+            if ($index < count($middlewares)) {
+                $middleware = $middlewares[$index++];
+                $middleware->handle($req, $res, $next);
             } else {
-                $this->response->view(
-                    strpos($path, '/admin') === 0 ? 'admin/error' : 'about',
-                    [
-                        'title' => 'Error',
-                        'errorMessage' => $message
-                    ],
-                    500,
-                    strpos($path, '/admin') === 0 ? 'admin/layout' : null
-                );
+                $final($req, $res);
             }
+        };
+
+        $next($request, $response);
+    }
+
+    private function handleException(\Throwable $e): void
+    {
+        // Don't catch errors for captcha - let them propagate
+        if (strpos($this->request->getPath(), '/admin/captcha/generate') === 0) {
+            throw $e;
+        }
+        
+        $path = $this->request->getPath();
+        $message = $_ENV['APP_DEBUG'] === 'true' ? $e->getMessage() : 'An unexpected error occurred';
+        
+        // Log to database
+        try {
+            Database::getInstance()->query(
+                "INSERT INTO system_logs (type, module, message, user_id, created_at)
+                 VALUES ('error', :module, :message, :user_id, NOW())",
+                [
+                    'module' => $path,
+                    'message' => $e->getMessage(),
+                    'user_id' => (int)($_SESSION['user_id'] ?? 0)
+                ]
+            );
+        } catch (\Throwable $ignore) {}
+
+        // Log to PHP error log
+        error_log("Exception in {$path}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+        if ($this->request->isAjax()) {
+            $this->response->setStatusCode(500);
+            $this->response->json([], 500, $message, false, [
+                'type' => get_class($e),
+                'file' => $_ENV['APP_DEBUG'] === 'true' ? $e->getFile() : null,
+                'line' => $_ENV['APP_DEBUG'] === 'true' ? $e->getLine() : null
+            ]);
+        } else {
+            $this->response->view(
+                strpos($path, '/admin') === 0 ? 'admin/error' : 'about',
+                [
+                    'title' => 'Error',
+                    'errorMessage' => $message
+                ],
+                500,
+                strpos($path, '/admin') === 0 ? 'admin/layout' : null
+            );
         }
     }
 
@@ -116,4 +142,3 @@ class Application
         return $this->response;
     }
 }
-

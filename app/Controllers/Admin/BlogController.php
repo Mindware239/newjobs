@@ -78,7 +78,7 @@ class BlogController
         if (!empty($_FILES['featured_image']) && is_uploaded_file($_FILES['featured_image']['tmp_name'])) {
             try {
                 $storage = new Storage();
-                $path = $storage->store($_FILES['featured_image'], 'blog');
+                $path = $storage->store($_FILES['featured_image'], 'uploads/blogs');
                 $featuredImageUrl = $storage->url($path);
             } catch (\Exception $e) {
                 $response->view('admin/blog/create', [
@@ -179,7 +179,7 @@ class BlogController
         if (!empty($_FILES['featured_image']) && is_uploaded_file($_FILES['featured_image']['tmp_name'])) {
             try {
                 $storage = new Storage();
-                $path = $storage->store($_FILES['featured_image'], 'blog');
+                $path = $storage->store($_FILES['featured_image'], 'uploads/blogs');
                 $featuredImageUrl = $storage->url($path);
             } catch (\Exception $e) {
                 $response->view('admin/blog/edit', [

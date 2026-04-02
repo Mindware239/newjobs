@@ -21,4 +21,10 @@ class LegalController
     {
         $response->view('grievances');
     }
+
+    public function refundCancellationPolicy(Request $request, Response $response): void
+    {
+        $response->view('refund-cancellation-policy');
+    }
+    
 }

@@ -12,28 +12,28 @@
         </div>
         <div>
             <label class="block text-sm font-medium">Title</label>
-            <input type="text" name="title" class="border px-3 py-2 rounded w-full">
+            <input type="text" name="title" class="border px-3 py-2 rounded w-full" placeholder="Clear headline that describes the article">
         </div>
         <div>
             <label class="block text-sm font-medium">Slug</label>
-            <input type="text" name="slug" class="border px-3 py-2 rounded w-full">
+            <input type="text" name="slug" class="border px-3 py-2 rounded w-full" placeholder="example-article-slug">
         </div>
         <div>
             <label class="block text-sm font-medium">Short Description</label>
-            <textarea name="short_description" class="border px-3 py-2 rounded w-full" rows="3"></textarea>
+            <textarea name="short_description" class="border px-3 py-2 rounded w-full" rows="3" placeholder="Teaser (1–2 sentences) to summarize the article"></textarea>
         </div>
         <div>
             <label class="block text-sm font-medium">Content</label>
-            <textarea name="content" class="border px-3 py-2 rounded w-full" rows="10"></textarea>
+            <textarea id="ca-content" name="content" class="border px-3 py-2 rounded w-full" rows="10"></textarea>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Image URL</label>
-                <input type="text" name="image" class="border px-3 py-2 rounded w-full">
+                <input type="text" name="image" class="border px-3 py-2 rounded w-full" placeholder="https://example.com/image.jpg">
             </div>
             <div>
                 <label class="block text-sm font-medium">Author</label>
-                <input type="text" name="author" class="border px-3 py-2 rounded w-full">
+                <input type="text" name="author" class="border px-3 py-2 rounded w-full" placeholder="Author name">
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
@@ -55,12 +55,34 @@
         </div>
     </form>
 </div>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css" rel="stylesheet">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.js"></script>
+<script src="https://cdn.ckeditor.com/4.22.1/standard-all/ckeditor.js"></script>
 <script>
-$(function(){
-  $('[name="short_description"]').summernote({height:150});
-  $('[name="content"]').summernote({height:400});
-});
+if (window.CKEDITOR) {
+  CKEDITOR.replace('short_description', {
+    allowedContent: true,
+    extraPlugins: 'pastefromword,justify,format,table,tabletools,tableselection,clipboard',
+    height: 180,
+    toolbar: [
+      { name: 'basicstyles', items: ['Bold','Italic','Underline','RemoveFormat'] },
+      { name: 'paragraph', items: ['NumberedList','BulletedList','Outdent','Indent','Blockquote','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+      { name: 'links', items: ['Link','Unlink'] },
+      { name: 'insert', items: ['HorizontalRule'] },
+      { name: 'document', items: ['Maximize'] }
+    ]
+  });
+  CKEDITOR.replace('ca-content', {
+    allowedContent: true,
+    extraPlugins: 'pastefromword,justify,format,table,tabletools,tableselection,clipboard',
+    height: 380,
+    toolbar: [
+      { name: 'document', items: ['Source','Maximize'] },
+      { name: 'clipboard', items: ['Undo','Redo','Cut','Copy','Paste','PasteText','PasteFromWord'] },
+      { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat'] },
+      { name: 'paragraph', items: ['NumberedList','BulletedList','Outdent','Indent','Blockquote','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+      { name: 'links', items: ['Link','Unlink'] },
+      { name: 'insert', items: ['Table','HorizontalRule','SpecialChar'] },
+      { name: 'styles', items: ['Styles','Format'] }
+    ]
+  });
+}
 </script>

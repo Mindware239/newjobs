@@ -11,7 +11,7 @@ use App\Models\User;
 
 class PerformanceMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $start = microtime(true);
         $rid = bin2hex(random_bytes(8));
@@ -24,7 +24,7 @@ class PerformanceMiddleware implements MiddlewareInterface
                 if ($u) { $role = $u->role ?? null; }
             }
         } catch (\Throwable $t) {}
-        register_shutdown_function(function() use ($request, $start) {
+        register_shutdown_function(function() use ($request, $start, $rid, $role) {
             $duration = (int)round((microtime(true) - $start) * 1000);
             try {
                 $db = Database::getInstance();
@@ -67,5 +67,7 @@ class PerformanceMiddleware implements MiddlewareInterface
                 ]
             );
         } catch (\Throwable $t) {}
+
+        $next($request, $response);
     }
 }

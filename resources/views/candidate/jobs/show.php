@@ -159,7 +159,7 @@
                         </button>
                     <button x-show="!job.has_applied" 
                             @click="showApplyModal = true" 
-                                class="px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg border border-gray-800 hover:bg-gray-900 hover:border-gray-900 transition whitespace-nowrap">
+                                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg border border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition whitespace-nowrap">
                             Apply Now
                     </button>
                     <button x-show="job.has_applied" 
@@ -777,7 +777,7 @@
                                     <!-- Action Buttons: Desktop - Right Side -->
                                     <div class="hidden sm:flex flex-shrink-0 items-center gap-3">
                                         <a href="/candidate/jobs/<?= htmlspecialchars($relatedJob['slug'] ?? $relatedJob['id'] ?? '') ?>" 
-                                           class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-semibold transition shadow-sm whitespace-nowrap">
+                                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition shadow-sm whitespace-nowrap">
                                             Job Details
                                         </a>
                                         <button @click.stop="bookmarkRelatedJob('<?= htmlspecialchars($relatedJob['slug'] ?? $relatedJob['id'] ?? '') ?>')" 

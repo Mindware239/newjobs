@@ -230,7 +230,8 @@ class VerificationController extends BaseController
         }
         $storage = new Storage();
         try {
-            $storedPath = $storage->store($_FILES['evidence'], 'verification_evidence/' . $docId);
+            // Store under /uploads/verification_evidence/{docId}
+            $storedPath = $storage->store($_FILES['evidence'], 'uploads/verification_evidence/' . $docId);
             $url = $storage->url($storedPath);
             $existing = $db->fetchOne("SELECT review_notes FROM employer_kyc_documents WHERE id = :id", ['id' => $docId]);
             $notes = trim((string)($existing['review_notes'] ?? ''));
@@ -343,7 +344,8 @@ class VerificationController extends BaseController
         if (!isset($_FILES['evidence']) || !is_array($_FILES['evidence'])) { $response->json(['error' => 'No evidence file'], 400); return; }
         $storage = new Storage();
         try {
-            $storedPath = $storage->store($_FILES['evidence'], 'verification_evidence/candidate/' . $verificationId);
+            // Store under /uploads/verification_evidence/candidate/{verificationId}
+            $storedPath = $storage->store($_FILES['evidence'], 'uploads/verification_evidence/candidate/' . $verificationId);
             $url = $storage->url($storedPath);
             $existing = $db->fetchOne("SELECT remarks FROM verifications WHERE id = :id", ['id' => $verificationId]);
             $notes = trim((string)($existing['remarks'] ?? ''));

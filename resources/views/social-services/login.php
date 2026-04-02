@@ -92,28 +92,41 @@ class="py-4 text-[15px] font-semibold transition-all duration-300 <?= $class ?>"
 <main class="flex-1 flex items-center justify-center px-4">
 
 <div class="w-full max-w-3xl"
-x-data="{ mode: 'login', forgot:false }">
+x-data="authPage()">
+
+<template x-if="errorMessage">
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+  <span class="block sm:inline" x-text="errorMessage"></span>
+</div>
+</template>
+
+<template x-if="successMessage">
+<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+  <span class="block sm:inline" x-text="successMessage"></span>
+</div>
+</template>
 
 <!-- LOGIN -->
 <div x-show="mode==='login'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
 
-<form method="POST" action="/social-services/login" class="space-y-4">
+<form @submit.prevent="submitLogin" class="space-y-4">
 
 <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
 
 <label class="block text-sm font-medium">Email *</label>
-<input type="email" name="email" required
+<input type="email" name="email" x-model="loginForm.email" required
 class="w-full border border-gray-300 rounded-md p-2.5">
 
 <label class="block text-sm font-medium">Password *</label>
-<input type="password" name="password" required
+<input type="password" name="password" x-model="loginForm.password" required
 class="w-full border border-gray-300 rounded-md p-2.5">
 
 <div class="flex justify-between text-sm">
 
-<button type="submit"
-class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md">
-Login
+<button type="submit" :disabled="loading"
+class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
+<span x-show="!loading">Login</span>
+<span x-show="loading">Please wait...</span>
 </button>
 
 <div class="flex flex-col items-end gap-1">
@@ -138,29 +151,28 @@ Forgot password?
 <!-- REGISTER -->
 <div x-show="mode==='register'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
 
-<form method="POST" action="/social-services/register" x-data="{ role: '' }" @change="role = $event.target.value">
+<form @submit.prevent="submitRegister">
 
-<input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-<input type="hidden" name="redirect" :value="role==='social_employer' ? '/social-employer/account' : (role==='social_candidate' ? '/social-candidate/accountcandidate' : '')">
+<input type="hidden" name="_token" :value="csrfToken">
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
 <div>
 <label class="block text-sm font-medium">Email *</label>
-<input type="email" name="email" required
+<input type="email" name="email" x-model="registerForm.email" required
 class="w-full border border-gray-300 rounded-md p-2.5">
 </div>
 
 <div>
 <label class="block text-sm font-medium">Password *</label>
-<input type="password" name="password" required
+<input type="password" name="password" x-model="registerForm.password" required
 class="w-full border border-gray-300 rounded-md p-2.5">
 </div>
 
 </div>
 
 <div class="mt-4">
-<select name="role" required x-model="role"
+<select name="role" required x-model="registerForm.role"
 class="w-full border border-gray-300 rounded-md p-2.5">
 <option value="">Select role</option>
 <option value="social_candidate">Social Candidate</option>
@@ -169,9 +181,10 @@ class="w-full border border-gray-300 rounded-md p-2.5">
 </div>
 
 <div class="mt-6 flex justify-between">
-<button type="submit"
-class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md">
-Create account
+<button type="submit" :disabled="loading"
+class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
+<span x-show="!loading">Create account</span>
+<span x-show="loading">Processing...</span>
 </button>
 
 <button type="button" @click="mode='login'"
@@ -193,11 +206,11 @@ class="bg-white w-full max-w-md rounded-lg p-6">
 
 <h2 class="text-lg font-bold mb-4">Reset Password</h2>
 
-<form method="POST" action="/social-services/forgot-password" class="space-y-4">
+<form @submit.prevent="submitForgot" class="space-y-4">
 
-<input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+<input type="hidden" name="_token" :value="csrfToken">
 
-<input type="email" name="email" required placeholder="Enter your email"
+<input type="email" name="email" x-model="forgotForm.email" required placeholder="Enter your email"
 class="w-full border border-gray-300 rounded-md p-2.5">
 
 <div class="flex justify-end gap-3">
@@ -207,9 +220,10 @@ class="px-4 py-2 border rounded">
 Cancel
 </button>
 
-<button type="submit"
-class="px-6 py-2 bg-[#5b6bd5] text-white rounded">
-Send Reset Link
+<button type="submit" :disabled="loading"
+class="px-6 py-2 bg-[#5b6bd5] text-white rounded disabled:opacity-50">
+<span x-show="!loading">Send Reset Link</span>
+<span x-show="loading">Sending...</span>
 </button>
 
 </div>
@@ -220,5 +234,116 @@ Send Reset Link
 
 </div>
 </main>
+
+<script>
+function authPage() {
+    return {
+        mode: '<?= $initialMode ?? 'login' ?>',
+        forgot: false,
+        loading: false,
+        errorMessage: '<?= isset($error) ? addslashes($error) : '' ?>',
+        successMessage: '',
+        csrfToken: '<?= $_SESSION['csrf_token'] ?? '' ?>',
+        loginForm: { email: '', password: '' },
+        registerForm: { email: '', password: '', role: '' },
+        forgotForm: { email: '' },
+
+        async submitLogin() {
+            this.loading = true;
+            this.errorMessage = '';
+            try {
+                const response = await fetch('/social-services/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        ...this.loginForm,
+                        _token: this.csrfToken
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    if (data.refresh_csrf && data.csrf_token) {
+                        this.csrfToken = data.csrf_token;
+                    }
+                    this.errorMessage = data.error || 'Login failed';
+                }
+            } catch (e) {
+                this.errorMessage = 'A network error occurred';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async submitRegister() {
+            this.loading = true;
+            this.errorMessage = '';
+            try {
+                const response = await fetch('/social-services/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        ...this.registerForm,
+                        _token: this.csrfToken
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    if (data.refresh_csrf && data.csrf_token) {
+                        this.csrfToken = data.csrf_token;
+                    }
+                    this.errorMessage = data.error || 'Registration failed';
+                }
+            } catch (e) {
+                this.errorMessage = 'A network error occurred';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async submitForgot() {
+            this.loading = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+            try {
+                const response = await fetch('/social-services/forgot-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        ...this.forgotForm,
+                        _token: this.csrfToken
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.successMessage = data.message;
+                    this.forgot = false;
+                } else {
+                    if (data.refresh_csrf && data.csrf_token) {
+                        this.csrfToken = data.csrf_token;
+                    }
+                    this.errorMessage = data.error || 'Request failed';
+                }
+            } catch (e) {
+                this.errorMessage = 'A network error occurred';
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
+}
+</script>
 </body>
 </html>

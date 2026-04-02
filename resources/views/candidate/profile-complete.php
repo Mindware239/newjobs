@@ -79,6 +79,7 @@
                 tipText: '',
                 tipX: 0,
                 tipY: 0,
+                saving: false,
                 init() {
                     this.$nextTick(() => {
                         this.drawPie();
@@ -640,6 +641,7 @@
                             website_url: a.website_url || ''
                         };
                     }
+                    this.saving = true;
                     try {
                         const res = await fetch('/candidate/profile/save', {
                             method: 'POST',
@@ -652,8 +654,22 @@
                         const result = await res.json();
                         if (result && result.success) {
                             this.profileStrength = result.profile_strength ?? this.profileStrength;
+                            if (section === 'additional') {
+                                this.showToast('Profile completed successfully! Redirecting...', 'success');
+                                setTimeout(() => {
+                                    window.location.href = '/candidate/profile';
+                                }, 1500);
+                            } else {
+                                this.showToast('Section saved successfully', 'success');
+                            }
+                        } else {
+                            this.showToast(result.message || 'Error saving section', 'error');
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        this.showToast('Network error saving section', 'error');
+                    } finally {
+                        this.saving = false;
+                    }
                 },
                 async uploadFile(type, file) {
                     const fd = new FormData();
@@ -920,8 +936,8 @@
                     <span>Complete</span>
                 </div>
             </div>
-            <div class="max-w-7xl mx-auto px-4 py-8 flex gap-8">
-                <div class="md:col-span-8 lg:col-span-9 xl:col-span-9">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="flex-1 min-w-0">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 p-4 overflow-x-auto">
                         <div class="flex flex-nowrap gap-3 min-w-max">
                             <template x-for="(step, index) in ['Basic Details', 'Education', 'Experience', 'Skills', 'Languages', 'Certificates', 'Employer Verification', 'Additional']">
@@ -1065,7 +1081,10 @@
                             </div>
                         </div>
                         <div class="flex justify-end">
-                            <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('basic'); nextStep();">Save & Continue</button>
+                            <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('basic').then(() => nextStep())">
+                                <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1113,7 +1132,10 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('education'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('education').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1164,7 +1186,10 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('experience'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('experience').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1201,7 +1226,10 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('skills'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('skills').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1236,7 +1264,10 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('languages'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('languages').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1293,7 +1324,10 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('certificates'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('certificates').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1538,7 +1572,10 @@
 
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md" @click="saveSection('verification'); nextStep();">Save & Continue</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('verification').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
                     </div>
                 </div>
 
@@ -1591,18 +1628,21 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-8 py-2 btn-primary rounded-md" @click="saveSection('additional')">Save & Complete Profile</button>
+                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('additional')">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Complete Profile'"></span>
+                        </button>
                     </div>
                 </div>
 
                     </form>
                 </div>
-                <aside class="md:col-span-4 lg:col-span-3 xl:col-span-3 space-y-6">
+                <aside class="lg:w-80 flex-shrink-0 space-y-6">
                     <div class="card p-6 top-24">
                         <h3 class="card-title mb-3">Completion Insights</h3>
-                        <div class="flex items-center gap-4">
-                            <div class="relative flex-shrink-0" style="width: 290px; min-width: 290px; height: 200px">
-                                <svg class="w-full h-full" viewBox="0 0 290 200" style="cursor: default;">
+                        <div class="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center gap-4">
+                            <div class="relative flex-shrink-0" style="width: 200px; height:200px;">
+                                <svg class="w-full h-full" viewBox="45 20 200 160" style="cursor: default;">
                                     <g x-ref="pieLayer"></g>
                                     <text x="145" y="105" text-anchor="middle" dominant-baseline="middle" style="font-weight:700;fill:#111827;font-size:22px" x-text="overallPercent + '%'"></text>
                                 </svg>
@@ -1610,7 +1650,7 @@
                                     <span x-text="tipText"></span>
                                 </div>
                             </div>
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-gray-600 space-y-1">
                                 <div class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background:#10B981"></span>Completed</div>
                                 <div class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background:#F59E0B"></span>In Progress</div>
                                 <div class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background:#EF4444"></span>Missing</div>

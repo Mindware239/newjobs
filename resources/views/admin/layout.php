@@ -19,8 +19,8 @@
         }
 
         :root {
-            --color-primary: #4F46E5;
-            --color-primary-hover: #4338CA;
+            --color-primary: #2563EB;
+            --color-primary-hover: #1D4ED8;
             --color-secondary: #6B6F8D;
             --color-heading: #2F3045;
             --color-page-bg: #F0F1F6;
@@ -65,13 +65,7 @@
             background-color: var(--color-primary-hover) !important
         }
 
-        .bg-red-600 {
-            background-color: var(--color-primary) !important
-        }
-
-        .hover\:bg-red-700:hover {
-            background-color: var(--color-primary-hover) !important
-        }
+        
 
         .bg-blue-50, .hover\:bg-blue-50:hover, .bg-indigo-50, .bg-emerald-50, .bg-teal-50, .bg-purple-50, .bg-sky-50 {
             background-color: var(--color-active-menu-bg) !important
@@ -218,6 +212,39 @@
                     Blogs
                 </a>
 
+                <a href="/admin/career-articles"
+                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/career-articles') !== false && strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/career-articles/create') === false) ? 'bg-indigo-600 text-white' : '' ?>">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 6l-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V8l-2-2H12z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m0 4h6"></path>
+                    </svg>
+                    Career Articles
+                </a>
+                <a href="/admin/career-articles/create"
+                   class="ml-8 flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/career-articles/create') !== false ? 'bg-indigo-600 text-white' : '' ?>">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Article
+                </a>
+
+                <a href="/admin/article-categories"
+                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/article-categories') !== false && strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/article-categories/create') === false) ? 'bg-indigo-600 text-white' : '' ?>">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 12h10M4 18h8"></path>
+                    </svg>
+                    Article Categories
+                </a>
+                <a href="/admin/article-categories/create"
+                   class="ml-8 flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/article-categories/create') !== false ? 'bg-indigo-600 text-white' : '' ?>">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Article Category
+                </a>
+
                 <a href="/admin/blog-categories"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/blog-categories') !== false && strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/blog-categories/create') === false) ? 'bg-indigo-600 text-white' : '' ?>">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,6 +338,14 @@
                     </svg>
                     Employment Verification
                 </a>
+                  <a href="/admin/bulk-uploaders"
+                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/bulk-uploaders') !== false ? 'bg-indigo-600 text-white' : '' ?>">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 7h18M3 12h12M3 17h8"></path>
+                    </svg>
+                    Bulk Uploaders
+                </a>
 
                 <a href="/admin/settings"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/settings') !== false ? 'bg-indigo-600 text-white' : '' ?>">
@@ -322,14 +357,7 @@
                     </svg>
                     Settings
                 </a>
-                <a href="/admin/bulk-uploaders"
-                   class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/bulk-uploaders') !== false ? 'bg-indigo-600 text-white' : '' ?>">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 7h18M3 12h12M3 17h8"></path>
-                    </svg>
-                    Bulk Uploaders
-                </a>
+               
             </div>
         </nav>
 

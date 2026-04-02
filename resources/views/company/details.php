@@ -162,12 +162,12 @@ if ($loggedInCandidateId) {
   ?>
   
   <header class="relative">
-    <div class="h-64 md:h-80 lg:h-96 overflow-hidden bg-gradient-to-r from-blue-600 to-blue-500 relative">
+    <div class="h-64 md:h-80 lg:h-96 overflow-hidden relative" style="background: linear-gradient(90deg, #5B6BD5 0%, #4F5FCC 100%);">
       <?php if (!empty($companyData['banner_url']) && $companyData['banner_url'] !== 'https://plus.unsplash.com/premium_photo-1661963103403-32d25927f577?q=80&w=1194&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'): ?>
         <img src="<?= e($companyData['banner_url']) ?>" alt="Banner" class="w-full h-full object-cover" loading="eager">
       <?php else: ?>
         <!-- Gradient Banner Background -->
-        <div class="w-full h-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400"></div>
+        <div class="w-full h-full" style="background: linear-gradient(90deg, #5B6BD5 0%, #4F5FCC 50%, #6d7ae5 100%);"></div>
       <?php endif; ?>
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70"></div>
       

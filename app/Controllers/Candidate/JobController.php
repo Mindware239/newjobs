@@ -159,6 +159,7 @@ class JobController extends BaseController
                 );
                 if ($locEntity) {
                     $paramId = "loc_id_{$idx}";
+                    $pJson = "loc_part_json_{$idx}";
                     if ($locEntity['type'] === 'city') {
                         $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND jl.city_id = :{$paramId})";
                     } elseif ($locEntity['type'] === 'state') {
@@ -166,7 +167,10 @@ class JobController extends BaseController
                     } else {
                         $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND jl.country_id = :{$paramId})";
                     }
+                    // Also include fallback match on jobs.locations JSON/string
+                    $partConditions[] = "j.locations LIKE :{$pJson}";
                     $params[$paramId] = $locEntity['id'];
+                    $params[$pJson] = '%' . $part . '%';
                 } else {
                     $pCity = "loc_part_city_{$idx}";
                     $pState = "loc_part_state_{$idx}";
@@ -223,27 +227,54 @@ class JobController extends BaseController
         
         // Salary filters - from salary_min/salary_max or salary_range
         if ($salaryRange) {
-            // Handle salary range (e.g., "0-3", "3-6", "15+")
+            // Interpret bands in Lakhs per annum, but DB stores monthly INR.
+            $toMonthly = function(int $lakhs): int {
+                return (int)round(($lakhs * 100000) / 12);
+            };
             if (strpos($salaryRange, '-') !== false) {
-                list($minLakhs, $maxLakhs) = explode('-', $salaryRange);
-                $salaryMin = (int)$minLakhs * 100000;
-                $salaryMax = (int)$maxLakhs * 100000;
+                [$minLakhs, $maxLakhs] = explode('-', $salaryRange);
+                $salaryMin = $toMonthly((int)$minLakhs);
+                $salaryMax = $toMonthly((int)$maxLakhs);
             } elseif ($salaryRange === '15+') {
-                $salaryMin = 1500000;
-                $salaryMax = 999999999; // Very high number
+                $salaryMin = $toMonthly(15);
+                $salaryMax = 999999999; // Very high number (monthly units)
             }
         }
         
-        if ($salaryMin) {
-            $whereConditions[] = "(j.salary_max >= :salary_min_a OR j.salary_min >= :salary_min_b)";
-            $params['salary_min_a'] = $salaryMin;
-            $params['salary_min_b'] = $salaryMin;
-        }
-        
-        if ($salaryMax && $salaryMax < 999999999) {
-            $whereConditions[] = "(j.salary_min <= :salary_max_a OR j.salary_max <= :salary_max_b)";
-            $params['salary_max_a'] = $salaryMax;
-            $params['salary_max_b'] = $salaryMax;
+        // Salary overlap logic
+        // Treat empty string and null as unset, allow 0 for "0-3 Lakhs"
+        $hasMin = ($salaryMin !== '' && $salaryMin !== null);
+        $hasMax = ($salaryMax !== '' && $salaryMax !== null && (int)$salaryMax < 999999999);
+        if ($hasMin && $hasMax) {
+            // Overlap: job range intersects [salaryMin, salaryMax]
+            $w = "(
+                (j.salary_min IS NULL AND j.salary_max IS NOT NULL AND j.salary_max >= :sal_min_1)
+                OR (j.salary_max IS NULL AND j.salary_min IS NOT NULL AND j.salary_min <= :sal_max_1)
+                OR (j.salary_min IS NOT NULL AND j.salary_max IS NOT NULL AND j.salary_min <= :sal_max_2 AND j.salary_max >= :sal_min_2)
+            )";
+            $whereConditions[] = $w;
+            $params['sal_min_1'] = (int)$salaryMin;
+            $params['sal_max_1'] = (int)$salaryMax;
+            $params['sal_min_2'] = (int)$salaryMin;
+            $params['sal_max_2'] = (int)$salaryMax;
+        } elseif ($hasMin) {
+            // Jobs whose max is >= min or min itself is >= filter min when max unknown
+            $w = "(
+                (j.salary_max IS NOT NULL AND j.salary_max >= :sal_min_1)
+                OR (j.salary_min IS NOT NULL AND j.salary_min >= :sal_min_2)
+            )";
+            $whereConditions[] = $w;
+            $params['sal_min_1'] = (int)$salaryMin;
+            $params['sal_min_2'] = (int)$salaryMin;
+        } elseif ($hasMax) {
+            // Jobs whose min is <= max or max itself is <= filter max when min unknown
+            $w = "(
+                (j.salary_min IS NOT NULL AND j.salary_min <= :sal_max_1)
+                OR (j.salary_max IS NOT NULL AND j.salary_max <= :sal_max_2)
+            )";
+            $whereConditions[] = $w;
+            $params['sal_max_1'] = (int)$salaryMax;
+            $params['sal_max_2'] = (int)$salaryMax;
         }
         
         if ($experience && $experience !== 'Experience') {
@@ -367,18 +398,26 @@ class JobController extends BaseController
             }
         }
 
-        // Industry filter - filter by employer's industry (array support)
+        // Industry filter - match by job.category and/or employer.industry (array support)
         if (!empty($industryFilterArray)) {
             $industryConditions = [];
             foreach ($industryFilterArray as $index => $ind) {
-                $indParam = 'industry_filter_' . $index;
-                $industryConditions[] = "EXISTS (
-                    SELECT 1 FROM employers e 
-                    WHERE e.id = j.employer_id 
-                    AND (e.industry LIKE :{$indParam} OR e.industry = :{$indParam}_exact)
+                $pCatLike  = 'industry_cat_like_' . $index;
+                $pCatEq    = 'industry_cat_eq_' . $index;
+                $pEmpLike  = 'industry_emp_like_' . $index;
+                $pEmpEq    = 'industry_emp_eq_' . $index;
+                $industryConditions[] = "(
+                    (j.category LIKE :{$pCatLike} OR j.category = :{$pCatEq})
+                    OR EXISTS (
+                        SELECT 1 FROM employers e 
+                        WHERE e.id = j.employer_id 
+                        AND (e.industry LIKE :{$pEmpLike} OR e.industry = :{$pEmpEq})
+                    )
                 )";
-                $params[$indParam] = "%{$ind}%";
-                $params[$indParam . '_exact'] = $ind;
+                $params[$pCatLike] = "%{$ind}%";
+                $params[$pCatEq]   = $ind;
+                $params[$pEmpLike] = "%{$ind}%";
+                $params[$pEmpEq]   = $ind;
             }
             if (!empty($industryConditions)) {
                 $whereConditions[] = "(" . implode(' OR ', $industryConditions) . ")";
@@ -528,7 +567,7 @@ class JobController extends BaseController
         
         // Convert to Job models and enrich with company_name from JOIN
         $enrichedJobs = [];
-        $candidateId = $candidate->attributes['id'] ?? null;
+        $candidateId = $candidate ? ($candidate->attributes['id'] ?? null) : null;
         foreach ($results as $row) {
             if (empty($row)) continue;
             
@@ -876,7 +915,7 @@ class JobController extends BaseController
         $jobData['title'] = $row['title'] ?? $jobData['title'] ?? 'Job Title Not Available';
         
         // Track view
-        $candidateId = $candidate->attributes['id'] ?? null;
+        $candidateId = $candidate ? ($candidate->attributes['id'] ?? null) : null;
         if ($candidateId) {
             $this->trackJobView($candidateId, $jobId);
         }
@@ -1125,8 +1164,8 @@ class JobController extends BaseController
         }
         
         // Get candidate ID and user ID safely
-        $candidateId = $candidate->attributes['id'] ?? null;
-        $userId = $candidate->attributes['user_id'] ?? null;
+        $candidateId = $candidate ? ($candidate->attributes['id'] ?? null) : null;
+        $userId = $candidate ? ($candidate->attributes['user_id'] ?? null) : null;
         
         $jobData['is_bookmarked'] = ($candidateId && $jobId) 
             ? $this->isBookmarked($candidateId, $jobId) 
@@ -1349,7 +1388,7 @@ class JobController extends BaseController
         
         $jobId = $job->attributes['id'];
 
-        $candidateId = $candidate->attributes['id'] ?? null;
+        $candidateId = $candidate ? ($candidate->attributes['id'] ?? null) : null;
         if (!$candidateId) {
             $response->json(['error' => 'Candidate ID not found'], 400);
             return;
@@ -1387,7 +1426,7 @@ class JobController extends BaseController
         $candidate = $this->ensureCandidate($request, $response);
         if (!$candidate) return;
 
-        $candidateId = $candidate->attributes['id'] ?? null;
+        $candidateId = $candidate ? ($candidate->attributes['id'] ?? null) : null;
         if (!$candidateId) {
             $response->redirect('/candidate/dashboard');
             return;

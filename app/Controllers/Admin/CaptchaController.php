@@ -31,29 +31,6 @@ class CaptchaController extends BaseController
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
-            
-            // If GD is missing, log error with php.ini location
-            if (!extension_loaded('gd')) {
-                $iniFile = php_ini_loaded_file();
-                error_log("CAPTCHA Error: GD extension not loaded. php.ini location: " . ($iniFile ?: 'unknown'));
-                http_response_code(500);
-                header('Content-Type: text/plain; charset=utf-8');
-                echo "ERROR: GD extension not enabled.\n";
-                echo "php.ini location: " . ($iniFile ?: 'unknown') . "\n";
-                echo "To fix: Edit php.ini and uncomment: extension=gd\n";
-                echo "Then restart Apache/XAMPP.\n";
-                echo "\nCheck: http://localhost:8000/check_gd.php for details";
-                exit;
-            }
-            
-            if (!function_exists('imagecreatetruecolor')) {
-                error_log("CAPTCHA Error: imagecreatetruecolor function not available");
-                http_response_code(500);
-                header('Content-Type: text/plain; charset=utf-8');
-                echo "ERROR: GD functions not available.\n";
-                echo "Please check GD extension installation.";
-                exit;
-            }
 
             // Generate random 6-character code
             $characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -64,6 +41,52 @@ class CaptchaController extends BaseController
 
             // Store in session
             $_SESSION['admin_captcha'] = $code;
+            
+            // If GD is missing, return SVG fallback instead of 500
+            if (!extension_loaded('gd') || !function_exists('imagecreatetruecolor')) {
+                $iniFile = php_ini_loaded_file();
+                error_log("CAPTCHA Error: GD extension not loaded. php.ini location: " . ($iniFile ?: 'unknown'));
+                
+                // Simple SVG captcha (fallback) - avoids blocking login page
+                header('Content-Type: image/svg+xml; charset=utf-8');
+                $w = 150; $h = 50;
+                $bg = '#ffffff';
+                $colors = ['#111827','#2563eb','#16a34a','#ef4444','#7c3aed'];
+                $noiseCount = 6;
+                
+                echo '<?xml version="1.0" encoding="UTF-8"?>';
+                echo '<svg xmlns="http://www.w3.org/2000/svg" width="'.$w.'" height="'.$h.'" viewBox="0 0 '.$w.' '.$h.'">';
+                echo '<rect width="100%" height="100%" fill="'.$bg.'"/>';
+                // Noise lines
+                for ($i=0; $i<$noiseCount; $i++) {
+                    $x1 = rand(0,$w); $y1 = rand(0,$h);
+                    $x2 = rand(0,$w); $y2 = rand(0,$h);
+                    $c = $colors[array_rand($colors)];
+                    echo '<line x1="'.$x1.'" y1="'.$y1.'" x2="'.$x2.'" y2="'.$y2.
+                         '" stroke="'.$c.'" stroke-width="1" opacity="0.4"/>';
+                }
+                // Text
+                $x = 15;
+                for ($i=0; $i<strlen($code); $i++) {
+                    $y = 32 + rand(-5,5);
+                    $rot = rand(-18,18);
+                    $c = $colors[array_rand($colors)];
+                    echo '<g transform="translate('.$x.','.$y.') rotate('.$rot.')">';
+                    echo '<text x="0" y="0" font-family="Verdana,Arial" font-size="24" font-weight="bold" fill="'.$c.'">'.htmlspecialchars($code[$i]).'</text>';
+                    echo '</g>';
+                    $x += 20 + rand(0,3);
+                }
+                echo '</svg>';
+                exit;
+            }
+
+            // From here on, use GD (PNG)
+            if (!function_exists('imagecreatetruecolor')) {
+                error_log("CAPTCHA Error: imagecreatetruecolor function not available");
+                header('Content-Type: image/svg+xml; charset=utf-8');
+                echo '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="50"><rect width="100%" height="100%" fill="#fff"/><text x="10" y="30" font-size="16" fill="#f00">CAPTCHA</text></svg>';
+                exit;
+            }
 
             // Create image
             $width = 150;

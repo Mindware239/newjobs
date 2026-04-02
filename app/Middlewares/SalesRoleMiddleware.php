@@ -11,7 +11,7 @@ use App\Models\User;
 
 class SalesRoleMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -34,6 +34,7 @@ class SalesRoleMiddleware implements MiddlewareInterface
         }
 
         if ($requiredSlug === null) {
+            $next($request, $response);
             return;
         }
 
@@ -73,5 +74,7 @@ class SalesRoleMiddleware implements MiddlewareInterface
             $response->json(['error' => 'Internal Server Error']);
             return;
         }
+
+        $next($request, $response);
     }
 }

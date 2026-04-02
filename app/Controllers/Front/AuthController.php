@@ -12,6 +12,7 @@ use App\Models\Employer;
 use App\Models\EmployerSetting;
 use App\Models\EmployerKycDocument;
 use App\Core\RedisClient;
+use App\Services\AuthService;
 use App\Services\GoogleOAuthService;
 use App\Services\AppleOAuthService;
 use App\Services\MailService;
@@ -46,6 +47,7 @@ class AuthController extends BaseController
             'role' => $data['role'],
             'status' => 'pending'
         ]);
+        /** @var \App\Models\User|null $user */
         $user->setPassword($data['password']);
 
         if ($user->save()) {
@@ -277,7 +279,8 @@ class AuthController extends BaseController
                             mkdir($uploadDir, 0755, true);
                         }
                         
-                        $filePath = $storage->store($file, 'kyc/' . $employer->id);
+                        // Store under /uploads/kyc/{employer_id}
+                        $filePath = $storage->store($file, 'uploads/kyc/' . $employer->id);
                         
                         $kycDoc = new EmployerKycDocument();
                         $kycDoc->fill([
@@ -519,9 +522,9 @@ class AuthController extends BaseController
             $response->json(['error' => 'Too many attempts. Please try again later.'], 429);
             return;
         }
-        $user = User::where('email', '=', $email)->first();
-        /** @var \App\Models\User|null $user */
-        if (!$user) {
+        /** @var \App\Models\User|null $existingUser */
+        $existingUser = User::where('email', '=', $email)->first();
+        if (!$existingUser) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
                 $response->json(['error' => 'User not registered. Please create an account first.'], 404);
@@ -539,7 +542,10 @@ class AuthController extends BaseController
             } catch (\Throwable $t) {}
             return;
         }
-        if (!$user->verifyPassword($password)) {
+
+        $authService = new AuthService();
+        $user = $authService->login($email, $password);
+        if (!$user) {
             $acceptHeader = $request->header('Accept') ?? '';
             if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
                 $response->json(['error' => 'Invalid email or password'], 401);
@@ -557,6 +563,7 @@ class AuthController extends BaseController
             } catch (\Throwable $t) {}
             return;
         }
+
         try {
             if ($redis->isAvailable()) {
                 $redis->set($rateKey, 0, 300);
@@ -577,16 +584,14 @@ class AuthController extends BaseController
             return;
         }
 
-        // Update last login
+        // AuthService already updates last login via API path; this is safe redundancy for web.
         $user->last_login = date('Y-m-d H:i:s');
         $user->save();
+
         if (function_exists('session_regenerate_id')) {
             session_regenerate_id(true);
         }
 
-        // Set session
-        $_SESSION['user_id'] = $user->id;
-        // Determine primary role from RBAC (fallback to legacy role column)
         $primaryRole = $user->role;
         try {
             $roles = $user->roles();
@@ -601,15 +606,32 @@ class AuthController extends BaseController
                 $primaryRole = 'sales_executive';
             }
         } catch (\Throwable $t) {}
+
+        // Session for web
+        $_SESSION['user_id'] = $user->id;
         $_SESSION['user_role'] = $primaryRole;
+
         if ($user->role === 'candidate') {
             $candidate = \App\Models\Candidate::findByUserId($user->id);
             if (!$candidate) {
-                $candidate = \App\Models\Candidate::createForUser($user->id);
+                $candidate = \App\Models\Candidate::createForUser($user->id, ['full_name' => $this->extractNameFromEmail($user->attributes['email'] ?? '')]);
             }
             if ($candidate && isset($candidate->attributes['id'])) {
                 $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
             }
+        }
+
+        // Generate optional JWT for web session clients (hydrate cookie for Ajax + mobile-web hybrid)
+        $jwtToken = $authService->generateToken($user);
+        $jwtCookieEnabled = ($_ENV['WEB_JWT_COOKIE'] ?? '1') === '1';
+        if ($jwtCookieEnabled) {
+            $authService->setTokenCookie($jwtToken);
+        }
+
+        // Attach token to JSON response in API mode
+        if ($isJson) {
+            $response->json([ 'success' => true, 'message' => 'Login successful', 'token' => $jwtToken, 'user' => $user->toArray(), 'redirect_to' => null ]);
+            return;
         }
         try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
         error_log("✓ Login successful - User ID: {$user->id}, Role: {$user->role}");
@@ -622,51 +644,38 @@ class AuthController extends BaseController
         if (!$redirect && $user->role === 'employer') {
             $redirect = '/employer/dashboard';
         } elseif (!$redirect && $user->role === 'candidate') {
-            // Check candidate profile status
-            $candidate = \App\Models\Candidate::findByUserId($user->id);
+            $candidate = $candidate ?? \App\Models\Candidate::findByUserId($user->id);
+
             if (!$candidate) {
-                // Extract name from email if available
                 $nameFromEmail = $this->extractNameFromEmail($user->attributes['email'] ?? '');
                 $initialData = [];
                 if ($nameFromEmail) {
                     $initialData['full_name'] = $nameFromEmail;
                 }
-                // Create profile if doesn't exist with name from email
                 $candidate = \App\Models\Candidate::createForUser($user->id, $initialData);
-            } else {
-                // If candidate exists but no name, try to extract from email
-                if (empty($candidate->attributes['full_name'])) {
-                    $nameFromEmail = $this->extractNameFromEmail($user->attributes['email'] ?? '');
-                    if ($nameFromEmail) {
-                        $candidate->fill(['full_name' => $nameFromEmail]);
-                        $candidate->save();
-                        $candidate->updateProfileStrength();
-                    }
+            } elseif (empty($candidate->attributes['full_name'])) {
+                $nameFromEmail = $this->extractNameFromEmail($user->attributes['email'] ?? '');
+                if ($nameFromEmail) {
+                    $candidate->fill(['full_name' => $nameFromEmail]);
+                    $candidate->save();
                 }
             }
-            
-            // Recalculate profile strength to ensure it's accurate
-            if ($candidate) {
-                $candidate->updateProfileStrength();
-            }
-            
-            // Check if profile has substantial data (not just empty profile)
+
+            // Optional profile-strength updates (non-blocking, separate job preferred)
+            // if ($candidate) {
+            //     $candidate->updateProfileStrength();
+            // }
+
             $hasData = false;
             if ($candidate && isset($candidate->attributes)) {
-                $hasData = !empty($candidate->attributes['full_name']) || 
-                          !empty($candidate->attributes['mobile']) || 
+                $hasData = !empty($candidate->attributes['full_name']) ||
+                          !empty($candidate->attributes['mobile']) ||
                           !empty($candidate->attributes['city']) ||
                           !empty($candidate->attributes['dob']) ||
                           !empty($candidate->attributes['gender']);
             }
-            
-            // Only redirect to complete page if profile is truly empty
-            // If profile has data (even if not 100% complete), go to dashboard
-            if (!$hasData) {
-                $redirect = '/candidate/profile/complete';
-            } else {
-                $redirect = '/candidate/dashboard';
-            }
+
+            $redirect = $hasData ? '/candidate/dashboard' : '/candidate/profile/complete';
         } elseif (!$redirect && $primaryRole === 'sales_manager') {
             $redirect = '/sales-manager/dashboard';
         } elseif (!$redirect && $primaryRole === 'sales_executive') {
@@ -1357,14 +1366,28 @@ class AuthController extends BaseController
 
         // Handle forgot password POST
         $data = $request->getJsonBody() ?? $request->all();
-        $email = $data['email'] ?? '';
+        $email = trim((string)($data['email'] ?? ''));
 
         if (empty($email)) {
             $response->json(['error' => 'Email is required'], 422);
             return;
         }
 
-        $user = User::where('email', '=', $email)->first();
+        $db = \App\Core\Database::getInstance();
+        $userRow = $db->fetchOne("SELECT * FROM users WHERE LOWER(email) = LOWER(:email) OR LOWER(google_email) = LOWER(:google_email) OR LOWER(apple_email) = LOWER(:apple_email) LIMIT 1", [
+            'email' => $email,
+            'google_email' => $email,
+            'apple_email' => $email
+        ]);
+        $user = $userRow ? new User($userRow) : null;
+        
+        error_log("Forgot Password - Request for email: {$email}");
+        if (!$user) {
+            error_log("Forgot Password - User not found for email: {$email}");
+        } else {
+            $userEmail = $user->email ?? $email;
+            error_log("Forgot Password - User found. ID: {$user->id}, Role: {$user->role}, Email in DB: {$userEmail}");
+        }
 
         // Restrict password reset for assigned sales roles
         if ($user) {
@@ -1403,7 +1426,7 @@ class AuthController extends BaseController
                 // Store in Redis
                 $tokenData = [
                     'user_id' => $user->id,
-                    'email' => $user->email,
+                    'email' => $userEmail,
                     'expires_at' => $expiresAt
                 ];
                 $stored = $redis->set("password_reset:{$token}", $tokenData, 3600); // 1 hour expiry
@@ -1423,7 +1446,7 @@ class AuthController extends BaseController
                 $db->query(
                     "INSERT INTO password_resets (email, token, user_id, expires_at) VALUES (:email, :token, :user_id, :expires_at)",
                     [
-                        'email' => $user->email,
+                        'email' => $userEmail,
                         'token' => $token,
                         'user_id' => $user->id,
                         'expires_at' => $expiresAt
@@ -1450,11 +1473,11 @@ class AuthController extends BaseController
             $resetLink = $scheme . '://' . $host . $path;
 
             // Send password reset email
-            $emailSent = \App\Services\MailService::sendPasswordReset($user->email, $resetLink);
+            $emailSent = \App\Services\MailService::sendPasswordReset($userEmail, $resetLink);
             if ($emailSent) {
-                error_log("Forgot Password - Password reset email sent successfully to: {$user->email}");
+                error_log("Forgot Password - Password reset email sent successfully to: {$userEmail}");
             } else {
-                error_log("Forgot Password - Failed to send password reset email to: {$user->email}");
+                error_log("Forgot Password - Failed to send password reset email to: {$userEmail}");
                 error_log("Forgot Password - Reset link: {$resetLink}");
             }
         }
@@ -1615,6 +1638,7 @@ class AuthController extends BaseController
         }
 
         // Update user password
+        /** @var \App\Models\User|null $user */
         $user = User::find($tokenData['user_id']);
         if (!$user) {
             $response->json(['error' => 'User not found'], 404);
@@ -1718,6 +1742,7 @@ class AuthController extends BaseController
             return;
         }
 
+        /** @var \App\Models\User|null $user */
         $user = User::where('verification_token', '=', $data['token'])->first();
         if (!$user) {
             $response->redirect('/login?error=invalid_token');

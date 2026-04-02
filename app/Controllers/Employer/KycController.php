@@ -79,7 +79,8 @@ class KycController extends BaseController
         }
 
         $storage = new Storage();
-        $filePath = $storage->store($file, 'kyc/' . $employer->id);
+        // Store under /uploads/kyc/{employer_id}
+        $filePath = $storage->store($file, 'uploads/kyc/' . $employer->id);
 
         $document = new EmployerKycDocument();
         $document->fill([

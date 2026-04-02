@@ -15,7 +15,7 @@ class Job extends Model
         'contract_length', 'contract_period', 'commission_percent', 'incentive_rules',
         'stipend', 'internship_length', 'season_duration', 'flexible_hours',
         'remote_policy', 'remote_tools', 'language', 'category',
-        'is_remote', 'locations', 'status', 'visibility', 'publish_at',
+        'is_remote', 'locations', 'qualifications', 'status', 'visibility', 'publish_at',
         'expires_at', 'vacancies', 'views', 'job_timings', 'interview_timings', 'job_address',
         'experience_type', 'min_experience', 'max_experience', 'offers_bonus', 'call_availability',
         'company_name', 'contact_person', 'phone', 'email', 'contact_profile', 'company_size', 'hiring_urgency'
@@ -48,9 +48,36 @@ class Job extends Model
         return $results;
     }
 
+    public function qualifications()
+    {
+        $jsonQualifications = $this->attributes['qualifications'] ?? $this->qualifications ?? null;
+        if ($jsonQualifications) {
+            $decoded = json_decode($jsonQualifications, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+        return [];
+    }
+
     public function locations()
     {
-        return JobLocation::where('job_id', '=', $this->attributes['id'])->get();
+        // Try getting from job_locations table first
+        $locations = JobLocation::where('job_id', '=', $this->attributes['id'] ?? $this->id ?? 0)->get();
+        if (!empty($locations)) {
+            return $locations;
+        }
+
+        // Fallback to locations JSON column in jobs table
+        $jsonLocations = $this->attributes['locations'] ?? $this->locations ?? null;
+        if ($jsonLocations) {
+            $decoded = json_decode($jsonLocations, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return [];
     }
 
     public function applications()

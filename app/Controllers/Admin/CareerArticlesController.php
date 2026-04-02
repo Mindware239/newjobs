@@ -7,6 +7,7 @@ namespace App\Controllers\Admin;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
+use App\Core\Storage;
 use App\Middlewares\AdminMiddleware;
 
 class CareerArticlesController
@@ -68,6 +69,20 @@ class CareerArticlesController
         $author = trim((string)$request->post('author', ''));
         $status = in_array($request->post('status', 'published'), ['draft','published'], true) ? (string)$request->post('status', 'published') : 'published';
         $publishedAt = trim((string)$request->post('published_at', ''));
+
+        // Handle image file upload (optional)
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
+                try {
+                    $storage = new Storage();
+                    $path = $storage->store($file, 'uploads/career-articles');
+                    $image = $storage->url($path);
+                } catch (\Throwable $t) {
+                    error_log('CareerArticlesController::store image upload failed: ' . $t->getMessage());
+                }
+            }
+        }
 
         if ($title === '') {
             $response->redirect('/admin/career-articles/create?error=Title required');
@@ -133,6 +148,20 @@ class CareerArticlesController
         $status = in_array($request->post('status', 'published'), ['draft','published'], true) ? (string)$request->post('status', 'published') : 'published';
         $publishedAt = trim((string)$request->post('published_at', ''));
 
+        // Handle image file upload (optional)
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
+                try {
+                    $storage = new Storage();
+                    $path = $storage->store($file, 'uploads/career-articles');
+                    $image = $storage->url($path);
+                } catch (\Throwable $t) {
+                    error_log('CareerArticlesController::update image upload failed: ' . $t->getMessage());
+                }
+            }
+        }
+
         if ($title === '') {
             $response->redirect('/admin/career-articles/'.$id.'/edit?error=Title required');
             return;
@@ -160,6 +189,29 @@ class CareerArticlesController
         $response->redirect('/admin/career-articles/'.$id.'/edit?success=Saved');
     }
 
+    public function uploadImage(Request $request, Response $response): void
+    {
+        $this->middleware->handle($request, $response);
+        if (!$request->hasFile('file')) {
+            $response->json(['error' => 'No file'], 400);
+            return;
+        }
+        $file = $request->file('file');
+        if (!$file || !isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+            $response->json(['error' => 'Upload failed'], 400);
+            return;
+        }
+        try {
+            $storage = new Storage();
+            $path = $storage->store($file, 'uploads/career-articles');
+            $url = $storage->url($path);
+            $response->json(['url' => $url]);
+        } catch (\Throwable $t) {
+            error_log('CareerArticlesController::uploadImage error: ' . $t->getMessage());
+            $response->json(['error' => 'Server error'], 500);
+        }
+    }
+
     public function delete(Request $request, Response $response, array $params): void
     {
         $this->middleware->handle($request, $response);
@@ -185,4 +237,3 @@ class CareerArticlesController
         ], 200, 'admin/layout');
     }
 }
-

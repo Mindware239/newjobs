@@ -574,13 +574,14 @@ class EmploymentVerificationService
 
     public static function setOverallStatus(int $employmentId, string $status): void
     {
+        $isVerified = ($status === 'verified') ? 1 : 0;
         Database::getInstance()->query(
             "UPDATE employment_records 
              SET status_overall = :s, 
                  verification_date = NOW(), 
-                 verified_badge = CASE WHEN :sv = 'verified' THEN 1 ELSE verified_badge END 
+                 verified_badge = CASE WHEN :isv = 1 THEN 1 ELSE verified_badge END 
              WHERE id = :id",
-            ['s' => $status, 'sv' => $status, 'id' => $employmentId]
+            ['s' => $status, 'isv' => $isVerified, 'id' => $employmentId]
         );
     }
 

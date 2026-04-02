@@ -219,7 +219,7 @@ if (!function_exists('fix_url')) {
           rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         /* Custom height to be full viewport height minus the header height */
@@ -1126,33 +1126,60 @@ if (!function_exists('fix_url')) {
     function getCategoryIcon($categoryName)
     {
         $name = strtolower(trim($categoryName ?? ''));
-        if (strpos($name, 'agriculture') !== false || strpos($name, 'farming') !== false) {
-            // Plant sprout with two leaves
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 6 4 6 8c0 4 2 6 6 6s6-2 6-6c0-4-2-6-6-6z"/><path d="M8 12h8"/><path d="M10 8c0 2 1 3 2 3s2-1 2-3"/></svg>';
-        } elseif (strpos($name, 'metal') !== false || strpos($name, 'production') !== false || strpos($name, 'manufacturing') !== false) {
-            // Gear/cog icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.364 6.364l-4.243-4.243m-4.242 4.242l-4.243-4.243m8.485 0l-4.242 4.242m-4.243-4.243l-4.242 4.242"/></svg>';
-        } elseif (strpos($name, 'commerce') !== false || strpos($name, 'retail') !== false || strpos($name, 'shopping') !== false) {
-            // Shopping bag icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
-        } elseif (strpos($name, 'construction') !== false || strpos($name, 'building') !== false) {
-            // Hard hat/safety helmet icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
-        } elseif (strpos($name, 'hotel') !== false || strpos($name, 'tourism') !== false || strpos($name, 'hospitality') !== false) {
-            // Building/hotel icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9"/><line x1="9" y1="12" x2="9" y2="12"/><line x1="9" y1="15" x2="9" y2="15"/><line x1="9" y1="18" x2="9" y2="18"/></svg>';
-        } elseif (strpos($name, 'education') !== false || strpos($name, 'teaching') !== false || strpos($name, 'school') !== false) {
-            // Graduation cap icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
-        } elseif (strpos($name, 'financial') !== false || strpos($name, 'finance') !== false || strpos($name, 'banking') !== false) {
-            // Stacked coins icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
-        } elseif (strpos($name, 'transport') !== false || strpos($name, 'logistics') !== false || strpos($name, 'shipping') !== false) {
-            // Bus/vehicle icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="6" cy="8" r="1" fill="currentColor"/><circle cx="18" cy="8" r="1" fill="currentColor"/></svg>';
+        $size = 'w-12 h-12';
+        
+        // Check for common categories and return professional icons
+        if (strpos($name, 'digital marketing') !== false || strpos($name, 'seo') !== false || strpos($name, 'content writing') !== false) {
+            // Megaphone / Marketing icon
+            return '<svg class="' . $size . ' text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+        } elseif (strpos($name, 'it') !== false || strpos($name, 'software') !== false || strpos($name, 'technology') !== false || strpos($name, 'development') !== false || strpos($name, 'cybersecurity') !== false || strpos($name, 'data science') !== false) {
+            // Code / Tech icon
+            return '<svg class="' . $size . ' text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+        } elseif (strpos($name, 'driver') !== false || strpos($name, 'transport') !== false || strpos($name, 'logistics') !== false || strpos($name, 'delivery') !== false || strpos($name, 'courier') !== false) {
+            // Truck / Delivery icon
+            return '<svg class="' . $size . ' text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polyline points="16 8 20 8 23 11 23 16 16 16"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+        } elseif (strpos($name, 'healthcare') !== false || strpos($name, 'medical') !== false || strpos($name, 'doctor') !== false || strpos($name, 'nurse') !== false || strpos($name, 'pharmacy') !== false || strpos($name, 'ward boy') !== false) {
+            // Medical icon
+            return '<svg class="' . $size . ' text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>';
+        } elseif (strpos($name, 'sales') !== false || strpos($name, 'marketing') !== false || strpos($name, 'business development') !== false) {
+            // Sales / Growth icon
+            return '<svg class="' . $size . ' text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>';
+        } elseif (strpos($name, 'finance') !== false || strpos($name, 'banking') !== false || strpos($name, 'account') !== false || strpos($name, 'insurance') !== false) {
+            // Finance / Money icon
+            return '<svg class="' . $size . ' text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>';
+        } elseif (strpos($name, 'education') !== false || strpos($name, 'teaching') !== false || strpos($name, 'school') !== false || strpos($name, 'training') !== false) {
+            // Education icon
+            return '<svg class="' . $size . ' text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
+        } elseif (strpos($name, 'construction') !== false || strpos($name, 'building') !== false || strpos($name, 'engineering') !== false || strpos($name, 'real estate') !== false) {
+            // Construction icon
+            return '<svg class="' . $size . ' text-yellow-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+        } elseif (strpos($name, 'hotel') !== false || strpos($name, 'tourism') !== false || strpos($name, 'hospitality') !== false || strpos($name, 'travel') !== false || strpos($name, 'cook') !== false || strpos($name, 'chef') !== false) {
+            // Hospitality icon
+            return '<svg class="' . $size . ' text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>';
+        } elseif (strpos($name, 'technician') !== false || strpos($name, 'electrician') !== false || strpos($name, 'plumber') !== false || strpos($name, 'mechanic') !== false || strpos($name, 'repair') !== false || strpos($name, 'maintenance') !== false) {
+            // Tools / Technician icon
+            return '<svg class="' . $size . ' text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/></svg>';
+        } elseif (strpos($name, 'manufacturing') !== false || strpos($name, 'production') !== false || strpos($name, 'factory') !== false || strpos($name, 'metal') !== false || strpos($name, 'textiles') !== false) {
+            // Factory icon
+            return '<svg class="' . $size . ' text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20V9l4 2 4-2 4 2 8-4v15H2z"/><path d="M18 11v4M14 13v2M10 13v2M6 13v2"/></svg>';
+        } elseif (strpos($name, 'admin') !== false || strpos($name, 'clerical') !== false || strpos($name, 'human resources') !== false || strpos($name, 'hr') !== false || strpos($name, 'office') !== false || strpos($name, 'peon') !== false) {
+            // Office / Admin icon
+            return '<svg class="' . $size . ' text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>';
+        } elseif (strpos($name, 'customer service') !== false || strpos($name, 'telecommunications') !== false || strpos($name, 'call center') !== false) {
+            // Customer Service icon
+            return '<svg class="' . $size . ' text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"/></svg>';
+        } elseif (strpos($name, 'security') !== false || strpos($name, 'safety') !== false || strpos($name, 'government') !== false) {
+            // Security icon
+            return '<svg class="' . $size . ' text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+        } elseif (strpos($name, 'beauty') !== false || strpos($name, 'wellness') !== false || strpos($name, 'fashion') !== false || strpos($name, 'beautician') !== false || strpos($name, 'hair') !== false) {
+            // Beauty / Wellness icon
+            return '<svg class="' . $size . ' text-pink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        } elseif (strpos($name, 'warehouse') !== false || strpos($name, 'picker') !== false || strpos($name, 'packer') !== false || strpos($name, 'loading') !== false) {
+            // Warehouse / Box icon
+            return '<svg class="' . $size . ' text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
         } else {
-            // Default checkmark icon
-            return '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+            // Default generic briefcase icon
+            return '<svg class="' . $size . ' text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>';
         }
     }
 

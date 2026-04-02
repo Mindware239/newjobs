@@ -1,29 +1,33 @@
 <?php
 
-namespace App\Middleware;
+declare(strict_types=1);
+
+namespace App\Middlewares;
 
 use App\Models\User;
 use App\Core\Request;
 use App\Core\Response;
 
-class MasterOnlyMiddleware
+class MasterOnlyMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
-            return Response::redirect('/master/login');
+            $response->redirect('/master/login');
+            return;
         }
 
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
 
-        if (!$user || $user->type !== 'master') {
+        if (!$user || $user->role !== 'master') {
             // no permission – kick to some 403 or main dashboard
-            return Response::redirect('/admin/dashboard');
+            $response->redirect('/admin/dashboard');
+            return;
         }
 
         $request->setUser($user);
 
-        return $next($request);
+        $next($request, $response);
     }
 }

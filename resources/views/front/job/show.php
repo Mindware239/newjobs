@@ -23,6 +23,14 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        :root{
+            --color-primary:#5B6BD5;
+            --color-primary-hover:#4F5FCC;
+        }
+        .bg-blue-600{background-color:var(--color-primary) !important}
+        .hover\:bg-blue-700:hover{background-color:var(--color-primary-hover) !important}
+        .text-blue-700{color:var(--color-primary) !important}
+        .border-blue-600{border-color:var(--color-primary) !important}
     </style>
 </head>
 <body class="bg-gray-50">
@@ -361,7 +369,7 @@
                                class="block border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition">
                                 <h3 class="font-semibold text-gray-900 mb-1"><?= htmlspecialchars($otherJob['title'] ?? 'Job') ?></h3>
                                 <div class="text-sm text-gray-600">
-                                    <?= htmlspecialchars($otherJob['location_display'] ?? 'Location not specified') ?>
+                                    <?= (!empty($otherJob['location_display']) && trim($otherJob['location_display'], ', ') !== '..') ? htmlspecialchars($otherJob['location_display']) : 'Location not specified' ?>
                                 </div>
                             </a>
                             <?php endforeach; ?>

@@ -12,6 +12,21 @@ use Razorpay\Api\Api;
 
 class RazorpayController extends BaseController
 {
+    private function isApi(Request $request): bool
+    {
+        return stripos((string)$request->header('Accept'), 'application/json') !== false;
+    }
+
+    private function apiSuccess(Response $response, string $message, array $data = [], int $code = 200): void
+    {
+        $response->json(['status' => true, 'message' => $message, 'data' => $data, 'errors' => null], $code, $message, true, null);
+    }
+
+    private function apiError(Response $response, string $message, int $code = 400, array $data = []): void
+    {
+        $response->json(['status' => false, 'message' => $message, 'data' => $data, 'errors' => ['error' => $message]], $code, $message, false, ['error' => $message]);
+    }
+
     private function configureSslCa(): void
     {
         $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
@@ -115,11 +130,30 @@ class RazorpayController extends BaseController
             } catch (\Throwable $inner) {
                 $db->rollback();
             }
+            if ($this->isApi($request)) {
+                $this->apiError($response, 'Payment initialization failed: ' . $e->getMessage(), 500);
+                return;
+            }
             $response->view('employer/billing/failed', [
                 'title' => 'Payment Failed',
                 'employer' => $employer,
                 'reason' => 'Payment initialization failed'
             ], 200, 'employer/layout');
+            return;
+        }
+
+        $responseData = [
+            'order_id' => $order['id'],
+            'amount' => $amount,
+            'employer_payment_id' => $employerPaymentId,
+            'subscription_payment_id' => $paymentId,
+            'key' => $config['key_id'],
+            'redirect_url' => '/employer/billing/checkout',
+            'csrf_token' => \App\Middlewares\CsrfMiddleware::generateToken()
+        ];
+
+        if ($this->isApi($request)) {
+            $this->apiSuccess($response, 'Razorpay order created', $responseData);
             return;
         }
 
@@ -131,7 +165,7 @@ class RazorpayController extends BaseController
             'empPayId' => $employerPaymentId,
             'subscriptionPaymentId' => $paymentId,
             'key' => $config['key_id'],
-            'csrfToken' => \App\Middlewares\CsrfMiddleware::generateToken()
+            'csrfToken' => $responseData['csrf_token']
         ], 200, 'employer/layout');
     }
 
@@ -140,11 +174,16 @@ class RazorpayController extends BaseController
         if (!$this->requireRole('employer', $request, $response)) { 
             return; 
         }
+        $isApi = $this->isApi($request);
         $token = $request->header('X-CSRF-Token') ?? $request->post('_token');
         if (empty($token) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token))
         {
+            if ($isApi) {
+                $this->apiError($response, 'CSRF mismatch', 403);
+            } else {
                 $response->redirect('/employer/billing/failed?reason=csrf_mismatch');
-                return;
+            }
+            return;
         }
 
         $employer = $this->currentUser->employer();
@@ -159,7 +198,11 @@ class RazorpayController extends BaseController
         $subscriptionPaymentId = (int)($request->post('subscription_payment_id') ?? $request->get('subscription_payment_id'));
 
         if (!$paymentId || !$orderId || !$signature) {
-            $response->redirect('/employer/billing/failed?reason=invalid_request');
+            if ($isApi) {
+                $this->apiError($response, 'Invalid request parameters', 400);
+            } else {
+                $response->redirect('/employer/billing/failed?reason=invalid_request');
+            }
             return;
         }
 
@@ -171,17 +214,29 @@ class RazorpayController extends BaseController
             ]);
             if (!$empPay) {
                 $db->rollback();
-                $response->redirect('/employer/billing/failed?reason=payment_record_missing');
+                if ($isApi) {
+                    $this->apiError($response, 'Payment record missing', 404);
+                } else {
+                    $response->redirect('/employer/billing/failed?reason=payment_record_missing');
+                }
                 return;
             }
             if (($empPay['status'] ?? '') === 'success') {
                 $db->rollback();
-                $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+                if ($isApi) {
+                    $this->apiSuccess($response, 'Payment already completed', ['subscription_payment_id' => $subscriptionPaymentId]);
+                } else {
+                    $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+                }
                 return;
             }
         } catch (\Throwable $t) {
             $db->rollback();
-            $response->redirect('/employer/billing/failed?reason=payment_record_error');
+            if ($isApi) {
+                $this->apiError($response, 'Payment record error', 500);
+            } else {
+                $response->redirect('/employer/billing/failed?reason=payment_record_error');
+            }
             return;
         }
 
@@ -192,7 +247,11 @@ class RazorpayController extends BaseController
                 'razorpay_signature' => $signature,
             ]);
         } catch (\Exception $e) {
-            $response->redirect('/employer/billing/failed?reason=signature_verification_failed');
+            if ($isApi) {
+                $this->apiError($response, 'Signature verification failed', 400);
+            } else {
+                $response->redirect('/employer/billing/failed?reason=signature_verification_failed');
+            }
             return;
         }
         
@@ -223,29 +282,45 @@ class RazorpayController extends BaseController
                 }
             }
         } catch (\Exception $e) {
-             $response->redirect('/employer/billing/failed?reason=payment_verification_failed');
-             return;
+            if ($isApi) {
+                $this->apiError($response, 'Payment verification failed: ' . $e->getMessage(), 400);
+            } else {
+                $response->redirect('/employer/billing/failed?reason=payment_verification_failed');
+            }
+            return;
         }
 
         try {
             // Verify Amount
             $storedAmount = (int)round((float)$empPay['amount'] * 100);
             if ($storedAmount !== (int)$rzpPayment->amount) {
-                 $db->rollback();
-                 $response->redirect('/employer/billing/failed?reason=amount_mismatch');
-                 return;
+                $db->rollback();
+                if ($isApi) {
+                    $this->apiError($response, 'Amount mismatch', 400);
+                } else {
+                    $response->redirect('/employer/billing/failed?reason=amount_mismatch');
+                }
+                return;
             }
 
             // Order ID must match the previously stored Razorpay order id
             if ((string)($empPay['txn_id'] ?? '') !== $orderId) {
                 $db->rollback();
-                $response->redirect('/employer/billing/failed?reason=order_mismatch');
+                if ($isApi) {
+                    $this->apiError($response, 'Order mismatch', 400);
+                } else {
+                    $response->redirect('/employer/billing/failed?reason=order_mismatch');
+                }
                 return;
             }
             $existing = $db->fetchOne('SELECT id FROM employer_payments WHERE txn_id = :pid AND status = "success"', ['pid' => $paymentId]);
             if ($existing) {
                 $db->rollback();
-                $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+                if ($isApi) {
+                    $this->apiSuccess($response, 'Already processed', ['subscription_payment_id' => $subscriptionPaymentId]);
+                } else {
+                    $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+                }
                 return;
             }
 
@@ -307,7 +382,11 @@ class RazorpayController extends BaseController
             $db->rollback();
             // Log error safely
             error_log('Payment Processing Error: ' . $t->getMessage());
-            $response->redirect('/employer/billing/failed?reason=processing_error');
+            if ($isApi) {
+                $this->apiError($response, 'Processing error: ' . $t->getMessage(), 500);
+            } else {
+                $response->redirect('/employer/billing/failed?reason=processing_error');
+            }
             return;
         }
 
@@ -332,7 +411,37 @@ class RazorpayController extends BaseController
             );
         }
 
+        if ($isApi) {
+            $this->apiSuccess($response, 'Payment verified successfully', [
+                'subscription_payment_id' => $subscriptionPaymentId,
+                'payment_id' => $paymentId,
+                'status' => 'success'
+            ]);
+            return;
+        }
+
         $response->redirect('/employer/billing/success?sub_pay_id=' . (int)$subscriptionPaymentId);
+    }
+
+    public function status(Request $request, Response $response): void
+    {
+        $orderId = (string)($request->query('order_id') ?? '');
+        if (!$orderId) {
+            $this->apiError($response, 'order_id is required', 400);
+            return;
+        }
+
+        $db = Database::getInstance();
+        $subPay = $db->fetchOne('SELECT status FROM subscription_payments WHERE gateway_order_id = :order_id OR gateway_payment_id = :order_id LIMIT 1', ['order_id' => $orderId]);
+
+        if (!$subPay) {
+            $this->apiError($response, 'Payment not found', 404);
+            return;
+        }
+
+        $status = strtolower((string)($subPay['status'] ?? 'pending'));
+
+        $this->apiSuccess($response, 'Payment status', ['payment_status' => in_array($status, ['completed', 'success'], true) ? 'success' : ($status === 'failed' ? 'failed' : 'pending')]);
     }
 }
 

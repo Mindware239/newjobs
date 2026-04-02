@@ -10,7 +10,7 @@ use App\Services\CookieService;
 
 class CookieConsentMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         CookieService::ensureSchema();
         $now = time();
@@ -46,5 +46,7 @@ class CookieConsentMiddleware implements MiddlewareInterface
                 }
             }
         }
+
+        $next($request, $response);
     }
 }

@@ -271,6 +271,7 @@
                                      class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50" role="menu" aria-orientation="vertical" aria-labelledby="menu-button-<?= $candidate['id'] ?>" tabindex="-1" style="display: none;">
                                     <div class="py-1" role="none">
                                         <a href="/admin/candidates/<?= $candidate['id'] ?>" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">View Profile</a>
+                                        <a href="/admin/candidates/<?= $candidate['id'] ?>/payments" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Payment History</a>
                                         
                                         <?php if (($candidate['user_status'] ?? '') === 'active'): ?>
                                             <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/block" class="block w-full text-left">

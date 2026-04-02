@@ -260,12 +260,12 @@ class NotificationService
         // 3. Update log with content
         self::updateLogContent($logId, $subject, $body);
 
-        // 4. Send
+        // 4. Send Asynchronously
         $attachments = is_array($templateData['attachments'] ?? null) ? $templateData['attachments'] : [];
-        $success = MailService::sendEmail($to, $subject, $body, null, null, $attachments);
+        $success = MailService::sendEmailAsync($to, $subject, $body, null, null, $attachments);
 
-        // 5. Update status
-        self::updateLogStatus($logId, $success ? 'sent' : 'failed', $success ? null : 'send_failed');
+        // 5. Update status (will be updated by worker, but we can mark as 'queued')
+        self::updateLogStatus($logId, $success ? 'queued' : 'failed', $success ? null : 'queue_failed');
 
         return $success;
     }

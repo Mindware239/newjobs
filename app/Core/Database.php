@@ -17,7 +17,7 @@ class Database
     private function __construct()
     {
         $host = $_ENV['DB_HOST'] ?? 'localhost';
-        $dbname = $_ENV['DB_NAME'] ?? 'mindwareinfotech';
+        $dbname = $_ENV['DB_NAME'] ?? 'newmindwareinfotech';
         $username = $_ENV['DB_USER'] ?? 'root';
         $password = $_ENV['DB_PASSWORD'] ?? '';
         $port = $_ENV['DB_PORT'] ?? '3306';

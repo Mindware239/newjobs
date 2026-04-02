@@ -16,7 +16,7 @@ use Dompdf\Dompdf;
 
 class PremiumController extends BaseController
 {
-    private function configureSslCa(): void
+    private function configureSslCa(): bool|string
     {
         $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
         $possible = [
@@ -32,11 +32,11 @@ class PremiumController extends BaseController
         foreach ($possible as $path) {
             if ($path && file_exists((string)$path)) {
                 @ini_set('curl.cainfo', (string)$path);
-                @putenv('CURL_CA_BUNDLE=' . (string)$path);
-                @putenv('SSL_CERT_FILE=' . (string)$path);
-                break;
+                @ini_set('openssl.cafile', (string)$path);
+                return (string)$path;
             }
         }
+        return false;
     }
 
 
@@ -188,6 +188,18 @@ class PremiumController extends BaseController
             $amount = (float)$plan->getPrice('monthly');
             $duration = 30;
 
+            // Enterprise Level: Validate amount consistency
+            if ($amount <= 0) {
+                $response->json(['error' => 'Invalid plan amount'], 400);
+                return;
+            }
+
+            // Check if user is already premium
+            if ($candidate->isPremium()) {
+                $response->json(['error' => 'You already have an active premium membership'], 400);
+                return;
+            }
+
             $purchase = new CandidatePremiumPurchase();
             $purchase->fill([
                 'candidate_id' => $candidate->id,
@@ -201,6 +213,9 @@ class PremiumController extends BaseController
             switch ($paymentMethod) {
                 case 'razorpay':
                     $paymentData = $this->createRazorpayOrder((int)$purchase->id, $amount);
+                    break;
+                case 'cashfree':
+                    $paymentData = $this->createCashfreeOrder((int)$purchase->id, $amount, $candidate);
                     break;
                 case 'stripe':
                     $paymentData = $this->createStripePayment($purchase->id, $amount);
@@ -219,8 +234,67 @@ class PremiumController extends BaseController
                 'payment_data' => $paymentData
             ]);
         } catch (\Throwable $e) {
-            error_log('Premium payment initiation error: ' . $e->getMessage());
-            $response->json(['error' => 'Payment initiation failed. Please try again.'], 500);
+            $msg = $e->getMessage();
+            if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+                $msg = (string)$e->getResponse()->getBody();
+            }
+            error_log('Premium payment initiation error: ' . $msg);
+            $response->json(['error' => 'Payment initiation failed: ' . $msg], 500);
+        }
+    }
+
+    public function cashfreeVerify(Request $request, Response $response): void
+    {
+        $candidate = $this->ensureCandidate($request, $response);
+        if (!$candidate) return;
+
+        $orderId = $request->get('order_id');
+        $purchaseId = (int)$request->get('purchase_id');
+        
+        $config = require __DIR__ . '/../../../config/cashfree.php';
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => $config['base_url'],
+            'verify' => $this->configureSslCa(), // Configure SSL CA
+            'headers' => [
+                'x-client-id' => $config['app_id'],
+                'x-client-secret' => $config['secret_key'],
+                'x-api-version' => $config['api_version'],
+                'Accept' => 'application/json',
+            ]
+        ]);
+
+        try {
+            $res = $client->get("orders/{$orderId}");
+            $body = json_decode((string)$res->getBody(), true);
+
+            if (($body['order_status'] ?? '') === 'PAID') {
+                $paymentsRes = $client->get("orders/{$orderId}/payments");
+                $payments = json_decode((string)$paymentsRes->getBody(), true);
+                $latest = $payments[0] ?? null;
+
+                if ($latest && $latest['payment_status'] === 'SUCCESS') {
+                    // Update purchase and activate premium
+                    $purchase = CandidatePremiumPurchase::find($purchaseId);
+                    if ($purchase && $purchase->status === 'pending') {
+                        $purchase->fill([
+                            'payment_id' => (string)$latest['cf_payment_id'],
+                            'status' => 'completed'
+                        ]);
+                        $purchase->save();
+
+                        $duration = $this->getPlanDuration($purchase->attributes['plan_type']);
+                        $expiresAt = date('Y-m-d H:i:s', strtotime("+{$duration} days"));
+                        $candidate->fill(['is_premium' => 1, 'premium_expires_at' => $expiresAt]);
+                        $candidate->save();
+                    }
+                    $response->redirect('/candidate/premium/plans?success=1');
+                    return;
+                }
+            }
+            $response->redirect('/candidate/premium/plans?error=payment_failed');
+        } catch (\Throwable $e) {
+            error_log('Cashfree Candidate Verify Error: ' . $e->getMessage());
+            $response->redirect('/candidate/premium/plans?error=verification_failed');
         }
     }
 
@@ -276,6 +350,116 @@ class PremiumController extends BaseController
         }
     }
 
+    public function cashfreeWebhook(Request $request, Response $response): void
+    {
+        $payload = (string)$request->getBody();
+        $headers = $request->headers();
+        $signature = $headers['x-webhook-signature'] ?? '';
+        $timestamp = $headers['x-webhook-timestamp'] ?? '';
+        
+        $config = require __DIR__ . '/../../../config/cashfree.php';
+        $rawData = $timestamp . $payload;
+        $expected = base64_encode(hash_hmac('sha256', $rawData, $config['secret_key'], true));
+
+        if (!hash_equals($expected, $signature)) {
+            $response->json(['error' => 'Invalid signature'], 401);
+            return;
+        }
+
+        $data = json_decode($payload, true);
+        if (($data['type'] ?? '') === 'PAYMENT_SUCCESS_WEBHOOK') {
+            $orderId = $data['data']['order']['order_id'] ?? '';
+            $paymentData = $data['data']['payment'] ?? null;
+            
+            if ($orderId && $paymentData) {
+                // Extract purchase ID from order ID (CAND-{purchaseId}-{timestamp})
+                $parts = explode('-', $orderId);
+                $purchaseId = isset($parts[1]) ? (int)$parts[1] : 0;
+                
+                $purchase = CandidatePremiumPurchase::find($purchaseId);
+                if ($purchase && $purchase->status === 'pending') {
+                    $purchase->fill([
+                        'payment_id' => (string)$paymentData['cf_payment_id'],
+                        'status' => 'completed'
+                    ]);
+                    $purchase->save();
+
+                    $candidate = Candidate::find((int)$purchase->attributes['candidate_id']);
+                    if ($candidate) {
+                        $duration = $this->getPlanDuration($purchase->attributes['plan_type']);
+                        $expiresAt = date('Y-m-d H:i:s', strtotime("+{$duration} days"));
+                        $candidate->fill(['is_premium' => 1, 'premium_expires_at' => $expiresAt]);
+                        $candidate->save();
+                    }
+                }
+            }
+        }
+        $response->json(['status' => 'ok']);
+    }
+
+    private function createCashfreeOrder(int $purchaseId, float $amount, Candidate $candidate): array
+    {
+        $config = require __DIR__ . '/../../../config/cashfree.php';
+        $user = User::find((int)$candidate->attributes['user_id']);
+        
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => $config['base_url'],
+            'verify' => $this->configureSslCa(), // Configure SSL CA
+            'headers' => [
+                'x-client-id' => $config['app_id'],
+                'x-client-secret' => $config['secret_key'],
+                'x-api-version' => $config['api_version'],
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ]
+        ]);
+
+        try {
+            $orderId = 'CAND-' . $purchaseId . '-' . time();
+
+            // Sanitize phone for Cashfree (must be 10 digits for India)
+            $phoneRaw = $candidate->mobile ?? '9999999999';
+            $phone = preg_replace('/\D+/', '', $phoneRaw);
+            if (strlen($phone) > 10) {
+                $phone = substr($phone, -10);
+            } elseif (strlen($phone) < 10) {
+                $phone = str_pad($phone, 10, '0', STR_PAD_LEFT);
+            }
+
+            $payload = [
+                'order_id' => $orderId,
+                'order_amount' => (float)$amount,
+                'order_currency' => 'INR',
+                'customer_details' => [
+                    'customer_id' => 'CAND-' . $candidate->id,
+                    'customer_email' => $user->email ?? '',
+                    'customer_phone' => $phone,
+                ],
+                'order_meta' => [
+                    'return_url' => ($_ENV['APP_URL'] ?? 'http://localhost') . '/candidate/premium/cashfree/verify?order_id={order_id}&purchase_id=' . $purchaseId,
+                    'notify_url' => ($_ENV['APP_URL'] ?? 'http://localhost') . '/candidate/premium/cashfree/webhook',
+                ],
+                'order_note' => 'Candidate Premium Purchase'
+            ];
+
+            $res = $client->post('orders', ['json' => $payload]);
+            $body = json_decode((string)$res->getBody(), true);
+
+            if (isset($body['payment_session_id'])) {
+                return [
+                    'gateway' => 'cashfree',
+                    'payment_session_id' => $body['payment_session_id'],
+                    'order_id' => $orderId,
+                    'environment' => $config['environment']
+                ];
+            }
+            throw new \Exception('Failed to get payment_session_id');
+        } catch (\Throwable $e) {
+            error_log('Cashfree Candidate Order Error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     private function createRazorpayOrder(int $purchaseId, float $amount): array
     {
         $config = require __DIR__ . '/../../../config/razorpay.php';
@@ -326,20 +510,14 @@ class PremiumController extends BaseController
 
     private function createStripePayment(int $purchaseId, float $amount): array
     {
-        // TODO: Integrate Stripe SDK
-        return [
-            'client_secret' => 'sk_test_placeholder',
-            'amount' => $amount * 100 // Stripe uses cents
-        ];
+        // Placeholder for future expansion
+        throw new \RuntimeException('Stripe integration is coming soon.');
     }
 
     private function createPayPalPayment(int $purchaseId, float $amount): array
     {
-        // TODO: Integrate PayPal SDK
-        return [
-            'payment_id' => 'paypal_' . $purchaseId,
-            'amount' => $amount
-        ];
+        // Placeholder for future expansion
+        throw new \RuntimeException('PayPal integration is coming soon.');
     }
 
     private function getPlanDuration(string $planType): int

@@ -88,6 +88,18 @@ try {
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        :root{
+            --brand-blue:#5B6BD5;
+            --brand-blue-hover:#4F5FCC;
+            --brand-blue-400:#6d7ae5;
+        }
+        .bg-blue-600{background-color:var(--brand-blue) !important}
+        .hover\:bg-blue-700:hover{background-color:var(--brand-blue-hover) !important}
+        .text-blue-700{color:var(--brand-blue) !important}
+        .from-blue-600{--tw-gradient-from:var(--brand-blue) !important; --tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to, rgb(91 107 213 / 0)) !important}
+        .via-blue-500{--tw-gradient-stops:var(--brand-blue), var(--brand-blue-hover), var(--tw-gradient-to, rgb(79 95 204 / 0)) !important}
+        .to-blue-500{--tw-gradient-to:var(--brand-blue-hover) !important}
+        .to-blue-400{--tw-gradient-to:var(--brand-blue-400) !important}
     </style>
 </head>
 
@@ -531,18 +543,20 @@ try {
 </section>
 
 <!-- CTA Section -->
-<section class="relative overflow-hidden py-20 md:py-28 bg-indigo-200">
+<section class="relative overflow-hidden py-20 md:py-28" style="background-image:url('/assets/images/working-team-office.jpg'); background-size:cover; background-position:center;">
     <!-- Abstract Shapes -->
     <div class="absolute inset-0 opacity-20 pointer-events-none">
         <div class="absolute top-10 right-10 w-64 h-64 rounded-full bg-white blur-3xl"></div>
         <div class="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-purple-400 blur-3xl"></div>
     </div>
+    <!-- Brand overlay for readability -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#5b6bd5]/70 via-[#4f5fcc]/60 to-[#5b6bd5]/40"></div>
 
     <div class="relative container mx-auto px-4 text-center z-10" data-aos="zoom-in">
-        <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+        <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Career?
         </h2>
-        <p class="text-indigo-600 text-lg max-w-2xl mx-auto mb-10">
+        <p class="text-indigo-50 text-lg max-w-2xl mx-auto mb-10">
             Join thousands of professionals who have found their dream jobs through our platform.
             Start your journey today.
         </p>
@@ -552,7 +566,7 @@ try {
                 Get Started Free
             </a>
             <a href="/contact"
-               class="inline-flex items-center justify-center h-14 px-10 rounded-xl border border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white font-bold text-lg transition-all transform hover:-translate-y-1">
+               class="inline-flex items-center justify-center h-14 px-10 rounded-xl border border-white/60 text-white hover:bg-white/10 font-bold text-lg transition-all transform hover:-translate-y-1">
                 Contact Sales
             </a>
         </div>

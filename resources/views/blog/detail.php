@@ -13,7 +13,7 @@
   </div>
   <?php return; ?>
 <?php endif; ?>
-<div class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
   <article class="md:col-span-2">
     <h1 class="text-3xl font-bold"><?= htmlspecialchars($blog['title'] ?? '') ?></h1>
     <?php if (!empty($blog['featured_image'])): ?>
@@ -42,7 +42,34 @@
         WhatsApp
       </a>
     </div>
-    <div class="prose max-w-none mt-8">
+    <style>
+      .blog-content{color:#111827}
+      .blog-content h1{font-size:2rem;font-weight:800;margin:1.25rem 0}
+      .blog-content h2{font-size:1.75rem;font-weight:700;margin:1rem 0}
+      .blog-content h3{font-size:1.5rem;font-weight:700;margin:.85rem 0}
+      .blog-content p{margin:.85rem 0;line-height:1.85}
+      .blog-content ul,.blog-content ol{margin:.75rem 0 1rem 1.25rem;padding:0}
+      .blog-content ul{list-style:disc;padding-left:1.5rem}
+      .blog-content ol{list-style:decimal;padding-left:1.5rem}
+      .blog-content li{margin:.4rem 0;line-height:1.75}
+      .blog-content ul li::marker,.blog-content ol li::marker{color:#e15f55;font-weight:700}
+      .blog-content blockquote{border-left:4px solid #e5e7eb;padding:.5rem 1rem;margin:1rem 0;color:#4b5563;background:#f9fafb}
+      .blog-content table{width:100%;border-collapse:collapse;margin:1rem 0}
+      .blog-content th,.blog-content td{border:1px solid #e5e7eb;padding:.6rem .9rem}
+      .blog-content tr:nth-child(odd){background:#fafafa}
+      .blog-content a{color:#2563eb;text-decoration:none;border-bottom:1px solid #bfdbfe}
+      .blog-content a:hover{color:#1d4ed8;border-bottom-color:#93c5fd}
+      .blog-content hr{border:0;border-top:1px solid #e5e7eb;margin:1.5rem 0}
+      .blog-content img{max-width:100%;height:auto;border-radius:.5rem;margin:1rem 0}
+      .blog-content code{background:#f3f4f6;border:1px solid #e5e7eb;padding:.15rem .35rem;border-radius:.3rem}
+      .blog-content pre{background:#0f172a;color:#e2e8f0;padding:1rem;border-radius:.6rem;overflow:auto}
+      /* CKEditor Styles mapping */
+      .blog-content .marker{background:#fff59e;padding:0 .25em;border-radius:.15rem}
+      .blog-content .special-container{border:1px solid #e5e7eb;background:#f9fafb;padding:1rem;border-radius:.5rem;margin:1rem 0}
+      .blog-content .italic-title{font-style:italic}
+      .blog-content .subtitle{font-size:1.1rem;color:#6b7280}
+    </style>
+    <div class="blog-content mt-8">
       <?= $content ?>
     </div>
     <div class="mt-8 flex flex-wrap gap-2">

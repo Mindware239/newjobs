@@ -48,17 +48,31 @@ class PaymentsController extends BaseController
             return;
         }
 
+        $isAdmin = in_array($this->currentUser->role, ['admin', 'super_admin']);
         $employer = $this->currentUser->employer();
-        if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+        
+        $id = (int)$request->param('id');
+        $payment = SubscriptionPayment::find($id);
+
+        if (!$payment) {
+            $response->json(['error' => 'Invoice not found'], 404);
             return;
         }
 
-        $id = (int)$request->param('id');
-        $payment = SubscriptionPayment::find($id);
-        if (!$payment || (int)($payment->attributes['employer_id'] ?? 0) !== (int)$employer->id) {
-            $response->json(['error' => 'Invoice not found'], 404);
-            return;
+        // If not an admin, ensure the payment belongs to the current employer
+        if (!$isAdmin) {
+            if (!$employer || (int)($payment->attributes['employer_id'] ?? 0) !== (int)$employer->id) {
+                $response->json(['error' => 'Invoice not found or access denied'], 404);
+                return;
+            }
+        } else {
+            // For admins, get the employer associated with this payment
+            $employerId = (int)($payment->attributes['employer_id'] ?? 0);
+            $employer = Employer::find($employerId);
+            if (!$employer) {
+                $response->json(['error' => 'Employer profile associated with this invoice not found'], 404);
+                return;
+            }
         }
 
         $subscription = \App\Models\EmployerSubscription::find((int)($payment->attributes['subscription_id'] ?? 0));

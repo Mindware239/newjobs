@@ -14,11 +14,11 @@
     <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
     <div>
       <label class="block text-sm font-medium">Title</label>
-      <input name="title" class="w-full border rounded px-3 py-2" value="<?= htmlspecialchars($blog['title'] ?? '') ?>" required>
+      <input name="title" class="w-full border rounded px-3 py-2" placeholder="Write a clear headline that captures the topic" value="<?= htmlspecialchars($blog['title'] ?? '') ?>" required>
     </div>
     <div>
       <label class="block text-sm font-medium">Excerpt</label>
-      <textarea name="excerpt" class="w-full border rounded px-3 py-2"><?= htmlspecialchars($blog['excerpt'] ?? '') ?></textarea>
+      <textarea name="excerpt" class="w-full border rounded px-3 py-2" placeholder="Short teaser (1–2 sentences) to summarize the article"><?= htmlspecialchars($blog['excerpt'] ?? '') ?></textarea>
     </div>
     <div>
       <label class="block text-sm font-medium">Content</label>
@@ -44,20 +44,20 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium">Meta Title</label>
-        <input name="meta_title" class="w-full border rounded px-3 py-2" value="<?= htmlspecialchars($blog['meta_title'] ?? '') ?>">
+        <input name="meta_title" class="w-full border rounded px-3 py-2" placeholder="SEO title (recommended ≤ 60 characters)" value="<?= htmlspecialchars($blog['meta_title'] ?? '') ?>">
       </div>
       <div>
         <label class="block text-sm font-medium">Meta Description</label>
-        <input name="meta_description" class="w-full border rounded px-3 py-2" value="<?= htmlspecialchars($blog['meta_description'] ?? '') ?>">
+        <input name="meta_description" class="w-full border rounded px-3 py-2" placeholder="SEO description (recommended 120–160 characters)" value="<?= htmlspecialchars($blog['meta_description'] ?? '') ?>">
       </div>
     </div>
     <div>
       <label class="block text-sm font-medium">Meta Keywords</label>
-      <textarea name="meta_keywords" class="w-full border rounded px-3 py-2"><?= htmlspecialchars($blog['meta_keywords'] ?? '') ?></textarea>
+      <textarea name="meta_keywords" class="w-full border rounded px-3 py-2" placeholder="Add comma-separated keywords"><?= htmlspecialchars($blog['meta_keywords'] ?? '') ?></textarea>
     </div>
     <div>
       <label class="block text-sm font-medium">Canonical URL</label>
-      <input name="canonical_url" class="w-full border rounded px-3 py-2" value="<?= htmlspecialchars($blog['canonical_url'] ?? '') ?>">
+      <input name="canonical_url" class="w-full border rounded px-3 py-2" placeholder="https://example.com/path-to-article" value="<?= htmlspecialchars($blog['canonical_url'] ?? '') ?>">
     </div>
     <div>
       <label class="block text-sm font-medium">Categories</label>
@@ -89,7 +89,23 @@
   <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
   <script>
     if (window.CKEDITOR) {
-      CKEDITOR.replace('editor', { removePlugins: 'image' });
+      CKEDITOR.replace('editor', {
+        allowedContent: true,
+        extraPlugins: 'pastefromword',
+        removePlugins: 'image',
+        forcePasteAsPlainText: false,
+        height: 300,
+        placeholder: 'Write your content. Use headings, bullet points, tables and links. Paste from Word or Google Docs to keep formatting.',
+        toolbar: [
+          { name: 'document', items: ['Source','Maximize'] },
+          { name: 'clipboard', items: ['Undo','Redo','Cut','Copy','Paste','PasteText','PasteFromWord'] },
+          { name: 'basicstyles', items: ['Bold','Italic','Underline','Strike','RemoveFormat'] },
+          { name: 'paragraph', items: ['NumberedList','BulletedList','Outdent','Indent','Blockquote','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+          { name: 'links', items: ['Link','Unlink'] },
+          { name: 'insert', items: ['Table','HorizontalRule','SpecialChar'] },
+          { name: 'styles', items: ['Styles','Format'] }
+        ]
+      });
     }
   </script>
 </div>

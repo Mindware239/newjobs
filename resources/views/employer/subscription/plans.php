@@ -23,6 +23,24 @@
         </div>
         <?php endif; ?>
 
+        <!-- Error Message Display -->
+        <?php if ($error = ($_GET['error'] ?? null)): ?>
+        <div class="max-w-4xl mx-auto mb-5">
+            <div class="bg-red-50 border border-red-200 rounded-md p-3">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-4 w-4 text-red-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-2 flex-1">
+                        <p class="text-sm text-red-600"><?= htmlspecialchars($error) ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Billing Cycle Toggle -->
         <div class="max-w-2xl mx-auto mb-5">
             <div class="bg-white rounded-md shadow-sm border border-gray-200 p-4">
@@ -45,6 +63,25 @@
                         <span class="block leading-tight">Annual</span>
                         <span class="block text-xs font-normal opacity-75">Save 20%</span>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Gateway Selection -->
+        <div class="max-w-2xl mx-auto mb-5">
+            <div class="bg-white rounded-md shadow-sm border border-gray-200 p-4">
+                <label class="block text-xs font-medium text-gray-700 mb-3 text-center uppercase tracking-wider">Select Payment Gateway</label>
+                <div class="flex gap-4 justify-center">
+                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'">
+                        <input type="radio" x-model="selectedGateway" value="razorpay" class="hidden">
+                        <img src="https://razorpay.com/favicon.png" class="w-5 h-5" alt="Razorpay">
+                        <span class="text-sm font-medium">Razorpay</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'cashfree' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'">
+                        <input type="radio" x-model="selectedGateway" value="cashfree" class="hidden">
+                        <img src="https://www.cashfree.com/favicon.ico" class="w-5 h-5" alt="Cashfree">
+                        <span class="text-sm font-medium">Cashfree</span>
+                    </label>
                 </div>
             </div>
         </div>
@@ -287,16 +324,17 @@
     document.addEventListener("alpine:init", () => {
         // Initialize discount data
         const initialDiscountCode = "<?= htmlspecialchars($discountCode ?? '') ?>";
-        const initialDiscount = <?= $discount ? json_encode($discount->attributes) : 'null' ?>;
+        const initialDiscount = <?= ($discount ?? null) ? json_encode($discount) : 'null' ?>;
         
         Alpine.data("subscriptionPlans", () => ({
             plans: plansData,
             currentSubscription: <?= json_encode($currentSubscription ?? null) ?>,
             selectedCycle: "monthly",
+            selectedGateway: "razorpay",
             discountCode: initialDiscountCode,
-            discountApplied: <?= $discount ? 'true' : 'false' ?>,
-            discountPercentage: <?= $discount ? (float)$discount->attributes['discount_value'] : 0 ?>,
-            discountType: "<?= $discount ? ($discount->attributes['discount_type'] ?? 'percentage') : 'percentage' ?>",
+            discountApplied: <?= ($discount ?? null) ? 'true' : 'false' ?>,
+            discountPercentage: <?= ($discount ?? null) ? (float)$discount['discount_value'] : 0 ?>,
+            discountType: "<?= ($discount ?? null) ? ($discount['discount_type'] ?? 'percentage') : 'percentage' ?>",
             discountError: null,
             validatingDiscount: false,
             
@@ -402,6 +440,7 @@
                         body: JSON.stringify({
                             plan_slug: planSlug,
                             billing_cycle: this.selectedCycle,
+                            gateway: this.selectedGateway,
                             discount_code: this.discountCode || null,
                             auto_renew: false
                         })
@@ -431,22 +470,19 @@
                 try {
                     const response = await fetch("/employer/subscription/change-plan", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": this.getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            plan_slug: planSlug,
-                            billing_cycle: this.selectedCycle
+                        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.getCsrfToken() },
+                        body: JSON.stringify({ 
+                            plan_slug: planSlug, 
+                            billing_cycle: this.selectedCycle,
+                            gateway: this.selectedGateway 
                         })
                     });
                     const data = await response.json();
                     if (data.success) {
                         if (data.requires_payment) {
-                            // Redirect to transactions or payment page
-                            window.location.href = "/employer/billing/transactions";
+                            this.initiatePayment(data.payment_gateway, data.payment_id);
                         } else {
-                            window.location.href = "/employer/billing/overview";
+                            window.location.href = "/employer/subscription/dashboard";
                         }
                     } else {
                         console.warn("Change plan error:", data.error || "Failed to change plan");
@@ -462,7 +498,12 @@
                     window.location.href = "/employer/subscription/dashboard";
                     return;
                 }
-                window.location.href = "/payment/create-order?payment_id=" + encodeURIComponent(String(paymentId));
+
+                if (gatewayData.gateway === 'cashfree') {
+                    window.location.href = gatewayData.payment_url;
+                } else {
+                    window.location.href = "/payment/create-order?payment_id=" + encodeURIComponent(String(paymentId));
+                }
             },
             
             getCsrfToken() {

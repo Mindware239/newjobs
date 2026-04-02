@@ -9,9 +9,9 @@ use App\Core\Response;
 use App\Models\User;
 use App\Models\Candidate;
 
-class CandidateSubscriptionMiddleware
+class CandidateSubscriptionMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -48,6 +48,7 @@ class CandidateSubscriptionMiddleware
         }
 
         $request->setAttribute('candidate', $candidate);
-        return;
+        
+        $next($request, $response);
     }
 }

@@ -12,22 +12,72 @@ class Request
     private array $files = [];
     private array $headers = [];
     private array $attributes = [];
+    private ?\App\Models\User $user = null;
 
     public function __construct()
     {
         $this->body = $_POST;
         $this->query = $_GET;
         $this->files = $_FILES;
-        $this->headers = getallheaders() ?: [];
+        $this->headers = $this->getAllHeaders();
         
-        // Handle JSON body for POST requests if Content-Type is application/json
-        if ($this->getMethod() === 'POST' && empty($this->body)) {
-            $contentType = $this->header('Content-Type') ?? '';
-            if (strpos($contentType, 'application/json') !== false) {
-                $jsonBody = file_get_contents('php://input');
-                $this->body = json_decode($jsonBody, true) ?? [];
+        // Handle JSON body for any request that has a body (POST, PUT, PATCH, DELETE)
+        $contentType = $this->header('Content-Type') ?? '';
+        if (strpos($contentType, 'application/json') !== false) {
+            $jsonBody = file_get_contents('php://input');
+            $decoded = json_decode($jsonBody, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->body = array_merge($this->body, $decoded ?? []);
             }
         }
+    }
+
+    private function getAllHeaders(): array
+    {
+        if (function_exists('getallheaders')) {
+            return getallheaders() ?: [];
+        }
+        
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) === 'HTTP_') {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
+    }
+
+    public function getJsonBody(): array
+    {
+        return $this->body;
+    }
+
+    public function header(string $key, $default = null): ?string
+    {
+        $key = strtolower($key);
+        foreach ($this->headers as $headerKey => $headerValue) {
+            if (strtolower($headerKey) === $key) {
+                return $headerValue;
+            }
+        }
+        return $default;
+    }
+
+    public function isAjax(): bool
+    {
+        return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+            || strpos($this->header('Accept') ?? '', 'application/json') !== false
+            || strpos($this->header('Content-Type') ?? '', 'application/json') !== false;
+    }
+
+    public function setUser(\App\Models\User $user): void
+    {
+        $this->user = $user;
+    }
+
+    public function user(): ?\App\Models\User
+    {
+        return $this->user;
     }
 
     public function getMethod(): string
@@ -62,7 +112,6 @@ class Request
             $path = substr($path, strlen($scriptDir));
         } elseif (substr($scriptDir, -7) === '/public') {
             // Handle case where public folder is hidden by rewrite rules
-            // e.g. scriptDir is /sub/public but path is /sub/login
             $baseDir = substr($scriptDir, 0, -7);
             if ($baseDir !== '/' && $baseDir !== '.' && strpos($path, $baseDir) === 0) {
                 $path = substr($path, strlen($baseDir));
@@ -116,17 +165,6 @@ class Request
         return $this->files[$key] ?? null;
     }
 
-    public function header(string $key, $default = null): ?string
-    {
-        $key = strtolower($key);
-        foreach ($this->headers as $headerKey => $value) {
-            if (strtolower($headerKey) === $key) {
-                return $value;
-            }
-        }
-        return $default;
-    }
-
     public function setParams(array $params): void
     {
         $this->params = $params;
@@ -140,15 +178,6 @@ class Request
     public function getParams(): array
     {
         return $this->params;
-    }
-
-    public function getJsonBody(): array
-    {
-        if (!empty($this->body) && $this->getMethod() === 'POST') {
-            return $this->body;
-        }
-        $body = file_get_contents('php://input');
-        return json_decode($body, true) ?? [];
     }
 
     public function ip(): string
@@ -170,11 +199,4 @@ class Request
     {
         return $this->attributes[$key] ?? $default;
     }
-
-    public function isAjax(): bool
-    {
-        return strtolower($this->header('X-Requested-With', '')) === 'xmlhttprequest' ||
-               strtolower($this->header('Content-Type', '')) === 'application/json';
-    }
 }
-

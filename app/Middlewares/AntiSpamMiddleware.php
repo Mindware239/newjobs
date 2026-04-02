@@ -11,16 +11,25 @@ use App\Models\Job;
 
 class AntiSpamMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
-        if (!$userId) { return; }
+        if (!$userId) { 
+            $next($request, $response);
+            return; 
+        }
 
         $user = User::find((int)$userId);
-        if (!$user || !method_exists($user, 'employer')) { return; }
+        if (!$user || !method_exists($user, 'employer')) { 
+            $next($request, $response);
+            return; 
+        }
 
         $employer = $user->employer();
-        if (!$employer) { return; }
+        if (!$employer) { 
+            $next($request, $response);
+            return; 
+        }
 
         // Simple per-day rate limit
         $todayCount = Job::where('employer_id', '=', $employer->id)
@@ -51,7 +60,7 @@ class AntiSpamMiddleware implements MiddlewareInterface
             return;
         }
 
-        return;
+        $next($request, $response);
     }
 }
 

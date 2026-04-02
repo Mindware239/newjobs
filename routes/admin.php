@@ -56,6 +56,7 @@ $router->post('/admin/candidates/{id}/premium/disable', [App\Controllers\Admin\C
 $router->post('/admin/candidates/{id}/premium/extend', [App\Controllers\Admin\CandidatesController::class, 'extendPremium'], [$adminMiddleware]);
 $router->post('/admin/candidates/{id}/premium/reduce', [App\Controllers\Admin\CandidatesController::class, 'reducePremium'], [$adminMiddleware]);
 $router->post('/admin/candidates/{id}/suggest', [App\Controllers\Admin\CandidatesController::class, 'suggestToEmployer'], [$adminMiddleware]);
+$router->get('/admin/candidates/{id}/payments', [App\Controllers\Admin\CandidatesController::class, 'paymentHistory'], [$adminMiddleware]);
 
 // Employers Management (Protected)
 $router->get('/admin/employers', [App\Controllers\Admin\EmployersController::class, 'index'], [$adminMiddleware]);
@@ -83,6 +84,7 @@ $router->post('/admin/payments/{id}/refund', [App\Controllers\Admin\PaymentsCont
 $router->get('/admin/subscriptions', [App\Controllers\Admin\SubscriptionsController::class, 'index'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/plans', [App\Controllers\Admin\SubscriptionsController::class, 'plans'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/plans/{id}/edit', [App\Controllers\Admin\SubscriptionsController::class, 'editPlan'], [$adminMiddleware]);
+$router->get('/admin/subscriptions/payments/{payment_id}/invoice', [App\Controllers\Admin\SubscriptionsController::class, 'downloadInvoice'], [$adminMiddleware]);
 $router->post('/admin/subscriptions/plans/{id}/duplicate', [App\Controllers\Admin\SubscriptionsController::class, 'duplicatePlan'], [$adminMiddleware]);
 $router->post('/admin/subscriptions/plans', [App\Controllers\Admin\SubscriptionsController::class, 'createPlan'], [$adminMiddleware]);
 $router->put('/admin/subscriptions/plans/{id}', [App\Controllers\Admin\SubscriptionsController::class, 'updatePlan'], [$adminMiddleware]);
@@ -189,6 +191,8 @@ $router->get('/admin/career-articles/{id}/edit', [App\Controllers\Admin\CareerAr
 $router->post('/admin/career-articles/{id}/update', [App\Controllers\Admin\CareerArticlesController::class, 'update'], [$adminMiddleware]);
 $router->post('/admin/career-articles/{id}/delete', [App\Controllers\Admin\CareerArticlesController::class, 'delete'], [$adminMiddleware]);
 $router->get('/admin/career-articles/{id}/preview', [App\Controllers\Admin\CareerArticlesController::class, 'preview'], [$adminMiddleware]);
+// Summernote image upload for career articles
+$router->post('/admin/career-articles/upload-image', [App\Controllers\Admin\CareerArticlesController::class, 'uploadImage'], [$adminMiddleware]);
 
 // Article Categories (Protected)
 $router->get('/admin/article-categories', [App\Controllers\Admin\ArticleCategoriesController::class, 'index'], [$adminMiddleware]);

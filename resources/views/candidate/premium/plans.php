@@ -7,6 +7,7 @@
         <title>Premium Plans - Mindware Infotech</title>
         <link rel="icon" type="image/png" href="/uploads/Mindware-infotech.png">
         <link href="/css/output.css" rel="stylesheet">
+        <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
         <script>
             // Define premiumPlans function before Alpine.js loads
             const PLANS = <?= json_encode($plans, JSON_UNESCAPED_UNICODE) ?>;
@@ -52,7 +53,11 @@
                             if (contentType.includes('application/json')) {
                                 const data = await response.json();
                                 if (response.ok && data.success) {
-                                    this.startRazorpayCheckout(data.payment_data, data.purchase_id);
+                                    if (this.paymentMethod === 'cashfree') {
+                                        this.startCashfreeCheckout(data.payment_data);
+                                    } else {
+                                        this.startRazorpayCheckout(data.payment_data, data.purchase_id);
+                                    }
                                 } else {
                                     alert((data && (data.error || data.message)) || 'Payment initiation failed');
                                 }
@@ -121,8 +126,21 @@
                                 }
                             }
                         };
-                        const rzp = new Razorpay(options);
-                        rzp.open();
+                        try {
+                            const rzp = new Razorpay(options);
+                            rzp.open();
+                        } catch (e) {
+                            alert('Razorpay loading error. Please check your internet connection.');
+                        }
+                    },
+                    startCashfreeCheckout(paymentData) {
+                        const cashfree = Cashfree({
+                            mode: paymentData.environment === 'production' ? 'production' : 'sandbox'
+                        });
+                        cashfree.checkout({
+                            paymentSessionId: paymentData.payment_session_id,
+                            redirectTarget: "_self"
+                        });
                     },
                     getCsrfToken() {
                         return document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -513,8 +531,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
                         <select x-model="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-md">
                             <option value="razorpay">Razorpay</option>
-                            <option value="stripe">Stripe</option>
-                            <option value="paypal">PayPal</option>
+                            <option value="cashfree">Cashfree</option>
                         </select>
                     </div>
                     <div class="pt-4 flex gap-3">

@@ -17,7 +17,7 @@ class RbacMiddleware implements MiddlewareInterface
         $this->permission = $permission;
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -35,6 +35,8 @@ class RbacMiddleware implements MiddlewareInterface
             $response->json(['error' => 'Permission denied']);
             return;
         }
+
+        $next($request, $response);
     }
 }
 

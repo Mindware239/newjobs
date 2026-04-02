@@ -26,6 +26,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gateway</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -37,7 +38,10 @@
                 <?php foreach ($payments as $payment): ?>
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <?= htmlspecialchars($payment['transaction_id'] ?? 'N/A') ?>
+                        <?= htmlspecialchars($payment['txn_id'] ?? 'N/A') ?>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <?= ucfirst(htmlspecialchars($payment['gateway'] ?? 'razorpay')) ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <?= htmlspecialchars($payment['company_name'] ?? 'N/A') ?>

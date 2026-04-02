@@ -233,8 +233,7 @@ $employer = null; // Not needed for candidate pages
                         </svg>
                         <?php endfor; ?>
                     </div>
-                    <span class="text-gray-700">4.5 out of 5 based on 15,447 reviews</span>
-                    <span class="text-green-600 font-semibold">Trustpilot</span>
+                    
                 </div>
             </div>
         </main>

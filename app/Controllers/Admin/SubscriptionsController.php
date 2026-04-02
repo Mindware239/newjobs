@@ -51,6 +51,11 @@ class SubscriptionsController extends BaseController
         $subscriptions = $db->fetchAll(
             "SELECT es.*, e.company_name, sp.name as plan_name, u.email as employer_email
              FROM employer_subscriptions es
+             INNER JOIN (
+                 SELECT employer_id, MAX(created_at) as max_created_at
+                 FROM employer_subscriptions
+                 GROUP BY employer_id
+             ) as latest_sub ON es.employer_id = latest_sub.employer_id AND es.created_at = latest_sub.max_created_at
              LEFT JOIN employers e ON e.id = es.employer_id
              LEFT JOIN users u ON u.id = e.user_id
              LEFT JOIN subscription_plans sp ON sp.id = es.plan_id
@@ -145,6 +150,125 @@ class SubscriptionsController extends BaseController
         ], 200, 'admin/layout');
     }
 
+    /**
+     * Download subscription payment invoice as PDF (admin-safe, no employer redirect)
+     */
+    public function downloadInvoice(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+        $paymentId = (int)$request->param('payment_id');
+        $db = Database::getInstance();
+        $p = $db->fetchOne("SELECT * FROM subscription_payments WHERE id = :id", ['id' => $paymentId]);
+        if (!$p) {
+            $response->setStatusCode(404);
+            $response->setBody('Invoice not found');
+            return;
+        }
+        $employer = $db->fetchOne("SELECT e.*, u.email FROM employers e LEFT JOIN users u ON u.id = e.user_id WHERE e.id = :id", [
+            'id' => (int)($p['employer_id'] ?? 0)
+        ]) ?? [];
+        $sub = $db->fetchOne("SELECT es.*, sp.name as plan_name FROM employer_subscriptions es LEFT JOIN subscription_plans sp ON sp.id = es.plan_id WHERE es.id = :id", [
+            'id' => (int)($p['subscription_id'] ?? 0)
+        ]) ?? [];
+        $amount = (float)($p['amount'] ?? 0);
+        $taxRate = (float)($_ENV['TAX_RATE'] ?? 0.18);
+        $tax = round($amount * $taxRate, 2);
+        $total = $amount + $tax;
+        $invoiceNo = $p['invoice_number'] ?? ('INV-' . date('Ym') . '-' . sprintf('%06d', $paymentId));
+        $createdAt = !empty($p['created_at']) ? date('d M Y, h:i A', strtotime($p['created_at'])) : date('d M Y, h:i A');
+        $companyName  = $_ENV['COMPANY_NAME'] ?? 'Mindware Infotech';
+        $companyAddr  = $_ENV['COMPANY_ADDRESS'] ?? 'Mindware, S-4, Pankaj Plaza, Pocket-7, Plot-7, Dwarka Sector-12, Delhi-110078';
+        $companyCity  = $_ENV['COMPANY_CITY'] ?? 'Dwarka';
+        $companyState = $_ENV['COMPANY_STATE'] ?? 'Delhi';
+        $companyZip   = $_ENV['COMPANY_ZIP'] ?? '110078';
+        $companyEmail = $_ENV['COMPANY_EMAIL'] ?? 'sales@mindwareinfotech.com';
+        $companyPhone = $_ENV['COMPANY_PHONE'] ?? '+91-8527522688';
+        $gst          = $_ENV['COMPANY_GSTIN'] ?? '07AFDPM9463K1ZY';
+        $planName     = $sub['plan_name'] ?? ucfirst((string)($p['billing_cycle'] ?? 'subscription'));
+        // Employer address (optional JSON)
+        $addr = [];
+        if (!empty($employer['address'])) {
+            $decoded = json_decode((string)$employer['address'], true);
+            if (is_array($decoded)) $addr = $decoded;
+        }
+        $eCompany = $employer['company_name'] ?? 'Employer';
+        $eEmail   = $employer['email'] ?? '';
+        $eStreet  = $addr['street'] ?? '';
+        $eCity    = $addr['city'] ?? '';
+        $eState   = $addr['state'] ?? '';
+        $eZip     = $addr['postal_code'] ?? '';
+        // Build minimal PDF HTML
+        $html = '<!doctype html><html><head><meta charset="utf-8"><title>Invoice '.$invoiceNo.'</title>
+        <style>
+        body{font-family:DejaVu Sans,Arial,Helvetica,sans-serif;font-size:12px;color:#111}
+        .wrap{max-width:800px;margin:0 auto}
+        .row{display:flex;justify-content:space-between;gap:20px}
+        .box{border:1px solid #0a2d6c;padding:10px}
+        h1{color:#0a2d6c;margin:0 0 6px 0}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th,td{border:1px solid #0a2d6c;padding:8px}
+        th{background:#0a2d6c;color:#fff;text-align:left}
+        .totals td{font-weight:bold}
+        .muted{color:#555}
+        </style></head><body><div class="wrap">
+        <div class="row">
+          <div>
+            <h1>INVOICE</h1>
+            <div class="muted">Invoice #: '.$invoiceNo.'<br>Date & Time: '.$createdAt.'<br>Payment ID: '.htmlspecialchars((string)($p['gateway_payment_id'] ?? '-')).'<br>Gateway: '.strtoupper((string)($p['gateway'] ?? 'RAZORPAY')).'</div>
+          </div>
+          <div class="box">
+            <div><strong>'.htmlspecialchars($companyName).'</strong></div>
+            <div>'.nl2br(htmlspecialchars($companyAddr)).'</div>
+            <div>'.$companyCity.', '.$companyState.' '.$companyZip.'</div>
+            <div>'.$companyEmail.' | '.$companyPhone.'</div>
+            <div><strong>GST:</strong> '.$gst.'</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="box" style="flex:1">
+            <div><strong>Billed To</strong></div>
+            <div>'.htmlspecialchars($eCompany).'</div>
+            <div>'.htmlspecialchars(trim($eStreet)).'</div>
+            <div>'.htmlspecialchars(trim($eCity.(($eCity&&$eState)?', ':'').$eState.' '.$eZip)).'</div>
+            <div>'.htmlspecialchars($eEmail).'</div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Description</th><th style="text-align:center">Cycle</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Subscription - '.htmlspecialchars($planName).'</td>
+              <td style="text-align:center">'.ucfirst((string)($p['billing_cycle'] ?? 'monthly')).'</td>
+              <td style="text-align:center">1</td>
+              <td style="text-align:right">₹'.number_format($amount,2).'</td>
+              <td style="text-align:right">₹'.number_format($amount,2).'</td>
+            </tr>
+          </tbody>
+        </table>
+        <table style="margin-top:8px">
+          <tbody>
+            <tr class="totals"><td style="width:70%">Subtotal</td><td style="text-align:right">₹'.number_format($amount,2).'</td></tr>
+            <tr class="totals"><td>Tax ('.($taxRate*100).'%)</td><td style="text-align:right">₹'.number_format($tax,2).'</td></tr>
+            <tr class="totals"><td>Grand Total</td><td style="text-align:right">₹'.number_format($total,2).'</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:12px">This is a system generated invoice. No signature required.</p>
+        </div></body></html>';
+        // Render with Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        $pdfOutput = $dompdf->output();
+        // Save to tmp and stream
+        $dir = __DIR__ . '/../../../storage/tmp/invoices';
+        if (!is_dir($dir)) { @mkdir($dir, 0777, true); }
+        $tmpPath = $dir . '/invoice_' . $paymentId . '.pdf';
+        file_put_contents($tmpPath, $pdfOutput);
+        $response->download($tmpPath, $invoiceNo . '.pdf');
+    }
     public function createPlan(Request $request, Response $response): void
     {
         if (!$this->requireAdmin($request, $response)) {

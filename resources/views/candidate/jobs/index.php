@@ -21,16 +21,23 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        :root{
+            --color-primary:#5B6BD5;
+            --color-primary-hover:#4F5FCC;
+        }
+        .bg-blue-600{background-color:var(--color-primary) !important}
+        .hover\:bg-blue-700:hover{background-color:var(--color-primary-hover) !important}
+        .text-blue-700{color:var(--color-primary) !important}
         .btn-primary {
-            background: #2563eb;
+            background: var(--color-primary);
             border: none;
             color: white;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 6px rgba(91, 107, 213, 0.25);
         }
         .btn-primary:hover {
-            background: #1d4ed8;
-            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+            background: var(--color-primary-hover);
+            box-shadow: 0 6px 12px rgba(79, 95, 204, 0.32);
             transform: translateY(-1px);
         }
         .search-input {
@@ -1241,6 +1248,38 @@
                     await this.loadPopularLocations();
                     // Load popular industries (top 5)
                     await this.loadPopularIndustries();
+                    // Derive salary_range from numeric min/max when coming from URL
+                    if ((!this.filters.salary_range || this.filters.salary_range === '') 
+                        && (this.filters.salary_min !== '' || this.filters.salary_max !== '')) {
+                        this.deriveSalaryRangeFromNumeric();
+                    }
+                },
+                deriveSalaryRangeFromNumeric() {
+                    const min = parseInt(this.filters.salary_min || '0', 10);
+                    const max = parseInt(this.filters.salary_max || '0', 10);
+                    // Monthly thresholds corresponding to Lakhs per annum
+                    const L = 100000;
+                    const toMonthly = (lakhs) => Math.round((lakhs * L) / 12);
+                    const bands = [
+                        { key: '0-3',    min: 0,               max: toMonthly(3) },
+                        { key: '3-6',    min: toMonthly(3),    max: toMonthly(6) },
+                        { key: '6-10',   min: toMonthly(6),    max: toMonthly(10) },
+                        { key: '10-15',  min: toMonthly(10),   max: toMonthly(15) },
+                        { key: '15+',    min: toMonthly(15),   max: Infinity }
+                    ];
+                    // If user provided both, find overlapping band; else pick band by min or max
+                    const valMin = isNaN(min) ? null : min;
+                    const valMax = isNaN(max) || max === 0 ? null : max;
+                    for (const b of bands) {
+                        const overlap =
+                            (valMin === null && valMax !== null && b.min <= valMax) ||
+                            (valMax === null && valMin !== null && b.max >= valMin) ||
+                            (valMin !== null && valMax !== null && b.min <= valMax && b.max >= valMin);
+                        if (overlap) {
+                            this.filters.salary_range = b.key;
+                            return;
+                        }
+                    }
                 },
                 async loadPopularLocations() {
                     try {
@@ -1383,14 +1422,16 @@
                         });
                     }
                     
-                    // Handle salary_range
+                    // Handle salary_range (Lakhs per annum -> monthly INR)
                     if (this.filters.salary_range) {
-                        const [min, max] = this.filters.salary_range.split('-');
-                        if (max) {
-                            params.append('salary_min', (parseInt(min) * 100000).toString());
-                            params.append('salary_max', (parseInt(max) * 100000).toString());
-                        } else if (min === '15+') {
-                            params.append('salary_min', '1500000');
+                        const [minStr, maxStr] = this.filters.salary_range.split('-');
+                        const L = 100000;
+                        const toMonthly = (lakhs) => Math.round((lakhs * L) / 12);
+                        if (maxStr) {
+                            params.append('salary_min', toMonthly(parseInt(minStr, 10)).toString());
+                            params.append('salary_max', toMonthly(parseInt(maxStr, 10)).toString());
+                        } else if (minStr === '15+') {
+                            params.append('salary_min', toMonthly(15).toString());
                         }
                     }
                     

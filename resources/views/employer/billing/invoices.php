@@ -37,12 +37,36 @@
                 <?php foreach ($invoices as $inv): ?>
                 <tr>
                     <td class="px-4 py-2 text-sm"><?= htmlspecialchars($inv['invoice_number'] ?? ('INV-' . (int)($inv['id'] ?? 0))) ?></td>
-                    <td class="px-4 py-2 text-sm"><?= date('M d, Y', strtotime($inv['created_at'] ?? 'now')) ?></td>
+                    <td class="px-4 py-2 text-sm">
+                        <?php 
+                        $createdAt = $inv['created_at'] ?? null;
+                        if ($createdAt && $createdAt !== '0000-00-00 00:00:00') {
+                            // Check if it's already a timestamp or a date string
+                            $ts = is_numeric($createdAt) ? (int)$createdAt : strtotime($createdAt);
+                            if ($ts > 0) {
+                                echo date('M d, Y', $ts);
+                            } else {
+                                echo 'N/A';
+                            }
+                        } else {
+                            echo 'N/A';
+                        }
+                        ?>
+                    </td>
                     <td class="px-4 py-2 text-sm"><?= ucfirst($inv['billing_cycle'] ?? 'monthly') ?></td>
                     <td class="px-4 py-2 text-sm font-semibold">₹<?= number_format((float)($inv['amount'] ?? 0), 2) ?></td>
                     <td class="px-4 py-2">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                            <?= ucfirst($inv['status'] ?? 'pending') ?>
+                        <?php 
+                        $status = strtolower($inv['status'] ?? 'pending');
+                        $badgeClass = match($status) {
+                            'completed', 'success' => 'bg-green-100 text-green-800',
+                            'failed' => 'bg-red-100 text-red-800',
+                            'refunded' => 'bg-blue-100 text-blue-800',
+                            default => 'bg-yellow-100 text-yellow-800'
+                        };
+                        ?>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $badgeClass ?>">
+                            <?= ucfirst($status === 'success' ? 'completed' : $status) ?>
                         </span>
                     </td>
                     <td class="px-4 py-2 text-right">

@@ -21,15 +21,15 @@ class Response
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(self), camera=(), microphone=()');
         $csp = "default-src 'self'; "
-             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.gstatic.com https://connect.facebook.net https://snap.licdn.com https://www.googletagmanager.com https://cdn.quilljs.com https://cdnjs.cloudflare.com https://checkout.razorpay.com; "
-             . "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdnjs.cloudflare.com https://cdnjs.cloudflare.com; "
+             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.gstatic.com https://connect.facebook.net https://snap.licdn.com https://www.googletagmanager.com https://cdn.quilljs.com https://cdnjs.cloudflare.com https://checkout.razorpay.com https://cdn.ckeditor.com https://code.jquery.com https://sdk.cashfree.com; "
+             . "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdnjs.cloudflare.com https://cdnjs.cloudflare.com https://cdn.ckeditor.com; "
              . "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; "
-             . "img-src 'self' data: https: https://www.facebook.com https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://*.razorpay.com; "
-             . "connect-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com https://*.gstatic.com https://www.googleapis.com https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://www.facebook.com https://connect.facebook.net https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://nominatim.openstreetmap.org https://countriesnow.space https://*.razorpay.com; "
-             . "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
+             . "img-src 'self' data: https: https://www.facebook.com https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://*.razorpay.com https://*.cashfree.com; "
+             . "connect-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com https://*.gstatic.com https://www.googleapis.com https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://www.facebook.com https://connect.facebook.net https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://nominatim.openstreetmap.org https://countriesnow.space https://*.razorpay.com https://cdn.ckeditor.com https://c.cksource.com https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com; "
+             . "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com; "
              . "frame-ancestors 'none'; "
              . "base-uri 'self'; "
-             . "form-action 'self'";
+             . "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com";
         header('Content-Security-Policy: ' . $csp);
         if ($isHttps) {
             header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
@@ -52,22 +52,35 @@ class Response
         header($safeName . ': ' . $safeValue);
     }
 
-    public function json(array $data, int $code = 200): void
+    public function json(array $data, int $code = 200, string $message = "Success", bool $status = true, ?array $errors = null): void
     {
         $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Content-Type', 'application/json; charset=utf-8');
         
+        // Standardized format
+        $response = [
+            'status' => $status,
+            'message' => $message,
+            'data' => $data,
+            'errors' => $errors
+        ];
+
         // Clear any previous output
         if (ob_get_level() > 0) {
             ob_clean();
         }
         
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
 
-    public function view(string $view, array $data = [], int $code = 200, string $layout = null): void
+    public function error(string $message, int $code = 400, ?array $errors = null): void
+    {
+        $this->json([], $code, $message, false, $errors);
+    }
+
+    public function view(string $view, array $data = [], int $code = 200, ?string $layout = null): void
     {
         $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
@@ -115,7 +128,7 @@ class Response
         exit;
     }
 
-    public function download(string $filePath, string $filename = null): void
+    public function download(string $filePath, ?string $filename = null): void
     {
         $this->ensureSecurityHeaders();
         if (!file_exists($filePath)) {

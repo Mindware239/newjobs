@@ -1,7 +1,0 @@
-Options -ExecCGI -Indexes
-AddType text/plain .php .phtml .php3 .php4 .php5 .phar
-RemoveHandler .php .phtml .php3 .php4 .php5 .phar
-php_flag engine off
-<FilesMatch "\.(php|phtml|php3|php4|php5|phar|cgi|pl|sh|py)$">
-  Require all denied
-</FilesMatch>

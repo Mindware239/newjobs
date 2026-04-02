@@ -177,6 +177,21 @@ class BulkUploadersController extends BaseController
         ]);
         $acc->setPassword($password);
         $ok = $acc->save();
+
+        // Send welcome email
+        if ($ok) {
+            \App\Services\NotificationService::queueEmail(
+                $username, // The 'to' address
+                'bulk_uploader_welcome', // The template key
+                [ // The data for the template
+                    'name' => $name,
+                    'username' => $username,
+                    'password' => $password,
+                ],
+                'Your Bulk Uploader Account is Ready' // The subject
+            );
+        }
+
         if (!$ok) {
             error_log("BulkUploadersController::create save failed");
             $response->view('admin/bulk_uploaders/create', [

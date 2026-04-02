@@ -337,6 +337,10 @@ if (empty($_SESSION['csrf_token'])) {
                             class="block px-3 py-2 rounded-lg text-sm transition-all <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/employer/billing/invoices') !== false ? 'bg-white/20 text-white font-medium' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
                             Invoices
                         </a>
+                        <a href="/employer/subscription/dashboard"
+                            class="block px-3 py-2 rounded-lg text-sm transition-all <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/employer/subscription/dashboard') !== false ? 'bg-white/20 text-white font-medium' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
+                            My Subscription
+                        </a>
                         <a href="/employer/billing/payment-methods"
                             class="block px-3 py-2 rounded-lg text-sm transition-all <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/employer/billing/payment-methods') !== false ? 'bg-white/20 text-white font-medium' : 'text-white/70 hover:bg-white/10 hover:text-white' ?>">
                             Payment Methods

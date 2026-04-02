@@ -19,8 +19,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Profile Header -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
-            <div class="flex items-start gap-6">
-                    <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm">
                         <?php if (!empty($candidate->attributes['profile_picture'])): ?>
                         <img src="<?= htmlspecialchars($candidate->attributes['profile_picture']) ?>" 
                              alt="Profile" class="w-full h-full object-cover">
@@ -41,7 +41,7 @@
                         ?>
                         <?php endif; ?>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-1 w-full">
                         <?php 
                         $candidateName = $candidate->attributes['full_name'] ?? null;
                         $user = $candidate->user();
@@ -51,10 +51,10 @@
                         }
                         $displayName = $candidateName ?: 'Your Name';
                         ?>
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                             <?= htmlspecialchars($displayName) ?>
                         </h1>
-                        <div class="flex items-center gap-4 text-gray-600 mb-4">
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-gray-600 mb-4">
                             <?php if (!empty($candidate->attributes['city'])): ?>
                             <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
                                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,50 +73,56 @@
                             </div>
                             <?php endif; ?>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-gray-600">Profile Strength:</span>
-                                <div class="w-32 bg-gray-200 rounded-full h-2">
+                                <div class="w-24 sm:w-32 bg-gray-200 rounded-full h-2">
                                     <div class="bg-blue-600 h-2 rounded-full" 
                                          style="width: <?= $candidate->attributes['profile_strength'] ?? 0 ?>%"></div>
                                 </div>
-                            <span class="text-sm font-semibold text-blue-700">
-                                <?= $candidate->attributes['profile_strength'] ?? 0 ?>%
-                            </span>
-                        </div>
-                            <?php if ($candidate->isPremium()): ?>
-                            <span class="px-3 py-1 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-full text-sm font-bold shadow-sm border border-orange-200 flex items-center gap-1">
-                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                </svg>
-                                Premium Member
-                            </span>
-                            <?php endif; ?>
-                            <?php $badge = ($candidate->attributes['is_verified'] ?? 0) || (!empty($hasEmploymentVerified)); ?>
-                            <?php if ($badge): ?>
-                            <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-200 flex items-center gap-1" title="Verified by previous employer">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Employment Verified
-                            </span>
-                            <?php endif; ?>
+                                <span class="text-sm font-semibold text-blue-700">
+                                    <?= $candidate->attributes['profile_strength'] ?? 0 ?>%
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap justify-center gap-2">
+                                <?php if ($candidate->isPremium()): ?>
+                                <span class="px-3 py-1 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-full text-xs sm:text-sm font-bold shadow-sm border border-orange-200 flex items-center gap-1">
+                                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    Premium Member
+                                </span>
+                                <?php endif; ?>
+                                <?php $badge = ($candidate->attributes['is_verified'] ?? 0) || (!empty($hasEmploymentVerified)); ?>
+                                <?php if ($badge): ?>
+                                <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs sm:text-sm font-semibold border border-green-200 flex items-center gap-1" title="Verified by previous employer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Employment Verified
+                                </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                    <a href="/candidate/profile/complete?edit=1" 
-                       class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-md hover:from-blue-700 hover:to-blue-800 flex items-center gap-2 font-medium shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 duration-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        Edit Profile
-                    </a>
-                    <a href="/candidate/change-password" 
-                       class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2 font-medium shadow-sm hover:shadow transition transform hover:-translate-y-0.5 duration-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                        Change Password
-                    </a>
+                    <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                        <a href="/candidate/profile/complete?edit=1" 
+                           class="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-md hover:from-blue-700 hover:to-blue-800 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Edit Profile</span>
+                            <span class="sm:hidden text-xs">Edit</span>
+                        </a>
+                        <a href="/candidate/change-password" 
+                           class="flex-1 sm:flex-none px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2 font-medium shadow-sm hover:shadow transition transform hover:-translate-y-0.5 duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Change Password</span>
+                            <span class="sm:hidden text-xs">Password</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -130,7 +136,7 @@
                     </svg>
                     Basic Information
                 </h2>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -769,7 +775,7 @@
                     </svg>
                     Additional Information
                 </h2>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">

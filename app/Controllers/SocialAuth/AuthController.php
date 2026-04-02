@@ -22,8 +22,8 @@ class AuthController extends BaseController
 public function login(Request $request, Response $response): void
 {
     if ($request->getMethod() === 'GET') {
-        $redirect = (string)$request->get('redirect', '');
-        \App\Middlewares\CsrfMiddleware::generateToken();
+            $redirect = (string)$request->get('redirect', '');
+            self::ensureCsrfToken();
         if (isset($_SESSION['user_id']) && isset($_SESSION['user_role'])) {
             $role = $this->canonicalRole((string)$_SESSION['user_role']);
             if ($redirect !== '') {
@@ -61,6 +61,10 @@ $email = trim((string)($data['email'] ?? ''));
     } catch (\Throwable $t) {}
 
     if ($email === '' || $password === '') {
+        if ($request->isAjax()) {
+            $response->json(['error' => 'Email and password are required.'], 422);
+            return;
+        }
         $response->view('social-services/login', [
             'error' => 'Email and password are required.'
         ]);
@@ -71,6 +75,10 @@ $email = trim((string)($data['email'] ?? ''));
     $user = User::where('email', '=', $email)->first();
 
     if (!$user) {
+        if ($request->isAjax()) {
+            $response->json(['error' => 'Invalid email or password'], 401);
+            return;
+        }
         $response->view('social-services/login', [
             'error' => 'Invalid email or password'
         ]);
@@ -98,6 +106,10 @@ $email = trim((string)($data['email'] ?? ''));
             $user->setPassword($password);
             $user->save();
         } else {
+            if ($request->isAjax()) {
+                $response->json(['error' => 'Invalid email or password'], 401);
+                return;
+            }
             $response->view('social-services/login', [
                 'error' => 'Invalid email or password'
             ]);
@@ -127,6 +139,10 @@ $email = trim((string)($data['email'] ?? ''));
 
     // Check status
     if (($user->status ?? 'pending') !== 'active') {
+        if ($request->isAjax()) {
+            $response->json(['error' => 'Account not active.'], 403);
+            return;
+        }
         $response->view('social-services/login', [
             'error' => 'Account not active.'
         ]);
@@ -141,6 +157,17 @@ $email = trim((string)($data['email'] ?? ''));
     $_SESSION['user_id'] = $user->id;
     $_SESSION['user_role'] = (string)$user->role;
     $_SESSION['user_role_canonical'] = $this->canonicalRole((string)$user->role);
+
+    if ($request->isAjax()) {
+        $role = $this->canonicalRole((string)$user->role);
+        $redirect = '/';
+        if ($role === 'candidate') $redirect = '/social-candidate/accountcandidate';
+        elseif ($role === 'employer') $redirect = '/social-employer/account';
+        elseif (in_array($user->role, ['admin', 'super_admin'], true)) $redirect = '/admin/dashboard';
+        
+        $response->json(['success' => true, 'redirect' => $redirect]);
+        return;
+    }
 
     /* ========= ROLE BASED REDIRECT ========= */
 
@@ -226,7 +253,7 @@ $email = trim((string)($data['email'] ?? ''));
    public function register(Request $request, Response $response): void
 {
     if ($request->getMethod() === 'GET') {
-        \App\Middlewares\CsrfMiddleware::generateToken();
+        self::ensureCsrfToken();
         $response->view('social-services/login', ['initialMode' => 'register']);
         return;
     }
@@ -244,6 +271,10 @@ $email = trim((string)($data['email'] ?? ''));
 
     $existing = User::where('email','=',$email)->first();
     if ($existing) {
+        if ($request->isAjax()) {
+            $response->json(['error' => 'Email already exists'], 409);
+            return;
+        }
         die("Email already exists");
     }
 
@@ -256,6 +287,10 @@ $email = trim((string)($data['email'] ?? ''));
     ]);
     $user->setPassword($password);
     if (!$user->save()) {
+        if ($request->isAjax()) {
+            $response->json(['error' => 'Registration failed'], 500);
+            return;
+        }
         $response->view('social-services/login', ['error' => 'Registration failed']);
         return;
     }
@@ -268,6 +303,11 @@ $email = trim((string)($data['email'] ?? ''));
         $candidate = \App\Models\Candidate::createForUser((int)$user->id);
         if ($candidate && isset($candidate->id)) {
             $_SESSION['candidate_id'] = (int)$candidate->id;
+        }
+        
+        if ($request->isAjax()) {
+            $response->json(['success' => true, 'redirect' => '/social-candidate/accountcandidate']);
+            return;
         }
         $response->redirect('/social-candidate/accountcandidate');
         return;
@@ -292,14 +332,23 @@ $email = trim((string)($data['email'] ?? ''));
             }
         }
         $redir = trim((string)($data['redirect'] ?? ''));
+        $target = '/social-employer/account';
         if ($redir !== '' && strpos($redir, '/social-employer') === 0) {
-            $response->redirect($redir);
-        } else {
-            $response->redirect('/social-employer/account');
+            $target = $redir;
         }
+
+        if ($request->isAjax()) {
+            $response->json(['success' => true, 'redirect' => $target]);
+            return;
+        }
+        $response->redirect($target);
         return;
     }
     
+    if ($request->isAjax()) {
+        $response->json(['success' => true, 'redirect' => '/']);
+        return;
+    }
     $response->redirect('/');
 }
 public function logout(Request $request, Response $response): void
@@ -339,14 +388,19 @@ public function logout(Request $request, Response $response): void
     public function forgotPassword(Request $request, Response $response): void
     {
         if ($request->getMethod() === 'GET') {
-            \App\Middlewares\CsrfMiddleware::generateToken();
+            self::ensureCsrfToken();
             $response->view('social-services/forgot-password', []);
             return;
         }
         $data = $request->getJsonBody() ?? $request->all();
         $email = trim((string)($data['email'] ?? ''));
         if ($email === '') {
-            $response->json(['error' => 'Email is required'], 422);
+            if ($request->isAjax()) {
+                $response->json(['error' => 'Email is required'], 422);
+            } else {
+                \App\Middlewares\CsrfMiddleware::generateToken();
+                $response->view('social-services/forgot-password', ['error' => 'Email is required']);
+            }
             return;
         }
         $user = \App\Models\User::where('email', '=', $email)->first();
@@ -387,18 +441,27 @@ public function logout(Request $request, Response $response): void
             $resetLink = $scheme . '://' . $host . '/social-services/reset-password?token=' . $token;
             \App\Services\MailService::sendPasswordReset((string)$user->email, $resetLink);
         }
-        $response->json([
-            'success' => true,
-            'message' => 'If an account exists, a reset link has been sent.',
-            'reset_link' => $resetLink
-        ]);
+        if ($request->isAjax()) {
+            $response->json([
+                'success' => true,
+                'message' => 'If an account exists, a reset link has been sent.',
+                'reset_link' => $resetLink
+            ]);
+        } else {
+            \App\Middlewares\CsrfMiddleware::generateToken();
+            $response->view('social-services/forgot-password', [
+                'title' => 'Reset Password',
+                'sent' => true,
+                'email' => $email
+            ]);
+        }
     }
 
     public function resetPassword(Request $request, Response $response): void
     {
         $token = (string)($request->get('token') ?? '');
         if ($request->getMethod() === 'GET') {
-            \App\Middlewares\CsrfMiddleware::generateToken();
+            self::ensureCsrfToken();
             if ($token === '') {
                 $response->view('social-services/reset-password', ['error' => 'Invalid reset token', 'token' => '']);
                 return;
@@ -475,6 +538,13 @@ public function logout(Request $request, Response $response): void
             \App\Core\Database::getInstance()->query("DELETE FROM password_resets WHERE token = :token", ['token' => $token]);
         } catch (\Throwable $t) {}
         $response->json(['success' => true, 'message' => 'Password reset successfully. You can now login.']);
+    }
+
+    private static function ensureCsrfToken(): void
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            \App\Middlewares\CsrfMiddleware::generateToken(true);
+        }
     }
 }
 

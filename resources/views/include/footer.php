@@ -96,6 +96,8 @@
                 <span>•</span>
                 <a href="<?php echo $base; ?>privacy" class="hover:text-blue-700">Privacy Policy</a>
                 <span>•</span>
+                <a href="<?php echo $base; ?>refund-cancellation-policy" class="hover:text-blue-700">Refund & Cancellation Policy</a>
+                <span>•</span>
                 <a href="<?php echo $base; ?>about" class="hover:text-blue-700">About Us</a>
                 <span>•</span>
                 <a href="<?php echo $base; ?>blog" class="hover:text-blue-700" target="_blank">Blog</a>

@@ -93,7 +93,7 @@
     <div class="mb-12">
         <h1 class="text-[16px] sm:text-[22px] md:text-[26px] lg:text-[30px] font-bold mb-4 text-black">Frequently Asked Questions: Candidates</h1>
         <p class="text-lg text-gray-600 max-w-3xl">
-            Work for Good’s upgraded site is now live! We’ve worked hard to bring you a more streamlined, secure, and practical way to manage your account and apply for positions.
+            Mindware Infotech's upgraded site is now live! We’ve worked hard to bring you a more streamlined, secure, and practical way to manage your account and apply for positions.
         </p>
     </div>
 

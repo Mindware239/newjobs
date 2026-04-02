@@ -21,10 +21,11 @@ class RateLimitMiddleware implements MiddlewareInterface
         $this->redis = RedisClient::getInstance();
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         // Skip rate limiting if Redis is not available
         if (!$this->redis->isAvailable()) {
+            $next($request, $response);
             return;
         }
 
@@ -33,6 +34,7 @@ class RateLimitMiddleware implements MiddlewareInterface
 
         $connection = $this->redis->getConnection();
         if (!$connection) {
+            $next($request, $response);
             return;
         }
 
@@ -40,6 +42,7 @@ class RateLimitMiddleware implements MiddlewareInterface
         
         if ($current === false) {
             $connection->setex($key, $this->windowSeconds, 1);
+            $next($request, $response);
             return;
         }
 
@@ -47,7 +50,8 @@ class RateLimitMiddleware implements MiddlewareInterface
         
         if ($count >= $this->maxRequests) {
             $response->setStatusCode(429);
-            $response->setHeader('X-RateLimit-Limit', (string)$this->maxRequests);
+            $roleLimitLimit = (string)$this->maxRequests;
+            $response->setHeader('X-RateLimit-Limit', $roleLimitLimit);
             $response->setHeader('X-RateLimit-Remaining', '0');
             $response->setHeader('Retry-After', (string)$this->windowSeconds);
             $response->json(['error' => 'Too many requests']);
@@ -59,6 +63,8 @@ class RateLimitMiddleware implements MiddlewareInterface
         
         $response->setHeader('X-RateLimit-Limit', (string)$this->maxRequests);
         $response->setHeader('X-RateLimit-Remaining', (string)$remaining);
+
+        $next($request, $response);
     }
 
     private function getIdentifier(Request $request): string

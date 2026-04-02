@@ -118,11 +118,17 @@ class DashboardController extends BaseController
 
         try {
             $result = $db->fetchOne(
-                "SELECT COALESCE(SUM(amount), 0) as total 
-                 FROM employer_payments 
-                 WHERE status = 'completed' AND {$dateCondition}"
+                "SELECT SUM(total) as grand_total FROM (
+                    SELECT COALESCE(SUM(amount), 0) as total 
+                    FROM employer_payments 
+                    WHERE status = 'completed' AND {$dateCondition}
+                    UNION ALL
+                    SELECT COALESCE(SUM(amount), 0) as total 
+                    FROM candidate_premium_purchases 
+                    WHERE status = 'completed' AND {$dateCondition}
+                ) as combined_revenue"
             );
-            return (float)($result['total'] ?? 0);
+            return (float)($result['grand_total'] ?? 0);
         } catch (\Exception $e) {
             return 0.0;
         }

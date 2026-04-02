@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Middleware;
+declare(strict_types=1);
+
+namespace App\Middlewares;
 
 use App\Core\Request;
 use App\Core\Response;
 
-class PermissionMiddleware
+class PermissionMiddleware implements MiddlewareInterface
 {
     protected string $permission;
 
@@ -14,13 +16,15 @@ class PermissionMiddleware
         $this->permission = $permission;
     }
 
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $user = $request->user();
-        if (!$user || !$user->hasPermission($this->permission)) {
-            return Response::view('errors/403.php', [], 403);
+        if (!$user || !$user->can($this->permission)) {
+             $response->setStatusCode(403);
+             $response->view('errors/403', ['title' => 'Forbidden']);
+             return;
         }
 
-        return $next($request);
+        $next($request, $response);
     }
 }

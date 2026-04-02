@@ -53,9 +53,9 @@ try {
         
         // Fetch Categories (limit 6)
         try {
-            $cats = $db->fetchAll("SELECT name FROM categories ORDER BY id ASC LIMIT 6");
+            $cats = $db->fetchAll("SELECT name, icon_url FROM categories ORDER BY id ASC LIMIT 6");
             foreach ($cats as $c) {
-                $popularCategories[] = ['label' => $c['name'] . ' jobs', 'url' => 'jobs?industry=' . urlencode($c['name'])];
+                $popularCategories[] = ['label' => $c['name'] . ' jobs', 'url' => 'jobs?industry=' . urlencode($c['name']), 'icon_url' => $c['icon_url']];
             }
         } catch (\Exception $e) {
             // Fallback if table doesn't exist

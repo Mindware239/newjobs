@@ -6,11 +6,47 @@ namespace App\Services;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use App\Core\Queue;
 
 class MailService
 {
     /**
-     * Send Email using SMTP (PHPMailer)
+     * Dispatch Email to Queue for Async Sending
+     */
+    public static function sendEmailAsync(
+        string $to,
+        string $subject,
+        string $htmlBody,
+        ?string $fromEmail = null,
+        ?string $fromName = null,
+        array $attachments = []
+    ): bool {
+        try {
+            $queue = \App\Core\Queue::getInstance('queue:mail');
+            if (!$queue->isAvailable()) {
+                error_log('Mail queue not available. Sending synchronously as fallback.');
+                return self::sendEmail($to, $subject, $htmlBody, $fromEmail, $fromName, $attachments);
+            }
+
+            $jobData = [
+                'to' => $to,
+                'subject' => $subject,
+                'htmlBody' => $htmlBody,
+                'fromEmail' => $fromEmail,
+                'fromName' => $fromName,
+                'attachments' => $attachments
+            ];
+
+            $queue->push('send_email', $jobData);
+            return true;
+        } catch (\Exception $e) {
+            error_log('Failed to queue email: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send Email using SMTP (PHPMailer) - Synchronous
      */
     public static function sendEmail(
         string $to,
@@ -27,6 +63,7 @@ class MailService
 
             // SMTP SETTINGS
             $mail->isSMTP();
+            $mail->Timeout = 5; // Connection timeout in seconds
             $mail->Host       = $_ENV['MAIL_HOST'] ?? 'localhost';
             $mail->Port       = (int)($_ENV['MAIL_PORT'] ?? 587);
             // Optional EHLO/Hostname override
@@ -110,6 +147,7 @@ class MailService
 
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($to);
+            error_log("MailService - Attempting to send email to: {$to}, Subject: {$subject}");
 
             // EMAIL CONTENT
             $mail->isHTML(true);
@@ -118,7 +156,7 @@ class MailService
             $mail->AltBody = strip_tags($htmlBody);
 
             // Optional debug output to PHP error log
-            $mailDebug = strtolower((string)($_ENV['MAIL_DEBUG'] ?? 'false')) === 'true';
+            $mailDebug = true;
             if (!$mailDebug && strtolower((string)($_ENV['APP_ENV'] ?? 'local')) === 'local') {
                 $mailDebug = true;
             }

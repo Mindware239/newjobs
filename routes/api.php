@@ -55,7 +55,7 @@ $router->post('/api/push/register', function(Request $request, Response $respons
 });
 
 // Skills Autocomplete API (Public - no auth required)
-$router->get('/api/skills/suggest', function(Request $request, Response $response) {
+$router->get('/api/qualifications/suggest', function(Request $request, Response $response) {
     $q = trim((string)($request->get('q') ?? ''));
     $title = trim((string)($request->get('title') ?? ''));
     $category = trim((string)($request->get('category') ?? ''));

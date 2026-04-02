@@ -10,7 +10,7 @@ use App\Models\User;
 
 class SuperAdminMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $userId = $_SESSION['user_id'] ?? null;
 
@@ -25,6 +25,8 @@ class SuperAdminMiddleware implements MiddlewareInterface
             $response->json(['error' => 'Forbidden - Super Admin access required']);
             return;
         }
+
+        $next($request, $response);
     }
 }
 

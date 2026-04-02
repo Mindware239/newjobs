@@ -878,4 +878,42 @@ class CandidatesController extends BaseController
         }
 
     }
+
+    public function paymentHistory(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $id = (int)$request->param('id');
+        $db = Database::getInstance();
+
+        $candidate = $db->fetchOne(
+            "SELECT c.*, u.email
+            FROM candidates c
+            INNER JOIN users u ON u.id = c.user_id
+            WHERE c.id = :id",
+            ['id' => $id]
+        );
+
+        if (!$candidate) {
+            $response->redirect('/admin/candidates');
+            return;
+        }
+
+        $payments = $db->fetchAll(
+            "SELECT *
+            FROM candidate_premium_purchases
+            WHERE candidate_id = :candidate_id
+            ORDER BY created_at DESC",
+            ['candidate_id' => $id]
+        );
+
+        $response->view('admin/candidates/payment_history', [
+            'title' => 'Payment History - ' . ($candidate['full_name'] ?? 'Unknown'),
+            'candidate' => $candidate,
+            'payments' => $payments,
+            'user' => $this->currentUser
+        ], 200, 'admin/layout');
+    }
 }

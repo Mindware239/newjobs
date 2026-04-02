@@ -9,7 +9,7 @@ use App\Controllers\Front\AboutController;
 use App\Controllers\Front\BlogController;
 use App\Controllers\Interview\InterviewRoomController;
 use App\Controllers\SocialServiceController;
-use App\Middleware\AuthMiddleware;
+use App\Middlewares\AuthMiddleware;
 use App\Controllers\NotificationController;
 use App\Services\NotificationService;
 use App\Controllers\Front\LegalController;
@@ -867,6 +867,17 @@ $router->get('/about', [AboutController::class, 'index']);
 use App\Controllers\Gateway\RazorpayWebhookController;
 
 $router->post('/webhook/razorpay', [RazorpayWebhookController::class, 'handle']);
+
+// Cashfree Routes
+use App\Controllers\Gateway\CashfreeController;
+$router->get('/gateway/cashfree/create-order', [CashfreeController::class, 'createOrder']);
+$router->get('/gateway/cashfree/verify', [CashfreeController::class, 'verifyPayment']);
+$router->post('/gateway/cashfree/webhook', [CashfreeController::class, 'webhook']);
+
+// Candidate Cashfree Routes
+use App\Controllers\Candidate\PremiumController;
+$router->get('/candidate/premium/cashfree/verify', [PremiumController::class, 'cashfreeVerify']);
+$router->post('/candidate/premium/cashfree/webhook', [PremiumController::class, 'cashfreeWebhook']);
 // Sales Panels
 $router->get('/sales-manager/dashboard', [\App\Controllers\SalesManager\DashboardController::class, 'index'], [new \App\Middlewares\SalesRoleMiddleware()]);
 $router->get('/sales-executive/dashboard', [\App\Controllers\SalesExecutive\DashboardController::class, 'index'], [new \App\Middlewares\SalesRoleMiddleware()]);
@@ -1012,6 +1023,8 @@ $router->post('/social/organizations/store', [SocialOrganizationsController::cla
 $router->get('/social/organizations/search', [SocialOrganizationsController::class, 'search']);
 $router->get('/social/organizations/{id}/edit', [SocialOrganizationsController::class, 'edit']);
 $router->post('/social/organizations/{id}/update', [SocialOrganizationsController::class, 'update'], [$formRateLimit, $csrfMiddleware]);
+// Fallback query-string route for hosts that don't support path params
+$router->get('/social/organizations/edit', [SocialOrganizationsController::class, 'editQuery']);
 
 use App\Controllers\Social\SocialEmployerPaymentsController;
 
@@ -1027,6 +1040,9 @@ $router->get('/social-employer/organisation', [SocialServiceController::class, '
 $router->get('/terms', [LegalController::class, 'terms']);
 $router->get('/privacy', [LegalController::class, 'privacy']);
 $router->get('/grievances', [LegalController::class, 'grievances']);
+$router->get('/refund-cancellation-policy', [LegalController::class, 'refundCancellationPolicy']);
+
+
 
 // HR Verification Portal
 use App\Controllers\Front\HRVerificationController;
@@ -1124,8 +1140,8 @@ $router->get('/social-services/login', [\App\Controllers\SocialAuth\AuthControll
 $router->post('/social-services/login', [\App\Controllers\SocialAuth\AuthController::class, 'login'], [$loginRateLimit, $csrfMiddleware]);
 $router->post('/social-services/register', [\App\Controllers\SocialAuth\AuthController::class, 'register'], [$formRateLimit, $csrfMiddleware]);
 // Social services forgot password
-$router->get('/social-services/forgot-password', [SocialServiceController::class, 'forgotPassword']);
-$router->post('/social-services/forgot-password', [SocialServiceController::class, 'forgotPasswordSend'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/social-services/forgot-password', [\App\Controllers\SocialAuth\AuthController::class, 'forgotPassword']);
+$router->post('/social-services/forgot-password', [\App\Controllers\SocialAuth\AuthController::class, 'forgotPassword'], [$formRateLimit, $csrfMiddleware]);
 // Social services logout
 $router->get('/social-services/logout', [\App\Controllers\SocialAuth\AuthController::class, 'logout']);
 $router->post('/social-services/logout', [\App\Controllers\SocialAuth\AuthController::class, 'logout'], [$csrfMiddleware]);

@@ -10,7 +10,7 @@ use App\Core\Database;
 
 class IpWhitelistMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response): void
+    public function handle(Request $request, Response $response, callable $next): void
     {
         $ip = $_SERVER['REMOTE_ADDR'] ?? '';
         if ($ip === '') {
@@ -23,6 +23,7 @@ class IpWhitelistMiddleware implements MiddlewareInterface
             $db = Database::getInstance();
             $rows = $db->fetchAll('SELECT ip_address FROM ip_whitelist WHERE active = 1');
             if (!$rows || count($rows) === 0) {
+                $next($request, $response);
                 return; // no whitelist configured => allow
             }
             $allowed = array_map(fn($r) => $r['ip_address'], $rows);
@@ -33,8 +34,11 @@ class IpWhitelistMiddleware implements MiddlewareInterface
             }
         } catch (\Throwable $t) {
             // fail open to avoid locking admin out if table missing
+            $next($request, $response);
             return;
         }
+
+        $next($request, $response);
     }
 }
 

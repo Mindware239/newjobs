@@ -780,6 +780,8 @@ class JobsController extends BaseController
         }
         $jobArray['category'] = $jobArray['category'] ?? '';
         
+        $jobArray['education_requirements'] = $job->education_requirements ?? '';
+
         // Log for debugging
         error_log("Edit Job - Category: " . ($jobArray['category'] ?? 'NOT SET'));
         error_log("Edit Job - Pay Type: " . ($jobArray['pay_type'] ?? 'NOT SET'));
@@ -804,7 +806,8 @@ class JobsController extends BaseController
             'applicationCount' => $totalApplications,
             'isEdit' => true,
             'benefits' => $allBenefits,
-            'jobBenefits' => $jobBenefits
+            'jobBenefits' => $jobBenefits,
+            'jobQualifications' => $jobQualifications,
         ], 200, 'employer/layout');
     }
 
@@ -1041,7 +1044,8 @@ class JobsController extends BaseController
             'hiring_urgency' => $data['hiring_urgency'] ?? 'immediate',
             'language' => $data['language'] ?? 'English',
             'category' => $data['category'] ?? $employer->attributes['industry'] ?? null,
-            'locations' => $locationsJson
+            'education_requirements' => $data['education_requirements'] ?? null,
+            'qualifications' => isset($data['qualifications']) ? json_encode($data['qualifications']) : null,
         ]);
 
         if ($job->save()) {
@@ -1338,7 +1342,8 @@ class JobsController extends BaseController
             'company_size' => $data['company_size'] ?? $job->company_size ?? '',
             'hiring_urgency' => $data['hiring_urgency'] ?? $job->hiring_urgency ?? 'immediate',
             'language' => $data['language'] ?? $job->language ?? 'English',
-            'category' => $data['category'] ?? $job->category ?? '',
+            'education_requirements' => $data['education_requirements'] ?? $job->education_requirements ?? null,
+            'qualifications' => isset($data['qualifications']) ? json_encode($data['qualifications']) : $job->qualifications,
         ]);
         
         // Update status if provided

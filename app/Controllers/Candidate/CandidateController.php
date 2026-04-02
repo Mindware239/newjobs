@@ -1397,7 +1397,8 @@ class CandidateController extends BaseController
 
         try {
             $storage = new \App\Core\Storage();
-            $uploadDir = 'candidates/' . $candidate->id;
+            // Store all candidate uploads under /uploads/candidates/{candidate_id}
+            $uploadDir = 'uploads/candidates/' . $candidate->id;
             
             // Delete old video if replacing
             if ($fileType === 'video' && !empty($candidate->attributes['video_intro_url'])) {
