@@ -11,11 +11,13 @@ use App\Models\EmployerSubscription;
 class SubscriptionMiddleware
 {
     private string $requiredFeature;
+    private string $requiredLimit;
     private bool $allowGracePeriod;
 
-    public function __construct(string $requiredFeature = '', bool $allowGracePeriod = true)
+    public function __construct(string $requiredFeature = '', string $requiredLimit = '', bool $allowGracePeriod = true)
     {
         $this->requiredFeature = $requiredFeature;
+        $this->requiredLimit = $requiredLimit;
         $this->allowGracePeriod = $allowGracePeriod;
     }
 
@@ -51,7 +53,7 @@ class SubscriptionMiddleware
                     'redirect' => '/employer/subscription/plans'
                 ], 402);
             } else {
-                $response->redirect('/employer/subscription/plans?feature=' . urlencode($this->requiredFeature));
+                $response->redirect('/employer/subscription/plans?feature=' . urlencode($this->requiredFeature ?: 'general'));
             }
             return;
         }
@@ -67,6 +69,22 @@ class SubscriptionMiddleware
                     ], 402);
                 } else {
                     $response->redirect('/employer/subscription/plans?upgrade=1&feature=' . urlencode($this->requiredFeature));
+                }
+                return;
+            }
+        }
+
+        // Check if credit limit is required
+        if ($this->requiredLimit) {
+            if (!$subscription->canUseFeature($this->requiredLimit)) {
+                if ($request->isAjax()) {
+                    $response->json([
+                        'error' => 'Usage limit reached. Please upgrade your plan.',
+                        'limit' => $this->requiredLimit,
+                        'redirect' => '/employer/subscription/plans?upgrade=1&reason=limit_reached'
+                    ], 402);
+                } else {
+                    $response->redirect('/employer/subscription/plans?upgrade=1&reason=limit_reached&limit=' . urlencode($this->requiredLimit));
                 }
                 return;
             }

@@ -133,12 +133,23 @@ class Router
             $params = $request->getParams();
             
             try {
-                if ($reflection->getNumberOfParameters() === 3) {
-                    $controllerInstance->$method($request, $response, $params);
-                } else {
-                    $controllerInstance->$method($request, $response);
+                $arguments = [];
+                foreach ($reflection->getParameters() as $index => $parameter) {
+                    if ($index === 0) {
+                        $arguments[] = $request;
+                        continue;
+                    }
+
+                    if ($index === 1) {
+                        $arguments[] = $response;
+                        continue;
+                    }
+
+                    $arguments[] = $this->resolveRouteParameter($parameter, $params);
                 }
-            } catch (\Exception $e) {
+
+                $controllerInstance->$method(...$arguments);
+            } catch (\Throwable $e) {
                 error_log("Router: Error executing {$controller}::{$method}: " . $e->getMessage());
                 $this->handleError($response, $e->getMessage(), 500);
             }
@@ -161,6 +172,40 @@ class Router
     {
         $response->setStatusCode($code);
         $response->json(['error' => 'Internal Server Error', 'message' => $message]);
+    }
+
+    private function resolveRouteParameter(\ReflectionParameter $parameter, array $params)
+    {
+        $type = $parameter->getType();
+        if ($type instanceof \ReflectionNamedType && $type->getName() === 'array') {
+            return $params;
+        }
+
+        $name = $parameter->getName();
+        $value = $params[$name] ?? null;
+
+        if ($value === null) {
+            if ($parameter->isDefaultValueAvailable()) {
+                return $parameter->getDefaultValue();
+            }
+
+            return null;
+        }
+
+        if ($type instanceof \ReflectionNamedType) {
+            switch ($type->getName()) {
+                case 'int':
+                    return (int)$value;
+                case 'float':
+                    return (float)$value;
+                case 'bool':
+                    return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+                case 'string':
+                    return (string)$value;
+            }
+        }
+
+        return $value;
     }
 
     private function matchPath(string $routePath, string $requestPath, array &$params): bool

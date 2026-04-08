@@ -42,6 +42,10 @@ $router->get('/interview/join', [InterviewRoomController::class, 'joinWithToken'
 // Auth Routes
 $router->get('/verify-account', [AuthController::class, 'verifyAccount'], []);
 $router->post('/verify-account', [AuthController::class, 'processVerification'], []);
+$router->post('/auth/phone/send-otp', [AuthController::class, 'sendPhoneOtp'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/auth/phone/login', [AuthController::class, 'loginWithPhoneOtp'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/auth/phone/register-candidate', [AuthController::class, 'registerCandidateWithPhoneOtp'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/auth/phone/register-employer', [AuthController::class, 'registerEmployerWithPhoneOtp'], [$formRateLimit, $csrfMiddleware]);
 
 // SEO Routes
 $router->get('/sitemap.xml', [SEOController::class, 'index']);

@@ -9,7 +9,7 @@ class SubscriptionPayment extends Model
     protected string $table = 'subscription_payments';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'subscription_id', 'employer_id', 'amount', 'currency', 'billing_cycle',
+        'subscription_id', 'employer_id', 'idempotency_key', 'amount', 'currency', 'billing_cycle',
         'gateway', 'gateway_payment_id', 'gateway_order_id', 'gateway_signature',
         'status', 'failure_reason', 'invoice_number', 'invoice_url', 'invoice_generated_at',
         'refund_amount', 'refund_reason', 'refunded_at', 'metadata', 'paid_at'

@@ -1,3 +1,7 @@
+<?php $scripts = '
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+'; ?>
+
 <div x-data="subscriptionPlans()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <!-- Header Section -->
         <div class="text-center mb-6">
@@ -136,11 +140,23 @@
             </div>
         </div>
 
+        <!-- Global Error Message -->
+        <div x-show="errorMessage" x-cloak class="max-w-2xl mx-auto mb-5">
+            <div class="bg-red-50 border border-red-200 rounded-md p-3 flex items-start gap-3">
+                <svg class="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <div class="flex-1">
+                    <p class="text-sm text-red-700 font-medium" x-text="errorMessage"></p>
+                </div>
+                <button @click="errorMessage = null" class="text-red-400 hover:text-red-600">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
+                </button>
+            </div>
+        </div>
+
         <!-- Plans Grid -->
-        <?php 
-        // Debug: Check plans data
-        $plansCount = is_array($plans) ? count($plans) : 0;
-        ?>
+        <?php $plansCount = is_array($plans) ? count($plans) : 0; ?>
         <?php if ($plansCount === 0): ?>
         <div class="text-center py-16">
             <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-8 max-w-2xl mx-auto shadow-md">
@@ -149,12 +165,6 @@
                 </svg>
                 <h3 class="text-xl font-bold text-yellow-900 mb-2">No Plans Available</h3>
                 <p class="text-yellow-800 mb-4">Please run the database migrations to create subscription plans.</p>
-                <div class="bg-yellow-100 p-4 rounded-lg text-left">
-                    <p class="text-sm text-yellow-900 mb-2 font-semibold">Run this SQL in phpMyAdmin:</p>
-                    <code class="bg-yellow-200 px-3 py-2 rounded block text-xs mb-4 font-mono">SOURCE scripts/migrations/020_subscription_plans.sql;</code>
-                    <p class="text-sm text-yellow-900 mb-2 font-semibold">Or if plans exist but not showing:</p>
-                    <code class="bg-yellow-200 px-3 py-2 rounded block text-xs font-mono">UPDATE subscription_plans SET is_active = 1 WHERE is_active IS NULL OR is_active = 0;</code>
-                </div>
             </div>
         </div>
         <?php else: ?>
@@ -167,114 +177,23 @@
                     </div>
                     <div x-show="isCurrentPlan(plan)" class="absolute top-2 left-2 bg-green-600 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow">
                         <span>Current plan</span>
-                        <span class="ml-1 capitalize" x-text="(currentSubscription?.billing_cycle || 'monthly')"></span>
                     </div>
                     
                     <div class="p-5">
-                        <!-- Plan Name -->
                         <div class="mb-4">
                             <h3 class="text-xl font-semibold text-gray-900 mb-1" x-text="plan.name"></h3>
                             <p class="text-gray-600 text-sm" x-text="plan.description"></p>
                         </div>
                         
-                        <!-- Pricing Display -->
-                        <div class="mb-4 pb-4 border-b border-gray-200">
-                            <template x-if="discountApplied && getDiscountAmount(plan, selectedCycle) > 0">
-                                <div class="text-center mb-1">
-                                    <div class="text-xs text-gray-400 line-through" x-text="'₹' + formatPrice(getPrice(plan, selectedCycle))"></div>
-                                </div>
-                            </template>
+                        <div class="mb-4 pb-4 border-b border-gray-200 text-center">
                             <div class="flex items-baseline justify-center mb-1">
-                                <span class="text-3xl font-semibold" 
-                                      :class="discountApplied && getDiscountAmount(plan, selectedCycle) > 0 ? 'text-green-600' : 'text-gray-900'"
-                                      x-text="'₹' + formatPrice(getFinalPrice(plan, selectedCycle))"></span>
+                                <span class="text-3xl font-semibold text-gray-900" x-text="'₹' + formatPrice(getFinalPrice(plan, selectedCycle))"></span>
                                 <span class="text-gray-500 ml-1.5 text-sm" x-text="'/' + selectedCycle"></span>
                             </div>
-                            <template x-if="discountApplied && getDiscountAmount(plan, selectedCycle) > 0">
-                                <p class="text-xs text-green-600 text-center mt-0.5">
-                                    Save ₹<span x-text="formatPrice(getDiscountAmount(plan, selectedCycle))"></span>
-                                </p>
-                            </template>
-                            <p class="text-xs text-gray-500 mt-1 text-center">*GST as applicable</p>
+                            <p class="text-xs text-gray-500 mt-1">*GST as applicable</p>
                         </div>
 
-                        <!-- Features List -->
                         <ul class="space-y-2 mb-5">
-                            <li class="flex items-start">
-                                <svg x-show="plan.max_job_posts >= 0" class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">
-                                    <span x-show="plan.max_job_posts == -1">Unlimited</span>
-                                    <span x-show="plan.max_job_posts != -1 && plan.max_job_posts >= 0" x-text="plan.max_job_posts"></span>
-                                    <span x-show="plan.max_job_posts >= 0"> job posts</span>
-                                </span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.max_contacts_per_month >= 0" class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">
-                                    <span x-show="plan.max_contacts_per_month == -1">Unlimited</span>
-                                    <span x-show="plan.max_contacts_per_month != -1 && plan.max_contacts_per_month >= 0" x-text="plan.max_contacts_per_month"></span>
-                                    <span x-show="plan.max_contacts_per_month >= 0"> contacts/month</span>
-                                </span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.resume_download_enabled == 1" class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.resume_download_enabled == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">Resume downloads</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.chat_enabled == 1" class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.chat_enabled == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">Chat with candidates</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.candidate_mobile_visible == 1" class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.candidate_mobile_visible == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">Mobile numbers visible</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.job_post_boost == 1" class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.job_post_boost == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">Job boost</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.ai_matching == 1" class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.ai_matching == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">AI candidate matching</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg x-show="plan.analytics_dashboard == 1" class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <svg x-show="plan.analytics_dashboard == 0" class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm text-gray-700">Analytics dashboard</span>
-                            </li>
-                            <!-- Dynamic features from admin-managed list -->
                             <template x-for="feat in (plan.features_list || [])" :key="feat">
                                 <li class="flex items-start">
                                     <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -285,44 +204,30 @@
                             </template>
                         </ul>
 
-                        <!-- Buy Now Button -->
-                        <template x-if="isCurrentPlan(plan)">
-                            <div class="space-y-2">
-                                <button x-show="selectedCycle !== (currentSubscription?.billing_cycle || 'monthly')"
-                                        @click="switchCycle(plan.slug)"
-                                        class="w-full py-2 rounded-md font-medium text-sm transition-colors shadow-sm hover:shadow bg-blue-600 text-white hover:bg-blue-700">
-                                    <span x-text="'Switch to ' + selectedCycle.charAt(0).toUpperCase() + selectedCycle.slice(1)"></span>
-                                </button>
-                                <a x-show="selectedCycle === (currentSubscription?.billing_cycle || 'monthly')"
-                                   href="/employer/billing/overview"
-                                   class="block w-full text-center py-2 rounded-md font-medium text-sm transition-colors shadow-sm hover:shadow bg-gray-100 text-gray-800 hover:bg-gray-200">
-                                   Manage plan
-                                </a>
-                                <div class="text-center">
-                                    <a href="/employer/billing/invoices" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View invoices</a>
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="!isCurrentPlan(plan)">
-                            <button @click="subscribe(plan.slug)" 
-                                    class="w-full py-2 rounded-md font-medium text-sm transition-colors shadow-sm hover:shadow"
-                                    :class="plan.is_featured == 1 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-900 text-white hover:bg-gray-800'">
-                                Get Started
-                            </button>
-                        </template>
+                        <button @click="subscribe(plan.slug)" 
+                                :disabled="loadingPlan"
+                                class="w-full py-2 rounded-md font-medium text-sm transition-colors shadow-sm hover:shadow disabled:opacity-50"
+                                :class="plan.is_featured == 1 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-900 text-white hover:bg-gray-800'">
+                            <span x-show="loadingPlan !== plan.slug" x-text="isCurrentPlan(plan) ? 'Renew / Manage' : 'Get Started'"></span>
+                            <span x-show="loadingPlan === plan.slug" class="flex items-center justify-center gap-2">
+                                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Processing...</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </template>
         </div>
         <?php endif; ?>
 </div>
+
 <script>
     const plansData = <?= json_encode($plans ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    console.log("Plans data from PHP:", plansData);
-    console.log("Plans count:", plansData.length);
     
     document.addEventListener("alpine:init", () => {
-        // Initialize discount data
         const initialDiscountCode = "<?= htmlspecialchars($discountCode ?? '') ?>";
         const initialDiscount = <?= ($discount ?? null) ? json_encode($discount) : 'null' ?>;
         
@@ -332,15 +237,16 @@
             selectedCycle: "monthly",
             selectedGateway: "razorpay",
             discountCode: initialDiscountCode,
-            discountApplied: <?= ($discount ?? null) ? 'true' : 'false' ?>,
-            discountPercentage: <?= ($discount ?? null) ? (float)$discount['discount_value'] : 0 ?>,
-            discountType: "<?= ($discount ?? null) ? ($discount['discount_type'] ?? 'percentage') : 'percentage' ?>",
+            discountApplied: !!initialDiscount,
+            discountPercentage: initialDiscount ? parseFloat(initialDiscount.discount_value || 0) : 0,
+            discountType: initialDiscount ? (initialDiscount.discount_type || 'percentage') : 'percentage',
             discountError: null,
             validatingDiscount: false,
+            loadingPlan: null,
+            errorMessage: null,
             
             getPrice(plan, cycle) {
-                const priceField = "price_" + cycle;
-                return parseFloat(plan[priceField]) || 0;
+                return parseFloat(plan["price_" + cycle]) || 0;
             },
             
             formatPrice(price) {
@@ -351,49 +257,178 @@
                 if (!this.discountApplied) return 0;
                 const basePrice = this.getPrice(plan, cycle);
                 if (this.discountType === 'percentage') {
-                    const discount = (basePrice * this.discountPercentage) / 100;
-                    return Math.round(discount * 100) / 100;
-                } else {
-                    return Math.min(this.discountPercentage, basePrice);
+                    return Math.round((basePrice * this.discountPercentage) / 100);
                 }
+                return Math.min(this.discountPercentage, basePrice);
             },
             
             getFinalPrice(plan, cycle) {
-                const basePrice = this.getPrice(plan, cycle);
-                const discount = this.getDiscountAmount(plan, cycle);
-                return Math.max(0, basePrice - discount);
+                return Math.max(0, this.getPrice(plan, cycle) - this.getDiscountAmount(plan, cycle));
             },
             
             isCurrentPlan(plan) {
-                const cur = this.currentSubscription;
-                return !!cur && (parseInt(cur.plan_id, 10) === parseInt(plan.id, 10));
+                return this.currentSubscription && parseInt(this.currentSubscription.plan_id) === parseInt(plan.id);
             },
             
-            async validateDiscount() {
-                if (!this.discountCode || this.discountCode.trim() === '') {
-                    this.discountApplied = false;
-                    this.discountError = null;
-                    return;
-                }
-                
-                this.validatingDiscount = true;
-                this.discountError = null;
-                
+            generateUUID() {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            },
+
+            async subscribe(planSlug) {
+                if (this.loadingPlan) return;
+                this.loadingPlan = planSlug;
+                this.errorMessage = null;
+                const idempotencyKey = this.generateUUID();
+
                 try {
-                    const response = await fetch('/api/discount-code/validate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': this.getCsrfToken()
+                    let csrfToken = this.getCsrfToken();
+                    if (!csrfToken) {
+                        csrfToken = document.querySelector('input[name="_token"]')?.value;
+                        if (!csrfToken) {
+                            this.errorMessage = "Security token missing. Please refresh the page.";
+                            this.loadingPlan = null;
+                            return;
+                        }
+                    }
+
+                    const response = await fetch("/employer/subscription/subscribe", {
+                        method: "POST",
+                        headers: { 
+                            "Content-Type": "application/json", 
+                            "X-CSRF-Token": csrfToken,
+                            "X-Requested-With": "XMLHttpRequest"
                         },
                         body: JSON.stringify({
-                            code: this.discountCode,
-                            plan_id: 0, // Will validate when plan is selected
-                            billing_cycle: this.selectedCycle
+                            plan_slug: planSlug,
+                            billing_cycle: this.selectedCycle,
+                            gateway: this.selectedGateway,
+                            discount_code: this.discountCode || null,
+                            idempotency_key: idempotencyKey
                         })
                     });
                     
-                    const data = await response.json();
+                    const responseText = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (e) {
+                        console.error("Non-JSON response:", responseText);
+                        this.errorMessage = "Server error. Please try again later.";
+                        this.loadingPlan = null;
+                        return;
+                    }
+
+                    // Handle standardized envelope {status: true, message: "...", data: {...}}
+                    const isSuccess = result.status === true || result.success === true || (result.data && result.data.success === true);
+                    const data = result.data || result;
+                    const errorMsg = result.message || data.error || data.message || "Failed to subscribe";
+
+                    if (isSuccess) {
+                        if (data.requires_payment) {
+                            this.initiatePayment(data.payment_gateway, data.payment_id);
+                        } else {
+                            window.location.href = "/employer/subscription/dashboard?status=activated";
+                        }
+                    } else {
+                        if (data.refresh_csrf && data.csrf_token) {
+                            const meta = document.querySelector('meta[name="csrf-token"]');
+                            if (meta) meta.content = data.csrf_token;
+                            this.errorMessage = errorMsg + " (Session refreshed. Please try again.)";
+                        } else {
+                            this.errorMessage = errorMsg;
+                        }
+                        this.loadingPlan = null;
+                    }
+                } catch (error) {
+                    console.error("Subscription error:", error);
+                    this.errorMessage = "An unexpected error occurred. Please check your internet connection.";
+                    this.loadingPlan = null;
+                }
+            },
+            
+            initiatePayment(gatewayData, paymentId) {
+                if (!gatewayData) {
+                    this.errorMessage = "Payment gateway configuration missing.";
+                    this.loadingPlan = null;
+                    return;
+                }
+
+                if (gatewayData.gateway === 'cashfree') {
+                    window.location.href = gatewayData.payment_url;
+                    return;
+                }
+
+                if (gatewayData.gateway === 'razorpay') {
+                    const options = {
+                        "key": gatewayData.key,
+                        "amount": gatewayData.amount,
+                        "currency": "INR",
+                        "name": gatewayData.name,
+                        "description": "Subscription Payment",
+                        "order_id": gatewayData.order_id,
+                        "prefill": gatewayData.prefill,
+                        "handler": async (response) => {
+                            try {
+                                const verifyRes = await fetch("/employer/subscription/payment/callback", {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        payment_id: paymentId
+                                    })
+                                });
+                                
+                                const verifyResult = await verifyRes.json();
+                                const isVerifySuccess = verifyResult.status === true || verifyResult.success === true;
+                                const verifyData = verifyResult.data || verifyResult;
+
+                                if (isVerifySuccess) {
+                                    window.location.href = "/employer/subscription/dashboard?payment=success";
+                                } else {
+                                    this.errorMessage = verifyResult.message || verifyData.error || "Payment verification failed";
+                                    this.loadingPlan = null;
+                                }
+                            } catch (e) {
+                                console.error("Verification Error:", e);
+                                this.errorMessage = "Payment verification error. Please contact support.";
+                                this.loadingPlan = null;
+                            }
+                        },
+                        "modal": { 
+                            "ondismiss": () => { 
+                                this.loadingPlan = null; 
+                                this.errorMessage = "Payment cancelled by user.";
+                            } 
+                        }
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', (response) => {
+                        this.errorMessage = response.error.description || "Payment failed";
+                        this.loadingPlan = null;
+                    });
+                    rzp.open();
+                }
+            },
+            
+            getCsrfToken() { return document.querySelector("meta[name=\"csrf-token\"]")?.content || ""; },
+            
+            async validateDiscount() {
+                if (!this.discountCode) { this.discountApplied = false; return; }
+                this.validatingDiscount = true;
+                try {
+                    const res = await fetch('/api/discount-code/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
+                        body: JSON.stringify({ code: this.discountCode, plan_id: 0, billing_cycle: this.selectedCycle })
+                    });
+                    const result = await res.json();
+                    const data = result.data || result;
                     
                     if (data.valid) {
                         this.discountApplied = true;
@@ -402,124 +437,15 @@
                         this.discountError = null;
                     } else {
                         this.discountApplied = false;
-                        this.discountError = data.error || 'Invalid discount code';
-                        this.discountPercentage = 0;
-                    }
-                } catch (error) {
-                    console.error('Discount validation error:', error);
-                    this.discountApplied = false;
-                    this.discountError = 'Error validating discount code';
-                    this.discountPercentage = 0;
-                } finally {
-                    this.validatingDiscount = false;
-                }
-            },
-            
-            applyDiscount() {
-                if (this.discountCode) {
-                    window.location.href = "/employer/subscription/plans?discount=" + encodeURIComponent(this.discountCode);
-                }
-            },
-            
-            async subscribe(planSlug) {
-                try {
-                    // If already on this plan, route to change-plan to switch cycle
-                    if (this.currentSubscription && this.currentSubscription.plan_id) {
-                        const curPlanId = parseInt(this.currentSubscription.plan_id, 10);
-                        const target = this.plans.find(p => parseInt(p.id, 10) === curPlanId);
-                        if (target && target.slug === planSlug) {
-                            return this.switchCycle(planSlug);
-                        }
-                    }
-                    const response = await fetch("/employer/subscription/subscribe", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": this.getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            plan_slug: planSlug,
-                            billing_cycle: this.selectedCycle,
-                            gateway: this.selectedGateway,
-                            discount_code: this.discountCode || null,
-                            auto_renew: false
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        if (data.requires_payment) {
-                            this.initiatePayment(data.payment_gateway, data.payment_id);
-                        } else {
-                            // Subscription activated without payment (free/trial)
-                            const redirectUrl = data.redirect || "/employer/subscription/dashboard";
-                            window.location.href = redirectUrl;
-                        }
-                    } else {
-                        // Friendlier UI: show inline message instead of alert
-                        console.warn("Subscription error:", data.error || "Failed to subscribe");
-                    }
-                } catch (error) {
-                    console.error("Subscription error:", error);
-                    // Soft fail, keep UI responsive
-                }
-            },
-            
-            async switchCycle(planSlug) {
-                try {
-                    const response = await fetch("/employer/subscription/change-plan", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.getCsrfToken() },
-                        body: JSON.stringify({ 
-                            plan_slug: planSlug, 
-                            billing_cycle: this.selectedCycle,
-                            gateway: this.selectedGateway 
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        if (data.requires_payment) {
-                            this.initiatePayment(data.payment_gateway, data.payment_id);
-                        } else {
-                            window.location.href = "/employer/subscription/dashboard";
-                        }
-                    } else {
-                        console.warn("Change plan error:", data.error || "Failed to change plan");
+                        this.discountError = data.error || result.message || 'Invalid code';
                     }
                 } catch (e) {
-                    console.error("Change plan exception:", e);
-                }
+                    this.discountApplied = false;
+                    this.discountError = 'Validation failed';
+                } finally { this.validatingDiscount = false; }
             },
             
-            initiatePayment(gatewayData, paymentId) {
-                if (!paymentId) {
-                    console.warn("Missing paymentId for gateway initiation");
-                    window.location.href = "/employer/subscription/dashboard";
-                    return;
-                }
-
-                if (gatewayData.gateway === 'cashfree') {
-                    window.location.href = gatewayData.payment_url;
-                } else {
-                    window.location.href = "/payment/create-order?payment_id=" + encodeURIComponent(String(paymentId));
-                }
-            },
-            
-            getCsrfToken() {
-                return document.querySelector("meta[name=\"csrf-token\"]")?.content || "";
-            },
-            
-            // Initialize discount on component mount
-            init() {
-                // Set initial discount values if code exists
-                if (initialDiscountCode && initialDiscount) {
-                    this.discountCode = initialDiscountCode;
-                    this.discountApplied = true;
-                    this.discountPercentage = parseFloat(initialDiscount.discount_value || 0);
-                    this.discountType = initialDiscount.discount_type || 'percentage';
-                }
-            }
+            applyDiscount() { this.validateDiscount(); }
         }));
     });
-</script>  
+</script>

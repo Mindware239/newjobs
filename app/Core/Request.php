@@ -13,6 +13,7 @@ class Request
     private array $headers = [];
     private array $attributes = [];
     private ?\App\Models\User $user = null;
+    private string $rawBody = '';
 
     public function __construct()
     {
@@ -21,11 +22,12 @@ class Request
         $this->files = $_FILES;
         $this->headers = $this->getAllHeaders();
         
+        $this->rawBody = (string)file_get_contents('php://input');
+
         // Handle JSON body for any request that has a body (POST, PUT, PATCH, DELETE)
         $contentType = $this->header('Content-Type') ?? '';
         if (strpos($contentType, 'application/json') !== false) {
-            $jsonBody = file_get_contents('php://input');
-            $decoded = json_decode($jsonBody, true);
+            $decoded = json_decode($this->rawBody, true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 $this->body = array_merge($this->body, $decoded ?? []);
             }
@@ -50,6 +52,16 @@ class Request
     public function getJsonBody(): array
     {
         return $this->body;
+    }
+
+    public function getBody(): string
+    {
+        return $this->rawBody;
+    }
+
+    public function headers(): array
+    {
+        return $this->headers;
     }
 
     public function header(string $key, $default = null): ?string
@@ -132,6 +144,11 @@ class Request
             return $this->query;
         }
         return $this->query[$key] ?? $default;
+    }
+
+    public function query(?string $key = null, $default = null)
+    {
+        return $this->get($key, $default);
     }
 
     public function post(?string $key = null, $default = null)

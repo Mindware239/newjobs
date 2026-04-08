@@ -16,6 +16,7 @@ use App\Models\CandidateExperience;
 use App\Models\CandidateSkill;
 use App\Models\CandidateLanguage;
 use App\Models\CandidateView;
+use App\Models\SubscriptionUsageLog;
 use App\Services\ESService;
 use App\Services\JobMatchService;
 
@@ -867,8 +868,20 @@ class ApplicationsController extends BaseController
                 // Employer subscription gating
                 $subscription = \App\Models\EmployerSubscription::getCurrentForEmployer((int)$employer->id);
                 $plan = $subscription ? $subscription->plan() : null;
-                $canSeeContacts = $subscription && ($subscription->isActive() || $subscription->isInGracePeriod()) && $plan && $plan->hasFeature('candidate_mobile_visible') && $subscription->canUseFeature('max_contacts_per_month');
-                $canDownloadResume = $subscription && ($subscription->isActive() || $subscription->isInGracePeriod()) && $plan && $plan->hasFeature('resume_download_enabled') && $subscription->canUseFeature('max_resume_downloads');
+                
+                // 1. Check if already unlocked
+                $alreadyUnlockedContact = SubscriptionUsageLog::hasUnlocked((int)$employer->id, (int)$candidate->id, 'contact_view');
+                
+                $canSeeContacts = $subscription && ($subscription->isActive() || $subscription->isInGracePeriod()) && $plan && $plan->hasFeature('candidate_mobile_visible') && ($alreadyUnlockedContact || $subscription->canUseFeature('max_contacts_per_month'));
+                
+                $canDownloadResume = $subscription && ($subscription->isActive() || $subscription->isInGracePeriod()) && $plan && $plan->hasFeature('resume_download_enabled') && (SubscriptionUsageLog::hasUnlocked((int)$employer->id, (int)$candidate->id, 'resume_download') || $subscription->canUseFeature('max_resume_downloads'));
+
+                // Deduct credit for contact view if not already unlocked
+                if (!$alreadyUnlockedContact && $canSeeContacts && $isPremiumCandidate) {
+                     $subscription->incrementUsage('max_contacts_per_month');
+                     SubscriptionUsageLog::logUsage((int)$subscription->id, (int)$employer->id, 'contact_view', (int)$candidate->id);
+                }
+
                 if (!$isPremiumCandidate || !$canSeeContacts) {
                     $application['candidate_email'] = null;
                     $application['phone'] = null;
@@ -1047,8 +1060,21 @@ class ApplicationsController extends BaseController
              return;
         }
 
-        // Increment Usage
-        $subscription->incrementUsage('max_resume_downloads');
+        // 1. Prevent duplicate unlock charge
+        $alreadyUnlocked = SubscriptionUsageLog::hasUnlocked((int)$employer->id, $candidateId, 'resume_download');
+        
+        if (!$alreadyUnlocked) {
+            // Deduct 1 credit
+            $subscription->incrementUsage('max_resume_downloads');
+            
+            // Store unlocked candidate history
+            SubscriptionUsageLog::logUsage(
+                (int)$subscription->id,
+                (int)$employer->id,
+                'resume_download',
+                $candidateId
+            );
+        }
 
         // Notify Candidate
         try {

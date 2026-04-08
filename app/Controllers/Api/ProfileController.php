@@ -24,12 +24,14 @@ class ProfileController extends ApiController
     public function show(Request $request, Response $response): void
     {
         $user = $this->user($request);
+        $prefs = $user->getNotificationPreferences();
         
         $data = [
             'id' => $user->id,
             'email' => $user->email,
             'role' => $user->role,
             'phone' => $user->phone,
+            'additional_mobile' => $prefs['contact']['additional_mobile'] ?? null,
             'status' => $user->status
         ];
 
@@ -68,6 +70,23 @@ class ProfileController extends ApiController
     {
         $user = $this->user($request);
         $data = $request->getJsonBody();
+        $prefs = $user->getNotificationPreferences();
+        if (!is_array($prefs)) {
+            $prefs = [];
+        }
+        $prefs['contact'] = is_array($prefs['contact'] ?? null) ? $prefs['contact'] : [];
+
+        if (array_key_exists('additional_mobile', $data)) {
+            $prefs['contact']['additional_mobile'] = $data['additional_mobile'] ?: null;
+            $user->setNotificationPreferences($prefs);
+        }
+        if (array_key_exists('phone', $data)) {
+            $user->phone = $data['phone'] ?: null;
+            if (empty($data['phone'])) {
+                $user->is_phone_verified = 0;
+            }
+        }
+        $user->save();
 
         if ($user->isCandidate()) {
             $candidate = Candidate::findByUserId($user->id);
@@ -84,7 +103,9 @@ class ProfileController extends ApiController
             ]);
             
             if ($candidate->save()) {
-                $this->success($response, $candidate->attributes, 'Profile updated successfully');
+                $payload = $candidate->attributes;
+                $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
+                $this->success($response, $payload, 'Profile updated successfully');
             } else {
                 $this->error($response, 'Failed to update profile', 500);
             }
@@ -104,7 +125,9 @@ class ProfileController extends ApiController
             ]);
 
             if ($employer->save()) {
-                $this->success($response, $employer->attributes, 'Profile updated successfully');
+                $payload = $employer->attributes;
+                $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
+                $this->success($response, $payload, 'Profile updated successfully');
             } else {
                 $this->error($response, 'Failed to update profile', 500);
             }

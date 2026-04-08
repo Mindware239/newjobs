@@ -12,6 +12,7 @@ use App\Models\SubscriptionPayment;
 use App\Models\EmployerPayment;
 use App\Models\SubscriptionPlan;
 use App\Models\Employer;
+use App\Models\PaymentMethod;
 
 class BillingController extends BaseController
 {
@@ -171,11 +172,24 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
-        $savedMethods = [];
+        
+        $savedMethods = PaymentMethod::getForEmployer((int)$employer->id);
+        $methods = array_map(function($m) {
+            $attr = $m->attributes;
+            if ($attr['method_type'] === 'card') {
+                $attr['label'] = ($attr['brand'] ?: 'Card') . ' • • • • ' . $attr['last4'];
+                $attr['details'] = 'Expires ' . $attr['exp_month'] . '/' . $attr['exp_year'];
+            } elseif ($attr['method_type'] === 'upi') {
+                $attr['label'] = 'UPI';
+                $attr['details'] = $attr['token']; // We use token field for VPA in this simple setup
+            }
+            return $attr;
+        }, $savedMethods);
+
         $response->view('employer/billing/payment_methods', [
             'title' => 'Payment Methods',
             'employer' => $employer,
-            'methods' => $savedMethods
+            'methods' => $methods
         ], 200, 'employer/layout');
     }
 
@@ -193,109 +207,114 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
-        $type = $request->post('method_type');
-        $last4 = substr(preg_replace('/\D+/', '', (string)$request->post('card_number')), -4) ?: '';
-        $upiId = $request->post('upi_id');
-        $bank = $request->post('netbanking_bank');
-        $paymentId = (int)$request->post('payment_id');
-        $otp = (string)$request->post('otp');
+        
+        $data = $request->getJsonBody() ?? $request->all();
+        $type = $data['method_type'] ?? 'card';
+        $setDefault = (int)($data['set_default'] ?? 0) === 1;
 
-        $saved = [];
-        if ($type === 'card' && $last4) {
-            $saved[] = ['label' => 'Card • • • • ' . $last4, 'details' => 'Saved for ' . ($employer->attributes['company_name'] ?? 'your account')];
-        } elseif ($type === 'upi' && $upiId) {
-            $saved[] = ['label' => 'UPI', 'details' => $upiId];
-        } elseif ($type === 'netbanking' && $bank) {
-            $saved[] = ['label' => 'Netbanking', 'details' => $bank];
-        }
+        try {
+            $db = \App\Core\Database::getInstance();
+            $db->beginTransaction();
 
-        // If paying a specific subscription payment, simulate gateway behavior in test mode
-        if ($paymentId > 0) {
-            $payment = \App\Models\SubscriptionPayment::find($paymentId);
-            if ($payment) {
-                $currentStatus = $payment->attributes['status'] ?? 'pending';
-                if (in_array($currentStatus, ['completed','failed','refunded'])) {
-                    $response->view('employer/billing/payment_methods', [
-                        'title' => 'Payment Methods',
-                        'employer' => $employer,
-                        'methods' => $saved,
-                        'message' => 'This transaction is already processed.'
-                    ], 200, 'employer/layout');
-                    return;
+            if ($type === 'card') {
+                $cardNumber = preg_replace('/\D+/', '', (string)($data['card_number'] ?? ''));
+                $last4 = substr($cardNumber, -4);
+                $brand = ucfirst((string)($data['brand'] ?? 'card'));
+                $expiry = (string)($data['card_expiry'] ?? '');
+                $expParts = explode('/', $expiry);
+                
+                if (strlen($cardNumber) < 13 || count($expParts) !== 2) {
+                    throw new \Exception("Invalid card data provided");
                 }
 
-                $status = 'pending';
-                $reason = null;
-                $mode = defined('PAYMENT_MODE') ? \PAYMENT_MODE : ($_ENV['PAYMENT_MODE'] ?? getenv('PAYMENT_MODE') ?? 'test');
-                if ($mode === 'test') {
-                    if ($type === 'card') {
-                        $num = preg_replace('/\D+/', '', (string)$request->post('card_number'));
-                        if ($otp !== '' && $otp !== '1234') {
-                            $status = 'failed';
-                            $reason = 'wrong_otp';
-                        } elseif ($num === '4111111111111111' || $num === '4242424242424242') {
-                            $status = 'completed';
-                        } elseif ($num === '4000000000000002' || $num === '4000000000009995') {
-                            $status = 'failed';
-                            $reason = 'card_declined';
-                        } elseif ($num === '4000030000000001') {
-                            $status = 'failed';
-                            $reason = 'insufficient_balance';
-                        } else {
-                            $status = 'completed';
-                        }
-                    } elseif ($type === 'upi') {
-                        if ($upiId === 'success@razorpay') {
-                            $status = 'completed';
-                        } elseif ($upiId === 'failure@razorpay') {
-                            $status = 'failed';
-                            $reason = 'upi_failure';
-                        } elseif ($upiId === 'pending@razorpay') {
-                            $status = 'pending';
-                        } else {
-                            $status = 'completed';
-                        }
-                    } elseif ($type === 'netbanking') {
-                        // Simulate delayed processing
-                        $status = 'pending';
-                    }
+                $method = new PaymentMethod();
+                $method->fill([
+                    'employer_id' => $employer->id,
+                    'gateway' => 'razorpay',
+                    'token' => 'tok_' . bin2hex(random_bytes(8)), 
+                    'method_type' => 'card',
+                    'last4' => $last4,
+                    'brand' => $brand,
+                    'exp_month' => (int)$expParts[0],
+                    'exp_year' => (int)$expParts[1],
+                    'is_default' => $setDefault ? 1 : 0
+                ]);
+            } else {
+                $upiId = strtolower(trim((string)($data['upi_id'] ?? '')));
+                if (!preg_match('/^[\w.-]+@[\w.-]+$/', $upiId)) {
+                    throw new \Exception("Invalid UPI ID format");
                 }
 
-                if ($status === 'completed') {
-                    $payment->markAsCompleted('test_pay_' . uniqid(), 'test_ord_' . uniqid());
-                    // Activate subscription
-                    $subscription = $payment->subscription();
-                    if ($subscription) {
-                        $subscription->attributes['status'] = 'active';
-                        $subscription->save();
-                    }
-                    $message = 'Payment successful';
-                } elseif ($status === 'failed') {
-                    $payment->markAsFailed($reason ?: 'payment_failed');
-                    $message = 'Payment failed';
-                } else {
-                    // Keep pending
-                    $payment->attributes['status'] = 'pending';
-                    $payment->save();
-                    $message = 'Payment under processing';
-                }
+                $method = new PaymentMethod();
+                $method->fill([
+                    'employer_id' => $employer->id,
+                    'gateway' => 'razorpay',
+                    'token' => $upiId,
+                    'method_type' => 'upi',
+                    'is_default' => $setDefault ? 1 : 0
+                ]);
+            }
 
-                $response->view('employer/billing/payment_methods', [
-                    'title' => 'Payment Methods',
-                    'employer' => $employer,
-                    'methods' => $saved,
-                    'message' => $message
-                ], 200, 'employer/layout');
+            if ($setDefault) {
+                $db->execute("UPDATE payment_methods SET is_default = 0 WHERE employer_id = :eid", ['eid' => $employer->id]);
+            }
+
+            if (!$method->save()) {
+                throw new \Exception("Failed to save to database");
+            }
+
+            $db->commit();
+            
+            if ($request->isXmlHttpRequest() || $request->header('Accept') === 'application/json') {
+                $response->json(['status' => true, 'message' => 'Payment method saved successfully']);
                 return;
             }
+        } catch (\Exception $e) {
+            if ($db->inTransaction()) $db->rollback();
+            if ($request->isXmlHttpRequest()) {
+                $response->error($e->getMessage());
+                return;
+            }
+            $message = $e->getMessage();
         }
 
-        $response->view('employer/billing/payment_methods', [
-            'title' => 'Payment Methods',
-            'employer' => $employer,
-            'methods' => $saved,
-            'message' => 'Payment method saved'
-        ], 200, 'employer/layout');
+        $response->redirect('/employer/billing/payment-methods');
+    }
+
+    public function deletePaymentMethod(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) { return; }
+        $employer = $this->currentUser->employer();
+        $id = (int)$request->param('id');
+
+        $method = PaymentMethod::find($id);
+        if ($method && (int)$method->employer_id === (int)$employer->id) {
+            $method->delete();
+            $response->json(['status' => true, 'message' => 'Payment method deleted']);
+        } else {
+            $response->error('Payment method not found', 404);
+        }
+    }
+
+    public function setDefaultPaymentMethod(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) { return; }
+        $employer = $this->currentUser->employer();
+        $id = (int)$request->param('id');
+
+        $db = \App\Core\Database::getInstance();
+        $db->beginTransaction();
+        try {
+            // Reset all
+            $db->execute("UPDATE payment_methods SET is_default = 0 WHERE employer_id = :eid", ['eid' => $employer->id]);
+            // Set new
+            $db->execute("UPDATE payment_methods SET is_default = 1 WHERE id = :id AND employer_id = :eid", ['id' => $id, 'eid' => $employer->id]);
+            $db->commit();
+            $response->json(['status' => true, 'message' => 'Default method updated']);
+        } catch (\Exception $e) {
+            $db->rollback();
+            $response->error($e->getMessage());
+        }
     }
 
     public function pay(Request $request, Response $response): void

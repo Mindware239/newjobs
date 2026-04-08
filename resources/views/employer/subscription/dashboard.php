@@ -72,7 +72,9 @@ $status_color = match($status) {
                         </div>
                         <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt class="text-sm font-medium text-gray-500">Valid Until</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"><?= date('F j, Y', strtotime($subscription['expires_at'])) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                <?= !empty($subscription['expires_at']) ? date('F j, Y', strtotime($subscription['expires_at'])) : 'N/A' ?>
+                            </dd>
                         </div>
                     </dl>
                 </div>
@@ -137,7 +139,7 @@ $status_color = match($status) {
                                         <p class="text-xs text-gray-500">#<?= htmlspecialchars($payment['invoice_number'] ?? $payment['id']) ?></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-sm text-gray-600"><?= date('M d, Y', strtotime($payment['paid_at'])) ?></p>
+                                        <p class="text-sm text-gray-600"><?= !empty($payment['paid_at']) ? date('M d, Y', strtotime($payment['paid_at'])) : 'N/A' ?></p>
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $payment['status'] === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
                                             <?= ucfirst($payment['status']) ?>
                                         </span>

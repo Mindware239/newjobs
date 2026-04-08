@@ -310,6 +310,7 @@ if (isset($skills) && is_array($skills)) {
 $existingSkills = array_filter($existingSkills);
 $allBenefits = isset($benefits) && is_array($benefits) ? $benefits : [];
 $existingBenefits = isset($jobBenefits) && is_array($jobBenefits) ? $jobBenefits : [];
+$categoriesList = isset($categories) && is_array($categories) ? $categories : [];
 $employerArray = isset($employer) && method_exists($employer, 'toArray') ? $employer->toArray() : [];
 $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() : [];
 ?>
@@ -467,9 +468,24 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                                          class="jwiz-dropdown-item"
                                          :class="jobTitleSuggestions.selectedIndex === index ? 'highlighted' : ''">
                                         <div class="jwiz-dropdown-item-title" x-text="suggestion.title"></div>
+                                        <div class="jwiz-dropdown-item-sub" x-show="suggestion.category" x-text="suggestion.category"></div>
                                     </div>
                                 </template>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="jwiz-field">
+                        <label class="jwiz-label">Industry / Category <span class="jwiz-label-req">*</span></label>
+                        <div class="jwiz-select-wrap">
+                            <select x-model="formData.category" @change="refreshSkillContextSuggestions()" class="jwiz-select">
+                                <option value="">Select Industry</option>
+                                <template x-for="cat in categories" :key="cat.value">
+                                    <option :value="cat.value" x-text="cat.label"></option>
+                                </template>
+                            </select>
+                            <span class="jwiz-select-arrow"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></span>
                         </div>
                     </div>
 
@@ -590,26 +606,8 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                         </div>
                     </div>
 
-                    <!-- Category -->
-                    <div class="jwiz-field">
-                        <label class="jwiz-label">Industry / Category <span class="jwiz-label-req">*</span></label>
-                        <div class="jwiz-select-wrap">
-                            <select x-model="formData.category" @change="refreshSkillContextSuggestions()" class="jwiz-select">
-                                <option value="">Select Industry</option>
-                                <template x-for="cat in categories" :key="cat.value">
-                                    <option :value="cat.value" x-text="cat.label"></option>
-                                </template>
-                            </select>
-                            <span class="jwiz-select-arrow"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg></span>
-                        </div>
-                    </div>
-
                     <!-- Openings & Language -->
                     <div class="jwiz-grid-2">
-                        <div class="jwiz-field">
-                            <label class="jwiz-label">Openings <span class="jwiz-label-req">*</span></label>
-                            <input type="number" x-model="formData.vacancies" min="1" class="jwiz-input">
-                        </div>
                         <div class="jwiz-field">
                             <label class="jwiz-label">Job Language</label>
                             <div class="jwiz-select-wrap">
@@ -1140,7 +1138,7 @@ document.addEventListener('alpine:init', () => {
             { value: 'remote', label: 'Remote' }
         ],
         languages: ['English','Spanish','French','German','Hindi','Arabic','Chinese','Japanese'],
-        categories: [],
+        categories: <?= json_encode($categoriesList) ?>,
         availableBenefits: allBenefits,
         formData: {
             title: job.title || '',
@@ -1309,6 +1307,9 @@ document.addEventListener('alpine:init', () => {
 
         selectJobTitleSuggestion(s) {
             this.formData.title = s.title;
+            if (s.category) {
+                this.formData.category = s.category;
+            }
             this.jobTitleSuggestions.show = false;
             this.refreshSkillContextSuggestions();
         },
@@ -1415,6 +1416,7 @@ document.addEventListener('alpine:init', () => {
             if(this.currentStep === 0) {
                 return this.formData.employment_type &&
                        this.formData.title &&
+                       this.formData.category &&
                        this.formData.location.country &&
                        this.formData.location.state &&
                        this.formData.location.city &&

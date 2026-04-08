@@ -8,6 +8,7 @@ use App\Controllers\BaseController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
+use App\Models\EmployerSubscription;
 
 class InvoiceController extends BaseController
 {
@@ -29,16 +30,21 @@ class InvoiceController extends BaseController
             'like' => '%"subscription_payment_id":' . $id . '%'
         ]);
 
+        $subscription = null;
+        $plan = null;
+        $subscriptionId = (int)($payment['subscription_id'] ?? 0);
+        if ($subscriptionId > 0) {
+            $subscription = EmployerSubscription::find($subscriptionId);
+            $plan = $subscription ? $subscription->plan() : null;
+        }
+
         $response->view('employer/invoices/show', [
             'title' => 'Invoice',
             'employer' => $employer,
             'invoice' => $invoice ?? [],
-            'payment' => [
-                'status' => ($invoice ? 'completed' : 'pending'),
-                'method' => 'RAZORPAY',
-                'amount' => (float)($payment['amount'] ?? 0)
-            ]
+            'payment' => $payment,
+            'subscription' => $subscription ? $subscription->toArray() : null,
+            'plan' => $plan
         ], 200, 'employer/layout');
     }
 }
-

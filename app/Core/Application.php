@@ -120,14 +120,17 @@ class Application
                 'line' => $_ENV['APP_DEBUG'] === 'true' ? $e->getLine() : null
             ]);
         } else {
+            $view = strpos($path, '/admin') === 0 ? 'admin/error' : 'errors/500';
+            $layout = strpos($path, '/admin') === 0 ? 'admin/layout' : null;
+            
             $this->response->view(
-                strpos($path, '/admin') === 0 ? 'admin/error' : 'about',
+                $view,
                 [
                     'title' => 'Error',
                     'errorMessage' => $message
                 ],
                 500,
-                strpos($path, '/admin') === 0 ? 'admin/layout' : null
+                $layout
             );
         }
     }

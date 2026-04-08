@@ -85,6 +85,8 @@ $router->get('/employer/notifications', [NotificationsController::class, 'index'
 // Settings
 $router->get('/employer/settings', [SettingsController::class, 'index'], [$authMiddleware]);
 $router->put('/employer/settings/account', [SettingsController::class, 'updateAccount'], [$authMiddleware]);
+$router->post('/employer/settings/account/send-otp', [SettingsController::class, 'sendPhoneOtp'], [$authMiddleware]);
+$router->post('/employer/settings/account/verify-otp', [SettingsController::class, 'verifyPhoneOtp'], [$authMiddleware]);
 $router->put('/employer/settings/password', [SettingsController::class, 'updatePassword'], [$authMiddleware]);
 $router->put('/employer/settings/preferences', [SettingsController::class, 'updatePreferences'], [$authMiddleware]);
 $router->put('/employer/settings/company', [SettingsController::class, 'updateCompany'], [$authMiddleware]);
@@ -100,6 +102,8 @@ $router->get('/employer/billing/transactions', [BillingController::class, 'trans
 $router->get('/employer/billing/invoices', [BillingController::class, 'invoices'], [$authMiddleware]);
 $router->get('/employer/billing/payment-methods', [BillingController::class, 'paymentMethods'], [$authMiddleware]);
 $router->post('/employer/billing/payment-methods', [BillingController::class, 'savePaymentMethod'], [$authMiddleware]);
+$router->delete('/employer/billing/payment-methods/{id}', [BillingController::class, 'deletePaymentMethod'], [$authMiddleware]);
+$router->post('/employer/billing/payment-methods/{id}/default', [BillingController::class, 'setDefaultPaymentMethod'], [$authMiddleware]);
 $router->get('/employer/billing/pay/{id}', [BillingController::class, 'pay'], [$authMiddleware]);
 $router->get('/employer/billing/settings', [BillingController::class, 'settings'], [$authMiddleware]);
 // Employer billing result pages
@@ -115,7 +119,6 @@ $router->post('/payment/verify', [RazorpayController::class, 'verify'], [$authMi
 $router->get('/employer/subscription/dashboard', [SubscriptionController::class, 'dashboard'], [$authMiddleware]);
 $router->get('/employer/subscription/plans', [SubscriptionController::class, 'plans'], [$authMiddleware]);
 $router->post('/employer/subscription/subscribe', [SubscriptionController::class, 'subscribe'], [$authMiddleware, $rateLimitMiddleware]);
-$router->get('/employer/subscription/dashboard', [SubscriptionController::class, 'dashboard'], [$authMiddleware]);
 $router->post('/employer/subscription/cancel', [SubscriptionController::class, 'cancel'], [$authMiddleware]);
 $router->post('/employer/subscription/payment/callback', [SubscriptionController::class, 'paymentCallback'], [$authMiddleware, $rateLimitMiddleware]);
 $router->post('/employer/subscription/renew', [SubscriptionController::class, 'renew'], [$authMiddleware, $rateLimitMiddleware]);

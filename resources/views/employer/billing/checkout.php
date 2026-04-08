@@ -25,6 +25,8 @@ document.getElementById('payBtn').addEventListener('click', function(){
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-Token': '<?= $csrfToken ?>'
                 },
                 body: JSON.stringify({
@@ -35,8 +37,17 @@ document.getElementById('payBtn').addEventListener('click', function(){
                     subscription_payment_id: "<?= (int)$subscriptionPaymentId ?>",
                     _token: '<?= $csrfToken ?>'
                 })
-            }).then(r => {
-                window.location.href = '/employer/billing/success?sub_pay_id=<?= (int)$subscriptionPaymentId ?>';
+            }).then(async (r) => {
+                const data = await r.json().catch(() => ({}));
+                const payload = data.data || data;
+                const isSuccess = data.status === true || data.success === true || payload.success === true;
+                if (r.ok && isSuccess) {
+                    window.location.href = '/employer/billing/success?sub_pay_id=<?= (int)$subscriptionPaymentId ?>';
+                    return;
+                }
+
+                const reason = encodeURIComponent(data.message || payload.error || 'verify_error');
+                window.location.href = '/employer/billing/failed?reason=' + reason;
             }).catch(() => {
                 window.location.href = '/employer/billing/failed?reason=verify_error';
             });
@@ -50,4 +61,3 @@ document.getElementById('payBtn').addEventListener('click', function(){
     rzp.open();
 });
 </script>
-

@@ -575,10 +575,13 @@ async function startMessage() {
         });
 
         const data = await response.json();
-        if (data.success) {
-            window.location.href = '/employer/messages?conversation=' + data.conversation_id;
+        const payload = data?.data ?? {};
+        if (payload.success) {
+            window.location.href = '/employer/messages?conversation=' + payload.conversation_id;
+        } else if (payload.redirect) {
+            window.location.href = payload.redirect;
         } else {
-            alert('Error: ' + (data.error || 'Failed to start conversation'));
+            alert('Error: ' + (payload.error || data?.message || 'Failed to start conversation'));
         }
     } catch (error) {
         console.error('Error:', error);
@@ -657,15 +660,16 @@ async function generateMatchScore() {
         });
 
         const data = await response.json();
+        const payload = data?.data ?? {};
         clearInterval(progressInterval);
         
-        if (data.success && data.match_data) {
+        if (payload.success && payload.match_data) {
             // Complete progress
             updateProgress(100);
             
             // Update UI with real data
             setTimeout(() => {
-                updateMatchAnalysisUI(data.match_data);
+                updateMatchAnalysisUI(payload.match_data);
                 hideProgressOverlay();
                 
                 // Show success on button
@@ -686,7 +690,7 @@ async function generateMatchScore() {
             hideProgressOverlay();
             button.disabled = false;
             button.innerHTML = originalButtonHTML;
-            alert('Failed to calculate match score: ' + (data.message || data.error || 'Unknown error'));
+            alert('Failed to calculate match score: ' + (data?.message || data?.error || 'Unknown error'));
         }
     } catch (error) {
         clearInterval(progressInterval);

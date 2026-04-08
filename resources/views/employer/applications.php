@@ -1310,12 +1310,13 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                     });
 
                     const data = await response.json();
+                    const payload = data?.data ?? {};
 
-                    if (data.success) {
+                    if (payload.success) {
                         alert('Match score generated successfully!');
                         location.reload();
                     } else {
-                        alert('Failed to generate score: ' + (data.message || 'Unknown error'));
+                        alert('Failed to generate score: ' + (data?.message || data?.error || 'Unknown error'));
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
@@ -1445,10 +1446,13 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                     });
 
                     const data = await response.json();
-                    if (data.success) {
-                        window.location.href = '/employer/messages?conversation=' + data.conversation_id;
+                    const payload = data?.data ?? {};
+                    if (payload.success) {
+                        window.location.href = '/employer/messages?conversation=' + payload.conversation_id;
+                    } else if (payload.redirect) {
+                        window.location.href = payload.redirect;
                     } else {
-                        alert('Error: ' + (data.error || 'Failed to start conversation'));
+                        alert('Error: ' + (payload.error || data?.message || 'Failed to start conversation'));
                     }
                 } catch (error) {
                     console.error('Error:', error);

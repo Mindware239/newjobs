@@ -50,12 +50,11 @@ class VerificationController extends BaseController
             return;
         }
 
-        $code = VerificationService::sendEmailVerification($user->id, $user->attributes['email']);
+        VerificationService::sendEmailVerification($user->id, $user->attributes['email']);
         
         $response->json([
             'success' => true,
-            'message' => 'Verification code sent to your email',
-            'code' => $code // Remove in production
+            'message' => 'Verification code sent to your email'
         ]);
     }
 
@@ -108,12 +107,15 @@ class VerificationController extends BaseController
             return;
         }
 
-        $otp = VerificationService::sendPhoneOTP($user->id, $phone);
+        $result = VerificationService::sendPhoneOTP($user->id, $phone);
+        if (empty($result['success'])) {
+            $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
+            return;
+        }
         
         $response->json([
             'success' => true,
-            'message' => 'OTP sent to your phone',
-            'otp' => $otp // Remove in production
+            'message' => 'OTP sent to your phone'
         ]);
     }
 

@@ -107,6 +107,12 @@ abstract class BaseController
                     if (strlen($value) > $max) {
                         $errors[$field][] = "The $field must not exceed $max characters";
                     }
+                } elseif (strpos($part, 'same:') === 0) {
+                    $otherField = substr($part, 5);
+                    $otherValue = $data[$otherField] ?? null;
+                    if ((string)$value !== (string)$otherValue) {
+                        $errors[$field][] = "The $field must match $otherField";
+                    }
                 } elseif ($part === 'password_strong' && !empty($value)) {
                     // International password validation (OWASP/NIST standards)
                     $passwordErrors = $this->validatePasswordStrength($value);
@@ -185,6 +191,15 @@ abstract class BaseController
     protected function verifyCsrf(Request $request): void
     {
         if (strtoupper($request->getMethod()) !== 'POST') {
+            return;
+        }
+
+        $path = $request->getPath();
+        if (strpos($path, '/api/') === 0) {
+            return;
+        }
+
+        if ($request->header('Authorization')) {
             return;
         }
 

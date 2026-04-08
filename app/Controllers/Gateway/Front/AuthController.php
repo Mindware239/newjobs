@@ -15,6 +15,8 @@ use App\Core\RedisClient;
 use App\Services\GoogleOAuthService;
 use App\Services\AppleOAuthService;
 use App\Services\CookieService;
+use App\Services\AuthService;
+use App\Services\VerificationService;
 
 class AuthController extends BaseController
 {
@@ -662,6 +664,162 @@ class AuthController extends BaseController
         } else {
             $response->redirect($redirect);
         }
+    }
+
+    public function sendPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $phone = trim((string)($data['phone'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+
+        if ($phone === '') {
+            $response->json(['error' => 'Phone number is required'], 422);
+            return;
+        }
+
+        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, [
+            'role' => $data['role'] ?? null,
+        ]);
+
+        if (empty($result['success'])) {
+            $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
+            return;
+        }
+
+        $payload = [
+            'success' => true,
+            'message' => 'OTP sent successfully',
+            'phone' => $result['phone'],
+            'purpose' => $result['purpose'],
+            'mode' => $result['mode'] ?? 'sms',
+        ];
+
+        if (!empty($result['otp_preview'])) {
+            $payload['otp_preview'] = $result['otp_preview'];
+        }
+
+        $response->json($payload);
+    }
+
+    public function loginWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $phone = trim((string)($data['phone'] ?? ''));
+        $otp = trim((string)($data['otp'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+
+        if ($phone === '' || $otp === '') {
+            $response->json(['error' => 'phone and otp are required'], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $user = $authService->loginByPhone($phone);
+        if (!$user) {
+            $response->json(['error' => 'Account not found for this phone number'], 404);
+            return;
+        }
+
+        $this->signInUser($user);
+        $response->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'redirect' => $this->resolveRedirectForUser($user),
+            'user' => [
+                'id' => (int)$user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'phone' => $user->phone,
+            ],
+        ]);
+    }
+
+    public function registerCandidateWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $errors = $this->validate($data, [
+            'phone' => 'required',
+            'otp' => 'required',
+            'full_name' => 'required',
+            'email' => 'sometimes|email',
+            'password' => 'sometimes|min:8',
+        ]);
+
+        if (!empty($errors)) {
+            $response->json(['errors' => $errors], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $result = $authService->registerCandidateWithPhone($data);
+        if (empty($result['success']) || empty($result['user'])) {
+            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->signInUser($user);
+
+        $response->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'redirect' => $this->resolveRedirectForUser($user),
+            'user_id' => (int)$user->id,
+            'additional_mobile' => $result['additional_mobile'] ?? null,
+        ], 201);
+    }
+
+    public function registerEmployerWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $errors = $this->validate($data, [
+            'phone' => 'required',
+            'otp' => 'required',
+            'company_name' => 'required',
+            'email' => 'sometimes|email',
+            'password' => 'sometimes|min:8',
+        ]);
+
+        if (!empty($errors)) {
+            $response->json(['errors' => $errors], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $result = $authService->registerEmployerWithPhone($data);
+        if (empty($result['success']) || empty($result['user'])) {
+            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->signInUser($user);
+
+        $response->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'redirect' => $this->resolveRedirectForUser($user),
+            'user_id' => (int)$user->id,
+            'additional_mobile' => $result['additional_mobile'] ?? null,
+        ], 201);
     }
 
     public function googleLogin(Request $request, Response $response): void
@@ -1745,5 +1903,78 @@ class AuthController extends BaseController
                 'title' => 'Complete Your Account'
             ]);
         }
+    }
+
+    private function signInUser(User $user): void
+    {
+        $_SESSION['user_id'] = $user->id;
+        $primaryRole = $user->role;
+
+        try {
+            $roles = $user->roles();
+            $slugs = array_map(fn($r) => strtolower((string)($r['slug'] ?? '')), $roles);
+            if (in_array('super_admin', $slugs, true)) {
+                $primaryRole = 'super_admin';
+            } elseif (in_array('admin', $slugs, true)) {
+                $primaryRole = 'admin';
+            } elseif (in_array('sales_manager', $slugs, true)) {
+                $primaryRole = 'sales_manager';
+            } elseif (in_array('sales_executive', $slugs, true)) {
+                $primaryRole = 'sales_executive';
+            }
+        } catch (\Throwable $t) {
+        }
+
+        $_SESSION['user_role'] = $primaryRole;
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::findByUserId((int)$user->id);
+            if (!$candidate) {
+                $service = new \App\Services\CandidateCreationService();
+                $candidate = $service->ensureCandidateForUser((int)$user->id, [
+                    'profile_status' => 'unverified',
+                    'visibility' => 'limited',
+                    'is_profile_complete' => 0,
+                    'created_by' => 'self',
+                    'source' => 'phone_otp_login'
+                ]);
+            }
+            if ($candidate && isset($candidate->attributes['id'])) {
+                $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
+            }
+        }
+
+        try {
+            CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null);
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function resolveRedirectForUser(User $user): string
+    {
+        if ($user->role === 'employer') {
+            return '/employer/dashboard';
+        }
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::findByUserId((int)$user->id);
+            if (!$candidate) {
+                return '/candidate/profile/complete';
+            }
+
+            $hasData = !empty($candidate->attributes['full_name']) ||
+                !empty($candidate->attributes['mobile']) ||
+                !empty($candidate->attributes['city']) ||
+                !empty($candidate->attributes['dob']) ||
+                !empty($candidate->attributes['gender']);
+
+            return $hasData ? '/candidate/dashboard' : '/candidate/profile/complete';
+        }
+
+        if ($user->role === 'admin' || $user->role === 'super_admin') {
+            return '/admin/dashboard';
+        }
+
+        return '/';
     }
 }

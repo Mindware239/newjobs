@@ -10,6 +10,8 @@ use App\Core\Response;
 use App\Models\Job;
 use App\Models\EmployerSetting;
 use App\Models\Application;
+use App\Services\AuthService;
+use App\Services\VerificationService;
 
 class SettingsController extends BaseController
 {
@@ -145,14 +147,76 @@ class SettingsController extends BaseController
 
         // Update phone
         if (isset($data['phone']) && $data['phone'] !== ($user->phone ?? '')) {
-            $user->attributes['phone'] = $data['phone'] ?? null;
-            if (empty($data['phone'])) {
-                $user->attributes['is_phone_verified'] = 0;
+            $normalizedPhone = AuthService::normalizePhoneNumber((string)$data['phone']);
+            $existingPhoneUser = (new AuthService())->findUserByPhone($normalizedPhone);
+            if ($normalizedPhone !== '' && $existingPhoneUser && (int)$existingPhoneUser->id !== (int)$user->id) {
+                $response->json(['error' => 'Phone number is already in use'], 422);
+                return;
             }
+            $user->attributes['phone'] = $normalizedPhone ?: null;
+            $user->attributes['is_phone_verified'] = 0;
+            $user->save();
+        }
+
+        if (array_key_exists('additional_mobile', $data)) {
+            $this->storeAdditionalMobile($user, $employer, (string)$data['additional_mobile']);
             $user->save();
         }
 
         $response->json(['success' => true, 'message' => 'Account updated successfully']);
+    }
+
+    public function sendPhoneOtp(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) {
+            return;
+        }
+
+        $data = $request->getJsonBody();
+        $phone = AuthService::normalizePhoneNumber((string)($data['phone'] ?? ($this->currentUser->phone ?? '')));
+        if ($phone === '') {
+            $response->json(['error' => 'Valid phone number is required'], 422);
+            return;
+        }
+
+        $result = VerificationService::sendPhoneOTP((int)$this->currentUser->id, $phone);
+        if (empty($result['success'])) {
+            $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
+            return;
+        }
+
+        if (($this->currentUser->phone ?? '') !== $phone) {
+            $this->currentUser->attributes['phone'] = $phone;
+            $this->currentUser->attributes['is_phone_verified'] = 0;
+            $this->currentUser->save();
+        }
+
+        $payload = ['success' => true, 'message' => 'OTP sent successfully'];
+        if (!empty($result['otp_preview'])) {
+            $payload['otp_preview'] = $result['otp_preview'];
+        }
+        $response->json($payload);
+    }
+
+    public function verifyPhoneOtp(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) {
+            return;
+        }
+
+        $data = $request->getJsonBody();
+        $otp = trim((string)($data['otp'] ?? ''));
+        if ($otp === '') {
+            $response->json(['error' => 'OTP is required'], 422);
+            return;
+        }
+
+        if (!VerificationService::verifyPhone((int)$this->currentUser->id, $otp)) {
+            $response->json(['error' => 'Invalid OTP'], 400);
+            return;
+        }
+
+        $response->json(['success' => true, 'message' => 'Phone verified successfully']);
     }
 
     public function updatePassword(Request $request, Response $response): void
@@ -280,6 +344,32 @@ class SettingsController extends BaseController
         }
 
         $response->json(['success' => true, 'message' => 'Company information updated successfully']);
+    }
+
+    private function storeAdditionalMobile(\App\Models\User $user, \App\Models\Employer $employer, string $phone): void
+    {
+        $normalized = AuthService::normalizePhoneNumber($phone);
+        $prefs = $user->getNotificationPreferences();
+        if (!is_array($prefs)) {
+            $prefs = [];
+        }
+        $prefs['contact'] = is_array($prefs['contact'] ?? null) ? $prefs['contact'] : [];
+        $prefs['contact']['additional_mobile'] = $normalized ?: null;
+        $user->setNotificationPreferences($prefs);
+
+        $settings = $employer->settings();
+        if (!$settings) {
+            $settings = new EmployerSetting();
+            $settings->attributes['employer_id'] = $employer->id;
+        }
+        $legacyPrefs = json_decode((string)($settings->attributes['notification_pref'] ?? '{}'), true);
+        if (!is_array($legacyPrefs)) {
+            $legacyPrefs = [];
+        }
+        $legacyPrefs['contact'] = is_array($legacyPrefs['contact'] ?? null) ? $legacyPrefs['contact'] : [];
+        $legacyPrefs['contact']['additional_mobile'] = $normalized ?: null;
+        $settings->attributes['notification_pref'] = json_encode($legacyPrefs);
+        $settings->save();
     }
 }
 

@@ -252,6 +252,14 @@ class JobsController extends BaseController
             ];
         }
 
+        // Get all available categories
+        try {
+            $categories = $db->fetchAll("SELECT name as label, name as value FROM job_categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        } catch (\Exception $e) {
+            error_log("JobsController::create - Failed to load categories: " . $e->getMessage());
+            $categories = [];
+        }
+
         $response->view('employer/post-job', [
             'title' => 'Post a Job',
             'employer' => $employer,
@@ -259,7 +267,8 @@ class JobsController extends BaseController
             'applicationCount' => $totalApplications,
             'subscription' => $subscriptionInfo,
             'benefits' => $benefits,
-            'jobBenefits' => []
+            'jobBenefits' => [],
+            'categories' => $categories
         ], 200, 'employer/layout');
     }
 
@@ -795,6 +804,14 @@ class JobsController extends BaseController
             ? \App\Models\Application::whereIn('job_id', $jobIds)->count()
             : 0;
 
+        // Get all available categories
+        try {
+            $categories = $db->fetchAll("SELECT name as label, name as value FROM job_categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        } catch (\Exception $e) {
+            error_log("JobsController::edit - Failed to load categories: " . $e->getMessage());
+            $categories = [];
+        }
+
         $response->view('employer/post-job', [
             'title' => 'Edit Job - ' . $job->title,
             'job' => $jobArray, // Enhanced job array with all fields and defaults
@@ -808,6 +825,7 @@ class JobsController extends BaseController
             'benefits' => $allBenefits,
             'jobBenefits' => $jobBenefits,
             'jobQualifications' => $jobQualifications,
+            'categories' => $categories
         ], 200, 'employer/layout');
     }
 

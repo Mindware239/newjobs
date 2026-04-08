@@ -13,6 +13,12 @@ $taxRate  = (float)($_ENV['TAX_RATE'] ?? 0.18);
 $tax      = round($amount * $taxRate, 2);
 $total    = $amount + $tax;
 $created  = date('d M Y, h:i A', strtotime($payment['created_at'] ?? 'now'));
+$billingCycle = ucfirst(strtolower((string)($payment['billing_cycle'] ?? ($subscription['billing_cycle'] ?? 'monthly'))));
+$planName = (string)($plan->attributes['name'] ?? 'Subscription');
+$invoiceNumber = (string)($payment['invoice_number'] ?? $invoice['invoice_number'] ?? ('INV-' . ($payment['id'] ?? '')));
+$gatewayPaymentId = (string)($payment['gateway_payment_id'] ?? $payment['payment_id'] ?? '-');
+$gatewayLabel = strtoupper((string)($payment['gateway'] ?? $payment['method'] ?? 'RAZORPAY'));
+$pdfPath = (string)($invoice['pdf_path'] ?? '');
 
 $addr = json_decode($employer->attributes['address'] ?? '', true) ?: [];
 $street = $addr['street'] ?? '';
@@ -93,10 +99,10 @@ $qr   = '/uploads/qr.jpeg';
 
             <!-- META -->
             <div class="grid grid-cols-4 border border-[#000080] mb-8 text-xs bg-gray-50">
-                <div class="p-3 border-r border-[#000080]"><b class="text-[#000080]">Invoice</b><br><?= $payment['invoice_number'] ?? 'INV-'.$payment['id'] ?></div>
+                <div class="p-3 border-r border-[#000080]"><b class="text-[#000080]">Invoice</b><br><?= htmlspecialchars($invoiceNumber) ?></div>
                 <div class="p-3 border-r border-[#000080]"><b class="text-[#000080]">Date & Time</b><br><?= $created ?></div>
-                <div class="p-3 border-r border-[#000080]"><b class="text-[#000080]">Payment ID</b><br><?= $payment['gateway_payment_id'] ?? '-' ?></div>
-                <div class="p-3"><b class="text-[#000080]">Gateway</b><br><?= strtoupper($payment['gateway'] ?? 'RAZORPAY') ?></div>
+                <div class="p-3 border-r border-[#000080]"><b class="text-[#000080]">Payment ID</b><br><?= htmlspecialchars($gatewayPaymentId) ?></div>
+                <div class="p-3"><b class="text-[#000080]">Gateway</b><br><?= htmlspecialchars($gatewayLabel) ?></div>
             </div>
 
             <!-- ADDRESS -->
@@ -132,8 +138,8 @@ $qr   = '/uploads/qr.jpeg';
                 </thead>
                 <tbody>
                     <tr class="hover:bg-gray-50">
-                        <td class="p-3 border border-[#000080]">Subscription - <?= htmlspecialchars($plan->attributes['name']) ?></td>
-                        <td class="p-3 text-center border border-[#000080]">Monthly</td>
+                        <td class="p-3 border border-[#000080]">Subscription - <?= htmlspecialchars($planName) ?></td>
+                        <td class="p-3 text-center border border-[#000080]"><?= htmlspecialchars($billingCycle) ?></td>
                         <td class="p-3 text-center border border-[#000080]">1</td>
                         <td class="p-3 text-right border border-[#000080]">₹<?= number_format($amount,2) ?></td>
                         <td class="p-3 text-right border border-[#000080]">₹<?= number_format($amount,2) ?></td>
@@ -167,10 +173,17 @@ $qr   = '/uploads/qr.jpeg';
     </div>
 
     <div class="mt-8 flex justify-center gap-4 no-print">
-        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Download Invoice (PDF)
-        </button>
+        <?php if ($pdfPath !== ''): ?>
+            <a href="<?= htmlspecialchars($pdfPath) ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4m4 5v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1"/></svg>
+                Download PDF
+            </a>
+        <?php else: ?>
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Download Invoice (PDF)
+            </button>
+        <?php endif; ?>
         <?php if ($status === 'completed'): ?>
             <a href="/employer/subscription/dashboard" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-lg font-bold shadow-sm transition flex items-center">
                 Go to Subscription

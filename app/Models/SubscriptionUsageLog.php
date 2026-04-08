@@ -23,6 +23,15 @@ class SubscriptionUsageLog extends Model
         return Employer::find($this->attributes['employer_id'] ?? 0);
     }
 
+    public static function hasUnlocked(int $employerId, int $candidateId, string $actionType = 'resume_download'): bool
+    {
+        $instance = new self();
+        return (bool)$instance->where('employer_id', '=', $employerId)
+            ->where('candidate_id', '=', $candidateId)
+            ->where('action_type', '=', $actionType)
+            ->first();
+    }
+
     public static function logUsage(
         ?int $subscriptionId,
         int $employerId,

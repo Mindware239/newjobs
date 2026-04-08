@@ -8,33 +8,43 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
 use App\Models\SubscriptionPayment;
+use App\Helpers\PaymentLogger;
 
 class RazorpayWebhookController
 {
     public function handle(Request $request, Response $response): void
     {
-        $len = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
-        if ($len > 5000) {
-            $response->setStatusCode(413);
-            $response->json(['error' => 'payload_too_large']);
-            return;
-        }
         $payload = file_get_contents('php://input');
+        $headers = $request->headers();
+        $signature = $headers['x-razorpay-signature'] ?? '';
+
+        PaymentLogger::logWebhook('razorpay', 'Webhook received', ['signature' => $signature]);
+
         $config = require __DIR__ . '/../../../config/razorpay.php';
         $secret = (string)($config['webhook_secret'] ?? '');
-        $signature = (string)($request->header('X-Razorpay-Signature', ''));
+
         if (!$secret || !$signature) {
+            PaymentLogger::logError('razorpay', 'Webhook missing secret or signature');
             $response->json(['error' => 'unauthorized'], 401);
             return;
         }
+
         $calc = hash_hmac('sha256', $payload, $secret);
         if (!hash_equals($calc, $signature)) {
+            PaymentLogger::logError('razorpay', 'Signature verification failed');
             $response->json(['error' => 'signature_verification_failed'], 401);
             return;
         }
-        $data = json_decode($payload, true) ?: [];
+
+        $data = json_decode($payload, true);
+        if (!$data) {
+            PaymentLogger::logError('razorpay', 'Invalid JSON payload');
+            $response->json(['error' => 'invalid_payload'], 400);
+            return;
+        }
 
         $event = $data['event'] ?? '';
+        PaymentLogger::logWebhook('razorpay', "Event: $event", ['event' => $event]);
 
         // Event allowlist: Prevent noise events
         if (!in_array($event, ['payment.captured', 'payment.failed', 'refund.processed'])) {
@@ -46,29 +56,32 @@ class RazorpayWebhookController
         $gatewayPaymentId = $entity['id'] ?? null;
         $orderId = $entity['order_id'] ?? null;
         $notes = $entity['notes'] ?? [];
-        $currency = (string)($entity['currency'] ?? '');
-        $amountPaise = (int)($entity['amount'] ?? 0);
         $paymentId = isset($notes['subscription_payment_id']) ? (int)$notes['subscription_payment_id'] : 0;
         $employerIdNote = isset($notes['employer_id']) ? (int)$notes['employer_id'] : null;
 
+        // Store webhook log in DB
         try {
-            $eventId = (string)($gatewayPaymentId ?: ($data['payload']['refund']['entity']['id'] ?? ($orderId ?? '')));
+            $eventId = $data['id'] ?? (string)($gatewayPaymentId ?: ($data['payload']['refund']['entity']['id'] ?? ($orderId ?? md5($payload))));
             $db = Database::getInstance();
             $db->query(
                 'INSERT INTO webhooks (gateway, event_type, event_id, signature, payload, processed, received_at, employer_id) 
-                 VALUES (:gateway, :event_type, :event_id, :signature, :payload, 0, NOW(), :employer_id)',
+                 VALUES (:gateway, :event_type, :event_id, :signature, :payload, 0, NOW(), :employer_id)
+                 ON DUPLICATE KEY UPDATE received_at = NOW()',
                 [
                     'gateway' => 'razorpay',
                     'event_type' => (string)$event,
-                    'event_id' => $eventId ?: md5($payload),
+                    'event_id' => $eventId,
                     'signature' => $signature,
-                    'payload' => json_encode($data),
+                    'payload' => $payload,
                     'employer_id' => $employerIdNote
                 ]
             );
-        } catch (\Throwable $t) {}
+        } catch (\Throwable $t) {
+            PaymentLogger::logError('razorpay', 'Failed to store webhook in DB', ['error' => $t->getMessage()]);
+        }
 
         if (!$paymentId) {
+            PaymentLogger::logWebhook('razorpay', 'Payment ID missing in notes, ignoring');
             $response->json(['message' => 'ignored']);
             return;
         }
@@ -80,6 +93,7 @@ class RazorpayWebhookController
             
             if (!$subPay) {
                 $db->rollback();
+                PaymentLogger::logError('razorpay', 'Subscription payment not found', ['id' => $paymentId]);
                 $response->json(['error' => 'payment_not_found'], 404);
                 return;
             }
@@ -90,46 +104,22 @@ class RazorpayWebhookController
             ]);
 
             // Idempotency: if already processed
-            if (($subPay['status'] ?? '') === 'completed' || ($subPay['gateway_payment_id'] ?? '') === $gatewayPaymentId) {
-                // Primary Truth: Only return if EmployerPayment (Ledger) is ALSO consistent.
-                // If EmployerPayment is missing or not success, we continue to fix it.
+            if (($subPay['status'] ?? '') === 'completed') {
                 if ($empPay && ($empPay['status'] ?? '') === 'success') {
                     $db->commit();
+                    PaymentLogger::logPayment('razorpay', 'Payment already processed', ['payment_id' => $paymentId]);
                     $response->json(['ok' => true, 'message' => 'already_processed']);
                     return;
                 }
             }
 
-            // Tamper protection
-            $expectedPaise = (int)round(((float)($subPay['amount'] ?? 0)) * 100);
-            $expectedCurrency = (string)($subPay['currency'] ?? 'INR');
-            $employerNoteId = isset($notes['employer_id']) ? (int)$notes['employer_id'] : 0;
-            $expectedEmployerId = (int)($subPay['employer_id'] ?? 0);
-
-            if ($amountPaise !== $expectedPaise || $currency !== $expectedCurrency || ($expectedEmployerId > 0 && $employerNoteId !== $expectedEmployerId)) {
-                $db->query('UPDATE subscription_payments SET status = "failed", failure_reason = "validation_mismatch" WHERE id = :id', ['id' => $paymentId]);
-                if ($empPay) {
-                    $db->query('UPDATE employer_payments SET status = "failed", error_message = "Validation Mismatch" WHERE id = :id', ['id' => $empPay['id']]);
-                }
-                $db->commit();
-                $response->json(['ok' => true]);
-                return;
-            }
-
-            if ($event === 'payment.captured' || $event === 'payment.success') {
+            if ($event === 'payment.captured') {
                 $paidAt = date('Y-m-d H:i:s');
-                $invoiceNumber = $subPay['invoice_number'] ?? null;
-                $invoiceUrl = $subPay['invoice_url'] ?? null;
-
-                if (empty($invoiceNumber)) {
-                    // Generate Invoice if missing (simple generation logic or call service)
-                    // For now, let's assume service call or simple generation
-                    $invoiceNumber = 'INV-' . date('Ymd') . '-' . $paymentId;
-                }
-                if (empty($invoiceUrl)) {
-                    $invoiceUrl = '/employer/invoices/' . (int)$paymentId;
-                }
+                $invoiceNumber = $subPay['invoice_number'] ?? 'INV-' . date('Ymd') . '-' . $paymentId;
+                $invoiceUrl = $subPay['invoice_url'] ?? '/employer/invoices/' . (int)$paymentId;
                 
+                PaymentLogger::logPayment('razorpay', 'Processing successful payment', ['payment_id' => $paymentId, 'gateway_id' => $gatewayPaymentId]);
+
                 // Update Subscription Payment
                 $db->query('UPDATE subscription_payments SET status = "completed", gateway_payment_id = :pid, gateway_order_id = :oid, paid_at = :paid, invoice_number = :inv, invoice_url = :url WHERE id = :id', [
                     'pid' => $gatewayPaymentId,
@@ -150,7 +140,7 @@ class RazorpayWebhookController
                      ]);
                 } else {
                     $db->query('INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) VALUES (:eid, :sid, :amt, :curr, "razorpay", "webhook", "success", :txn, :meta, NOW())', [
-                        'eid' => $expectedEmployerId,
+                        'eid' => $subPay['employer_id'],
                         'sid' => $paymentId,
                         'amt' => $subPay['amount'],
                         'curr' => $subPay['currency'],
@@ -166,7 +156,6 @@ class RazorpayWebhookController
                     if ($subscription) {
                         $cycle = strtolower((string)($subscription['billing_cycle'] ?? 'monthly'));
                         $baseTs = isset($subscription['expires_at']) && $subscription['expires_at'] ? max(strtotime((string)$subscription['expires_at']), time()) : time();
-                        $start = date('Y-m-d H:i:s', $baseTs);
                         $expires = match ($cycle) {
                             'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months', $baseTs)),
                             'annual' => date('Y-m-d H:i:s', strtotime('+1 year', $baseTs)),
@@ -177,51 +166,25 @@ class RazorpayWebhookController
                             'exp' => $expires,
                             'next' => $expires
                         ]);
+                        PaymentLogger::logPayment('razorpay', 'Subscription activated', ['subscription_id' => $subscriptionId, 'expires_at' => $expires]);
                     }
                 }
             } elseif ($event === 'payment.failed') {
+                PaymentLogger::logPayment('razorpay', 'Payment failed event received', ['payment_id' => $paymentId]);
                 $db->query('UPDATE subscription_payments SET status = "failed", failure_reason = "gateway_failed" WHERE id = :id', ['id' => $paymentId]);
                 if ($empPay) {
                     $db->query('UPDATE employer_payments SET status = "failed" WHERE id = :id', ['id' => $empPay['id']]);
                 }
-            } elseif ($event === 'refund.processed') {
-                $refundEntity = $data['payload']['refund']['entity'] ?? [];
-                $refundAmount = $refundEntity['amount'] ?? 0;
-                $refundId = $refundEntity['id'] ?? '';
-                
-                $db->query('UPDATE subscription_payments SET status = "refunded", refunded_at = NOW(), refund_amount = :amt WHERE id = :id', [
-                    'amt' => $refundAmount / 100, // Convert back to main unit
-                    'id' => $paymentId
-                ]);
-
-                // Check if this refund is already recorded (e.g. initiated by Admin)
-                $existingRefund = $db->fetchOne('SELECT id FROM employer_payments WHERE txn_id = :tid', ['tid' => $refundId]);
-                
-                if (!$existingRefund && $empPay) {
-                    // Insert new refund record
-                    $db->query(
-                        "INSERT INTO employer_payments (employer_id, amount, currency, status, payment_method, txn_id, description, created_at)
-                         VALUES (:employer_id, :amount, :currency, 'refunded', 'refund', :txn_id, :description, NOW())",
-                        [
-                            'employer_id' => $empPay['employer_id'],
-                            'amount' => -($refundAmount / 100),
-                            'currency' => $refundEntity['currency'] ?? 'INR',
-                            'txn_id' => $refundId,
-                            'description' => 'Refund processed (Webhook)'
-                        ]
-                    );
-                    
-                    // Mark original payment as refunded if full refund
-                    $paymentAmountPaise = (int)($entity['amount'] ?? 0); // Original payment amount
-                    if ($paymentAmountPaise > 0 && $refundAmount >= $paymentAmountPaise) {
-                        $db->query("UPDATE employer_payments SET status = 'refunded' WHERE id = :id", ['id' => $empPay['id']]);
-                    }
-                }
             }
+            
+            // Mark webhook as processed
+            $db->query('UPDATE webhooks SET processed = 1, processed_at = NOW() WHERE event_id = :eid AND gateway = "razorpay"', ['eid' => $eventId]);
+            
             $db->commit();
+            PaymentLogger::logPayment('razorpay', 'Transaction committed successfully');
         } catch (\Throwable $e) {
             $db->rollback();
-            error_log("Webhook Error: " . $e->getMessage());
+            PaymentLogger::logError('razorpay', 'Internal error processing webhook', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             $response->json(['error' => 'internal_error'], 500);
             return;
         }

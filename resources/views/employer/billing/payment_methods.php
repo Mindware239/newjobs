@@ -1,295 +1,371 @@
-<h1 class="text-3xl font-bold text-gray-900 mb-6">Payment Methods</h1>
+<?php
+$title = 'Payment Methods';
+?>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Saved Methods</h2>
-        <?php if (!empty($methods)): ?>
-        <ul class="space-y-3">
-            <?php foreach ($methods as $m): ?>
-            <?php $isDefault = (bool)($m['is_default'] ?? false); ?>
-            <li class="p-4 border rounded-lg flex items-center justify-between bg-white shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-md bg-blue-50 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2z"></path></svg>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-900"><?= htmlspecialchars($m['label'] ?? 'Method') ?></p>
-                        <p class="text-sm text-gray-600"><?= htmlspecialchars($m['details'] ?? '') ?></p>
-                    </div>
-                    <?php if ($isDefault): ?>
-                                <span class="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800 inline-flex items-center gap-1">   
-                            <svg class="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927l.951 1.928 2.129.31-1.54 1.5.364 2.121-1.904-1-1.904 1 .364-2.121-1.54-1.5 2.129-.31.951-1.928z"></path></svg>
-                            Default
-                        </span>
-                    <?php endif; ?>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 rounded-md inline-flex items-center gap-1">
-                        <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927l.951 1.928 2.129.31-1.54 1.5.364 2.121-1.904-1-1.904 1 .364-2.121-1.54-1.5 2.129-.31.951-1.928z"></path></svg>
-                        Set as Default
-                    </button>
-                    <button class="px-3 py-1.5 text-sm bg-gray-50 text-gray-700 rounded-md inline-flex items-center gap-1">
-                        <svg class="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 20.5H4v-3.5L16.732 3.732z"></path></svg>
-                        Edit
-                    </button>
-                    <button class="px-3 py-1.5 text-sm bg-gray-50 text-blue-600 rounded-md inline-flex items-center gap-1">
-                        <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M6 7h12m-5-4h-2a2 2 0 00-2 2v2h6V5a2 2 0 00-2-2z"></path></svg>
-                        Remove
-                    </button>
-                </div>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-        <?php else: ?>
-        <div class="p-6 border rounded-lg bg-blue-50 text-center">
-            <svg class="mx-auto w-12 h-12 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2z"></path></svg>
-            <p class="mt-2 text-blue-600">No payment methods saved.</p>
-        </div>
-        <?php endif; ?>
+<div x-data="paymentMethodsManager()" class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 sm:text-3xl">Payment Methods</h2>
+        <p class="mt-1 text-sm text-gray-500">Manage your cards and UPI IDs for seamless billing.</p>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Add New Method</h2>
-        <?php if (!empty($message)): ?><div class="p-3 mb-4 bg-green-50 text-green-700 border border-green-200 rounded-md"><?= htmlspecialchars($message) ?></div><?php endif; ?>
-        <form id="payment-method-form" method="POST" action="/employer/billing/payment-methods" class="space-y-4">
-            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>" />
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <!-- Sidebar: Saved Methods -->
+        <div class="lg:col-span-1">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                Your Saved Methods
+            </h3>
+            
+            <div class="space-y-4">
+                <?php if (empty($methods)): ?>
+                    <div class="bg-gray-50 border-2 border-dashed rounded-2xl p-8 text-center">
+                        <p class="text-gray-400 text-sm">No payment methods saved yet.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($methods as $m): ?>
+                        <div class="bg-white border rounded-2xl p-4 shadow-sm transition-all hover:shadow-md relative group <?= $m['is_default'] ? 'border-indigo-500 ring-1 ring-indigo-100' : 'border-gray-200' ?>">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                                        <?php if ($m['method_type'] === 'card'): ?>
+                                            <span class="text-[10px] font-black text-gray-400"><?= strtoupper($m['brand'] ?? 'CARD') ?></span>
+                                        <?php else: ?>
+                                            <span class="text-[10px] font-black text-indigo-600">UPI</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900"><?= htmlspecialchars($m['label']) ?></p>
+                                        <p class="text-[11px] text-gray-500"><?= htmlspecialchars($m['details']) ?></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <?php if (!$m['is_default']): ?>
+                                        <button @click="setDefault(<?= $m['id'] ?>)" class="p-1.5 text-gray-400 hover:text-indigo-600" title="Set Default">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        </button>
+                                    <?php endif; ?>
+                                    <button @click="deleteMethod(<?= $m['id'] ?>)" class="p-1.5 text-gray-400 hover:text-red-500" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M6 7h12m-5-4h-2a2 2 0 00-2 2v2h6V5a2 2 0 00-2-2z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <?php if ($m['is_default']): ?>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">DEFAULT</span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
 
-            <div x-data="{ type: 'card' }" class="space-y-4">
-                <div class="flex items-center gap-2 bg-blue-50 rounded-md p-1">
-                    <button type="button" @click="type='card'" :class="type==='card' ? 'px-3 py-1.5 rounded-md bg-white border border-blue-200 text-gray-900 inline-flex items-center gap-2' : 'px-3 py-1.5 rounded-md text-gray-600 inline-flex items-center gap-2'">
-                        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2z"></path></svg>
+        <!-- Main Content: Add New Method -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl shadow-xl shadow-indigo-100/50 border border-gray-100 overflow-hidden">
+                <!-- Tab Headers -->
+                <div class="flex bg-gray-50/50 p-1.5 gap-1">
+                    <button @click="type = 'card'" :class="type === 'card' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                         Card
                     </button>
-                    <button type="button" @click="type='upi'" :class="type==='upi' ? 'px-3 py-1.5 rounded-md bg-white border border-gray-200 text-gray-900 inline-flex items-center gap-2' : 'px-3 py-1.5 rounded-md text-gray-600 inline-flex items-center gap-2'">
-                        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 2h6a2 2 0 012 2v16a2 2 0 01-2 2H9a2 2 0 01-2-2V4a2 2 0 012-2zM12 18h.01"></path></svg>
-                        UPI
+                    <button @click="type = 'upi'" :class="type === 'upi' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        UPI ID
                     </button>
-                    <button type="button" @click="type='netbanking'" :class="type==='netbanking' ? 'px-3 py-1.5 rounded-md bg-white border border-gray-200 text-gray-900 inline-flex items-center gap-2' : 'px-3 py-1.5 rounded-md text-gray-600 inline-flex items-center gap-2'">
-                        <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9-4 9 4-9 4-9-4"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 21h16"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10h16"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h16"></path>
-                        </svg>
-                        Netbanking
-                    </button>
-                    <input type="hidden" name="method_type" :value="type">
                 </div>
 
-                <div x-show="type==='card'" class="space-y-4" x-cloak>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Card number</label>
-                        <div class="relative">
-                            <svg class="w-5 h-5 text-blue-500 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2z"></path></svg>
-                            <input id="card-number" name="card_number" type="text" class="w-full pl-10 pr-14 py-2 border rounded-md focus:ring-2 focus:ring-[#dbeafe]" placeholder="1234 5678 9012 3456" />
-                            <div id="card-brand" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-600"></div>
-                        </div>
-                        <p id="card-number-error" class="text-xs text-red-600 mt-1 hidden">Invalid card number</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Expiry date</label>
-                            <div class="relative">
-                                <svg class="w-5 h-5 text-blue-500 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2zM3 11h18"></path></svg>
-                                <input id="card-expiry" name="card_expiry" type="text" class="w-full pl-10 py-2 border rounded-md focus:ring-2 focus:ring-[#dbeafe]" placeholder="MM/YY" />
+                <div class="p-8">
+                    <form @submit.prevent="saveMethod()">
+                        <!-- Card Workflow -->
+                        <div x-show="type === 'card'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" class="space-y-8">
+                            
+                            <!-- Interactive Card Preview -->
+                            <div class="relative max-w-sm mx-auto h-52 rounded-[24px] p-8 text-white shadow-2xl transition-all duration-700 transform perspective-1000 overflow-hidden"
+                                 :class="getCardTheme()">
+                                <div class="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                                <div class="relative z-10 h-full flex flex-col justify-between">
+                                    <div class="flex justify-between items-start">
+                                        <div class="w-14 h-10 bg-gradient-to-br from-yellow-200 to-yellow-500 rounded-lg shadow-inner flex items-center justify-center">
+                                            <div class="w-10 h-0.5 bg-yellow-700/20 mb-1"></div>
+                                        </div>
+                                        <div class="h-10 flex items-center" x-html="getBrandIcon()"></div>
+                                    </div>
+                                    
+                                    <div class="text-2xl font-mono tracking-[0.15em] drop-shadow-lg" x-text="formatPreviewNumber()"></div>
+                                    
+                                    <div class="flex justify-between items-end">
+                                        <div class="flex-1 truncate mr-4">
+                                            <p class="text-[9px] uppercase tracking-widest opacity-60 mb-1">Card Holder</p>
+                                            <p class="text-sm font-bold uppercase tracking-tight" x-text="cardName || 'FULL NAME'"></p>
+                                        </div>
+                                        <div class="text-right whitespace-nowrap">
+                                            <p class="text-[9px] uppercase tracking-widest opacity-60 mb-1">Expires</p>
+                                            <p class="text-sm font-mono font-bold" x-text="cardExpiry || 'MM/YY'"></p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <p id="card-expiry-error" class="text-xs text-red-600 mt-1 hidden">Expired card</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Security code</label>
-                            <div class="relative">
-                                <svg class="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11V7a4 4 0 10-8 0v4m16 0V7a4 4 0 10-8 0v4m-6 4h12a2 2 0 002-2V9H4v4a2 2 0 002 2z"></path></svg>
-                                <input id="card-cvv" name="card_cvv" type="text" class="w-full pl-10 py-2 border rounded-md focus:ring-2 focus:ring-[#dbeafe]" placeholder="3 digits" />
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">3-digit code on the back of your card</p>
-                            <p id="card-cvv-error" class="text-xs text-red-600 mt-1 hidden">Wrong CVV</p>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Name on card</label>
-                        <div class="relative">
-                            <svg class="w-5 h-5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 1118.879 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <input id="card-name" name="card_name" type="text" class="w-full pl-10 py-2 border rounded-md focus:ring-2 focus:ring-[#dbeafe]" placeholder="John Doe" />
-                        </div>
-                        <p id="card-name-error" class="text-xs text-red-600 mt-1 hidden">This field is required</p>
-                    </div>
-                    <label class="inline-flex items-center gap-2">
-                        <input type="checkbox" name="set_default" value="1">
-                        <span class="text-sm text-gray-700">Set as default payment method</span>
-                    </label>
-                </div>
 
-                <div x-show="type==='netbanking'" class="space-y-4" x-cloak>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Bank</label>
-                        <div x-data="{ open:false, bank:'' }" class="relative">
-                            <button type="button" @click="open=!open" class="w-full px-3 py-2 border rounded-md flex items-center justify-between">
-                                <span class="flex items-center gap-2" x-text="bank || 'Choose bank'"></span>
-                                <svg class="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <!-- Card Inputs -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                                <div class="md:col-span-4">
+                                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Card Number</label>
+                                    <div class="relative">
+                                        <input type="text" x-model="cardNumber" @input="handleCardInput" maxlength="19"
+                                               :class="errors.cardNumber ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                               class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono text-lg tracking-wider outline-none focus:ring-4"
+                                               placeholder="0000 0000 0000 0000">
+                                        <div class="absolute right-5 top-1/2 -translate-y-1/2" x-html="getBrandIcon()"></div>
+                                    </div>
+                                    <p x-show="errors.cardNumber" class="text-[11px] text-red-500 mt-2 font-bold flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                        <span x-text="errors.cardNumber"></span>
+                                    </p>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Expiry Date</label>
+                                    <input type="text" x-model="cardExpiry" @input="handleExpiryInput" maxlength="5"
+                                           :class="errors.cardExpiry ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                           class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono outline-none focus:ring-4"
+                                           placeholder="MM / YY">
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">CVV / CVC</label>
+                                    <input type="password" x-model="cardCvv" maxlength="4" @input="validate('cardCvv')"
+                                           :class="errors.cardCvv ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                           class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono outline-none focus:ring-4"
+                                           placeholder="•••">
+                                </div>
+
+                                <div class="md:col-span-4">
+                                    <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Cardholder Name</label>
+                                    <input type="text" x-model="cardName" @input="validate('cardName')"
+                                           class="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all uppercase font-bold outline-none"
+                                           placeholder="AS SHOWN ON CARD">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UPI Workflow -->
+                        <div x-show="type === 'upi'" x-transition x-cloak class="space-y-6">
+                            <div class="p-6 rounded-3xl bg-indigo-50/50 border border-indigo-100 flex items-center gap-5">
+                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200">
+                                    <span class="text-white font-black tracking-tighter text-sm">UPI</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-indigo-900 font-black text-sm uppercase tracking-wide">Instant Verification</h4>
+                                    <p class="text-indigo-700/60 text-xs mt-1 leading-relaxed">Your UPI ID will be verified instantly. Supports all major apps like GPay, PhonePe, and Paytm.</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">UPI ID / VPA</label>
+                                <input type="text" x-model="upiId" @input="validate('upiId')"
+                                       :class="errors.upiId ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                       class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-bold outline-none focus:ring-4"
+                                       placeholder="username@bank">
+                                <p x-show="errors.upiId" class="text-[11px] text-red-500 mt-2 font-bold" x-text="errors.upiId"></p>
+                            </div>
+                        </div>
+
+                        <!-- Submit Section -->
+                        <div class="mt-10 pt-8 border-t border-gray-50 flex items-center justify-between">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" x-model="isDefault" class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border-2 border-gray-200 transition-all checked:border-indigo-600 checked:bg-indigo-600">
+                                    <svg class="absolute h-5 w-5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <span class="text-sm font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Default Method</span>
+                            </label>
+
+                            <button type="submit" 
+                                    :disabled="loading || !canSubmit()"
+                                    class="relative px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-indigo-200 flex items-center gap-3">
+                                <span x-show="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span x-text="loading ? 'Processing...' : 'Save Method'"></span>
                             </button>
-                            <input type="hidden" id="netbanking-bank" name="netbanking_bank" :value="bank">
-                            <div x-show="open" x-cloak class="absolute z-10 w-full mt-1 bg-white border rounded-md shadow">
-                                <?php 
-                                    $banks = ['HDFC','ICICI','SBI','Axis','Kotak']; 
-                                    $logoMap = [
-                                        'HDFC' => 'https://commons.wikimedia.org/wiki/Special:FilePath/HDFC_Bank_Logo.svg',
-                                        'ICICI' => 'https://commons.wikimedia.org/wiki/Special:FilePath/ICICI_Bank_Logo.svg',
-                                        'SBI' => 'https://commons.wikimedia.org/wiki/Special:FilePath/SBI-logo.svg',
-                                        'Axis' => 'https://commons.wikimedia.org/wiki/Special:FilePath/Axis_Bank_logo.svg',
-                                        'Kotak' => 'https://en.wikipedia.org/wiki/Special:FilePath/Kotak_Mahindra_Group_logo.svg',
-                                    ];
-                                    foreach ($banks as $bk): 
-                                ?>
-                                <button type="button" @click="bank='<?= $bk ?>'; open=false" class="w-full text-left px-3 py-2 hover:bg-blue-50 flex items-center gap-2">
-                                    <img src="<?= htmlspecialchars($logoMap[$bk]) ?>" alt="<?= $bk ?> logo" class="w-6 h-6 grayscale opacity-80 hover:opacity-100 transition" />
-                                    <span><?= $bk ?> Bank</span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
                         </div>
-                        <p id="netbanking-bank-error" class="text-xs text-red-600 mt-1 hidden">Please select a bank</p>
-                    </div>
-                </div>
-
-                <div x-show="type==='upi'" class="space-y-4" x-cloak>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
-                        <div class="relative">
-                            <input id="upi-id" name="upi_id" type="text" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#dbeafe]" placeholder="name@bank" />
-                        </div>
-                        <p id="upi-id-error" class="text-xs text-red-600 mt-1 hidden">Enter a valid UPI ID</p>
-                        <div class="mt-3 flex items-center gap-4">
-    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Google_Pay_Logo.svg"
-         alt="Google Pay"
-         class="w-12 h-12 grayscale opacity-80 hover:opacity-100 transition" />
-
-    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/PhonePe_Logo.svg"
-         alt="PhonePe"
-         class="w-12 h-12 grayscale opacity-80 hover:opacity-100 transition" />     
-
-    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Paytm_Logo_(standalone).svg"
-         alt="Paytm"
-         class="w-12 h-12 grayscale opacity-80 hover:opacity-100 transition" />
-
-    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/BHIM_SVG_Logo.svg"
-         alt="BHIM UPI"
-         class="w-12 h-12 grayscale opacity-80 hover:opacity-100 transition" />
-</div>
-
-                    </div>
+                    </form>
                 </div>
             </div>
-
-            <button id="save-method-btn" class="px-4 py-2 bg-[#eef2ff] text-gray-900 rounded-md hover:bg-[#e0e7ff]">Save Method</button>
-            <p class="text-xs text-blue-600 mt-2 flex items-center gap-2">
-                <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l7 4v5a10 10 0 01-7 9 10 10 0 01-7-9V6l7-4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path></svg>      
-                Your payment details are encrypted and securely stored.
-            </p>
-            <p class="text-xs text-gray-500 mt-6">By saving a payment method, you agree to our Terms & Privacy Policy.</p>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
-// Brand detection
-const brandEl = document.getElementById('card-brand');
-const numberEl = document.getElementById('card-number');
-const expiryEl = document.getElementById('card-expiry');
-const cvvEl = document.getElementById('card-cvv');
-const nameEl = document.getElementById('card-name');
-const upiEl = document.getElementById('upi-id');
-const bankEl = document.getElementById('netbanking-bank');
-const formEl = document.getElementById('payment-method-form');
-const saveBtn = document.getElementById('save-method-btn');
+function paymentMethodsManager() {
+    return {
+        type: 'card',
+        loading: false,
+        cardNumber: '',
+        cardExpiry: '',
+        cardCvv: '',
+        cardName: '',
+        upiId: '',
+        isDefault: false,
+        brand: '',
+        errors: {},
 
-function detectBrand(num) {
-    const n = (num || '').replace(/\s+/g, '');
-    if (/^4\d{0,}$/.test(n)) return 'visa';
-    if (/^(5[1-5]\d{0,}|2(2[2-9]\d{0,}|[3-6]\d{0,}|7[01]\d{0,}|720\d{0,}))$/.test(n)) return 'mastercard';
-    if (/^(60|65|6521|81)\d{0,}$/.test(n)) return 'rupay';
-    if (/^3[47]\d{0,}$/.test(n)) return 'amex';
-    return '';
-}
-function luhnValid(num) {
-    const s = (num || '').replace(/\s+/g, '');
-    if (!/^\d{12,19}$/.test(s)) return false;
-    let sum = 0, dbl = false;
-    for (let i = s.length - 1; i >= 0; i--) {
-        let d = parseInt(s[i], 10);
-        if (dbl) {
-            d *= 2;
-            if (d > 9) d -= 9;
+        handleCardInput(e) {
+            let val = e.target.value.replace(/\D/g, '');
+            let formatted = '';
+            for (let i = 0; i < val.length; i++) {
+                if (i > 0 && i % 4 === 0) formatted += ' ';
+                formatted += val[i];
+            }
+            this.cardNumber = formatted;
+            this.detectBrand(val);
+            this.validate('cardNumber');
+        },
+
+        formatPreviewNumber() {
+            if (!this.cardNumber) return '•••• •••• •••• ••••';
+            const raw = this.cardNumber.replace(/\s/g, '');
+            const visible = raw.slice(-4);
+            const masked = '•••• •••• •••• '.slice(0, Math.max(0, this.cardNumber.length - 5));
+            return (masked + visible).padEnd(19, '•');
+        },
+
+        handleExpiryInput(e) {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length >= 2) {
+                this.cardExpiry = val.slice(0, 2) + '/' + val.slice(2, 4);
+            } else {
+                this.cardExpiry = val;
+            }
+            this.validate('cardExpiry');
+        },
+
+        detectBrand(num) {
+            if (/^4/.test(num)) this.brand = 'visa';
+            else if (/^5[1-5]|^2[2-7]/.test(num)) this.brand = 'mastercard';
+            else if (/^3[47]/.test(num)) this.brand = 'amex';
+            else if (/^60|^65|^81/.test(num)) this.brand = 'rupay';
+            else this.brand = '';
+        },
+
+        getCardTheme() {
+            const themes = {
+                'visa': 'bg-gradient-to-br from-blue-600 to-indigo-900',
+                'mastercard': 'bg-gradient-to-br from-red-500 to-orange-700',
+                'amex': 'bg-gradient-to-br from-emerald-500 to-teal-800',
+                'rupay': 'bg-gradient-to-br from-indigo-700 to-purple-900'
+            };
+            return themes[this.brand] || 'bg-gradient-to-br from-gray-700 to-gray-900';
+        },
+
+        getBrandIcon() {
+            if (!this.brand) return '';
+            const labels = { 'visa': 'VISA', 'mastercard': 'MasterCard', 'amex': 'AMEX', 'rupay': 'RuPay' };
+            return `<span class="text-xs font-black italic tracking-tighter text-white/90 drop-shadow-sm">${labels[this.brand]}</span>`;
+        },
+
+        validate(field) {
+            this.errors[field] = '';
+            const rawCard = this.cardNumber.replace(/\s/g, '');
+
+            if (field === 'cardNumber' && rawCard) {
+                if (rawCard.length < 13) this.errors.cardNumber = 'Number too short';
+                else if (!this.luhnCheck(rawCard)) this.errors.cardNumber = 'Invalid card number';
+            }
+
+            if (field === 'cardExpiry' && this.cardExpiry.length === 5) {
+                const [m, y] = this.cardExpiry.split('/');
+                const month = parseInt(m);
+                const year = 2000 + parseInt(y);
+                const now = new Date();
+                if (month < 1 || month > 12) this.errors.cardExpiry = 'Invalid month';
+                else if (new Date(year, month, 0) < now) this.errors.cardExpiry = 'Expired';
+            }
+
+            if (field === 'upiId' && this.upiId) {
+                if (!/^[\w.-]+@[\w.-]+$/.test(this.upiId)) this.errors.upiId = 'Invalid format';
+            }
+        },
+
+        luhnCheck(num) {
+            let sum = 0;
+            for (let i = 0; i < num.length; i++) {
+                let d = parseInt(num[num.length - 1 - i]);
+                if (i % 2 === 1) {
+                    d *= 2;
+                    if (d > 9) d -= 9;
+                }
+                sum += d;
+            }
+            return sum % 10 === 0;
+        },
+
+        canSubmit() {
+            if (this.type === 'card') {
+                return this.cardNumber.length >= 15 && this.cardExpiry.length === 5 && 
+                       this.cardCvv.length >= 3 && this.cardName.length > 2 && 
+                       !Object.values(this.errors).some(e => e);
+            }
+            return /^[\w.-]+@[\w.-]+$/.test(this.upiId);
+        },
+
+        async saveMethod() {
+            this.loading = true;
+            try {
+                const res = await fetch('/employer/billing/payment-methods', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'
+                    },
+                    body: JSON.stringify({
+                        method_type: this.type,
+                        card_number: this.cardNumber,
+                        card_expiry: this.cardExpiry,
+                        card_name: this.cardName,
+                        upi_id: this.upiId,
+                        brand: this.brand,
+                        set_default: this.isDefault ? '1' : '0'
+                    })
+                });
+                
+                if (res.ok) window.location.reload();
+                else {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || data.message || 'Failed to save');
+                }
+            } catch (e) { alert('Network error'); }
+            finally { this.loading = false; }
+        },
+
+        async deleteMethod(id) {
+            if (!confirm('Delete this payment method?')) return;
+            const res = await fetch(`/employer/billing/payment-methods/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'
+                }
+            });
+            if (res.ok) window.location.reload();
+        },
+
+        async setDefault(id) {
+            const res = await fetch(`/employer/billing/payment-methods/${id}/default`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?>'
+                }
+            });
+            if (res.ok) window.location.reload();
         }
-        sum += d;
-        dbl = !dbl;
     }
-    return sum % 10 === 0;
 }
-function expiryValid(mmYY) {
-    const m = (mmYY || '').trim();
-    const match = /^(\d{2})\/(\d{2})$/.exec(m);
-    if (!match) return false;
-    const mm = parseInt(match[1], 10);
-    const yy = parseInt(match[2], 10);
-    if (mm < 1 || mm > 12) return false;
-    const year = 2000 + yy;
-    const now = new Date();
-    const end = new Date(year, mm, 0); // end of month
-    return end >= new Date(now.getFullYear(), now.getMonth(), 1);
-}
-function cvvValid(cvv) {
-    return /^\d{3}$/.test(cvv || '');
-}
-function show(el, show) {
-    if (!el) return;
-    el.classList.toggle('hidden', !show);
-}
-
-numberEl?.addEventListener('input', () => {
-    const brand = detectBrand(numberEl.value);
-    const common = 'class="w-8 h-5 opacity-80"';
-    let svg = '';
-    if (brand === 'visa') {
-        svg = `<svg ${common} viewBox="0 0 36 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="32" height="16" rx="3"></rect><text x="6" y="16" fill="currentColor" font-size="8">VISA</text></svg>`;
-    } else if (brand === 'mastercard') {
-        svg = `<svg ${common} viewBox="0 0 36 24" fill="none" stroke="currentColor"><circle cx="14" cy="12" r="6"></circle><circle cx="22" cy="12" r="6"></circle></svg>`;
-    } else if (brand === 'rupay') {
-        svg = `<svg ${common} viewBox="0 0 36 24" fill="none" stroke="currentColor"><rect x="6" y="7" width="24" height="10" rx="2"></rect><path d="M10 12h16"></path></svg>`;
-    } else if (brand === 'amex') {
-        svg = `<svg ${common} viewBox="0 0 36 24" fill="none" stroke="currentColor"><rect x="4" y="6" width="28" height="12" rx="2"></rect><text x="8" y="15" fill="currentColor" font-size="6">AMEX</text></svg>`;
-    }
-    brandEl.innerHTML = svg;
-});
-
-formEl?.addEventListener('submit', (e) => {
-    const type = document.querySelector('input[name=method_type]')?.value || 'card';
-    let ok = true;
-    // Reset errors
-    show(document.getElementById('card-number-error'), false);
-    show(document.getElementById('card-expiry-error'), false);
-    show(document.getElementById('card-cvv-error'), false);
-    show(document.getElementById('card-name-error'), false);
-    show(document.getElementById('upi-id-error'), false);
-    show(document.getElementById('netbanking-bank-error'), false);
-
-    if (type === 'card') {
-        if (!luhnValid(numberEl?.value)) { show(document.getElementById('card-number-error'), true); ok = false; }
-        if (!expiryValid(expiryEl?.value)) { show(document.getElementById('card-expiry-error'), true); ok = false; }
-        if (!cvvValid(cvvEl?.value)) { show(document.getElementById('card-cvv-error'), true); ok = false; }
-        if (!nameEl?.value?.trim()) { show(document.getElementById('card-name-error'), true); ok = false; }
-    } else if (type === 'upi') {
-        const re = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/;
-        if (!re.test(upiEl?.value || '')) { show(document.getElementById('upi-id-error'), true); ok = false; }
-    } else if (type === 'netbanking') {
-        if (!bankEl?.value) { show(document.getElementById('netbanking-bank-error'), true); ok = false; }
-    }
-
-    if (!ok) {
-        e.preventDefault();
-        return;
-    }
-    // Loading state
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<svg class="animate-spin h-5 w-5 inline-block mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0A12 12 0 000 12h4zm2 5.291A8 8 0 014 12H0a12 12 0 008 10.392V20z"></path></svg>Saving...';
-});
 </script>
+
+<style>
+[x-cloak] { display: none !important; }
+.perspective-1000 { perspective: 1000px; }
+</style>

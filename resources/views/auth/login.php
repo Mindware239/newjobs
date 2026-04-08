@@ -245,8 +245,22 @@
                 <span x-text="error"></span>
             </div>
 
-            <form @submit.prevent="submitLogin()">
+            <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
+                <button type="button" @click="authMode = 'password'; error=''; success=''"
+                        :style="authMode === 'password' ? activeModeStyle : inactiveModeStyle"
+                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">
+                    Email Password
+                </button>
+                <button type="button" @click="authMode = 'otp'; error=''; success=''"
+                        :style="authMode === 'otp' ? activeModeStyle : inactiveModeStyle"
+                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">
+                    Mobile OTP
+                </button>
+            </div>
 
+            <form @submit.prevent="authMode === 'otp' ? submitOtpLogin() : submitLogin()">
+
+                <div x-show="authMode === 'password'" x-cloak>
                 <!-- Email -->
                 <div style="margin-bottom:14px;">
                     <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
@@ -324,6 +338,59 @@
                         </span>
                     </template>
                 </button>
+                </div>
+
+                <div x-show="authMode === 'otp'" x-cloak>
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
+                            Mobile Number <span style="color:#ef4444;">*</span>
+                        </label>
+                        <input type="tel"
+                               x-model="otpForm.phone"
+                               placeholder="Enter mobile number"
+                               class="f-input">
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
+                            OTP <span style="color:#ef4444;">*</span>
+                        </label>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text"
+                                   x-model="otpForm.otp"
+                                   maxlength="6"
+                                   placeholder="6-digit OTP"
+                                   class="f-input"
+                                   style="flex:1;">
+                            <button type="button"
+                                    @click="sendOtp()"
+                                    :disabled="isSendingOtp || !otpForm.phone"
+                                    style="padding:0 14px;border:none;border-radius:10px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
+                                <span x-show="!isSendingOtp && otpCooldown === 0">Send OTP</span>
+                                <span x-show="isSendingOtp">Sending...</span>
+                                <span x-show="!isSendingOtp && otpCooldown > 0" x-text="otpCooldown + 's'"></span>
+                            </button>
+                        </div>
+                        <p x-show="otpPreview" style="font-size:11.5px;color:#2563eb;margin-top:5px;">
+                            Test OTP: <span x-text="otpPreview"></span>
+                        </p>
+                    </div>
+
+                    <button type="submit" :disabled="isSubmitting || !otpForm.phone || !otpForm.otp" class="btn-main" style="margin-bottom:14px;">
+                        <template x-if="!isSubmitting">
+                            <span style="display:flex;align-items:center;gap:7px;">Login With OTP</span>
+                        </template>
+                        <template x-if="isSubmitting">
+                            <span style="display:flex;align-items:center;gap:7px;">
+                                <svg class="spin" width="14" height="14" fill="none" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.25;"/>
+                                    <path fill="currentColor" style="opacity:.75;" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                Verifying...
+                            </span>
+                        </template>
+                    </button>
+                </div>
 
                 <!-- Divider -->
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -384,15 +451,23 @@
         return {
             isSubmitting: false,
             showPassword: false,
+            authMode: 'password',
             error: '<?= $error ?? '' ?>',
             success: messageParam ? decodeURIComponent(messageParam) : '',
             redirect: '<?= $redirect ?? '' ?>',
             emailValid: true,
             emailError: '',
+            isSendingOtp: false,
+            otpCooldown: 0,
+            otpPreview: '',
+            otpTimer: null,
+            activeModeStyle: 'background:#ffffff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)',
+            inactiveModeStyle: 'background:transparent;color:#6b7280',
             registrationSuccess: registered === '1',
             registrationMessage: registeredEmail ? `Account created for ${registeredEmail}. Please login.` : 'Account created successfully. Please login.',
             hideForgot: false,
             formData: { email: registeredEmail || '', password: '', remember: false },
+            otpForm: { phone: '', otp: '', purpose: 'auth' },
             init() {
                 if (this.registrationSuccess) {
                     try { if (window.MWMarketing) { window.MWMarketing.trackCompleteRegistration({ content_type: 'candidate', candidate_type: 'candidate', value: 0, currency: 'INR' }); } } catch(_){}
@@ -413,12 +488,49 @@
                     }, 5000);
                 }
             },
+            startOtpCooldown() {
+                clearInterval(this.otpTimer);
+                this.otpCooldown = 30;
+                this.otpTimer = setInterval(() => {
+                    if (this.otpCooldown > 0) {
+                        this.otpCooldown--;
+                        return;
+                    }
+                    clearInterval(this.otpTimer);
+                }, 1000);
+            },
             validateEmail() {
                 const email = this.formData.email;
                 if (!email) { this.emailValid = true; this.emailError = ''; return; }
                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!regex.test(email)) { this.emailValid = false; this.emailError = 'Please enter a valid email address'; }
                 else { this.emailValid = true; this.emailError = ''; }
+            },
+            async sendOtp() {
+                if (!this.otpForm.phone || this.isSendingOtp || this.otpCooldown > 0) return;
+                this.error = '';
+                this.success = '';
+                this.otpPreview = '';
+                this.isSendingOtp = true;
+                try {
+                    const res = await fetch('/auth/phone/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
+                        body: JSON.stringify({ phone: this.otpForm.phone, purpose: 'auth' })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        this.success = data.message || 'OTP sent successfully';
+                        this.otpPreview = data.otp_preview || '';
+                        this.startOtpCooldown();
+                    } else {
+                        this.error = data.error || data.message || 'Failed to send OTP';
+                    }
+                } catch (e) {
+                    this.error = 'Failed to send OTP';
+                } finally {
+                    this.isSendingOtp = false;
+                }
             },
             async submitLogin() {
                 this.validateEmail();
@@ -456,6 +568,26 @@
                         window.location.href = r;
                     } else { this.error = payload.error || payload.message || data.error || data.message || 'Please try again'; }
                 } catch (e) { this.error = 'Please try again'; }
+                this.isSubmitting = false;
+            },
+            async submitOtpLogin() {
+                this.isSubmitting = true;
+                this.error = '';
+                try {
+                    const res = await fetch('/auth/phone/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
+                        body: JSON.stringify(this.otpForm)
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        window.location.href = data.redirect || this.redirect || '/';
+                    } else {
+                        this.error = data.error || data.message || 'OTP login failed';
+                    }
+                } catch (e) {
+                    this.error = 'OTP login failed';
+                }
                 this.isSubmitting = false;
             },
             getCsrfToken() { return document.querySelector('meta[name="csrf-token"]')?.content || ''; }

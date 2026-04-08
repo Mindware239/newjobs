@@ -46,8 +46,12 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
 
     // 1. Authentication
     $router->post('/login', [AuthController::class, 'login']);
+    $router->post('/send-phone-otp', [AuthController::class, 'sendPhoneOtp']);
+    $router->post('/login-phone', [AuthController::class, 'loginWithPhoneOtp']);
     $router->post('/register-candidate', [AuthController::class, 'registerCandidate']);
+    $router->post('/register-candidate-phone', [AuthController::class, 'registerCandidateWithPhoneOtp']);
     $router->post('/register-employer', [AuthController::class, 'registerEmployer']);
+    $router->post('/register-employer-phone', [AuthController::class, 'registerEmployerWithPhoneOtp']);
     $router->post('/verify-email', [AuthController::class, 'verifyEmail']);
     $router->post('/verify-otp', [AuthController::class, 'verifyOtp']);
     $router->post('/resend-otp', [AuthController::class, 'resendOtp']);

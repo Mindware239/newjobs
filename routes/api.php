@@ -322,7 +322,7 @@ $router->get('/api/job-titles/search', function(Request $request, Response $resp
     // Use direct limit value (PDO doesn't always bind LIMIT correctly)
     $limit = max(1, min(50, $limit)); // Ensure limit is between 1 and 50
     
-    $sql = "SELECT id, title, slug FROM job_titles 
+    $sql = "SELECT id, title, slug, category FROM job_titles 
             WHERE is_active = 1 AND LOWER(title) LIKE LOWER(:query)
             ORDER BY 
                 CASE 
@@ -345,7 +345,8 @@ $router->get('/api/job-titles/search', function(Request $request, Response $resp
             return [
                 'id' => $row['id'],
                 'title' => $row['title'],
-                'slug' => $row['slug']
+                'slug' => $row['slug'],
+                'category' => $row['category'] ?? ''
             ];
         }, $results);
         

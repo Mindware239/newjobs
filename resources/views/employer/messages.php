@@ -235,8 +235,9 @@ let currentConversationId = null;
 let messagePollInterval = null;
 let selectedFiles = [];
 let activeTab = 'inbox';
+let conversationListPollInterval = null;
 
-const conversations = <?= json_encode($conversations, JSON_UNESCAPED_UNICODE) ?>;
+let conversations = <?= json_encode($conversations, JSON_UNESCAPED_UNICODE) ?>;
 
 function setActiveTab(tab) {
     activeTab = tab;
@@ -282,28 +283,34 @@ async function loadConversation(conversationId) {
     try {
         const response = await fetch(`/employer/messages/conversation/${conversationId}`, {
             headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-Token': getCsrfToken()
             }
         });
         
         const data = await response.json();
+        const payload = data?.data ?? {};
+        const messages = normalizeMessages(payload?.messages);
         
         if (response.ok) {
             // Update header
-            document.getElementById('candidate-name').textContent = data.candidate?.name || data.candidate?.email || 'Unknown';
-            if (data.job) {
-                document.getElementById('job-title').textContent = `Applied to ${data.job.title}`;
+            document.getElementById('candidate-name').textContent = payload.candidate?.name || payload.candidate?.email || 'Unknown';
+            if (payload.job) {
+                document.getElementById('job-title').textContent = `Applied to ${payload.job.title}`;
             } else {
                 document.getElementById('job-title').textContent = '';
             }
             
             // Load messages
-            displayMessages(data.messages);
+            displayMessages(messages);
+            markConversationAsReadInList(conversationId);
             
             // Start polling for new messages
             startMessagePolling();
+            refreshConversationList();
         } else {
-            alert('Error loading conversation: ' + (data.error || 'Unknown error'));
+            alert('Error loading conversation: ' + (data?.message || data?.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error:', error);
@@ -311,9 +318,84 @@ async function loadConversation(conversationId) {
     }
 }
 
+function normalizeMessages(messages) {
+    if (Array.isArray(messages)) {
+        return messages;
+    }
+
+    console.warn('Unexpected messages payload:', messages);
+    return [];
+}
+
+function updateConversationCounters() {
+    document.getElementById('inbox-count').textContent = conversations.length;
+    const unreadTotal = conversations.reduce((total, conv) => total + (parseInt(conv.unread_count || 0, 10) || 0), 0);
+    document.getElementById('unread-count').textContent = unreadTotal;
+}
+
+function renderConversationsList() {
+    const container = document.getElementById('conversations-list');
+
+    if (!Array.isArray(conversations) || conversations.length === 0) {
+        container.innerHTML = `
+            <div class="p-8 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No conversations</h3>
+                <p class="mt-1 text-sm text-gray-500">Start a conversation with a candidate.</p>
+            </div>
+        `;
+        updateConversationCounters();
+        return;
+    }
+
+    container.innerHTML = conversations.map((conv) => {
+        const conversationId = Number(conv.id);
+        const unreadCount = parseInt(conv.unread_count || 0, 10) || 0;
+        const candidateName = escapeHtml(conv.candidate?.name || conv.candidate?.email || 'Unknown');
+        const jobTitle = conv.job?.title ? escapeHtml(conv.job.title) : '';
+        const lastMessageBody = conv.last_message?.body || '';
+        const preview = lastMessageBody.length > 60 ? `${lastMessageBody.slice(0, 60)}...` : lastMessageBody;
+        const previewHtml = escapeHtml(preview);
+        const createdAt = conv.last_message?.created_at || conv.updated_at || '';
+        const isActive = conversationId === Number(currentConversationId || 0);
+        const itemClasses = [
+            'conversation-item px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer',
+            unreadCount > 0 || isActive ? 'bg-[#eef2ff]' : ''
+        ].filter(Boolean).join(' ');
+
+        return `
+            <div onclick="loadConversation(${conversationId})" class="${itemClasses}" data-conversation-id="${conversationId}">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-sm font-medium text-gray-900 truncate">${candidateName}</h3>
+                            ${unreadCount > 0 ? `<span class="flex-shrink-0 bg-[#eef2ff] text-gray-900 text-xs font-medium px-2 py-0.5 rounded-full unread-badge">${unreadCount}</span>` : ''}
+                        </div>
+                        ${jobTitle ? `<p class="text-xs text-gray-500 mt-1 truncate">Applied to ${jobTitle}</p>` : ''}
+                        ${previewHtml ? `<p class="text-sm text-gray-600 mt-1 truncate">${previewHtml}</p>` : ''}
+                        ${createdAt ? `<p class="text-xs text-gray-400 mt-1">${formatSidebarDate(createdAt)}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    updateConversationCounters();
+    filterConversations();
+}
+
+function markConversationAsReadInList(conversationId) {
+    const targetId = Number(conversationId);
+    conversations = conversations.map((conv) => Number(conv.id) === targetId ? { ...conv, unread_count: 0 } : conv);
+    renderConversationsList();
+}
+
 function displayMessages(messages) {
     const container = document.getElementById('messages-container');
     container.innerHTML = '';
+    messages = normalizeMessages(messages);
     
     if (messages.length === 0) {
         container.innerHTML = '<div class="text-center text-gray-500 py-8">No messages yet. Start the conversation!</div>';
@@ -476,7 +558,11 @@ async function sendMessage(event) {
     sendButton.innerHTML = '<svg class="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     
     const formData = new FormData();
+    const csrfToken = getCsrfToken();
     formData.append('conversation_id', currentConversationId);
+    if (csrfToken) {
+        formData.append('_token', csrfToken);
+    }
     if (body) {
         formData.append('body', body);
     }
@@ -500,10 +586,12 @@ async function sendMessage(event) {
             console.log(pair[0] + ': ', pair[1]);
         }
         
-        const response = await fetch('/employer/messages/send', {
+        let response = await fetch('/employer/messages/send', {
             method: 'POST',
             headers: {
-                'X-CSRF-Token': getCsrfToken()
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken
                 // Don't set Content-Type for FormData - browser will set it with boundary
             },
             body: formData
@@ -511,17 +599,34 @@ async function sendMessage(event) {
         
         console.log('Response status:', response.status, response.statusText);
         
-        let data;
-        try {
-            const responseText = await response.text();
-            console.log('Response text:', responseText);
-            data = responseText ? JSON.parse(responseText) : {};
-        } catch (parseError) {
-            console.error('Failed to parse response:', parseError);
-            throw new Error('Invalid response from server');
+        let responseText = await response.text();
+        console.log('Response text:', responseText);
+        let data = parseJsonResponse(responseText);
+
+        if (response.status === 403 && data?.refresh_csrf && data?.csrf_token) {
+            updateCsrfToken(data.csrf_token);
+            formData.set('_token', data.csrf_token);
+
+            response = await fetch('/employer/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': data.csrf_token
+                },
+                body: formData
+            });
+
+            console.log('Retry response status:', response.status, response.statusText);
+            responseText = await response.text();
+            console.log('Retry response text:', responseText);
+            data = parseJsonResponse(responseText);
         }
         
-        if (response.ok && data.success) {
+        const result = data?.data ?? data ?? {};
+        const sendSucceeded = response.ok && (data?.success === true || result.success === true);
+
+        if (sendSucceeded) {
             console.log('Message sent successfully');
             input.value = '';
             input.style.height = 'auto';
@@ -532,7 +637,7 @@ async function sendMessage(event) {
             await refreshConversationList();
         } else {
             console.error('Error response:', data);
-            let errorMsg = data.error || 'Failed to send message';
+            let errorMsg = data?.error || result.error || data?.message || extractPlainError(responseText) || 'Failed to send message';
             // Show more detailed error for file upload issues
             if (errorMsg.includes('file size') || errorMsg.includes('exceeds')) {
                 errorMsg += '\n\nPlease try:\n- Compressing the file\n- Using a smaller file\n- Contacting admin to increase upload limits';
@@ -547,6 +652,28 @@ async function sendMessage(event) {
         sendButton.disabled = false;
         sendButton.innerHTML = '<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>';
     }
+}
+
+function parseJsonResponse(responseText) {
+    if (!responseText) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(responseText);
+    } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        return null;
+    }
+}
+
+function extractPlainError(responseText) {
+    if (!responseText) {
+        return '';
+    }
+
+    const plainText = responseText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return plainText || '';
 }
 
 function handleKeyDown(event) {
@@ -737,12 +864,15 @@ function startMessagePolling() {
             try {
                 const response = await fetch(`/employer/messages/${currentConversationId}/messages`, {
                     headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-Token': getCsrfToken()
                     }
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    displayMessages(data.messages);
+                    displayMessages(normalizeMessages(data?.data?.messages));
+                    refreshConversationList();
                 }
             } catch (error) {
                 console.error('Polling error:', error);
@@ -757,15 +887,39 @@ function refreshMessages() {
 
 async function refreshConversationList() {
     try {
-        const response = await fetch('/employer/messages');
+        const response = await fetch('/employer/messages', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': getCsrfToken()
+            }
+        });
+        const data = await response.json();
         if (response.ok) {
-            // Just update the conversation list without full reload
-            // The polling will handle message updates
-            console.log('Conversation list refreshed');
+            const nextConversations = data?.data?.conversations ?? [];
+            if (Array.isArray(nextConversations)) {
+                conversations = nextConversations;
+                renderConversationsList();
+            }
+
+            const unreadTotal = data?.data?.unread_count;
+            if (typeof unreadTotal === 'number') {
+                document.getElementById('unread-count').textContent = unreadTotal;
+            }
         }
     } catch (error) {
         console.error('Error refreshing conversation list:', error);
     }
+}
+
+function startConversationListPolling() {
+    if (conversationListPollInterval) {
+        clearInterval(conversationListPollInterval);
+    }
+
+    conversationListPollInterval = setInterval(() => {
+        refreshConversationList();
+    }, 3000);
 }
 
 function formatDate(dateString) {
@@ -788,8 +942,33 @@ function formatTime(dateString) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
+function formatSidebarDate(dateString) {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+function updateCsrfToken(token) {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta && token) {
+        meta.setAttribute('content', token);
+    }
 }
 
 function scheduleInterview() {
@@ -799,7 +978,14 @@ function scheduleInterview() {
 // Auto-load conversation if conversation ID is in URL
 <?php if ($selectedConversationId > 0): ?>
 document.addEventListener('DOMContentLoaded', () => {
+    renderConversationsList();
     loadConversation(<?= $selectedConversationId ?>);
+    startConversationListPolling();
+});
+<?php else: ?>
+document.addEventListener('DOMContentLoaded', () => {
+    renderConversationsList();
+    startConversationListPolling();
 });
 <?php endif; ?>
 
@@ -813,7 +999,7 @@ setInterval(async () => {
         });
         const data = await response.json();
         if (response.ok) {
-            document.getElementById('unread-count').textContent = data.unread_count || 0;
+            document.getElementById('unread-count').textContent = data?.data?.unread_count || 0;
         }
     } catch (error) {
         console.error('Error fetching unread count:', error);

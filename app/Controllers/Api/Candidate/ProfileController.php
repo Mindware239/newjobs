@@ -45,7 +45,8 @@ class ProfileController extends ApiController
             'personal' => [
                 'full_name' => $candidate->full_name,
                 'email' => $user->email,
-                'phone' => $candidate->phone,
+                'phone' => $candidate->mobile ?: $user->phone,
+                'additional_mobile' => ($user->getNotificationPreferences()['contact']['additional_mobile'] ?? null),
                 'avatar' => $user->avatar,
                 'headline' => $candidate->headline,
                 'summary' => $candidate->summary,

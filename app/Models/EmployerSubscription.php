@@ -96,7 +96,7 @@ class EmployerSubscription extends Model
         
         $usedField = $this->getUsedFieldForLimit($limitField);
         $used = (int)($this->attributes[$usedField] ?? 0);
-        $limit = $plan->getLimit($limitField);
+        $limit = $plan->getLimit($limitField); 
         
         return $used < $limit;
     }

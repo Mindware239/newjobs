@@ -11,57 +11,75 @@ use App\Models\Job;
 
 class AntiSpamMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response, callable $next): void
+    public function handle(Request $request, Response $response, callable $next = null): void
     {
         $userId = $_SESSION['user_id'] ?? null;
-        if (!$userId) { 
-            $next($request, $response);
-            return; 
+
+        // Not logged in → skip
+        if (!$userId) {
+            if ($next) {
+                $next($request, $response);
+            }
+            return;
         }
 
         $user = User::find((int)$userId);
-        if (!$user || !method_exists($user, 'employer')) { 
-            $next($request, $response);
-            return; 
+
+        if (!$user || !method_exists($user, 'employer')) {
+            if ($next) {
+                $next($request, $response);
+            }
+            return;
         }
 
         $employer = $user->employer();
-        if (!$employer) { 
-            $next($request, $response);
-            return; 
+
+        if (!$employer) {
+            if ($next) {
+                $next($request, $response);
+            }
+            return;
         }
 
-        // Simple per-day rate limit
+        // Daily limit check
         $todayCount = Job::where('employer_id', '=', $employer->id)
             ->where('created_at', '>=', date('Y-m-d 00:00:00'))
             ->count();
 
         if ($todayCount >= 10) {
-            $response->json(['error' => 'Daily job posting limit reached'], 429);
+            $response->setStatusCode(429);
+            $response->json(['error' => 'Daily job posting limit reached']);
             return;
         }
 
+        // Input validation
         $description = $request->post('description', '');
         $salaryMin = (int)$request->post('salary_min', 0);
         $salaryMax = (int)$request->post('salary_max', 0);
 
         if ($salaryMin && $salaryMax && $salaryMin > $salaryMax) {
-            $response->json(['error' => 'Invalid salary range'], 422);
+            $response->setStatusCode(422);
+            $response->json(['error' => 'Invalid salary range']);
             return;
         }
 
+        // Email detection
         if (preg_match('/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i', $description)) {
-            $response->json(['error' => 'Email addresses are not allowed in job description'], 422);
+            $response->setStatusCode(422);
+            $response->json(['error' => 'Email addresses are not allowed in job description']);
             return;
         }
 
+        // Scam keyword
         if (substr_count(strtolower($description), 'security deposit') > 0) {
-            $response->json(['error' => 'Potential scam content detected'], 422);
+            $response->setStatusCode(422);
+            $response->json(['error' => 'Potential scam content detected']);
             return;
         }
 
-        $next($request, $response);
+        // Continue safely
+        if ($next) {
+            $next($request, $response);
+        }
     }
 }
-
-

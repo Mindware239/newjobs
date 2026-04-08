@@ -15,25 +15,75 @@ class Response
         if ($this->securityHeadersSent) {
             return;
         }
-        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+            || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+
         header('X-Frame-Options: DENY');
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(self), camera=(), microphone=()');
+
+        // ✅ FIXED CSP (Razorpay + Cashfree + existing services SAFE)
         $csp = "default-src 'self'; "
-             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.gstatic.com https://connect.facebook.net https://snap.licdn.com https://www.googletagmanager.com https://cdn.quilljs.com https://cdnjs.cloudflare.com https://checkout.razorpay.com https://cdn.ckeditor.com https://code.jquery.com https://sdk.cashfree.com; "
-             . "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdnjs.cloudflare.com https://cdnjs.cloudflare.com https://cdn.ckeditor.com; "
-             . "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; "
-             . "img-src 'self' data: https: https://www.facebook.com https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://*.razorpay.com https://*.cashfree.com; "
-             . "connect-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com https://*.gstatic.com https://www.googleapis.com https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://www.facebook.com https://connect.facebook.net https://px.ads.linkedin.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://nominatim.openstreetmap.org https://countriesnow.space https://*.razorpay.com https://cdn.ckeditor.com https://c.cksource.com https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com; "
-             . "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com; "
-             . "frame-ancestors 'none'; "
-             . "base-uri 'self'; "
-             . "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com";
-        header('Content-Security-Policy: ' . $csp);
+
+            // 🔥 SCRIPT (FIXED HERE)
+            . "script-src 'self' 'unsafe-inline' 'unsafe-eval' 
+            https://checkout.razorpay.com 
+            https://cdn.razorpay.com 
+            https://*.razorpay.com 
+            https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com 
+            https://www.gstatic.com https://connect.facebook.net https://snap.licdn.com 
+            https://www.googletagmanager.com https://cdn.quilljs.com https://cdnjs.cloudflare.com 
+            https://cdn.ckeditor.com https://code.jquery.com https://sdk.cashfree.com; "
+
+            // STYLE
+            . "style-src 'self' 'unsafe-inline' 
+            https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com 
+            https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdn.ckeditor.com; "
+
+            // FONT
+            . "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com 
+            https://cdn.jsdelivr.net data:; "
+
+            // IMAGE
+            . "img-src 'self' data: https: 
+            https://*.razorpay.com https://*.cashfree.com 
+            https://www.facebook.com https://px.ads.linkedin.com 
+            https://www.google-analytics.com https://googleads.g.doubleclick.net; "
+
+            // 🔥 CONNECT (IMPORTANT FIX)
+            . "connect-src 'self' 
+            https://*.razorpay.com 
+            https://api.razorpay.com 
+            https://lumberjack.razorpay.com 
+            https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com
+            https://unpkg.com https://cdn.jsdelivr.net https://www.gstatic.com 
+            https://*.gstatic.com https://www.googleapis.com 
+            https://firebasestorage.googleapis.com https://firebaseinstallations.googleapis.com 
+            https://fcmregistrations.googleapis.com https://fcm.googleapis.com 
+            https://*.firebaseio.com wss://*.firebaseio.com 
+            https://www.facebook.com https://connect.facebook.net 
+            https://px.ads.linkedin.com https://www.google-analytics.com 
+            https://googleads.g.doubleclick.net 
+            https://nominatim.openstreetmap.org https://countriesnow.space; "
+
+            // FRAME (PAYMENT POPUP)
+            . "frame-src 'self' 
+            https://checkout.razorpay.com 
+            https://*.razorpay.com 
+            https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com; "
+
+            . "frame-ancestors 'none'; "
+            . "base-uri 'self'; "
+            . "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com;";
+
+        header('Content-Security-Policy: ' . preg_replace('/\s+/', ' ', $csp));
+
         if ($isHttps) {
             header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
         }
+
         $this->securityHeadersSent = true;
     }
 
@@ -45,7 +95,6 @@ class Response
 
     public function setHeader(string $name, string $value): void
     {
-        // Guard against header injection/newlines
         $safeName = str_replace(["\r", "\n"], '', $name);
         $safeValue = str_replace(["\r", "\n"], '', $value);
         $this->headers[$safeName] = $safeValue;
@@ -57,22 +106,40 @@ class Response
         $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Content-Type', 'application/json; charset=utf-8');
-        
-        // Standardized format
-        $response = [
-            'status' => $status,
-            'message' => $message,
-            'data' => $data,
-            'errors' => $errors
-        ];
 
-        // Clear any previous output
         if (ob_get_level() > 0) {
             ob_clean();
         }
-        
-        echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $payload = [
+            'status' => $status,
+            'success' => $status,
+            'message' => $message,
+            'data' => $data,
+            'error' => $status ? null : $message,
+            'errors' => $errors
+        ];
+
+        if ($this->isAssoc($data)) {
+            foreach ($data as $key => $value) {
+                if (!array_key_exists((string)$key, $payload)) {
+                    $payload[(string)$key] = $value;
+                }
+            }
+        }
+
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
         exit;
+    }
+
+    private function isAssoc(array $array): bool
+    {
+        if ($array === []) {
+            return false;
+        }
+
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 
     public function error(string $message, int $code = 400, ?array $errors = null): void
@@ -85,38 +152,26 @@ class Response
         $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
         $this->setHeader('Content-Type', 'text/html; charset=utf-8');
-        
-        $viewTemplate = $view;
+
         extract($data);
-        $viewPath = __DIR__ . '/../../resources/views/' . $viewTemplate . '.php';
+        $viewPath = __DIR__ . '/../../resources/views/' . $view . '.php';
 
         if (!file_exists($viewPath)) {
-            if ($layout) {
-                $this->view('admin/error', [
-                    'title' => 'Error',
-                    'errorMessage' => "View not found: {$viewTemplate}"
-                ], 500, $layout);
-            }
             $this->setStatusCode(500);
-            echo "View not found: $viewTemplate";
+            echo "View not found: $view";
             exit;
         }
 
-        // If layout is specified, wrap the view
         if ($layout) {
             $layoutPath = __DIR__ . '/../../resources/views/' . $layout . '.php';
-            if (file_exists($layoutPath)) {
-                ob_start();
-                require $viewPath;
-                $content = ob_get_clean();
-                // Make $content available to layout
-                require $layoutPath;
-            } else {
-                require $viewPath;
-            }
+            ob_start();
+            require $viewPath;
+            $content = ob_get_clean();
+            require $layoutPath;
         } else {
             require $viewPath;
         }
+
         exit;
     }
 
@@ -131,6 +186,7 @@ class Response
     public function download(string $filePath, ?string $filename = null): void
     {
         $this->ensureSecurityHeaders();
+
         if (!file_exists($filePath)) {
             $this->setStatusCode(404);
             echo "File not found";
@@ -138,10 +194,11 @@ class Response
         }
 
         $filename = $filename ?? basename($filePath);
+
         $this->setHeader('Content-Type', 'application/octet-stream');
         $this->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
         $this->setHeader('Content-Length', (string)filesize($filePath));
-        
+
         readfile($filePath);
         exit;
     }
@@ -153,4 +210,3 @@ class Response
         exit;
     }
 }
-

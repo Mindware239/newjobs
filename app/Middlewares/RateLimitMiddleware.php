@@ -21,11 +21,13 @@ class RateLimitMiddleware implements MiddlewareInterface
         $this->redis = RedisClient::getInstance();
     }
 
-    public function handle(Request $request, Response $response, callable $next): void
+    public function handle(Request $request, Response $response, ?callable $next = null): void
     {
         // Skip rate limiting if Redis is not available
         if (!$this->redis->isAvailable()) {
-            $next($request, $response);
+            if (is_callable($next)) {
+                $next($request, $response);
+            }
             return;
         }
 
@@ -34,7 +36,9 @@ class RateLimitMiddleware implements MiddlewareInterface
 
         $connection = $this->redis->getConnection();
         if (!$connection) {
-            $next($request, $response);
+            if (is_callable($next)) {
+                $next($request, $response);
+            }
             return;
         }
 
@@ -42,7 +46,9 @@ class RateLimitMiddleware implements MiddlewareInterface
         
         if ($current === false) {
             $connection->setex($key, $this->windowSeconds, 1);
-            $next($request, $response);
+            if (is_callable($next)) {
+                $next($request, $response);
+            }
             return;
         }
 
@@ -64,7 +70,9 @@ class RateLimitMiddleware implements MiddlewareInterface
         $response->setHeader('X-RateLimit-Limit', (string)$this->maxRequests);
         $response->setHeader('X-RateLimit-Remaining', (string)$remaining);
 
-        $next($request, $response);
+        if (is_callable($next)) {
+            $next($request, $response);
+        }
     }
 
     private function getIdentifier(Request $request): string

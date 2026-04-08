@@ -10,7 +10,7 @@ use App\Models\User;
 
 class SuperAdminMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, Response $response, callable $next): void
+    public function handle(Request $request, Response $response, ?callable $next = null): void
     {
         $userId = $_SESSION['user_id'] ?? null;
 
@@ -26,7 +26,9 @@ class SuperAdminMiddleware implements MiddlewareInterface
             return;
         }
 
-        $next($request, $response);
+        if (is_callable($next)) {
+            $next($request, $response);
+        }
     }
 }
 

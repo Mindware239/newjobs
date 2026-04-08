@@ -114,7 +114,7 @@ class MessagesController extends BaseController
         // Get conversation ID from query string if present
         $selectedConversationId = (int)($request->get('conversation') ?? 0);
         
-        $response->view('employer/messages', [
+        $viewData = [
             'title' => 'Messages',
             'employer' => $employer,
             'conversations' => $conversationList,
@@ -122,7 +122,17 @@ class MessagesController extends BaseController
             'applicationCount' => $totalApplications,
             'unreadCount' => $totalUnread,
             'selectedConversationId' => $selectedConversationId
-        ], 200, 'employer/layout');
+        ];
+
+        if ($request->isAjax()) {
+            $response->json([
+                'conversations' => $conversationList,
+                'unread_count' => $totalUnread,
+                'selected_conversation_id' => $selectedConversationId
+            ]);
+        }
+
+        $response->view('employer/messages', $viewData, 200, 'employer/layout');
     }
 
     /**
@@ -446,7 +456,7 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+            $response->json([], 404, 'Employer profile not found', false);
             return;
         }
 
@@ -458,10 +468,9 @@ class MessagesController extends BaseController
         $canChat = $active && $chatEnabled && $subscription->canUseFeature('max_chat_messages');
         if (!$canChat) {
             $response->json([
-                'error' => 'Messaging requires an active subscription',
                 'requires_upgrade' => true,
                 'redirect' => '/employer/subscription/plans?upgrade=1&feature=chat'
-            ], 402);
+            ], 402, 'Messaging requires an active subscription', false);
             return;
         }
 
@@ -471,7 +480,7 @@ class MessagesController extends BaseController
         $initialMessage = trim($data['initial_message'] ?? '');
 
         if (!$candidateUserId) {
-            $response->json(['error' => 'Candidate user ID is required'], 422);
+            $response->json([], 422, 'Candidate user ID is required', false);
             return;
         }
 

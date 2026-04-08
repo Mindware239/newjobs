@@ -320,7 +320,7 @@ class SubscriptionsController extends BaseController
                 'price_monthly' => (float)($data['price_monthly'] ?? 0),
                 'price_quarterly' => (float)($data['price_quarterly'] ?? 0),
                 'price_annual' => (float)($data['price_annual'] ?? 0),
-                'default_billing_cycle' => in_array(($data['default_billing_cycle'] ?? 'monthly'), ['monthly','quarterly','annual'], true) ? $data['default_billing_cycle'] : 'monthly',
+                'default_billing_cycle' => (isset($data['default_billing_cycle']) && in_array($data['default_billing_cycle'], ['monthly', 'quarterly', 'annual'], true)) ? $data['default_billing_cycle'] : 'monthly',
                 'max_job_posts' => (int)($data['max_job_posts'] ?? 0),
                 'max_contacts_per_month' => (int)($data['max_contacts_per_month'] ?? 0),
                 'max_resume_downloads' => (int)($data['max_resume_downloads'] ?? 0),
@@ -401,7 +401,7 @@ class SubscriptionsController extends BaseController
                 'price_monthly' => (float)($data['price_monthly'] ?? 0),
                 'price_quarterly' => (float)($data['price_quarterly'] ?? 0),
                 'price_annual' => (float)($data['price_annual'] ?? 0),
-                'default_billing_cycle' => in_array(($data['default_billing_cycle'] ?? 'monthly'), ['monthly','quarterly','annual'], true) ? $data['default_billing_cycle'] : 'monthly',
+                'default_billing_cycle' => (isset($data['default_billing_cycle']) && in_array($data['default_billing_cycle'], ['monthly', 'quarterly', 'annual'], true)) ? $data['default_billing_cycle'] : 'monthly',
                 'max_job_posts' => (int)($data['max_job_posts'] ?? 0),
                 'max_contacts_per_month' => (int)($data['max_contacts_per_month'] ?? 0),
                 'max_resume_downloads' => (int)($data['max_resume_downloads'] ?? 0),
@@ -475,10 +475,36 @@ class SubscriptionsController extends BaseController
         $id = (int)$request->param('id');
         $db = Database::getInstance();
 
-        $db->query("DELETE FROM subscription_plans WHERE id = :id", ['id' => $id]);
+        // Check if plan is used by any subscription
+        $inUse = $db->fetchOne("SELECT COUNT(*) as count FROM employer_subscriptions WHERE plan_id = :id", ['id' => $id]);
+        
+        try {
+            if ($inUse && (int)$inUse['count'] > 0) {
+                // If plan is in use, we can't delete it directly due to FK constraints.
+                // We will mark it as deleted (is_active = 0) and remove its slug to avoid conflicts if a new plan with same name is created.
+                $db->query("UPDATE subscription_plans SET is_active = 0, slug = CONCAT(slug, '-deleted-', :id_val) WHERE id = :id", ['id' => $id, 'id_val' => $id]);
+                $msg = 'Plan is currently in use by ' . $inUse['count'] . ' subscriptions. It has been deactivated and archived instead of deleted.';
+            } else {
+                // Not in use, safe to delete
+                $db->query("DELETE FROM subscription_plans WHERE id = :id", ['id' => $id]);
+                $msg = 'Plan deleted successfully.';
+            }
 
-        $this->logAction('delete_plan', ['plan_id' => $id]);
-        $response->redirect('/admin/subscriptions/plans');
+            $this->logAction('delete_plan', ['plan_id' => $id, 'archived' => ($inUse && (int)$inUse['count'] > 0)]);
+            
+            if ($request->isAjax()) {
+                $response->json(['success' => true, 'message' => $msg]);
+                return;
+            }
+            $response->redirect('/admin/subscriptions/plans?success=' . urlencode($msg));
+        } catch (\Exception $e) {
+            error_log("Delete Plan Error: " . $e->getMessage());
+            if ($request->isAjax()) {
+                $response->json(['error' => 'Failed to process request: ' . $e->getMessage()], 500);
+                return;
+            }
+            $response->redirect('/admin/subscriptions/plans?error=Failed%20to%20process%20request:%20' . urlencode($e->getMessage()));
+        }
     }
 
     public function updateStatus(Request $request, Response $response): void
@@ -782,4 +808,3 @@ class SubscriptionsController extends BaseController
         }
     }
 }
-

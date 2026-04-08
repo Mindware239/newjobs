@@ -160,6 +160,16 @@ class AppleOAuthService
                 throw new Exception('Invalid ID token: missing subject');
             }
 
+            if (($payload['iss'] ?? '') !== 'https://appleid.apple.com') {
+                throw new Exception('Invalid ID token issuer');
+            }
+
+            $audience = $payload['aud'] ?? null;
+            $expectedAudience = $this->config['client_id'] ?? null;
+            if ($expectedAudience && $audience !== $expectedAudience) {
+                throw new Exception('Invalid ID token audience');
+            }
+
             // Check expiration
             if (isset($payload['exp']) && $payload['exp'] < time()) {
                 throw new Exception('ID token has expired');

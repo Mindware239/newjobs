@@ -21,7 +21,10 @@ class SubscriptionPlan extends Model
     public static function findBySlug(string $slug): ?self
     {
         $instance = new self();
-        return $instance->where('slug', '=', $slug)->where('is_active', '=', 1)->first();
+        $db = $instance->getDb();
+        $sql = "SELECT * FROM subscription_plans WHERE slug = :slug AND (is_active = 1 OR is_active IS NULL) LIMIT 1";
+        $result = $db->fetchOne($sql, ['slug' => $slug]);
+        return $result ? new self($result) : null;
     }
 
     public static function getActivePlans(): array

@@ -510,7 +510,22 @@
                 <span x-text="success"></span>
             </div>
 
-            <form @submit.prevent="submitRegistration()" novalidate>
+            <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
+                <button type="button" @click="authMode='password'; error=''; success=''"
+                        :style="authMode === 'password' ? modeActiveStyle : modeInactiveStyle"
+                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">
+                    Email Password
+                </button>
+                <button type="button" @click="authMode='otp'; error=''; success=''"
+                        :style="authMode === 'otp' ? modeActiveStyle : modeInactiveStyle"
+                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">
+                    Mobile OTP
+                </button>
+            </div>
+
+            <form @submit.prevent="authMode === 'otp' ? submitOtpRegistration() : submitRegistration()" novalidate>
+
+                <div x-show="authMode === 'password'" x-cloak>
 
                 <!-- ── Email ── -->
                 <div class="fg">
@@ -705,6 +720,69 @@
                 </button>
 
                 <!-- ── Sign in link ── -->
+                </div>
+
+                <div x-show="authMode === 'otp'" x-cloak>
+                    <div class="fg">
+                        <label class="fl">Company Name <span class="req">*</span></label>
+                        <div class="fi-wrap">
+                            <input type="text" x-model="otpForm.company_name" placeholder="Your company name" class="fi">
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Primary Mobile Number <span class="req">*</span></label>
+                        <div class="fi-wrap">
+                            <input type="tel" x-model="otpForm.phone" placeholder="Enter mobile number" class="fi">
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Additional Mobile Number</label>
+                        <div class="fi-wrap">
+                            <input type="tel" x-model="otpForm.additional_mobile" placeholder="Optional second number" class="fi">
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Email Address</label>
+                        <div class="fi-wrap">
+                            <input type="email" x-model="otpForm.email" placeholder="Optional company email" class="fi">
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label class="fl">OTP <span class="req">*</span></label>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" x-model="otpForm.otp" maxlength="6" placeholder="6-digit OTP" class="fi" style="flex:1;">
+                            <button type="button"
+                                    @click="sendOtp()"
+                                    :disabled="isSendingOtp || !otpForm.phone || otpCooldown > 0"
+                                    style="padding:0 14px;border:none;border-radius:10px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
+                                <span x-show="!isSendingOtp && otpCooldown === 0">Send OTP</span>
+                                <span x-show="isSendingOtp">Sending...</span>
+                                <span x-show="!isSendingOtp && otpCooldown > 0" x-text="otpCooldown + 's'"></span>
+                            </button>
+                        </div>
+                        <p x-show="otpPreview" class="f-hint">Test OTP: <span x-text="otpPreview"></span></p>
+                    </div>
+                    <div class="terms-row">
+                        <input type="checkbox" id="agree_terms_otp_employer" x-model="otpForm.agree_terms" class="terms-cb">
+                        <label for="agree_terms_otp_employer" class="terms-txt">
+                            I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <button type="submit"
+                            :disabled="isSubmitting || !otpForm.company_name || !otpForm.phone || !otpForm.otp || !otpForm.agree_terms"
+                            class="sub-btn">
+                        <template x-if="!isSubmitting">
+                            <span style="display:flex;align-items:center;gap:7px;">Create Employer With OTP</span>
+                        </template>
+                        <template x-if="isSubmitting">
+                            <span style="display:flex;align-items:center;gap:8px;">
+                                <span class="spin"></span>
+                                Creating Account...
+                            </span>
+                        </template>
+                    </button>
+                </div>
+
                 <p class="r-footer">
                     Already have an account?
                     <a href="/login?role=employer">Sign in</a>
@@ -776,12 +854,19 @@
     function employerRegistrationForm() {
         return {
             isSubmitting: false,
+            authMode: 'password',
             error: '',
             success: '',
             showPassword: false,
             showConfirmPassword: false,
             emailValid: true,
             emailError: '',
+            isSendingOtp: false,
+            otpCooldown: 0,
+            otpPreview: '',
+            otpTimer: null,
+            modeActiveStyle: 'background:#ffffff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)',
+            modeInactiveStyle: 'background:transparent;color:#6b7280',
             passwordValid: false,
             passwordError: '',
             passwordMatch: false,
@@ -806,6 +891,15 @@
                 company_type: '',
                 industry: '',
                 industry_custom: ''
+            },
+            otpForm: {
+                company_name: '',
+                phone: '',
+                additional_mobile: '',
+                email: '',
+                otp: '',
+                purpose: 'auth',
+                agree_terms: false
             },
             init() {},
             validateEmail() {
@@ -881,6 +975,45 @@
                     this.passwordMatch = false; this.passwordMatchError = 'Passwords do not match';
                 }
             },
+            startOtpCooldown() {
+                clearInterval(this.otpTimer);
+                this.otpCooldown = 30;
+                this.otpTimer = setInterval(() => {
+                    if (this.otpCooldown > 0) {
+                        this.otpCooldown--;
+                    } else {
+                        clearInterval(this.otpTimer);
+                    }
+                }, 1000);
+            },
+            async sendOtp() {
+                if (!this.otpForm.phone || this.isSendingOtp || this.otpCooldown > 0) return;
+                this.error = ''; this.success = ''; this.otpPreview = '';
+                this.isSendingOtp = true;
+                try {
+                    const response = await fetch('/auth/phone/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ phone: this.otpForm.phone, purpose: 'auth', role: 'employer' })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        this.success = data.message || 'OTP sent successfully';
+                        this.otpPreview = data.otp_preview || '';
+                        this.startOtpCooldown();
+                    } else {
+                        this.error = data.error || data.message || 'Failed to send OTP';
+                    }
+                } catch (err) {
+                    this.error = 'Failed to send OTP';
+                } finally {
+                    this.isSendingOtp = false;
+                }
+            },
             async submitRegistration() {
                 this.error = ''; this.success = '';
                 this.validateEmail();
@@ -916,6 +1049,33 @@
                     }
                 } catch (err) {
                     this.error = 'An error occurred. Please try again.';
+                } finally {
+                    this.isSubmitting = false;
+                }
+            },
+            async submitOtpRegistration() {
+                this.error = ''; this.success = '';
+                if (!this.otpForm.agree_terms) { this.error = 'Please agree to the Terms and Conditions'; return; }
+                this.isSubmitting = true;
+                try {
+                    const response = await fetch('/auth/phone/register-employer', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify(this.otpForm)
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        this.success = data.message || 'Registration successful';
+                        setTimeout(() => { window.location.href = data.redirect || '/employer/dashboard'; }, 1200);
+                    } else {
+                        this.error = data.error || data.message || 'Registration failed';
+                    }
+                } catch (err) {
+                    this.error = 'Registration failed';
                 } finally {
                     this.isSubmitting = false;
                 }

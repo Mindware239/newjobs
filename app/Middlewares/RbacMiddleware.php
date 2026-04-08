@@ -17,26 +17,35 @@ class RbacMiddleware implements MiddlewareInterface
         $this->permission = $permission;
     }
 
-    public function handle(Request $request, Response $response, callable $next): void
+    public function handle(Request $request, Response $response, callable $next = null): void
     {
         $userId = $_SESSION['user_id'] ?? null;
+
+        //  Not logged in
         if (!$userId) {
             $response->redirect('/admin/login');
             return;
         }
+
         $user = User::find((int)$userId);
+
+        //  Not admin
         if (!$user || !$user->isAdmin()) {
             $response->setStatusCode(403);
             $response->json(['error' => 'Forbidden']);
             return;
         }
+
+        //  Permission check
         if (!$user->can($this->permission)) {
             $response->setStatusCode(403);
             $response->json(['error' => 'Permission denied']);
             return;
         }
 
-        $next($request, $response);
+        //  Continue safely
+        if ($next) {
+            $next($request, $response);
+        }
     }
 }
-

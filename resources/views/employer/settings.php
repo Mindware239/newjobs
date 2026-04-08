@@ -99,6 +99,48 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <p class="text-xs text-gray-500 mt-1">Optional - for important notifications</p>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Mobile Number</label>
+                        <input type="tel" 
+                               x-model="accountData.additional_mobile"
+                               placeholder="Optional second number"
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Phone Verification</p>
+                                <p class="text-sm text-gray-500">
+                                    <span x-show="accountData.phoneVerified" class="text-green-600 font-medium">✓ Phone verified</span>
+                                    <span x-show="!accountData.phoneVerified" class="text-yellow-600 font-medium">⚠ Phone not verified</span>
+                                </p>
+                            </div>
+                            <button type="button"
+                                    @click="sendPhoneOtp"
+                                    :disabled="isSubmitting || !accountData.phone"
+                                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50">
+                                Send OTP
+                            </button>
+                        </div>
+                        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+                            <input type="text"
+                                   x-model="phoneVerification.otp"
+                                   maxlength="6"
+                                   placeholder="Enter OTP"
+                                   class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <button type="button"
+                                    @click="verifyPhoneOtp"
+                                    :disabled="isSubmitting || !phoneVerification.otp"
+                                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-50">
+                                Verify OTP
+                            </button>
+                        </div>
+                        <p x-show="phoneVerification.otpPreview" class="text-xs text-blue-600 mt-2">
+                            Test OTP: <span x-text="phoneVerification.otpPreview"></span>
+                        </p>
+                    </div>
+
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
                             <p class="text-sm font-medium text-gray-900">Account Status</p>
@@ -362,7 +404,13 @@ function settingsPage() {
         accountData: {
             email: '<?= htmlspecialchars($user->email ?? '', ENT_QUOTES) ?>',
             phone: '<?= htmlspecialchars($user->phone ?? '', ENT_QUOTES) ?>',
-            emailVerified: <?= ((($employer->attributes['kyc_status'] ?? '') === 'approved') || (($user->is_email_verified ?? 0) == 1)) ? 'true' : 'false' ?>
+            additional_mobile: '<?= htmlspecialchars(($notificationPrefs['contact']['additional_mobile'] ?? ''), ENT_QUOTES) ?>',
+            emailVerified: <?= ((($employer->attributes['kyc_status'] ?? '') === 'approved') || (($user->is_email_verified ?? 0) == 1)) ? 'true' : 'false' ?>,
+            phoneVerified: <?= (($user->is_phone_verified ?? 0) == 1) ? 'true' : 'false' ?>
+        },
+        phoneVerification: {
+            otp: '',
+            otpPreview: ''
         },
         companyData: {
             company_name: '<?= htmlspecialchars($employer->company_name ?? '', ENT_QUOTES) ?>',
@@ -393,9 +441,60 @@ function settingsPage() {
                 });
                 const data = await response.json();
                 if (data.success) {
+                    this.accountData.phoneVerified = false;
                     this.showSuccess('Account updated successfully');
                 } else {
                     this.showError(data.error || 'Failed to update account');
+                }
+            } catch (error) {
+                this.showError('An error occurred');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        async sendPhoneOtp() {
+            this.isSubmitting = true;
+            try {
+                const response = await fetch('/employer/settings/account/send-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': this.csrfToken
+                    },
+                    body: JSON.stringify({ phone: this.accountData.phone })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.phoneVerification.otpPreview = data.otp_preview || '';
+                    this.showSuccess(data.message || 'OTP sent successfully');
+                } else {
+                    this.showError(data.error || 'Failed to send OTP');
+                }
+            } catch (error) {
+                this.showError('An error occurred');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        async verifyPhoneOtp() {
+            this.isSubmitting = true;
+            try {
+                const response = await fetch('/employer/settings/account/verify-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': this.csrfToken
+                    },
+                    body: JSON.stringify({ otp: this.phoneVerification.otp })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.accountData.phoneVerified = true;
+                    this.phoneVerification.otp = '';
+                    this.phoneVerification.otpPreview = '';
+                    this.showSuccess(data.message || 'Phone verified successfully');
+                } else {
+                    this.showError(data.error || 'Invalid OTP');
                 }
             } catch (error) {
                 this.showError('An error occurred');

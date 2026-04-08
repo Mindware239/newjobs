@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Models\Employer;
 use App\Models\Job;
 use App\Models\Application;
+use App\Models\Notification;
 
 class NotificationsController extends BaseController
 {
@@ -37,12 +38,17 @@ class NotificationsController extends BaseController
             ? Application::whereIn('job_id', $jobIds)->count()
             : 0;
 
+        $notifications = Notification::where('user_id', '=', (int)$this->currentUser->id)
+            ->orderBy('created_at', 'DESC')
+            ->limit(50)
+            ->get();
+
         $response->view('employer/notifications', [
             'title' => 'Notifications',
             'employer' => $employer,
             'jobCount' => $activeJobsCount,
             'applicationCount' => $totalApplications,
-            'notifications' => [] // TODO: Load actual notifications
+            'notifications' => array_map(fn($notification) => $notification->toArray(), $notifications)
         ], 200, 'employer/layout');
     }
     

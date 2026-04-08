@@ -10,31 +10,63 @@ use App\Core\Response;
 class CsrfMiddleware implements MiddlewareInterface
 {
     private array $excludedMethods = ['GET', 'HEAD', 'OPTIONS'];
+    private array $whitelist = [
+        '/webhook/razorpay',
+        '/gateway/cashfree/webhook',
+        '/candidate/premium/cashfree/webhook',
+        '/payments/razorpay/webhook',
+        '/payments/cashfree/webhook',
+        '/api/v1/payments/razorpay/webhook',
+        '/api/v1/payments/cashfree/webhook'
+    ];
 
-    public function handle(Request $request, Response $response, callable $next): void
+    public function handle(Request $request, Response $response, ?callable $next = null): void
     {
         $method = $request->getMethod();
+        $path = $request->getPath();
         
         if (in_array($method, $this->excludedMethods)) {
-            $next($request, $response);
+            if (is_callable($next)) {
+                $next($request, $response);
+            }
             return;
         }
 
+        // Skip CSRF for whitelisted routes
+        foreach ($this->whitelist as $pattern) {
+            if ($path === $pattern || strpos($path, $pattern) === 0) {
+                if (is_callable($next)) {
+                    $next($request, $response);
+                }
+                return;
+            }
+        }
+
         // Skip CSRF for API requests
-        if (strpos($request->getPath(), '/api/') === 0) {
-            $next($request, $response);
+        if (strpos($path, '/api/') === 0) {
+            if (is_callable($next)) {
+                $next($request, $response);
+            }
             return;
         }
 
         // Get token from header or POST data
         $token = $request->header('X-CSRF-Token') ?? $request->post('_token') ?? ($_COOKIE['XSRF-TOKEN'] ?? null);
+        
+        // Ensure session is started before checking sessionToken
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $sessionToken = $_SESSION['csrf_token'] ?? null;
         $issuedAt = (int)($_SESSION['csrf_token_time'] ?? 0);
 
         // Debug logging with token fragments
-        $tokenFrag = $token ? substr((string)$token, 0, 5) . '...' : 'missing';
-        $sessionFrag = $sessionToken ? substr((string)$sessionToken, 0, 5) . '...' : 'missing';
-        error_log("CSRF Check - Path: " . $request->getPath() . " | Got: $tokenFrag | Expected: $sessionFrag");
+        $tokenFrag = $token ? substr((string)$token, 0, 10) . '...' : 'missing';
+        $sessionFrag = $sessionToken ? substr((string)$sessionToken, 0, 10) . '...' : 'missing';
+        if (!hash_equals((string)$sessionToken, (string)$token)) {
+            error_log("CSRF Mismatch - Path: " . $request->getPath() . " | Got: " . (string)$token . " | Expected: " . (string)$sessionToken);
+        }
+        // error_log("CSRF Check - Path: " . $request->getPath() . " | Got: $tokenFrag | Expected: $sessionFrag");
 
         if (!$token || !$sessionToken) {
             error_log("CSRF token missing for path: " . $request->getPath());
@@ -61,7 +93,9 @@ class CsrfMiddleware implements MiddlewareInterface
             return;
         }
 
-        $next($request, $response);
+        if (is_callable($next)) {
+            $next($request, $response);
+        }
     }
 
     private function terminate(int $code, string $message, string $newToken, Request $request, Response $response): void

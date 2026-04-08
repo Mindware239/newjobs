@@ -131,5 +131,28 @@ class GoogleOAuthService
     {
         return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
+
+    public function verifyIdToken(string $idToken): array
+    {
+        try {
+            $payload = $this->client->verifyIdToken($idToken);
+            if (!$payload || empty($payload['sub']) || empty($payload['email'])) {
+                throw new Exception('Invalid Google ID token');
+            }
+
+            return [
+                'id' => $payload['sub'],
+                'email' => $payload['email'],
+                'name' => $payload['name'] ?? '',
+                'picture' => $payload['picture'] ?? null,
+                'verified_email' => !empty($payload['email_verified']),
+                'given_name' => $payload['given_name'] ?? '',
+                'family_name' => $payload['family_name'] ?? ''
+            ];
+        } catch (Exception $e) {
+            error_log("Google ID token verification error: " . $e->getMessage());
+            throw $e;
+        }
+    }
 }
 
