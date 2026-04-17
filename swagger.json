@@ -6,147 +6,866 @@
     "version": "1.5.0"
   },
   "servers": [
-    { "url": "http://192.168.1.24/MINDWAREINFOTECH", "description": "Local Network Server" },
-    { "url": "https://mindwareinfotech.com", "description": "Production Server" }
+    {
+      "url": "http://192.168.1.24/MINDWAREINFOTECH",
+      "description": "Local Network Server"
+    },
+    {
+      "url": "https://mindwareinfotech.com",
+      "description": "Production Server"
+    }
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     },
     "schemas": {
       "ApiResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "message": { "type": "string" },
-          "data": { "type": "object" },
-          "error": { "type": "string" }
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "error": {
+            "type": "string"
+          }
         }
       }
     }
   },
-  "security": [ { "bearerAuth": [] } ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
     "/api/v1/login": {
       "post": {
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "summary": "User Login",
         "security": [],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "properties": { "email": { "type": "string" }, "password": { "type": "string" } } } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
         },
-        "responses": { "200": { "description": "Success", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } } } }
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/register-candidate": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Candidate Registration",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "mobile": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "full_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful"
+          }
+        }
+      }
+    },
+    "/api/v1/register-employer": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Employer Registration",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "company_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "company_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful"
+          }
+        }
+      }
+    },
+    "/api/v1/send-phone-otp": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Send Phone OTP",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "auth",
+                      "verification",
+                      "reset"
+                    ],
+                    "default": "auth"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "candidate",
+                      "employer"
+                    ]
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent"
+          }
+        }
+      }
+    },
+    "/api/v1/login-phone": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login with Phone OTP",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "default": "auth"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "otp"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/api/v1/verify-otp": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Verify Phone OTP (Post-Auth)",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "otp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "otp"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Phone verified"
+          }
+        }
+      }
+    },
+    "/api/v1/verify-email": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Verify Email",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified"
+          }
+        }
       }
     },
     "/api/v1/forgot-password": {
       "post": {
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "summary": "Forgot Password",
         "security": [],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "email": { "type": "string" } } } } } },
-        "responses": { "200": { "description": "Link sent" } }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link sent"
+          }
+        }
+      }
+    },
+    "/api/v1/reset-password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Reset Password",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully"
+          }
+        }
       }
     },
     "/api/v1/jobs": {
       "get": {
-        "tags": ["Public"],
+        "tags": [
+          "Public"
+        ],
         "summary": "List/Search Jobs",
         "security": [],
         "parameters": [
-          { "name": "keyword", "in": "query", "schema": { "type": "string" } },
-          { "name": "location", "in": "query", "schema": { "type": "string" } },
-          { "name": "page", "in": "query", "schema": { "type": "integer" } }
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Success" } }
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/v1/jobs/{slug}": {
       "get": {
-        "tags": ["Public"],
+        "tags": [
+          "Public"
+        ],
         "summary": "Get Job Details",
         "security": [],
-        "parameters": [ { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } } ],
-        "responses": { "200": { "description": "Success" } }
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/v1/candidate/jobs/{id}/apply": {
       "post": {
-        "tags": ["Candidate - Jobs"],
+        "tags": [
+          "Candidate - Jobs"
+        ],
         "summary": "Apply for a Job",
-        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "resume_id": { "type": "integer" }, "cover_letter": { "type": "string" } } } } } },
-        "responses": { "200": { "description": "Applied" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resume_id": {
+                    "type": "integer"
+                  },
+                  "cover_letter": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied"
+          }
+        }
       }
     },
     "/api/v1/candidate/applications/{id}/withdraw": {
       "post": {
-        "tags": ["Candidate - Jobs"],
+        "tags": [
+          "Candidate - Jobs"
+        ],
         "summary": "Withdraw Application",
-        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
-        "responses": { "200": { "description": "Withdrawn" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Withdrawn"
+          }
+        }
       }
     },
     "/api/v1/candidate/profile": {
-      "get": { "tags": ["Candidate - Profile"], "summary": "Get Full Profile", "responses": { "200": { "description": "Success" } } },
-      "put": { "tags": ["Candidate - Profile"], "summary": "Update Profile", "responses": { "200": { "description": "Updated" } } }
+      "get": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "Get Full Profile",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "Update Profile",
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
     },
     "/api/v1/candidate/profile/education": {
-      "post": { "tags": ["Candidate - Profile"], "summary": "Add Education", "responses": { "201": { "description": "Added" } } }
+      "post": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "Add Education",
+        "responses": {
+          "201": {
+            "description": "Added"
+          }
+        }
+      }
     },
     "/api/v1/candidate/profile/experience": {
-      "post": { "tags": ["Candidate - Profile"], "summary": "Add Experience", "responses": { "201": { "description": "Added" } } }
+      "post": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "Add Experience",
+        "responses": {
+          "201": {
+            "description": "Added"
+          }
+        }
+      }
     },
     "/api/v1/candidate/resumes": {
-      "get": { "tags": ["Candidate - Profile"], "summary": "List Resumes", "responses": { "200": { "description": "Success" } } },
-      "post": { "tags": ["Candidate - Profile"], "summary": "Upload Resume", "responses": { "201": { "description": "Uploaded" } } }
+      "get": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "List Resumes",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Candidate - Profile"
+        ],
+        "summary": "Upload Resume",
+        "responses": {
+          "201": {
+            "description": "Uploaded"
+          }
+        }
+      }
     },
     "/api/v1/candidate/alerts": {
-      "get": { "tags": ["Candidate - Jobs"], "summary": "List Job Alerts", "responses": { "200": { "description": "Success" } } },
-      "post": { "tags": ["Candidate - Jobs"], "summary": "Create Job Alert", "responses": { "201": { "description": "Created" } } }
+      "get": {
+        "tags": [
+          "Candidate - Jobs"
+        ],
+        "summary": "List Job Alerts",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Candidate - Jobs"
+        ],
+        "summary": "Create Job Alert",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
     },
     "/api/v1/payments/initiate": {
       "post": {
-        "tags": ["Payments & Subscriptions"],
+        "tags": [
+          "Payments & Subscriptions"
+        ],
         "summary": "Initiate Payment",
-        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "plan_id": { "type": "integer" }, "gateway": { "type": "string", "example": "razorpay" } } } } } },
-        "responses": { "200": { "description": "Payment initialized" } }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plan_id": {
+                    "type": "integer"
+                  },
+                  "gateway": {
+                    "type": "string",
+                    "example": "razorpay"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment initialized"
+          }
+        }
       }
     },
     "/api/v1/payments/verify": {
       "post": {
-        "tags": ["Payments & Subscriptions"],
+        "tags": [
+          "Payments & Subscriptions"
+        ],
         "summary": "Verify Payment Status",
-        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "order_id": { "type": "string" }, "payment_id": { "type": "string" }, "signature": { "type": "string" } } } } } },
-        "responses": { "200": { "description": "Verified" } }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  },
+                  "payment_id": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verified"
+          }
+        }
       }
     },
     "/api/v1/subscription/current": {
-      "get": { "tags": ["Payments & Subscriptions"], "summary": "Get Current Active Plan", "responses": { "200": { "description": "Success" } } }
+      "get": {
+        "tags": [
+          "Payments & Subscriptions"
+        ],
+        "summary": "Get Current Active Plan",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     },
     "/api/v1/employer/jobs": {
-      "get": { "tags": ["Employer - Jobs"], "summary": "List My Jobs", "responses": { "200": { "description": "Success" } } },
-      "post": { "tags": ["Employer - Jobs"], "summary": "Post New Job", "responses": { "201": { "description": "Created" } } }
+      "get": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "List My Jobs",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Post New Job",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
     },
     "/api/v1/employer/applications": {
-      "get": { "tags": ["Employer - Candidates"], "summary": "View Applications Received", "responses": { "200": { "description": "Success" } } }
+      "get": {
+        "tags": [
+          "Employer - Candidates"
+        ],
+        "summary": "View Applications Received",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     },
     "/api/v1/employer/applications/{id}/shortlist": {
-      "post": { "tags": ["Employer - Candidates"], "summary": "Shortlist Candidate", "responses": { "200": { "description": "Success" } } }
+      "post": {
+        "tags": [
+          "Employer - Candidates"
+        ],
+        "summary": "Shortlist Candidate",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     },
     "/api/v1/conversations": {
-      "get": { "tags": ["Communication"], "summary": "List Chat Conversations", "responses": { "200": { "description": "Success" } } },
-      "post": { "tags": ["Communication"], "summary": "Start Conversation", "responses": { "201": { "description": "Started" } } }
+      "get": {
+        "tags": [
+          "Communication"
+        ],
+        "summary": "List Chat Conversations",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Communication"
+        ],
+        "summary": "Start Conversation",
+        "responses": {
+          "201": {
+            "description": "Started"
+          }
+        }
+      }
     },
     "/api/v1/conversations/{id}/messages": {
-      "get": { "tags": ["Communication"], "summary": "Get Messages", "responses": { "200": { "description": "Success" } } },
-      "post": { "tags": ["Communication"], "summary": "Send Message", "responses": { "201": { "description": "Sent" } } }
+      "get": {
+        "tags": [
+          "Communication"
+        ],
+        "summary": "Get Messages",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Communication"
+        ],
+        "summary": "Send Message",
+        "responses": {
+          "201": {
+            "description": "Sent"
+          }
+        }
+      }
     },
     "/api/v1/notifications": {
-      "get": { "tags": ["Communication"], "summary": "List Notifications", "responses": { "200": { "description": "Success" } } }
+      "get": {
+        "tags": [
+          "Communication"
+        ],
+        "summary": "List Notifications",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     },
-    "/api/countries": { "get": { "tags": ["Geo"], "summary": "List Countries", "responses": { "200": { "description": "Success" } } } },
-    "/api/states": { "get": { "tags": ["Geo"], "summary": "List States", "parameters": [{ "name": "country", "in": "query", "schema": { "type": "string" } }], "responses": { "200": { "description": "Success" } } } },
-    "/api/cities": { "get": { "tags": ["Geo"], "summary": "List Cities", "parameters": [{ "name": "state", "in": "query", "schema": { "type": "string" } }], "responses": { "200": { "description": "Success" } } } }
+    "/api/countries": {
+      "get": {
+        "tags": [
+          "Geo"
+        ],
+        "summary": "List Countries",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/states": {
+      "get": {
+        "tags": [
+          "Geo"
+        ],
+        "summary": "List States",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/cities": {
+      "get": {
+        "tags": [
+          "Geo"
+        ],
+        "summary": "List Cities",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    }
   }
 }
