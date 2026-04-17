@@ -574,7 +574,7 @@ class PaymentController extends ApiController
     }
 
     /**
-     * GET /payments/wallet/balance
+     * GET /api/v1/payments/wallet/balance
      * Get wallet balance
      */
     public function walletBalance(Request $request, Response $response): void
@@ -592,6 +592,28 @@ class PaymentController extends ApiController
             'balance' => (float)$balance,
             'currency' => 'INR'
         ]);
+    }
+
+    /**
+     * POST /api/v1/discount/validate
+     * Migrated from api.php - Validate discount code
+     */
+    public function validateDiscount(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $data = $request->getJsonBody() ?? [];
+        $code = $data['code'] ?? '';
+        $planId = (int)($data['plan_id'] ?? 0);
+        $billingCycle = $data['billing_cycle'] ?? 'monthly';
+
+        $result = $this->paymentService->validateDiscount((string)$code, (int)$user->id, $planId, $billingCycle);
+
+        if (isset($result['error']) && empty($code)) {
+            $this->error($response, $result['error'], 400);
+            return;
+        }
+
+        $this->success($response, $result, 'Discount validation result');
     }
 
     private function validateCoupon(?string $code, int $userId): ?float

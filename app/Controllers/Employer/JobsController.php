@@ -33,13 +33,14 @@ class JobsController extends BaseController
     {
         if ($text === '' || $targetCode === 'en') return $text;
         $payload = json_encode(['q' => $text, 'source' => 'auto', 'target' => $targetCode, 'format' => 'text']);
-        $endpoints = [
-            'http://127.0.0.1:5000/translate',
-            'http://localhost:5000/translate',
-            'https://libretranslate.com/translate',
+        $endpoints = [];
+        $envEp = $_ENV['TRANSLATION_API'] ?? null;
+        if ($envEp) { $endpoints[] = $envEp; }
+        
+        $endpoints = array_merge($endpoints, [
             'https://libretranslate.de/translate',
             'https://translate.mentality.rip/translate'
-        ];
+        ]);
         foreach ($endpoints as $ep) {
             try {
                 if (function_exists('curl_init')) {

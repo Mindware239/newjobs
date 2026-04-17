@@ -11,6 +11,7 @@ ini_set('error_log', __DIR__ . '/storage/logs/php_errors.log');
 
 use App\Core\Application;
 use App\Core\Router;
+use App\Middlewares\CorsMiddleware;
 use App\Middlewares\CsrfMiddleware;
 use App\Middlewares\RateLimitMiddleware;
 
@@ -84,6 +85,7 @@ try {
 
     $app = new Application();
 
+    $app->addMiddleware(new CorsMiddleware());
     $app->addMiddleware(new CsrfMiddleware());
     $app->addMiddleware(new RateLimitMiddleware());
 

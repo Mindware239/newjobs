@@ -18,7 +18,7 @@
         "razorpay/razorpay": "^2.9",
         "rmccue/requests": "^2.0",
         "dompdf/dompdf": "2",
-        "guzzlehttp/guzzle": "^7.0",
+        "guzzlehttp/guzzle": "^7.10",
         "smalot/pdfparser": "^2.12",
         "phpoffice/phpword": "^1.4"
     },

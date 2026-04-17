@@ -9,6 +9,8 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
 
+use App\Helpers\SslHelper;
+
 class PaymentsController extends BaseController
 {
     public function index(Request $request, Response $response): void
@@ -218,11 +220,7 @@ class PaymentsController extends BaseController
 
     private function configureSslCa(): void
     {
-        $caPath = __DIR__ . '/../../../vendor/razorpay/razorpay/src/cacert.pem';
-        if (file_exists($caPath)) {
-            ini_set('curl.cainfo', $caPath);
-            ini_set('openssl.cafile', $caPath);
-        }
+        SslHelper::configureSslCa();
     }
 }
 

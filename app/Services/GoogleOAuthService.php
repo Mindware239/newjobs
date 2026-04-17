@@ -7,6 +7,7 @@ namespace App\Services;
 use Google_Client;
 use Google_Service_Oauth2;
 use Exception;
+use App\Helpers\SslHelper;
 
 class GoogleOAuthService
 {
@@ -49,31 +50,9 @@ class GoogleOAuthService
         }
     }
     
-    /**
-     * Get CA bundle path for SSL verification
-     * Tries multiple common locations
-     */
     private function getCaBundlePath(): string|bool
     {
-        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possiblePaths = [
-            $envPath,
-            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        
-        foreach ($possiblePaths as $path) {
-            if ($path && file_exists($path)) {
-                return $path;
-            }
-        }
-        
-        return true;
+        return SslHelper::resolveCaBundle() ?: true;
     }
 
     public function getAuthUrl(string $state = null): string

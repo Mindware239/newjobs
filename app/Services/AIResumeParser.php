@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
+use App\Helpers\SslHelper;
 
 /**
  * AI Resume Parser Service
@@ -246,23 +247,7 @@ PROMPT;
 
     private function getCaBundlePath(): string|bool
     {
-        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possiblePaths = [
-            $envPath,
-            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        foreach ($possiblePaths as $path) {
-            if ($path && file_exists((string)$path)) {
-                return (string)$path;
-            }
-        }
-        return true;
+        return SslHelper::resolveCaBundle() ?: true;
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Models\SubscriptionPayment;
 use App\Models\Employer;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use App\Helpers\SslHelper;
 
 class CashfreeController extends BaseController
 {
@@ -226,25 +227,7 @@ class CashfreeController extends BaseController
 
     private function configureSslCa(): bool|string
     {
-        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possible = [
-            $envPath,
-            __DIR__ . '/../../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        foreach ($possible as $path) {
-            if ($path && file_exists((string)$path)) {
-                @ini_set('curl.cainfo', (string)$path);
-                @ini_set('openssl.cafile', (string)$path);
-                return (string)$path;
-            }
-        }
-        return false;
+        return SslHelper::configureSslCa();
     }
 
     /**

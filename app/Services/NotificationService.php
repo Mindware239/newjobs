@@ -10,9 +10,63 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Workers\EmailWorker;
 use Google\Client;
+use App\Helpers\SslHelper;
 
 class NotificationService
 {
+    public static function registerToken(int $userId, string $token, string $device = '', string $browser = ''): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query(
+                "INSERT INTO user_push_tokens (user_id, token, device, browser, is_active, created_at, updated_at)
+                 VALUES (:user_id, :token, :device, :browser, 1, NOW(), NOW())
+                 ON DUPLICATE KEY UPDATE device = VALUES(device), browser = VALUES(browser), is_active = 1, updated_at = NOW()",
+                [
+                    'user_id' => $userId,
+                    'token' => $token,
+                    'device' => mb_substr($device, 0, 50),
+                    'browser' => mb_substr($browser, 0, 50)
+                ]
+            );
+            $db->query("UPDATE users SET fcm_token = :token WHERE id = :id", ['token' => $token, 'id' => $userId]);
+            return true;
+        } catch (\Throwable $t) {
+            error_log("NotificationService::registerToken error: " . $t->getMessage());
+            return false;
+        }
+    }
+
+    public static function unregisterToken(int $userId, string $token): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query("UPDATE user_push_tokens SET is_active = 0, updated_at = NOW() WHERE user_id = :uid AND token = :token", [
+                'uid' => $userId,
+                'token' => $token
+            ]);
+            return true;
+        } catch (\Throwable $t) {
+            error_log("NotificationService::unregisterToken error: " . $t->getMessage());
+            return false;
+        }
+    }
+
+    public static function updatePreferences(int $userId, array $prefs): bool
+    {
+        try {
+            $db = Database::getInstance();
+            $db->query("UPDATE users SET notification_preferences = :prefs WHERE id = :id", [
+                'prefs' => json_encode($prefs, JSON_UNESCAPED_UNICODE),
+                'id' => $userId
+            ]);
+            return true;
+        } catch (\Throwable $t) {
+            error_log("NotificationService::updatePreferences error: " . $t->getMessage());
+            return false;
+        }
+    }
+
     public static function notify(int $userId, string $type, string $title, string $message, ?string $link = null): void
     {
         Notification::create($userId, $type, $title, $message, $link);
@@ -430,13 +484,8 @@ class NotificationService
             }
             $client = new Client();
 
-            // SSL Fix: Use local cacert.pem if available
-            $cacert = realpath(__DIR__ . '/../../storage/cacert.pem');
-            $verifySsl = false;  // Default to false for local dev fallback
-
-            if ($cacert && file_exists($cacert)) {
-                $verifySsl = $cacert;
-            }
+            // SSL Fix: Use SslHelper
+            $verifySsl = SslHelper::resolveCaBundle();
 
             // Manually fetch token using Firebase JWT to control SSL verification
             // This bypasses Google\Client's internal HTTP handler which can be problematic on XAMPP
@@ -474,7 +523,7 @@ class NotificationService
 
                 // Fix for local SSL certificate issues (cURL error 60)
                 $guzzleClient = new \GuzzleHttp\Client([
-                    'verify' => false,  // Disable SSL verification for local development
+                    'verify' => $verifySsl,
                 ]);
                 $client->setHttpClient($guzzleClient);
 
@@ -507,7 +556,7 @@ class NotificationService
                 ]
             ];
             // Use Guzzle for HTTP POST to FCM
-            $verify = self::resolveCaBundle();
+            $verify = SslHelper::resolveCaBundle();
             $clientHttp = new \GuzzleHttp\Client([
                 'timeout' => 10,
                 'verify'  => $verify,
@@ -542,23 +591,7 @@ class NotificationService
 
     private static function resolveCaBundle(): string|bool
     {
-        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possible = [
-            $envPath,
-            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        foreach ($possible as $p) {
-            if ($p && file_exists((string)$p)) {
-                return (string)$p;
-            }
-        }
-        return true;
+        return SslHelper::resolveCaBundle() ?: true;
     }
 
     private static function getAdminFooter(): string

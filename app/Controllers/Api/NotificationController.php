@@ -93,4 +93,73 @@ class NotificationController extends ApiController
 
         $this->success($response, [], 'All notifications marked as read');
     }
+
+    /**
+     * POST /api/v1/push/register
+     * Migrated from api.php - Register device for push notifications
+     */
+    public function registerFcmToken(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $data = $request->getJsonBody() ?? [];
+        $token = trim((string)($data['token'] ?? ''));
+
+        if ($token === '') {
+            $this->error($response, 'Token is required', 400);
+            return;
+        }
+
+        $device = isset($data['device']) ? (string)$data['device'] : (string)($_SERVER['HTTP_SEC_CH_UA_PLATFORM'] ?? 'mobile');
+        $browser = isset($data['browser']) ? (string)$data['browser'] : (string)($_SERVER['HTTP_USER_AGENT'] ?? 'app');
+
+        if (\App\Services\NotificationService::registerToken((int)$user->id, $token, $device, $browser)) {
+            $this->success($response, [], 'Device registered for push notifications');
+        } else {
+            $this->error($response, 'Failed to register device', 500);
+        }
+    }
+
+    /**
+     * DELETE /api/v1/push/unsubscribe
+     * Migrated from api.php - Unregister device for push notifications
+     */
+    public function unregisterFcmToken(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $data = $request->getJsonBody() ?? [];
+        $token = trim((string)($data['token'] ?? ''));
+
+        if ($token === '') {
+            $this->error($response, 'Token is required', 400);
+            return;
+        }
+
+        if (\App\Services\NotificationService::unregisterToken((int)$user->id, $token)) {
+            $this->success($response, [], 'Unsubscribed successfully');
+        } else {
+            $this->error($response, 'Failed to unsubscribe', 500);
+        }
+    }
+
+    /**
+     * POST /api/v1/notifications/preferences
+     */
+    public function updatePreferences(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $data = $request->getJsonBody() ?? [];
+        
+        $prefs = [
+            'in_app' => isset($data['in_app']) ? (bool)$data['in_app'] : true,
+            'email' => isset($data['email']) ? (bool)$data['email'] : true,
+            'push' => isset($data['push']) ? (bool)$data['push'] : false,
+            'whatsapp' => isset($data['whatsapp']) ? (bool)$data['whatsapp'] : false
+        ];
+        
+        if (\App\Services\NotificationService::updatePreferences((int)$user->id, $prefs)) {
+            $this->success($response, ['preferences' => $prefs], 'Preferences updated');
+        } else {
+            $this->error($response, 'Failed to update preferences', 500);
+        }
+    }
 }

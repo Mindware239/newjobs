@@ -72,6 +72,13 @@ abstract class BaseController
         return true;
     }
 
+    /**
+     * Validate data against given rules.
+     * 
+     * @param array $data The data to validate
+     * @param array $rules Validation rules
+     * @return array Returns empty array if validation passes, or associative array of errors if it fails.
+     */
     protected function validate(array $data, array $rules): array
     {
         $errors = [];

@@ -133,6 +133,9 @@ class AuthController extends BaseController
             error_log("Registration data received: " . json_encode(array_keys($data)));
             
             $errors = $this->validate($data, [
+                'full_name' => 'required',
+                'company_name' => 'required',
+                'phone' => 'required',
                 'email' => 'required|email',
                 'password' => 'required|password_strong|min:8|max:20',
             ]);
@@ -152,10 +155,11 @@ class AuthController extends BaseController
             // Create user
             $user = new User();
             $user->fill([
+                'name' => $data['full_name'] ?? null,
                 'email' => $data['email'],
                 'role' => 'employer',
                 'status' => 'pending',
-                'phone' => isset($data['phone']) ? (($data['country_code'] ?? '') . ($data['phone'] ?? '')) : null
+                'phone' => $data['phone'] ?? null
             ]);
             $user->setPassword($data['password']);
 
@@ -360,6 +364,8 @@ class AuthController extends BaseController
             
             // Email-only registration for candidates with international standard validation
             $errors = $this->validate($data, [
+                'full_name' => 'required',
+                'mobile' => 'required',
                 'email' => 'required|email',
                 'password' => 'required|password_strong|min:8|max:20',
             ]);
@@ -395,9 +401,11 @@ class AuthController extends BaseController
             // Create user
             $user = new User();
             $user->fill([
+                'name' => $data['full_name'] ?? null,
                 'email' => $data['email'],
                 'role' => 'candidate',
                 'status' => 'active', // Candidates can be active immediately
+                'phone' => $data['mobile'] ?? null
             ]);
             $user->setPassword($data['password']);
 

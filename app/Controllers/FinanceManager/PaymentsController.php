@@ -9,6 +9,8 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
 
+use App\Helpers\SslHelper;
+
 class PaymentsController extends BaseController
 {
     public function index(Request $request, Response $response): void
@@ -195,18 +197,8 @@ class PaymentsController extends BaseController
 
     private function configureSslCa(): void
     {
-        // Fix for cURL error 60 (SSL certificate problem) on Windows
-        // Point to the bundled cacert.pem in vendor/razorpay/razorpay/src/
-        // or use the system CA bundle if configured
-        $caPath = __DIR__ . '/../../../vendor/razorpay/razorpay/src/cacert.pem';
-        if (file_exists($caPath)) {
-            // This is a bit of a hack since Razorpay SDK doesn't expose a way to set CURLOPT_CAINFO directly easily 
-            // without modifying the Requests library it uses.
-            // However, the Requests library (rmccue/requests) usually checks for a CA bundle.
-            // If we are having issues, we might need to set ini_set('curl.cainfo', ...);
-            ini_set('curl.cainfo', $caPath);
-            ini_set('openssl.cafile', $caPath);
-        }
+        SslHelper::configureSslCa();
     }
+
 }
 

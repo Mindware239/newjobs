@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Helpers\SslHelper;
+
 class SmsService
 {
     public static function isEnabled(): bool
@@ -95,29 +97,8 @@ class SmsService
         return ['success' => false, 'error' => $result['message'] ?? 'Unknown error'];
     }
 
-    /**
-     * Resolve CA bundle path to satisfy SSL verification on Windows/XAMPP.
-     * Returns string path, true to use defaults, or false to disable verification (dev only).
-     */
     private static function resolveCaBundle(): string|bool
     {
-        $envPath = $_ENV['CA_BUNDLE_PATH'] ?? getenv('CA_BUNDLE_PATH') ?: null;
-        $possible = [
-            $envPath,
-            __DIR__ . '/../../vendor/guzzlehttp/guzzle/src/cacert.pem',
-            'E:/xampp/php/extras/ssl/cacert.pem',
-            'C:/xampp/php/extras/ssl/cacert.pem',
-            'E:/xampp/apache/bin/curl-ca-bundle.crt',
-            'C:/xampp/apache/bin/curl-ca-bundle.crt',
-            ini_get('curl.cainfo'),
-            ini_get('openssl.cafile'),
-        ];
-        foreach ($possible as $p) {
-            if ($p && file_exists((string)$p)) {
-                return (string)$p;
-            }
-        }
-        // If none found, return true (let library defaults work). In dev, you may return false.
-        return true;
+        return SslHelper::resolveCaBundle() ?: true;
     }
 }

@@ -643,20 +643,20 @@ public function action(Request $request, Response $response): void
 
 **Login:**
 ```bash
-curl -X POST http://localhost:8000/api/v1/login \
+curl -X POST http://192.168.1.24:8000/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"email":"candidate@example.com","password":"password123"}'
 ```
 
 **List Resumes:**
 ```bash
-curl -X GET "http://localhost:8000/api/v1/candidate/resumes?page=1&per_page=10" \
+curl -X GET "http://192.168.1.24:8000/api/v1/candidate/resumes?page=1&per_page=10" \    
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 **Upload Resume:**
 ```bash
-curl -X POST http://localhost:8000/api/v1/candidate/resumes/upload \
+curl -X POST http://192.168.1.24:8000/api/v1/candidate/resumes/upload \ 
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -F "resume=@resume.pdf" \
   -F "title=My Resume"
@@ -664,7 +664,7 @@ curl -X POST http://localhost:8000/api/v1/candidate/resumes/upload \
 
 **Send Message:**
 ```bash
-curl -X POST http://localhost:8000/api/v1/conversations/1/messages \
+curl -X POST http://192.168.1.24:8000/api/v1/conversations/1/messages \        
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"content":"Hello!","type":"text"}'

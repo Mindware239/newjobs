@@ -12,7 +12,7 @@ class User extends Model
     protected string $primaryKey = 'id';
 
     protected array $fillable = [
-        'email', 'password_hash', 'role', 'status', 'phone', 'notification_preferences',
+        'name', 'email', 'password_hash', 'role', 'status', 'phone', 'notification_preferences',
         'is_email_verified', 'is_phone_verified', 'twofa_secret', 'last_login',
         'google_id', 'google_email', 'google_name', 'google_picture',
         'apple_id', 'apple_email', 'apple_name', 'fcm_token'

@@ -66,7 +66,7 @@ class Response
             https://www.facebook.com https://connect.facebook.net 
             https://px.ads.linkedin.com https://www.google-analytics.com 
             https://googleads.g.doubleclick.net 
-            https://nominatim.openstreetmap.org https://countriesnow.space; "
+            https://nominatim.openstreetmap.org https://countriesnow.space https://restcountries.com; "
 
             // FRAME (PAYMENT POPUP)
             . "frame-src 'self' 
@@ -101,7 +101,7 @@ class Response
         header($safeName . ': ' . $safeValue);
     }
 
-    public function json(array $data, int $code = 200, string $message = "Success", bool $status = true, ?array $errors = null): void
+    public function json(array $data, int $code = 200): void
     {
         $this->ensureSecurityHeaders();
         $this->setStatusCode($code);
@@ -111,24 +111,7 @@ class Response
             ob_clean();
         }
 
-        $payload = [
-            'status' => $status,
-            'success' => $status,
-            'message' => $message,
-            'data' => $data,
-            'error' => $status ? null : $message,
-            'errors' => $errors
-        ];
-
-        if ($this->isAssoc($data)) {
-            foreach ($data as $key => $value) {
-                if (!array_key_exists((string)$key, $payload)) {
-                    $payload[(string)$key] = $value;
-                }
-            }
-        }
-
-        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         exit;
     }
@@ -144,7 +127,15 @@ class Response
 
     public function error(string $message, int $code = 400, ?array $errors = null): void
     {
-        $this->json([], $code, $message, false, $errors);
+        $payload = [
+            'status' => false,
+            'success' => false,
+            'message' => $message,
+            'data' => null,
+            'error' => $message,
+            'errors' => $errors
+        ];
+        $this->json($payload, $code);
     }
 
     public function view(string $view, array $data = [], int $code = 200, ?string $layout = null): void

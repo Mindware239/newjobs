@@ -4,220 +4,97 @@ declare(strict_types=1);
 
 namespace App\Controllers\Api;
 
-use App\Controllers\Api\ApiController;
 use App\Core\Request;
 use App\Core\Response;
-use App\Models\Skill;
-use App\Models\City;
-use App\Models\JobTitle;
-use App\Models\Company;
+use App\Services\UtilityService;
+use App\Services\SkillService;
 
 class UtilityController extends ApiController
 {
+    private UtilityService $utilityService;
+    private SkillService $skillService;
+
+    public function __construct()
+    {
+        $this->utilityService = new UtilityService();
+        $this->skillService = new SkillService();
+    }
+
     /**
-     * GET /locations
-     * List all cities/locations
+     * GET /api/v1/locations/search
+     */
+    public function searchLocations(Request $request, Response $response): void
+    {
+        $query = trim($request->get('q') ?? '');
+        $limit = (int)($request->get('limit') ?? 10);
+        
+        $result = $this->utilityService->searchLocations($query, $limit);
+        $this->success($response, $result);
+    }
+
+    /**
+     * GET /api/v1/locations/all
      */
     public function locations(Request $request, Response $response): void
     {
-        $search = $request->query('search', '');
-        $page = (int)$request->query('page', 1);
-        $perPage = (int)$request->query('per_page', 20);
-
-        $query = City::query();
-
-        if ($search) {
-            $query->where('name', 'LIKE', '%' . $search . '%');
-        }
-
-        $locations = $query->orderBy('name', 'ASC')->paginate($perPage, $page);
-
-        $data = [];
-        foreach ($locations['data'] as $location) {
-            $data[] = [
-                'id' => $location->id,
-                'name' => $location->name,
-                'state' => $location->state ?? null,
-                'country' => $location->country ?? 'India'
-            ];
-        }
-
-        $this->success($response, [
-            'locations' => $data,
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total' => $locations['total'],
-                'last_page' => ceil($locations['total'] / $perPage)
-            ]
-        ]);
+        $result = $this->utilityService->getAllLocations();
+        $this->success($response, $result);
     }
 
     /**
-     * GET /job-titles
-     * List job titles (autocomplete)
+     * GET /api/v1/job-titles/search
      */
-    public function jobTitles(Request $request, Response $response): void
+    public function searchJobTitles(Request $request, Response $response): void
     {
-        $search = $request->query('search', '');
-        $limit = (int)$request->query('limit', 10);
-
-        $query = JobTitle::query();
-
-        if ($search) {
-            $query->where('title', 'LIKE', '%' . $search . '%');
-        }
-
-        $titles = $query->orderBy('frequency', 'DESC')
-            ->limit($limit)
-            ->pluck('title')
-            ->toArray();
-
-        $this->success($response, [
-            'job_titles' => $titles
-        ]);
+        $query = trim($request->get('q') ?? '');
+        $limit = (int)($request->get('limit') ?? 10);
+        
+        $result = $this->utilityService->searchJobTitles($query, $limit);
+        $this->success($response, $result);
     }
 
     /**
-     * GET /skills
-     * List skills (autocomplete)
+     * GET /api/v1/skills/suggest
      */
-    public function skills(Request $request, Response $response): void
+    public function suggestSkills(Request $request, Response $response): void
     {
-        $search = $request->query('search', '');
-        $limit = (int)$request->query('limit', 10);
+        $q = trim((string)($request->get('q') ?? ''));
+        $title = trim((string)($request->get('title') ?? ''));
+        $category = trim((string)($request->get('category') ?? ''));
+        $limit = (int)($request->get('limit') ?? 10);
 
-        $query = Skill::query();
-
-        if ($search) {
-            $query->where('name', 'LIKE', '%' . $search . '%');
-        }
-
-        $skills = $query->orderBy('name', 'ASC')
-            ->limit($limit)
-            ->pluck('name')
-            ->toArray();
-
-        $this->success($response, [
-            'skills' => $skills
-        ]);
+        $result = $this->skillService->getSuggestions($q, $title, $category, $limit);
+        $this->success($response, $result);
     }
 
     /**
-     * GET /companies
-     * List companies
+     * GET /api/v1/industries/all
      */
-    public function companies(Request $request, Response $response): void
+    public function listIndustries(Request $request, Response $response): void
     {
-        $search = $request->query('search', '');
-        $page = (int)$request->query('page', 1);
-        $perPage = (int)$request->query('per_page', 20);
-
-        $query = Company::query();
-
-        if ($search) {
-            $query->where('name', 'LIKE', '%' . $search . '%');
-        }
-
-        $companies = $query->orderBy('name', 'ASC')->paginate($perPage, $page);
-
-        $data = [];
-        foreach ($companies['data'] as $company) {
-            $data[] = [
-                'id' => $company->id,
-                'name' => $company->name,
-                'logo' => $company->logo ?? null,
-                'location' => $company->location ?? null,
-                'industry' => $company->industry ?? null
-            ];
-        }
-
-        $this->success($response, [
-            'companies' => $data,
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total' => $companies['total'],
-                'last_page' => ceil($companies['total'] / $perPage)
-            ]
-        ]);
+        $limit = (int)($request->get('limit') ?? 0);
+        $result = $this->utilityService->getIndustries($limit);
+        $this->success($response, $result);
     }
 
     /**
-     * POST /feedback
-     * Submit user feedback
+     * GET /api/v1/fcm-web-config
      */
-    public function submitFeedback(Request $request, Response $response): void
+    public function fcmWebConfig(Request $request, Response $response): void
     {
-        $user = $this->user($request);
-        if (!$user) {
-            $this->error($response, 'Unauthorized', 401);
-            return;
-        }
-
-        $errors = $this->validate($request->getJsonBody(), [
-            'type' => 'required|in:bug,feature,improvement,other',
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'rating' => 'sometimes|numeric|min:1|max:5'
-        ]);
-
-        if (!empty($errors)) {
-            $this->validationError($response, $errors);
-            return;
-        }
-
-        // Store feedback in database
-        // Implementation depends on your feedback model
-
-        $this->success($response, [], 'Thank you for your feedback!', 201);
-    }
-
-    /**
-     * POST /report
-     * Report content/user
-     */
-    public function reportContent(Request $request, Response $response): void
-    {
-        $user = $this->user($request);
-        if (!$user) {
-            $this->error($response, 'Unauthorized', 401);
-            return;
-        }
-
-        $errors = $this->validate($request->getJsonBody(), [
-            'report_type' => 'required|in:user,job,review,message',
-            'target_id' => 'required|numeric',
-            'reason' => 'required|string',
-            'description' => 'sometimes|string'
-        ]);
-
-        if (!empty($errors)) {
-            $this->validationError($response, $errors);
-            return;
-        }
-
-        // Store report in database
-        // Implementation depends on your report model
-
-        $this->success($response, [], 'Report submitted. Thank you for helping us maintain a safe community.', 201);
+        $config = $this->utilityService->getFcmWebConfig();
+        $this->success($response, $config);
     }
 
     /**
      * GET /app-version
-     * Check app version and update status
      */
     public function appVersion(Request $request, Response $response): void
     {
         $currentVersion = $request->query('version', '1.0.0');
-        $platform = $request->query('platform', 'ios'); // ios, android
+        $platform = $request->query('platform', 'ios');
 
-        $latestVersion = match($platform) {
-            'ios' => '1.2.1',
-            'android' => '1.2.1',
-            default => '1.2.1'
-        };
-
+        $latestVersion = '1.2.1';
         $updateRequired = version_compare($currentVersion, $latestVersion, '<');
         $updateAvailable = version_compare($currentVersion, $latestVersion, '!=');
 
@@ -233,19 +110,24 @@ class UtilityController extends ApiController
 
     /**
      * GET /maintenance-status
-     * Check app maintenance status
      */
     public function maintenanceStatus(Request $request, Response $response): void
     {
-        // Check system settings or cache for maintenance status
-        $inMaintenance = false;
-        $maintenanceMessage = null;
-        $estimatedResumption = null;
-
         $this->success($response, [
-            'in_maintenance' => $inMaintenance,
-            'message' => $maintenanceMessage,
-            'estimated_resumption' => $estimatedResumption
+            'in_maintenance' => false,
+            'message' => null,
+            'estimated_resumption' => null
+        ]);
+    }
+
+    /**
+     * GET /health
+     */
+    public function healthCheck(Request $request, Response $response): void
+    {
+        $this->success($response, [
+            'status' => 'ok',
+            'timestamp' => date('Y-m-d H:i:s')
         ]);
     }
 }

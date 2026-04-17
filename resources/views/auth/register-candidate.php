@@ -396,6 +396,27 @@
         .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg)}}
 
+        .auth-toggle-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .auth-toggle-active {
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+        }
+        .auth-toggle-inactive {
+            background: transparent;
+            color: #6b7280;
+        }
+
         /* Footer */
         .reg-footer{text-align:center;font-size:12.5px;color:#6b7280;}
         .reg-footer a{font-weight:700;color:#4f46e5;text-decoration:none;}
@@ -573,13 +594,13 @@
 
             <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
                 <button type="button" @click="authMode='password'; error=''; success=''"
-                        :style="authMode === 'password' ? modeActiveStyle : modeInactiveStyle"
-                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">
+                        :class="authMode === 'password' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
+                        class="auth-toggle-btn">
                     Email Password
                 </button>
                 <button type="button" @click="authMode='otp'; error=''; success=''"
-                        :style="authMode === 'otp' ? modeActiveStyle : modeInactiveStyle"
-                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;">
+                        :class="authMode === 'otp' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
+                        class="auth-toggle-btn">
                     Mobile OTP
                 </button>
             </div>
@@ -587,6 +608,30 @@
             <form @submit.prevent="authMode === 'otp' ? submitOtpRegistration() : submitRegistration()">
 
                 <div x-show="authMode === 'password'" x-cloak>
+
+                <!-- Full Name -->
+                <div class="f-group">
+                    <label class="f-label">Full Name <span class="req">*</span></label>
+                    <div class="f-wrap">
+                        <input type="text"
+                               x-model="formData.full_name"
+                               required
+                               placeholder="Enter your full name"
+                               class="f-input">
+                    </div>
+                </div>
+
+                <!-- Mobile Number -->
+                <div class="f-group">
+                    <label class="f-label">Mobile Number <span class="req">*</span></label>
+                    <div class="f-wrap">
+                        <input type="tel"
+                               x-model="formData.mobile"
+                               required
+                               placeholder="Enter mobile number"
+                               class="f-input">
+                    </div>
+                </div>
 
                 <!-- Email -->
                 <div class="f-group">
@@ -909,6 +954,8 @@
             },
             passwordSuggestions: [],
             formData: {
+                full_name: '',
+                mobile: '',
                 email: '',
                 password: '',
                 password_confirm: '',
@@ -1043,6 +1090,8 @@
 
             async submitRegistration() {
                 this.error = ''; this.success = '';
+                if (!this.formData.full_name) { this.error = 'Please enter your full name'; return; }
+                if (!this.formData.mobile) { this.error = 'Please enter your mobile number'; return; }
                 this.validateEmail();
                 this.checkPasswordStrength();
                 this.validatePasswordMatch();
@@ -1052,18 +1101,22 @@
                 if (!this.formData.agree_terms) { this.error = 'Please agree to the Terms and Conditions'; return; }
                 this.isSubmitting = true;
                 try {
+                    const csrf = this.getCsrfToken();
+                    const fd = new FormData();
+                    fd.append('full_name', this.formData.full_name);
+                    fd.append('mobile', this.formData.mobile);
+                    fd.append('email', this.formData.email);
+                    fd.append('password', this.formData.password);
+                    fd.append('confirm_password', this.formData.password_confirm);
+                    fd.append('role', 'candidate');
+                    fd.append('_token', csrf);
                     const response = await fetch('/register-candidate', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-Token': this.getCsrfToken()
-                        },
-                        body: JSON.stringify(this.formData)
+                        body: fd
                     });
                     const data = await response.json();
                     // Handle wrapped response format from Response::json()
-                    const isSuccess = response.ok && (data.status === true || data.data?.success === true);
+                    const isSuccess = response.ok && (data.success === true || data.status === true || data.data?.success === true);
                     const successMsg = data.message || data.data?.message || 'Registration successful! Please check your email for confirmation. Redirecting to login...';
                     const redirectUrl = data.data?.redirect || data.redirect || '/login?registered=1';
                     

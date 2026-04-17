@@ -595,7 +595,7 @@ class CandidatesController extends BaseController
 
                 $sendEmail = isset($data['send_email']) ? filter_var((string)$data['send_email'], FILTER_VALIDATE_BOOLEAN) : true;
                 if ($sendEmail) {
-                    $appUrl = $_ENV['APP_URL'] ?? (getenv('APP_URL') ?: 'http://localhost:8000');
+                    $appUrl = $_ENV['APP_URL'] ?? (getenv('APP_URL') ?: 'http://192.168.1.24:8000');
                     $tokenVal = $user->attributes['verification_token'] ?? ''; 
                     
                     // If token missing in attributes, fetch from DB

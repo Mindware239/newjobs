@@ -7,24 +7,26 @@ namespace App\Middlewares;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\RedisClient;
+use App\Core\Logger;
 
 class RateLimitMiddleware implements MiddlewareInterface
 {
     private int $maxRequests;
     private int $windowSeconds;
-    private RedisClient $redis;
+    private string $prefix;
 
-    public function __construct(int $maxRequests = 100, int $windowSeconds = 60)
+    public function __construct(int $maxRequests = 60, int $windowSeconds = 60, string $prefix = 'default')
     {
         $this->maxRequests = $maxRequests;
         $this->windowSeconds = $windowSeconds;
-        $this->redis = RedisClient::getInstance();
+        $this->prefix = $prefix;
     }
 
     public function handle(Request $request, Response $response, ?callable $next = null): void
     {
-        // Skip rate limiting if Redis is not available
-        if (!$this->redis->isAvailable()) {
+        $redis = RedisClient::getInstance();
+        
+        if (!$redis->isAvailable()) {
             if (is_callable($next)) {
                 $next($request, $response);
             }
@@ -32,43 +34,33 @@ class RateLimitMiddleware implements MiddlewareInterface
         }
 
         $identifier = $this->getIdentifier($request);
-        $key = "rate_limit:" . $identifier;
+        $key = "ratelimit:{$this->prefix}:{$identifier}";
 
-        $connection = $this->redis->getConnection();
-        if (!$connection) {
-            if (is_callable($next)) {
-                $next($request, $response);
+        try {
+            $conn = $redis->getConnection();
+            $current = $conn->get($key);
+
+            if ($current === false) {
+                $conn->setex($key, $this->windowSeconds, 1);
+            } elseif ((int)$current >= $this->maxRequests) {
+                Logger::info("Rate limit exceeded for {$identifier} on {$this->prefix}");
+                
+                $response->setStatusCode(429);
+                $response->setHeader('Retry-After', (string)$this->windowSeconds);
+                $response->json([], 429, "Too many requests. Please try again later.", false);
+                return;
+            } else {
+                $conn->incr($key);
             }
-            return;
-        }
 
-        $current = $connection->get($key);
-        
-        if ($current === false) {
-            $connection->setex($key, $this->windowSeconds, 1);
-            if (is_callable($next)) {
-                $next($request, $response);
-            }
-            return;
-        }
+            // Set rate limit headers
+            $remaining = $this->maxRequests - ((int)$current + 1);
+            $response->setHeader('X-RateLimit-Limit', (string)$this->maxRequests);
+            $response->setHeader('X-RateLimit-Remaining', (string)max(0, $remaining));
 
-        $count = (int)$current;
-        
-        if ($count >= $this->maxRequests) {
-            $response->setStatusCode(429);
-            $roleLimitLimit = (string)$this->maxRequests;
-            $response->setHeader('X-RateLimit-Limit', $roleLimitLimit);
-            $response->setHeader('X-RateLimit-Remaining', '0');
-            $response->setHeader('Retry-After', (string)$this->windowSeconds);
-            $response->json(['error' => 'Too many requests']);
-            return;
+        } catch (\Throwable $e) {
+            Logger::error("RateLimit Error: " . $e->getMessage());
         }
-
-        $connection->incr($key);
-        $remaining = $this->maxRequests - ($count + 1);
-        
-        $response->setHeader('X-RateLimit-Limit', (string)$this->maxRequests);
-        $response->setHeader('X-RateLimit-Remaining', (string)$remaining);
 
         if (is_callable($next)) {
             $next($request, $response);
@@ -77,12 +69,12 @@ class RateLimitMiddleware implements MiddlewareInterface
 
     private function getIdentifier(Request $request): string
     {
-        $userId = $_SESSION['user_id'] ?? null;
-        if ($userId) {
-            return 'user:' . $userId;
+        // Prioritize User ID if authenticated, fallback to IP
+        $user = $request->user();
+        if ($user) {
+            return "user:{$user->id}";
         }
 
-        return 'ip:' . $request->ip();
+        return "ip:" . $request->ip();
     }
 }
-

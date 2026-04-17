@@ -9,12 +9,13 @@
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
     <title>Login | Mindware Jobs</title>
     <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak]{display:none}
         *,*::before,*::after{box-sizing:border-box;}
         html,body{margin:0;padding:0;height:100%;overflow:hidden;}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+        body{font-family:'Plus Jakarta Sans', -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 
         .dot-grid{background-image:radial-gradient(circle,rgba(99,102,241,.18) 1px,transparent 1px);background-size:24px 24px;}
         .grad-text{background:linear-gradient(135deg,#4f46e5,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -36,6 +37,27 @@
         }
         .btn-main:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.38);}
         .btn-main:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+
+        .auth-toggle-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .auth-toggle-active {
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+        }
+        .auth-toggle-inactive {
+            background: transparent;
+            color: #6b7280;
+        }
 
         .soc-btn{
             display:flex;align-items:center;justify-content:center;padding:9px;
@@ -247,13 +269,13 @@
 
             <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
                 <button type="button" @click="authMode = 'password'; error=''; success=''"
-                        :style="authMode === 'password' ? activeModeStyle : inactiveModeStyle"
-                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">
+                        :class="authMode === 'password' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
+                        class="auth-toggle-btn">
                     Email Password
                 </button>
                 <button type="button" @click="authMode = 'otp'; error=''; success=''"
-                        :style="authMode === 'otp' ? activeModeStyle : inactiveModeStyle"
-                        style="flex:1;padding:9px 12px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">
+                        :class="authMode === 'otp' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
+                        class="auth-toggle-btn">
                     Mobile OTP
                 </button>
             </div>
@@ -461,8 +483,6 @@
             otpCooldown: 0,
             otpPreview: '',
             otpTimer: null,
-            activeModeStyle: 'background:#ffffff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)',
-            inactiveModeStyle: 'background:transparent;color:#6b7280',
             registrationSuccess: registered === '1',
             registrationMessage: registeredEmail ? `Account created for ${registeredEmail}. Please login.` : 'Account created successfully. Please login.',
             hideForgot: false,
