@@ -79,10 +79,11 @@ class ApplicationController extends ApiController
             }
         }
 
+        $job = $application->job();
         $this->success($response, [
             'id' => $application->id,
             'job_id' => $application->job_id,
-            'job_title' => $application->job?->title,
+            'job_title' => $job ? $job->title : null,
             'candidate_id' => $application->candidate_id,
             'status' => $application->status,
             'applied_at' => $application->created_at,
@@ -201,8 +202,7 @@ class ApplicationController extends ApiController
 
         // Get employer's job IDs
         $jobIds = Job::where('employer_id', '=', $user->id)
-            ->pluck('id')
-            ->toArray();
+            ->pluck('id');
 
         if (empty($jobIds)) {
             $this->success($response, [

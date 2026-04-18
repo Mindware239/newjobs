@@ -62,14 +62,29 @@ class AuthController extends ApiController
 
         $token = $this->authService->generateToken($user);
 
+        $userData = [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role' => $user->role,
+            'status' => $user->status,
+        ];
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::where('user_id', '=', $user->id)->first();
+            if ($candidate) {
+                $userData['name'] = $candidate->full_name;
+                $userData['mobile'] = $candidate->mobile ?? $user->phone;
+            }
+        } elseif ($user->role === 'employer') {
+            $employer = Employer::where('user_id', '=', $user->id)->first();
+            if ($employer) {
+                $userData['company_name'] = $employer->company_name;
+            }
+        }
+
         $this->success($response, [
             'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'role' => $user->role,
-                'status' => $user->status
-            ]
+            'user' => $userData
         ], 'Login successful');
     }
 
@@ -97,6 +112,7 @@ class AuthController extends ApiController
             'email' => 'required|email',
             'password' => 'required|password_strong|min:8',
             'full_name' => 'required',
+            'mobile' => 'required'
         ]);
 
         if (!empty($errors)) {
@@ -111,6 +127,13 @@ class AuthController extends ApiController
             return;
         }
 
+        // Send welcome / verification email
+        try {
+            \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+        } catch (\Throwable $e) {
+            error_log('Failed to send verification email during API registration: ' . $e->getMessage());
+        }
+
         $token = $this->authService->generateToken($user);
 
         $this->success($response, [
@@ -118,7 +141,9 @@ class AuthController extends ApiController
             'user' => [
                 'id' => $user->id,
                 'email' => $user->email,
-                'role' => $user->role
+                'role' => $user->role,
+                'name' => $data['full_name'],
+                'mobile' => $data['mobile']
             ]
         ], 'Registration successful', 201);
     }
@@ -158,6 +183,13 @@ class AuthController extends ApiController
         if (!$user) {
             $this->error($response, 'Registration failed or email already exists', 400);
             return;
+        }
+
+        // Send welcome / verification email for Employer
+        try {
+            \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+        } catch (\Throwable $e) {
+            error_log('Failed to send verification email during API employer registration: ' . $e->getMessage());
         }
 
         $token = $this->authService->generateToken($user);
@@ -394,13 +426,18 @@ class AuthController extends ApiController
 
         $user = User::where('email', '=', $email)->first();
         if ($user) {
-            $token = VerificationService::generateResetToken((int)$user->id);
+            $token = \App\Services\VerificationService::generateResetToken((int)$user->id);
 
             try {
-                NotificationService::queueEmail(
-                    $user->email,
+                $resetLink = ($_ENV['APP_URL'] ?? 'http://localhost') . '/reset-password?token=' . urlencode($token);
+                \App\Services\NotificationService::send(
+                    (int)$user->id,
                     'password_reset',
-                    ['link' => ($_ENV['APP_URL'] ?? 'http://localhost') . '/reset-password?token=' . urlencode($token)]
+                    'Password Reset Request',
+                    'Please click the link to reset your password: ' . $resetLink,
+                    ['link' => $resetLink],
+                    $resetLink,
+                    ['email']
                 );
             } catch (\Throwable $e) {
                 error_log('API forgotPassword email queue failed: ' . $e->getMessage());

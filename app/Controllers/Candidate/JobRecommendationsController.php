@@ -98,7 +98,7 @@ class JobRecommendationsController extends BaseController
      */
     private function getTrendingJobs(): array
     {
-        $db = Database::getInstance();
+        $db = \App\Core\Database::getInstance();
         $sql = "SELECT
                     j.id,
                     j.title,

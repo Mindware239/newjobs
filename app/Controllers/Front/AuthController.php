@@ -13,6 +13,7 @@ use App\Models\EmployerSetting;
 use App\Models\EmployerKycDocument;
 use App\Core\RedisClient;
 use App\Services\AuthService;
+use App\Services\VerificationService;
 use App\Services\GoogleOAuthService;
 use App\Services\AppleOAuthService;
 use App\Services\MailService;
@@ -356,11 +357,12 @@ class AuthController extends BaseController
 
         // Handle registration POST - support both JSON and form data
         $contentType = $request->header('Content-Type') ?? '';
-        $isJson = strpos($contentType, 'application/json') !== false;
+        $isJsonBody = strpos($contentType, 'application/json') !== false;
+        $isAjax = $request->isAjax() || $isJsonBody;
         $data = [];
         
         try {
-            $data = $isJson ? $request->getJsonBody() : $request->all();
+            $data = $isJsonBody ? $request->getJsonBody() : $request->all();
             
             // Email-only registration for candidates with international standard validation
             $errors = $this->validate($data, [
@@ -371,7 +373,7 @@ class AuthController extends BaseController
             ]);
 
             if (!empty($errors)) {
-                if ($isJson) {
+                if ($isAjax) {
                     $response->json(['errors' => $errors], 422);
                 } else {
                     $response->view('auth/register-candidate', [
@@ -386,7 +388,7 @@ class AuthController extends BaseController
             // Check if user exists
             $existing = User::where('email', '=', $data['email'])->first();
             if ($existing) {
-                if ($isJson) {
+                if ($isAjax) {
                     $response->json(['error' => 'Email already registered'], 409);
                 } else {
                     $response->view('auth/register-candidate', [
@@ -410,7 +412,7 @@ class AuthController extends BaseController
             $user->setPassword($data['password']);
 
             if (!$user->save()) {
-                if ($isJson) {
+                if ($isAjax) {
                     $response->json(['error' => 'Registration failed'], 500);
                 } else {
                     $response->view('auth/register-candidate', [
@@ -447,15 +449,30 @@ class AuthController extends BaseController
                 $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
             } catch (\Throwable $t) {}
 
-            // Don't auto-login - redirect to login page with success message
-            $redirectUrl = '/login?registered=1&email=' . urlencode($user->email);
+            // Auto-login the newly registered candidate
+            $_SESSION['user_id'] = $user->id;
+            $_SESSION['user_role'] = $user->role;
+            if ($candidate && isset($candidate->attributes['id'])) {
+                $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
+            }
+            
+            $authService = new \App\Services\AuthService();
+            $jwtToken = $authService->generateToken($user);
+            $jwtCookieEnabled = ($_ENV['WEB_JWT_COOKIE'] ?? '1') === '1';
+            if ($jwtCookieEnabled) {
+                $authService->setTokenCookie($jwtToken);
+            }
 
-            if ($isJson) {
+            // Redirect to profile completion page
+            $redirectUrl = '/candidate/profile/complete';
+
+            if ($isAjax) {
                 $response->json([
                     'success' => true,
-                    'message' => 'Registration successful! Please check your email for confirmation. You will be redirected to login page.',
+                    'message' => 'Registration successful! Redirecting to complete your profile...',
                     'user_id' => $user->id,
-                    'redirect' => $redirectUrl
+                    'redirect' => $redirectUrl,
+                    'token' => $jwtToken
                 ], 201);
             } else {
                 $response->redirect($redirectUrl);
@@ -464,7 +481,7 @@ class AuthController extends BaseController
             error_log("Candidate registration exception: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             
-            if ($isJson) {
+            if ($isAjax) {
                 $response->json(['error' => 'Registration failed: ' . $e->getMessage()], 500);
             } else {
                 $response->view('auth/register-candidate', [
@@ -1388,12 +1405,13 @@ class AuthController extends BaseController
             'apple_email' => $email
         ]);
         $user = $userRow ? new User($userRow) : null;
+        $userEmail = $email;
         
         error_log("Forgot Password - Request for email: {$email}");
         if (!$user) {
             error_log("Forgot Password - User not found for email: {$email}");
         } else {
-            $userEmail = $user->email ?? $email;
+            $userEmail = (string)($user->email ?: $user->google_email ?: $user->apple_email ?: $email);
             error_log("Forgot Password - User found. ID: {$user->id}, Role: {$user->role}, Email in DB: {$userEmail}");
         }
 
@@ -1421,6 +1439,15 @@ class AuthController extends BaseController
         $resetLink = null;
 
         if ($user) {
+            if ($userEmail === '') {
+                error_log("Forgot Password - No deliverable email found for user ID: {$user->id}");
+                $response->json([
+                    'success' => true,
+                    'message' => 'If an account exists with that email, a password reset link has been sent.'
+                ]);
+                return;
+            }
+
             // Generate reset token
             $token = bin2hex(random_bytes(32));
             // Use UTC timezone consistently
@@ -1790,5 +1817,234 @@ class AuthController extends BaseController
                 'title' => 'Complete Your Account'
             ]);
         }
+    }
+
+    public function sendPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $phone = trim((string)($data['phone'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+
+        if ($phone === '') {
+            $response->json(['error' => 'Phone number is required'], 422);
+            return;
+        }
+
+        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, [
+            'role' => $data['role'] ?? null,
+        ]);
+
+        if (empty($result['success'])) {
+            $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
+            return;
+        }
+
+        $payload = [
+            'success' => true,
+            'message' => 'OTP sent successfully',
+            'phone' => $result['phone'],
+            'purpose' => $result['purpose'],
+            'mode' => $result['mode'] ?? 'sms',
+        ];
+
+        if (!empty($result['otp_preview'])) {
+            $payload['otp_preview'] = $result['otp_preview'];
+        }
+
+        $response->json($payload);
+    }
+
+    public function loginWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $phone = trim((string)($data['phone'] ?? ''));
+        $otp = trim((string)($data['otp'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+
+        if ($phone === '' || $otp === '') {
+            $response->json(['error' => 'phone and otp are required'], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $user = $authService->loginByPhone($phone);
+        if (!$user) {
+            $response->json(['error' => 'Account not found for this phone number'], 404);
+            return;
+        }
+
+        $this->signInUser($user);
+        $response->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'redirect' => $this->resolveRedirectForUser($user),
+            'user' => [
+                'id' => (int)$user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'phone' => $user->phone,
+            ],
+        ]);
+    }
+
+    public function registerCandidateWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $errors = $this->validate($data, [
+            'phone' => 'required',
+            'otp' => 'required',
+            'full_name' => 'required',
+            'email' => 'sometimes|email',
+            'password' => 'sometimes|min:8',
+        ]);
+
+        if (!empty($errors)) {
+            $response->json(['errors' => $errors], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $result = $authService->registerCandidateWithPhone($data);
+        if (empty($result['success']) || empty($result['user'])) {
+            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->signInUser($user);
+
+        $response->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'redirect' => '/candidate/profile/complete',
+            'user_id' => (int)$user->id,
+            'additional_mobile' => $result['additional_mobile'] ?? null,
+        ], 201);
+    }
+
+    public function registerEmployerWithPhoneOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $errors = $this->validate($data, [
+            'phone' => 'required',
+            'otp' => 'required',
+            'company_name' => 'required',
+            'email' => 'sometimes|email',
+            'password' => 'sometimes|min:8',
+        ]);
+
+        if (!empty($errors)) {
+            $response->json(['errors' => $errors], 422);
+            return;
+        }
+
+        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
+        if (empty($verification['success'])) {
+            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
+            return;
+        }
+
+        $authService = new AuthService();
+        $result = $authService->registerEmployerWithPhone($data);
+        if (empty($result['success']) || empty($result['user'])) {
+            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
+            return;
+        }
+
+        $user = $result['user'];
+        $this->signInUser($user);
+
+        $response->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'redirect' => $this->resolveRedirectForUser($user),
+            'user_id' => (int)$user->id,
+            'additional_mobile' => $result['additional_mobile'] ?? null,
+        ], 201);
+    }
+
+    private function signInUser(User $user): void
+    {
+        $_SESSION['user_id'] = $user->id;
+        $primaryRole = $user->role;
+
+        try {
+            $roles = $user->roles();
+            $slugs = array_map(fn($r) => strtolower((string)($r['slug'] ?? '')), $roles);
+            if (in_array('super_admin', $slugs, true)) {
+                $primaryRole = 'super_admin';
+            } elseif (in_array('admin', $slugs, true)) {
+                $primaryRole = 'admin';
+            } elseif (in_array('sales_manager', $slugs, true)) {
+                $primaryRole = 'sales_manager';
+            } elseif (in_array('sales_executive', $slugs, true)) {
+                $primaryRole = 'sales_executive';
+            }
+        } catch (\Throwable $t) {
+        }
+
+        $_SESSION['user_role'] = $primaryRole;
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::findByUserId((int)$user->id);
+            if (!$candidate) {
+                $service = new \App\Services\CandidateCreationService();
+                $candidate = $service->ensureCandidateForUser((int)$user->id, [
+                    'profile_status' => 'unverified',
+                    'visibility' => 'limited',
+                    'is_profile_complete' => 0,
+                    'created_by' => 'self',
+                    'source' => 'phone_otp_login'
+                ]);
+            }
+            if ($candidate && isset($candidate->attributes['id'])) {
+                $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
+            }
+        }
+
+        try {
+            CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null);
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function resolveRedirectForUser(User $user): string
+    {
+        if ($user->role === 'employer') {
+            return '/employer/dashboard';
+        }
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::findByUserId((int)$user->id);
+            if (!$candidate) {
+                return '/candidate/profile/complete';
+            }
+
+            $hasData = !empty($candidate->attributes['full_name']) ||
+                !empty($candidate->attributes['mobile']) ||
+                !empty($candidate->attributes['city']) ||
+                !empty($candidate->attributes['dob']) ||
+                !empty($candidate->attributes['gender']);
+
+            return $hasData ? '/candidate/dashboard' : '/candidate/profile/complete';
+        }
+
+        if ($user->role === 'admin' || $user->role === 'super_admin') {
+            return '/admin/dashboard';
+        }
+
+        return '/';
     }
 }

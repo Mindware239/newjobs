@@ -180,7 +180,7 @@ class JobController
             try {
                 $otherJobs = $db->fetchAll(
                     "SELECT j.*, 
-                     GROUP_CONCAT(DISTINCT CONCAT(COALESCE(c.name, ''), ', ', COALESCE(s.name, ''), ', ', COALESCE(cnt.name, '')) SEPARATOR ' | ') as location_display
+                     GROUP_CONCAT(DISTINCT CONCAT_WS(', ', NULLIF(TRIM(c.name), ''), NULLIF(TRIM(s.name), ''), NULLIF(TRIM(cnt.name), '')) SEPARATOR ' | ') as location_display
                      FROM jobs j
                      LEFT JOIN job_locations jl ON jl.job_id = j.id
                      LEFT JOIN cities c ON jl.city_id = c.id

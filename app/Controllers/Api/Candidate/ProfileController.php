@@ -44,13 +44,27 @@ class ProfileController extends ApiController
         $this->success($response, [
             'personal' => [
                 'full_name' => $candidate->full_name,
+                'professional_title' => $candidate->professional_title,
                 'email' => $user->email,
                 'phone' => $candidate->mobile ?: $user->phone,
-                'additional_mobile' => ($user->getNotificationPreferences()['contact']['additional_mobile'] ?? null),
-                'avatar' => $user->avatar,
+                'gender' => $candidate->gender,
+                'dob' => $candidate->dob,
+                'location' => $candidate->location ?? ($candidate->city . ', ' . $candidate->state),
+                'city' => $candidate->city,
+                'state' => $candidate->state,
+                'country' => $candidate->country,
+                'avatar' => $user->avatar ?? $candidate->profile_picture,
                 'headline' => $candidate->headline,
-                'summary' => $candidate->summary,
-                'location' => $candidate->location
+                'summary' => $candidate->self_introduction ?? $candidate->summary,
+                'expected_salary_min' => $candidate->expected_salary_min,
+                'expected_salary_max' => $candidate->expected_salary_max,
+                'current_salary' => $candidate->current_salary,
+                'notice_period' => $candidate->notice_period,
+                'preferred_job_location' => $candidate->preferred_job_location,
+                'linkedin_url' => $candidate->linkedin_url,
+                'github_url' => $candidate->github_url,
+                'portfolio_url' => $candidate->portfolio_url,
+                'website_url' => $candidate->website_url
             ],
             'education' => $education,
             'experience' => $experience,
@@ -59,6 +73,57 @@ class ProfileController extends ApiController
             'interests' => $interests,
             'completion_percentage' => $this->calculateCompletion($candidate)
         ]);
+    }
+
+    /**
+     * PUT /api/v1/candidate/profile
+     * Update candidate basic profile information
+     */
+    public function updateProfile(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        if (!$candidate) {
+            $this->error($response, 'Profile not found', 404);
+            return;
+        }
+
+        $data = $request->getJsonBody();
+
+        $candidate->fill([
+            'full_name' => $data['full_name'] ?? $candidate->full_name,
+            'professional_title' => $data['professional_title'] ?? $candidate->professional_title,
+            'headline' => $data['headline'] ?? $candidate->headline,
+            'self_introduction' => $data['summary'] ?? ($data['self_introduction'] ?? $candidate->self_introduction),
+            'location' => $data['location'] ?? $candidate->location,
+            'city' => $data['city'] ?? $candidate->city,
+            'state' => $data['state'] ?? $candidate->state,
+            'country' => $data['country'] ?? $candidate->country,
+            'mobile' => $data['phone'] ?? ($data['mobile'] ?? $candidate->mobile),
+            'gender' => $data['gender'] ?? $candidate->gender,
+            'dob' => $data['dob'] ?? $candidate->dob,
+            'expected_salary_min' => $data['expected_salary_min'] ?? $candidate->expected_salary_min,
+            'expected_salary_max' => $data['expected_salary_max'] ?? $candidate->expected_salary_max,
+            'current_salary' => $data['current_salary'] ?? $candidate->current_salary,
+            'notice_period' => $data['notice_period'] ?? $candidate->notice_period,
+            'preferred_job_location' => $data['preferred_job_location'] ?? $candidate->preferred_job_location,
+            'linkedin_url' => $data['linkedin_url'] ?? $candidate->linkedin_url,
+            'github_url' => $data['github_url'] ?? $candidate->github_url,
+            'portfolio_url' => $data['portfolio_url'] ?? $candidate->portfolio_url,
+            'website_url' => $data['website_url'] ?? $candidate->website_url,
+        ])->save();
+
+        if (isset($data['email']) && $data['email'] !== $user->email) {
+            $user->email = $data['email'];
+            $user->save();
+        }
+
+        $this->success($response, ['id' => $candidate->id], 'Profile updated successfully');
     }
 
     /**

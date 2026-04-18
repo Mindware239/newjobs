@@ -87,16 +87,16 @@ class CandidateController extends BaseController
             return null;
         }
 
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
         if (!$user || !$user->isCandidate()) {
             $response->redirect('/');
             return null;
         }
 
-        $candidate = Candidate::findByUserId($userId);
+        $candidate = Candidate::findByUserId((int)$userId);
         if (!$candidate) {
             // Create candidate profile if doesn't exist
-            $candidate = Candidate::createForUser($userId);
+            $candidate = Candidate::createForUser((int)$userId);
         }
 
         return $candidate;
@@ -1101,6 +1101,7 @@ class CandidateController extends BaseController
         // Only update fields that are provided (incremental save)
         $updateData = [];
         if (isset($data['full_name'])) $updateData['full_name'] = $data['full_name'];
+        if (isset($data['professional_title'])) $updateData['professional_title'] = $data['professional_title'] ?: null;
         if (isset($data['dob'])) $updateData['dob'] = $data['dob'] ?: null;
         if (isset($data['gender'])) $updateData['gender'] = $data['gender'] ?: null;
         if (isset($data['mobile'])) $updateData['mobile'] = $data['mobile'] ?: null;
@@ -1152,13 +1153,14 @@ class CandidateController extends BaseController
             // Clean and validate experience data
             $experienceData = [];
             foreach ($data['experience'] as $exp) {
-                if (!empty($exp['job_title']) || !empty($exp['company_name'])) {
+                $companyName = $exp['company_name'] ?? $exp['company'] ?? '';
+                if (!empty($exp['job_title']) || !empty($companyName)) {
                     $experienceData[] = [
                         'job_title' => $exp['job_title'] ?? '',
-                        'company_name' => $exp['company_name'] ?? '',
+                        'company_name' => $companyName,
                         'start_date' => $exp['start_date'] ?? null,
                         'end_date' => $exp['end_date'] ?? null,
-                        'is_current' => $exp['is_current'] ?? 0,
+                        'is_current' => !empty($exp['is_current']) ? 1 : 0,
                         'description' => $exp['description'] ?? null,
                         'location' => $exp['location'] ?? null,
                     ];
@@ -1476,15 +1478,15 @@ class CandidateController extends BaseController
             return;
         }
 
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
         if (!$user || !$user->isCandidate()) {
             $response->redirect('/');
             return;
         }
 
-        $candidate = Candidate::findByUserId($userId);
+        $candidate = Candidate::findByUserId((int)$userId);
         if (!$candidate) {
-            $candidate = Candidate::createForUser($userId);
+            $candidate = Candidate::createForUser((int)$userId);
         }
 
         $response->view('candidate/help', [
@@ -1501,15 +1503,15 @@ class CandidateController extends BaseController
             return;
         }
 
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
         if (!$user || !$user->isCandidate()) {
             $response->redirect('/');
             return;
         }
 
-        $candidate = Candidate::findByUserId($userId);
+        $candidate = Candidate::findByUserId((int)$userId);
         if (!$candidate) {
-            $candidate = Candidate::createForUser($userId);
+            $candidate = Candidate::createForUser((int)$userId);
         }
 
         $response->view('candidate/privacy', [
@@ -1526,15 +1528,15 @@ class CandidateController extends BaseController
             return;
         }
 
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
         if (!$user || !$user->isCandidate()) {
             $response->redirect('/');
             return;
         }
 
-        $candidate = Candidate::findByUserId($userId);
+        $candidate = Candidate::findByUserId((int)$userId);
         if (!$candidate) {
-            $candidate = Candidate::createForUser($userId);
+            $candidate = Candidate::createForUser((int)$userId);
         }
 
         $response->view('candidate/terms', [
@@ -1591,118 +1593,42 @@ class CandidateController extends BaseController
     {
         $candidateId = $candidate->attributes['id'] ?? null;
         if (!$candidateId) {
-            $candidateId = 0; // Use 0 for queries if no candidate ID
+            return [];
         }
 
-        $candidateSkills = [];
-        if (!empty($candidate->attributes['skills_data'])) {
-            $candidateSkills = json_decode($candidate->attributes['skills_data'], true) ?? [];
-        }
-        $skillIds = array_map(fn($s) => $s['skill_id'] ?? null, $candidateSkills);
-        $skillIds = array_filter($skillIds); // Remove null values
-        $skillNames = array_map(fn($s) => strtolower(trim($s['name'] ?? '')), $candidateSkills);
-        $skillNames = array_filter($skillNames);
-        $hasItProfile = false;
-        foreach ($skillNames as $n) {
-            if (preg_match('/(developer|software|web|html|css|javascript|node|react|php|python|java|\.net|c\#)/i', $n)) {
-                $hasItProfile = true;
-                break;
-            }
-        }
-        if (!$hasItProfile && !empty($candidate->attributes['experience_data'])) {
-            $exp = json_decode($candidate->attributes['experience_data'], true) ?? [];
-            foreach ($exp as $e) {
-                $jt = strtolower($e['job_title'] ?? '');
-                if ($jt && preg_match('/(developer|software|web|engineer)/i', $jt)) {
-                    $hasItProfile = true;
-                    break;
-                }
+        $db = \App\Core\Database::getInstance();
+        
+        // Fetch top matches from candidate_job_scores
+        $sql = "SELECT j.*, e.company_name, e.logo_url as company_logo, cjs.overall_match_score as match_score
+                FROM candidate_job_scores cjs
+                JOIN jobs j ON cjs.job_id = j.id
+                LEFT JOIN employers e ON j.employer_id = e.id
+                WHERE cjs.candidate_id = :candidate_id
+                  AND j.status = 'published'
+                ORDER BY cjs.overall_match_score DESC
+                LIMIT 10";
+                
+        $recommendedJobs = $db->fetchAll($sql, ['candidate_id' => $candidateId]);
+
+        // If no scores exist yet, trigger a background calculation or fallback
+        if (empty($recommendedJobs)) {
+            try {
+                $matchService = new \App\Services\JobMatchService();
+                $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
+                
+                // Fetch again after calculation
+                $recommendedJobs = $db->fetchAll($sql, ['candidate_id' => $candidateId]);
+            } catch (\Throwable $t) {
+                error_log("Failed to calculate matches on the fly: " . $t->getMessage());
             }
         }
         
-        $jobs = [];
-        $db = \App\Core\Database::getInstance();
-
-        if (!empty($skillIds)) {
-            $placeholders = implode(',', array_fill(0, count($skillIds), '?'));
-            $sql = "SELECT DISTINCT j.*, e.company_name 
-                    FROM jobs j
-                    INNER JOIN employers e ON j.employer_id = e.id
-                    INNER JOIN job_skills js ON j.id = js.job_id
-                    WHERE j.status = 'published' 
-                    AND j.slug IS NOT NULL AND j.slug != ''
-                    AND js.skill_id IN ($placeholders)
-                    AND LOWER(j.title) NOT LIKE '%driver%'
-                    AND LOWER(j.title) NOT LIKE '%delivery%'
-                    AND LOWER(j.title) NOT LIKE '%driving%'
-                    AND LOWER(j.title) NOT LIKE '%3 wheeler%'
-                    AND LOWER(j.title) NOT LIKE '%truck%'
-                    ORDER BY j.created_at DESC
-                    LIMIT 20";
-            $results = $db->fetchAll($sql, $skillIds);
-            foreach ($results as $jobData) {
-                $matchScore = $this->calculateJobMatch($candidate, $jobData);
-                if ($matchScore < 25) {
-                    continue;
-                }
-                $jobData['match_score'] = $matchScore;
-                $jobData['is_bookmarked'] = $this->isBookmarked($candidateId, $jobData['id'] ?? 0);
-                $jobs[] = $jobData;
-            }
-        } else {
-            $keywords = [];
-            if (!empty($candidate->attributes['experience_data'])) {
-                $exp = json_decode($candidate->attributes['experience_data'], true) ?? [];
-                foreach ($exp as $e) {
-                    $jt = strtolower($e['job_title'] ?? '');
-                    if ($jt) {
-                        foreach (['developer','software','web','engineer','frontend','backend','full stack'] as $kw) {
-                            if (str_contains($jt, $kw)) $keywords[$kw] = true;
-                        }
-                    }
-                }
-            }
-            foreach ($skillNames as $n) {
-                foreach (['html','css','javascript','node','react','php','python','java','.net','c#'] as $kw) {
-                    if (str_contains($n, $kw)) $keywords[$kw] = true;
-                }
-            }
-            $kwList = array_keys($keywords);
-            if (!empty($kwList)) {
-                $likeParts = [];
-                $params = [];
-                foreach ($kwList as $kw) {
-                    $likeParts[] = "LOWER(j.title) LIKE ?";
-                    $params[] = '%' . $kw . '%';
-                }
-                $whereKw = implode(' OR ', $likeParts);
-                $sql = "SELECT j.*, e.company_name 
-                        FROM jobs j
-                        LEFT JOIN employers e ON j.employer_id = e.id
-                        WHERE j.status = 'published'
-                        AND j.slug IS NOT NULL AND j.slug != ''
-                        AND ($whereKw)
-                        AND LOWER(j.title) NOT LIKE '%driver%'
-                        AND LOWER(j.title) NOT LIKE '%delivery%'
-                        AND LOWER(j.title) NOT LIKE '%driving%'
-                        AND LOWER(j.title) NOT LIKE '%3 wheeler%'
-                        AND LOWER(j.title) NOT LIKE '%truck%'
-                        ORDER BY j.created_at DESC
-                        LIMIT 20";
-                $results = $db->fetchAll($sql, $params);
-                foreach ($results as $jobData) {
-                    $matchScore = $this->calculateJobMatch($candidate, $jobData);
-                    $jobData['match_score'] = $matchScore;
-                    if ($hasItProfile && preg_match('/driver|delivery|driving|3 wheeler|truck/i', $jobData['title'] ?? '')) {
-                        continue;
-                    }
-                    $jobData['is_bookmarked'] = $this->isBookmarked($candidateId, $jobData['id'] ?? 0);
-                    $jobs[] = $jobData;
-                }
-            }
+        // Add bookmarked status
+        foreach ($recommendedJobs as &$jobData) {
+            $jobData['is_bookmarked'] = $this->isBookmarked($candidateId, $jobData['id'] ?? 0);
         }
 
-        return $jobs;
+        return $recommendedJobs;
     }
 
     private function calculateJobMatch(Candidate $candidate, array $jobData): int

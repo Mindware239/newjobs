@@ -632,7 +632,8 @@
                     this.success = false;
 
                     try {
-                        const response = await fetch('/forgot-password', {
+                        const endpoint = window.location.pathname || '/forgot-password';
+                        const response = await fetch(endpoint, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -645,7 +646,7 @@
                         const data = await response.json();
 
                         // Handle wrapped response format from Response::json()
-                        const isSuccess = response.ok && (data.status === true || data.data?.success === true);
+                        const isSuccess = response.ok && (data.success === true || data.status === true || data.data?.success === true);
                         const successMsg = data.message || data.data?.message || 'Reset link sent successfully';
                         const resetLink = data.data?.reset_link;
 

@@ -747,7 +747,8 @@
                     }
 
                     try {
-                        const response = await fetch('/reset-password', {
+                        const endpoint = window.location.pathname || '/reset-password';
+                        const response = await fetch(endpoint, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -760,14 +761,14 @@
                         const data = await response.json();
 
                         // Handle wrapped response format from Response::json()
-                        const isSuccess = response.ok && (data.status === true || data.data?.success === true);
+                        const isSuccess = response.ok && (data.success === true || data.status === true || data.data?.success === true);
                         const successMsg = data.message || data.data?.message || 'Password reset successfully! You can now login with your new password.';
 
                         if (isSuccess) {
                             this.success = true;
                             this.successMessage = successMsg;
                             setTimeout(() => {
-                                window.location.href = '/login';
+                                window.location.href = endpoint.startsWith('/admin/') ? '/admin/login' : '/login';
                             }, 3000);
                         } else {
                             this.error = data.error || data.data?.error || data.message || 'Failed to reset password';

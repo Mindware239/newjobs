@@ -1112,6 +1112,10 @@
                     fd.append('_token', csrf);
                     const response = await fetch('/register-candidate', {
                         method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
                         body: fd
                     });
                     const data = await response.json();

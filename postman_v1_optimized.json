@@ -1,0 +1,70 @@
+{
+	"info": {
+		"_postman_id": "b2c3d4e5-f6g7-8901-hijk-lmnopqrstuvw",
+		"name": "Mindware Job Portal - Optimized v1",
+		"description": "Comprehensive API collection for the optimized v1 backend.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": { "json": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/api/v1/login", "host": ["{{base_url}}"], "path": ["api", "v1", "login"] }
+					}
+				},
+				{
+					"name": "Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"9876543210\"\n}",
+							"options": { "json": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/api/v1/send-phone-otp", "host": ["{{base_url}}"], "path": ["api", "v1", "send-phone-otp"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Public Jobs",
+			"item": [
+				{
+					"name": "List Jobs",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/api/v1/jobs?page=1&keyword=PHP", "host": ["{{base_url}}"], "path": ["api", "v1", "jobs"], "query": [{ "key": "page", "value": "1" }, { "key": "keyword", "value": "PHP" }] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Employer Panel",
+			"item": [
+				{
+					"name": "List My Jobs",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{base_url}}/api/v1/employer/jobs?page=1", "host": ["{{base_url}}"], "path": ["api", "v1", "employer", "jobs"], "query": [{ "key": "page", "value": "1" }] }
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{ "key": "base_url", "value": "http://192.168.1.24:8000" },
+		{ "key": "token", "value": "" }
+	]
+}

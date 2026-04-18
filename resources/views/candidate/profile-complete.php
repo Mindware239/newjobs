@@ -105,6 +105,7 @@
                             echo json_encode($userName, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                         ?>,
                         dob: <?= json_encode($candidate->attributes['dob'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                        professional_title: <?= json_encode($candidate->attributes['professional_title'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
                         gender: <?= json_encode($candidate->attributes['gender'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
                         mobile: <?php 
                             $userPhone = $candidate->attributes['mobile'] ?? '';
@@ -146,13 +147,13 @@
                     }
                 },
                 addEducation() {
-                    this.formData.education.push({ degree: '', field: '', institution: '', year: '', percentage: '' });
+                    this.formData.education.push({ degree: '', field_of_study: '', institution: '', end_date: '', grade: '' });
                 },
                 removeEducation(index) {
                     this.formData.education.splice(index, 1);
                 },
                 addExperience() {
-                    this.formData.experience.push({ job_title: '', company: '', start_date: '', end_date: '', description: '', is_current: false });
+                    this.formData.experience.push({ job_title: '', company_name: '', start_date: '', end_date: '', description: '', is_current: false });
                 },
                 removeExperience(index) {
                     this.formData.experience.splice(index, 1);
@@ -552,6 +553,7 @@
                         payload = {
                             section: 'basic',
                             full_name: b.full_name || '',
+                            professional_title: b.professional_title || '',
                             dob: b.dob || '',
                             gender: b.gender || '',
                             mobile: b.mobile || '',
@@ -569,12 +571,12 @@
                             section: 'education',
                             education: (this.formData.education || []).map(e => ({
                                 degree: e.degree || '',
-                                field_of_study: e.field || '',
+                                field_of_study: e.field_of_study || '',
                                 institution: e.institution || '',
                                 start_date: e.start_date || null,
                                 end_date: e.end_date || null,
                                 is_current: e.is_current ? 1 : 0,
-                                grade: e.percentage || null,
+                                grade: e.grade || null,
                                 description: e.description || null
                             }))
                         };
@@ -583,7 +585,7 @@
                             section: 'experience',
                             experience: (this.formData.experience || []).map(x => ({
                                 job_title: x.job_title || '',
-                                company_name: x.company || '',
+                                company_name: x.company_name || x.company || '',
                                 start_date: x.start_date || null,
                                 end_date: x.end_date || null,
                                 is_current: x.is_current ? 1 : 0,
@@ -688,12 +690,17 @@
                     let out = null;
                     try {
                         out = await res.json();
+                        if (!res.ok) {
+                             this.showToast(out.error || 'Upload failed', 'error');
+                             return {};
+                        }
                     } catch (_) {
                         const txt = await res.text();
-                        alert((txt && txt.length < 300 ? txt : 'Upload failed'));
+                        this.showToast((txt && txt.length < 300 ? txt : 'Upload failed'), 'error');
                         return {};
                     }
                     if (out && out.url) {
+                        this.showToast('File uploaded successfully', 'success');
                         if (type === 'profile_picture') {
                             this.formData.basic.profile_picture = out.url;
                         } else if (type === 'resume') {
@@ -960,6 +967,10 @@
                             <input type="text" x-model="formData.basic.full_name" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Enter your full name">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Professional Title / Designation</label>
+                            <input type="text" x-model="formData.basic.professional_title" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="e.g. PHP Developer, Marketing Manager">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                             <input type="date" x-model="formData.basic.dob" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         </div>
@@ -967,9 +978,10 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                             <select x-model="formData.basic.gender" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                                 <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer Not to Say</option>
                             </select>
                         </div>
                         <div>
@@ -1110,7 +1122,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Field of Study</label>
-                                    <input type="text" x-model="edu.field" class="w-full rounded-lg border-gray-300 text-sm" placeholder="e.g. Computer Science">
+                                    <input type="text" x-model="edu.field_of_study" class="w-full rounded-lg border-gray-300 text-sm" placeholder="e.g. Computer Science">
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Institution/University</label>
@@ -1118,11 +1130,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Year of Passing</label>
-                                    <input type="number" x-model="edu.year" class="w-full rounded-lg border-gray-300 text-sm" placeholder="YYYY">
+                                    <input type="number" x-model="edu.end_date" class="w-full rounded-lg border-gray-300 text-sm" placeholder="YYYY">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Percentage/CGPA</label>
-                                    <input type="text" x-model="edu.percentage" class="w-full rounded-lg border-gray-300 text-sm" placeholder="e.g. 85% or 8.5">
+                                    <input type="text" x-model="edu.grade" class="w-full rounded-lg border-gray-300 text-sm" placeholder="e.g. 85% or 8.5">
                                 </div>
                             </div>
                         </div>
@@ -1160,7 +1172,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Company Name</label>
-                                    <input type="text" x-model="exp.company" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Company Name">
+                                    <input type="text" x-model="exp.company_name" class="w-full rounded-lg border-gray-300 text-sm" placeholder="Company Name">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
@@ -1591,6 +1603,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Salary (Max)</label>
                             <input type="number" x-model="formData.additional.expected_salary_max" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Annual Salary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Current Salary</label>
+                            <input type="number" x-model="formData.additional.current_salary" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Current Annual Salary">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Notice Period</label>

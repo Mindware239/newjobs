@@ -1,127 +1,236 @@
 <?php
-
-declare(strict_types=1);
-
 namespace App\Services;
 
-use App\Core\Database;
-use App\Models\Job;
-use App\Models\Application;
-use App\Models\JobView;
+use App\Repositories\JobRepository;
+use App\Helpers\FormatHelper;
+use App\Services\SeoService;
 
 class JobService
 {
-    private Database $db;
+    private JobRepository $repo;
 
     public function __construct()
     {
-        $this->db = Database::getInstance();
+        $this->repo = new JobRepository();
     }
 
-    public function searchJobs(array $filters, ?int $userId = null): array
+    public function getCategoriesGrouped(): array
     {
-        $page = (int)($filters['page'] ?? 1);
-        $perPage = 20;
-        $offset = ($page - 1) * $perPage;
+        $categories = $this->repo->getAllCategoriesWithCounts();
+        $grouped = [];
+        foreach ($categories as $cat) {
+            $name = $cat['name'] ?? '';
+            $firstLetter = strtoupper(substr($name, 0, 1));
+            if (!ctype_alpha($firstLetter)) $firstLetter = '#';
+            $grouped[$firstLetter][] = $cat;
+        }
+        return $grouped;
+    }
 
-        // This is a simplified search. The complex logic from Candidate\JobController should be migrated here.
-        $sql = "SELECT j.*, e.company_name, e.logo_url as company_logo 
-                FROM jobs j 
-                LEFT JOIN employers e ON j.employer_id = e.id 
-                WHERE j.status = 'published'";
+    public function getJobsByLocation(string $slug, int $page, int $perPage = 20): ?array
+    {
+        $synonyms = [
+            'new-delhi' => 'delhi',
+            'gurgaon' => 'gurugram',
+            'bangalore' => 'bengaluru',
+            'bombay' => 'mumbai',
+            'madras' => 'chennai',
+        ];
+        $slugCanonical = $synonyms[$slug] ?? $slug;
+
+        $location = $this->repo->getLocationBySlug($slug, $slugCanonical);
+        if (!$location) return null;
+
+        $locationType = $location['type'];
+        $locationId = (int)$location['id'];
+        $locationName = $location['name'];
+
+        $jobCount = $this->repo->countJobsByLocation($locationType, $locationId);
+        $topTitles = $this->repo->getTopTitlesByLocation($locationType, $locationId);
         
-        $params = [];
+        // SEO logic moved here
+        SeoService::getInstance()->resolve('location_jobs', [
+            'location' => $locationName,
+            'type' => $locationType,
+            'job_count' => $jobCount,
+            'top_titles' => $topTitles
+        ]);
 
-        if (!empty($filters['keyword'])) {
-            $sql .= " AND (j.title LIKE :keyword OR j.description LIKE :keyword)";
-            $params['keyword'] = "%{$filters['keyword']}%";
-        }
-
-        if (!empty($filters['location'])) {
-            $sql .= " AND j.locations LIKE :location";
-            $params['location'] = "%{$filters['location']}%";
-        }
-
-        $total = $this->db->fetchOne("SELECT COUNT(*) as count FROM ({$sql}) as sub", $params)['count'] ?? 0;
-
-        $sql .= " ORDER BY j.created_at DESC LIMIT {$perPage} OFFSET {$offset}";
-        $jobs = $this->db->fetchAll($sql, $params);
+        $breadcrumbs = $this->buildLocationBreadcrumbs($locationType, $locationId, $locationName, $slug);
+        
+        $jobsRaw = $this->repo->getJobsByLocation($locationType, $locationId, $page, $perPage);
+        $jobs = $this->formatJobsList($jobsRaw);
 
         return [
             'jobs' => $jobs,
+            'filters' => ['location' => $locationName],
+            'pageTitle' => "Jobs in $locationName",
+            'breadcrumbs' => $breadcrumbs,
             'pagination' => [
                 'page' => $page,
                 'per_page' => $perPage,
-                'total' => $total,
-                'total_pages' => ceil($total / $perPage)
+                'total' => $jobCount,
+                'total_pages' => max(1, (int)ceil($jobCount / $perPage))
             ]
         ];
     }
 
-    public function getJobBySlug(string $slug, ?int $userId = null): ?array
+    public function getJobsByRoleAndLocation(string $roleSlug, string $locationSlug, int $page, int $perPage = 20): ?array
     {
-        $sql = "SELECT j.*, e.company_name, e.description as company_description, e.logo_url as company_logo
-                FROM jobs j
-                LEFT JOIN employers e ON j.employer_id = e.id
-                WHERE j.slug = :slug AND j.status = 'published'";
-        
-        $job = $this->db->fetchOne($sql, ['slug' => $slug]);
+        $synonyms = [
+            'new-delhi' => 'delhi',
+            'gurgaon' => 'gurugram',
+            'bangalore' => 'bengaluru',
+            'bombay' => 'mumbai',
+            'madras' => 'chennai',
+        ];
+        $slugCanonical = $synonyms[$locationSlug] ?? $locationSlug;
 
-        if (!$job) {
-            return null;
-        }
+        $location = $this->repo->getLocationBySlug($locationSlug, $slugCanonical);
+        if (!$location) return null;
 
-        if ($userId) {
-            $candidate = \App\Models\Candidate::findByUserId($userId);
-            if ($candidate) {
-                $this->trackJobView($candidate->id, $job['id']);
-            }
-        }
+        $locationType = $location['type'];
+        $locationId = (int)$location['id'];
+        $locationName = $location['name'];
 
-        return $job;
-    }
+        $skill = $this->repo->getSkillBySlug($roleSlug);
+        $roleName = $skill ? $skill['name'] : ucfirst(str_replace('-', ' ', $roleSlug));
 
-    public function applyForJob(int $jobId, int $candidateId, int $userId): array
-    {
-        $existing = Application::where('job_id', '=', $jobId)
-                                ->where('candidate_id', '=', $candidateId)
-                                ->first();
-        
-        if ($existing) {
-            return ['success' => false, 'message' => 'You have already applied for this job', 'code' => 409];
-        }
+        $breadcrumbs = $this->buildLocationBreadcrumbs($locationType, $locationId, $locationName, $locationSlug);
+        $breadcrumbs[] = ['name' => "$roleName Jobs", 'url' => "/$roleSlug-jobs-in-$locationSlug"];
 
-        $application = new Application();
-        $application->fill([
-            'job_id' => $jobId,
-            'candidate_id' => $candidateId,
-            'candidate_user_id' => $userId,
-            'status' => 'applied',
-            'applied_at' => date('Y-m-d H:i:s')
+        SeoService::getInstance()->resolve('role_location_jobs', [
+            'role' => $roleName,
+            'location' => $locationName,
+            'type' => $locationType,
+            'breadcrumbs' => $breadcrumbs
         ]);
 
-        if ($application->save()) {
-            return ['success' => true, 'application_id' => $application->id];
-        } else {
-            return ['success' => false, 'message' => 'Failed to submit application', 'code' => 500];
-        }
+        $totalJobs = $this->repo->countJobsByRoleAndLocation($locationType, $locationId, $skill, $roleName);
+        $jobsRaw = $this->repo->getJobsByRoleAndLocation($locationType, $locationId, $skill, $roleName, $page, $perPage);
+        $jobs = $this->formatJobsList($jobsRaw);
+
+        return [
+            'jobs' => $jobs,
+            'filters' => [
+                'location' => $locationName,
+                'keyword' => $roleName
+            ],
+            'pageTitle' => "$roleName Jobs in $locationName",
+            'breadcrumbs' => $breadcrumbs,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalJobs,
+                'total_pages' => max(1, (int)ceil($totalJobs / $perPage))
+            ]
+        ];
     }
 
-    private function trackJobView(int $candidateId, int $jobId): void
+    public function getJobsByCategory(string $slug, int $page, int $perPage = 20): ?array
     {
-        $today = date('Y-m-d');
-        $existing = JobView::where('candidate_id', '=', $candidateId)
-            ->where('job_id', '=', $jobId)
-            ->where('viewed_at', '>=', $today)
-            ->first();
-        
-        if (!$existing) {
-            $view = new JobView();
-            $view->fill([
-                'candidate_id' => $candidateId,
-                'job_id' => $jobId
-            ]);
-            $view->save();
+        $category = $this->repo->getCategoryBySlugOrName($slug);
+        if (!$category) return null;
+
+        $categoryName = $category['name'];
+        $totalJobs = $this->repo->countJobsByCategory($categoryName);
+
+        SeoService::getInstance()->resolve('category_jobs', [
+            'category' => $categoryName,
+            'job_count' => $totalJobs
+        ]);
+
+        $breadcrumbs = [
+            ['name' => 'Home', 'url' => '/'],
+            ['name' => 'Jobs', 'url' => '/jobs'],
+            ['name' => "Jobs in {$categoryName}", 'url' => '/jobs-in-category/' . ($category['slug'] ?? $slug)]
+        ];
+
+        $jobsRaw = $this->repo->getJobsByCategory($categoryName, $page, $perPage);
+        $jobs = $this->formatJobsList($jobsRaw);
+
+        return [
+            'jobs' => $jobs,
+            'filters' => ['category' => $categoryName],
+            'pageTitle' => "Jobs in {$categoryName}",
+            'breadcrumbs' => $breadcrumbs,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalJobs,
+                'total_pages' => max(1, (int)ceil($totalJobs / $perPage))
+            ]
+        ];
+    }
+
+    private function formatJobsList(array $jobsRaw): array
+    {
+        $jobs = [];
+        foreach ($jobsRaw as $row) {
+            $jobData = $row;
+            $jobData['is_bookmarked'] = false;
+            
+            $salaryInfo = FormatHelper::formatSalary($jobData['salary_min'] ?? null, $jobData['salary_max'] ?? null, $jobData['currency'] ?? 'INR');
+            $jobData['salary_min'] = $salaryInfo['min'];
+            $jobData['salary_max'] = $salaryInfo['max'];
+            $jobData['currency'] = $salaryInfo['currency'];
+            
+            $jobData['is_remote'] = (int)($jobData['is_remote'] ?? 0);
+            
+            if (!empty($row['location_names'])) {
+                $jobData['location_display'] = $row['location_names'];
+            } elseif (!empty($jobData['locations'])) {
+                $locs = json_decode($jobData['locations'], true);
+                $strings = [];
+                if (is_array($locs)) {
+                    foreach ($locs as $loc) {
+                        if (is_string($loc)) {
+                            $strings[] = $loc;
+                        } elseif (is_array($loc)) {
+                            $strings[] = implode(', ', array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']));
+                        }
+                    }
+                }
+                $jobData['location_display'] = !empty($strings) ? implode(' | ', $strings) : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
+            } else {
+                $jobData['location_display'] = $jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified';
+            }
+
+            $jobs[] = $jobData;
         }
+        return $jobs;
+    }
+
+    private function buildLocationBreadcrumbs(string $locationType, int $locationId, string $locationName, string $slug): array
+    {
+        $breadcrumbs = [
+            ['name' => 'Home', 'url' => '/'],
+            ['name' => 'Jobs', 'url' => '/jobs']
+        ];
+
+        if ($locationType === 'city') {
+            $cityFull = $this->repo->getCityFullDetails($locationId);
+            if ($cityFull) {
+                if (!empty($cityFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['country_name'], 'url' => '/jobs-in-' . $cityFull['country_slug']];
+                }
+                if (!empty($cityFull['state_name'])) {
+                    $breadcrumbs[] = ['name' => $cityFull['state_name'], 'url' => '/jobs-in-' . $cityFull['state_slug']];
+                }
+                $breadcrumbs[] = ['name' => $cityFull['city_name'], 'url' => '/jobs-in-' . $cityFull['city_slug']];
+            }
+        } elseif ($locationType === 'state') {
+            $stateFull = $this->repo->getStateFullDetails($locationId);
+            if ($stateFull) {
+                if (!empty($stateFull['country_name'])) {
+                    $breadcrumbs[] = ['name' => $stateFull['country_name'], 'url' => '/jobs-in-' . $stateFull['country_slug']];
+                }
+                $breadcrumbs[] = ['name' => $stateFull['state_name'], 'url' => '/jobs-in-' . $stateFull['state_slug']];
+            }
+        } else {
+            $breadcrumbs[] = ['name' => $locationName, 'url' => '/jobs-in-' . $slug];
+        }
+
+        return $breadcrumbs;
     }
 }

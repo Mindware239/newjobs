@@ -1599,33 +1599,37 @@ class AuthController extends BaseController
             $path = ($isAdminContext ? '/admin/reset-password' : '/reset-password') . "?token={$token}";
             $resetLink = $scheme . '://' . $host . $path;
 
-            // Send password reset email via NotificationService
-            \App\Services\NotificationService::send(
-                (int)$user->id,
-                'password_reset',
-                'Reset your password',
-                'We received a request to reset your password.',
-                ['reset_link' => $resetLink],
-                $resetLink,
-                ['email'] // Force email channel
-            );
-            
-            // Log for debugging
-            error_log("Forgot Password - Password reset email queued for: {$user->email}");
+            // Send password reset email
+            $emailSent = \App\Services\MailService::sendPasswordReset($user->email, $resetLink);
+            if ($emailSent) {
+                error_log("Forgot Password - Password reset email sent successfully to: {$user->email}");
+                $responseData = [
+                    'success' => true,
+                    'message' => 'A password reset link has been sent to your email address.'
+                ];
+                // Only include reset_link in development (remove in production!)
+                if ($resetLink && in_array(strtolower(getenv('APP_ENV') ?: ''), ['local', 'development', 'dev'])) {
+                    $responseData['reset_link'] = $resetLink;
+                }
+                $response->json($responseData);
+                return;
+            } else {
+                error_log("Forgot Password - Failed to send password reset email to: {$user->email}");
+                error_log("Forgot Password - Reset link: {$resetLink}");
+                $response->json([
+                    'success' => false,
+                    'message' => 'Failed to send password reset email. Please try again later.'
+                ], 500);
+                return;
+            }
+        } else {
+            // User not found
+            $response->json([
+                'success' => false,
+                'message' => 'No account found with this email address.'
+            ], 404);
+            return;
         }
-
-        // Always return success (don't reveal if email exists)
-        $responseData = [
-            'success' => true,
-            'message' => 'If an account exists with that email, a password reset link has been sent.'
-        ];
-        
-        // Only include reset_link in development (remove in production!)
-        if ($resetLink) {
-            $responseData['reset_link'] = $resetLink;
-        }
-        
-        $response->json($responseData);
     }
 
     public function resetPassword(Request $request, Response $response): void

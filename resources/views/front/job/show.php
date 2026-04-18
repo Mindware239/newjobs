@@ -369,7 +369,13 @@
                                class="block border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition">
                                 <h3 class="font-semibold text-gray-900 mb-1"><?= htmlspecialchars($otherJob['title'] ?? 'Job') ?></h3>
                                 <div class="text-sm text-gray-600">
-                                    <?= (!empty($otherJob['location_display']) && trim($otherJob['location_display'], ', ') !== '..') ? htmlspecialchars($otherJob['location_display']) : 'Location not specified' ?>
+                                    <?php 
+                                    $locDisplay = !empty($otherJob['location_display']) ? trim($otherJob['location_display']) : '';
+                                    if ($locDisplay === '') {
+                                        $locDisplay = 'Location not specified';
+                                    }
+                                    echo htmlspecialchars($locDisplay);
+                                    ?>
                                 </div>
                             </a>
                             <?php endforeach; ?>

@@ -9,7 +9,7 @@ class Candidate extends Model
     protected string $table = 'candidates';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'user_id', 'full_name', 'dob', 'gender', 'mobile', 'city', 'state', 'country',
+        'user_id', 'full_name', 'professional_title', 'dob', 'gender', 'mobile', 'city', 'state', 'country',
         'profile_picture', 'resume_url', 'video_intro_url', 'video_intro_type',
         'self_introduction', 'expected_salary_min', 'expected_salary_max', 'current_salary',
         'notice_period', 'preferred_job_location', 'portfolio_url', 'linkedin_url',

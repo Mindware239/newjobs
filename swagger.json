@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://192.168.1.24/MINDWAREINFOTECH",
+      "url": "http://192.168.1.24:8000",
       "description": "Local Network Server"
     },
     {
@@ -806,6 +806,107 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/jobs/recommended": {
+      "get": {
+        "tags": [
+          "Candidate - Jobs"
+        ],
+        "summary": "Get AI Recommended Jobs",
+        "description": "Returns jobs matched to the candidate's profile using the AI engine.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/verification": {
+      "post": {
+        "tags": [
+          "Candidate - Verification"
+        ],
+        "summary": "Initiate Employment Verification",
+        "description": "Creates an employment verification record for HR background checks.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "company_name": { "type": "string" },
+                  "designation": { "type": "string" },
+                  "employee_id": { "type": "string" },
+                  "start_date": { "type": "string", "format": "date" },
+                  "end_date": { "type": "string", "format": "date" },
+                  "consent": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/resumes/{id}/ai/generate-summary": {
+      "post": {
+        "tags": [
+          "Candidate - AI Resume Builder"
+        ],
+        "summary": "Generate Professional Summary via AI",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary generated"
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/resumes/{id}/ai/generate-experience": {
+      "post": {
+        "tags": [
+          "Candidate - AI Resume Builder"
+        ],
+        "summary": "Generate Experience Description via AI",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "job_title": { "type": "string" },
+                  "company": { "type": "string" },
+                  "target_job_role": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Experience generated"
           }
         }
       }

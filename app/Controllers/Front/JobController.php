@@ -10,9 +10,72 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Models\CompanyBlog;
 use App\Models\JobView;
+use App\Services\JobService;
 
 class JobController
 {
+    private JobService $jobService;
+
+    public function __construct()
+    {
+        $this->jobService = new JobService();
+    }
+
+    public function categories(Request $request, Response $response): void
+    {
+        $grouped = $this->jobService->getCategoriesGrouped();
+        $response->view('job-categories', [
+            'groupedCategories' => $grouped,
+            'pageTitle' => 'Browse Jobs by Category'
+        ], 200, 'layout');
+    }
+
+    public function jobsByLocation(Request $request, Response $response, array $params): void
+    {
+        $slug = $params['location'] ?? '';
+        $page = max(1, (int)$request->get('page', 1));
+        
+        $data = $this->jobService->getJobsByLocation($slug, $page);
+        
+        if (!$data) {
+            $response->redirect('/jobs');
+            return;
+        }
+
+        $response->view('candidate/jobs/index', $data, 200, 'layout');
+    }
+
+    public function jobsByRoleAndLocation(Request $request, Response $response, array $params): void
+    {
+        $roleSlug = $params['role'] ?? '';
+        $locationSlug = $params['location'] ?? '';
+        $page = max(1, (int)$request->get('page', 1));
+
+        $data = $this->jobService->getJobsByRoleAndLocation($roleSlug, $locationSlug, $page);
+
+        if (!$data) {
+            $response->redirect('/jobs');
+            return;
+        }
+
+        $response->view('candidate/jobs/index', $data, 200, 'layout');
+    }
+
+    public function jobsByCategory(Request $request, Response $response, array $params): void
+    {
+        $slug = $params['slug'] ?? '';
+        $page = max(1, (int)$request->get('page', 1));
+
+        $data = $this->jobService->getJobsByCategory($slug, $page);
+
+        if (!$data) {
+            $response->redirect('/jobs');
+            return;
+        }
+
+        $response->view('candidate/jobs/index', $data, 200, 'layout');
+    }
+
     /**
      * Public job detail page - no login required
      */
@@ -180,7 +243,7 @@ class JobController
             try {
                 $otherJobs = $db->fetchAll(
                     "SELECT j.*, 
-                     GROUP_CONCAT(DISTINCT CONCAT(COALESCE(c.name, ''), ', ', COALESCE(s.name, ''), ', ', COALESCE(cnt.name, '')) SEPARATOR ' | ') as location_display
+                     GROUP_CONCAT(DISTINCT CONCAT_WS(', ', NULLIF(TRIM(c.name), ''), NULLIF(TRIM(s.name), ''), NULLIF(TRIM(cnt.name), '')) SEPARATOR ' | ') as location_display
                      FROM jobs j
                      LEFT JOIN job_locations jl ON jl.job_id = j.id
                      LEFT JOIN cities c ON jl.city_id = c.id

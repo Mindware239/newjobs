@@ -183,8 +183,9 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
         // ============================
         $router->group(['prefix' => '/candidate'], function(Router $router) {
 
-            // Profile Detailed
+            // Profile Detailed & Updates
             $router->get('/profile', [CandidateProfileController::class, 'detailed']);
+            $router->put('/profile', [CandidateProfileController::class, 'updateProfile']);
             $router->get('/profile/completion', [CandidateProfileController::class, 'completionStatus']);
             
             // Education
@@ -242,7 +243,29 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
             $router->delete('/alerts/{id}', [AlertController::class, 'delete']);
             $router->get('/alerts/{id}/matches', [AlertController::class, 'matchingCount']);
 
+            // Dashboard & Recommendations
             $router->get('/dashboard', [DashboardController::class, 'candidateDashboard']);
+            $router->get('/jobs/recommended', [\App\Controllers\Api\Candidate\JobRecommendationsController::class, 'getRecommendedJobs']);
+
+            // Employment Verification
+            $router->post('/verification', [\App\Controllers\Api\Candidate\VerificationController::class, 'create']);
+            $router->post('/verification/{id}/documents', [\App\Controllers\Api\Candidate\VerificationController::class, 'uploadDocument']);
+            $router->post('/verification/{id}/hr', [\App\Controllers\Api\Candidate\VerificationController::class, 'submitHr']);
+            $router->get('/verification/{id}/status', [\App\Controllers\Api\Candidate\VerificationController::class, 'status']);
+
+            // AI Resume Builder
+            $router->post('/resumes/{id}/ai/generate-summary', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiGenerateSummary']);
+            $router->post('/resumes/{id}/ai/generate-job-summary', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiGenerateJobSummary']);
+            $router->post('/resumes/{id}/ai/generate-experience', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiGenerateExperience']);
+            $router->post('/resumes/{id}/ai/generate-section', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiGenerateSection']);
+            $router->post('/resumes/{id}/ai/enhance-description', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiEnhanceDescription']);
+            $router->post('/resumes/{id}/ai/suggest-skills', [\App\Controllers\Api\Candidate\ResumeBuilderController::class, 'aiSuggestSkills']);
+
+            // Candidate Subscription
+            $router->get('/premium/plans', [\App\Controllers\Api\Candidate\PremiumController::class, 'plans']);
+            $router->post('/premium/payment', [\App\Controllers\Api\Candidate\PremiumController::class, 'initiatePayment']);
+            $router->get('/premium/billing', [\App\Controllers\Api\Candidate\PremiumController::class, 'billing']);
+
         });
 
         // ============================
@@ -296,6 +319,55 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
             $router->get('/dashboard', [EmployerDashboardController::class, 'index']);
             $router->get('/dashboard/stats', [EmployerDashboardController::class, 'stats']);
             $router->get('/analytics/jobs', [AnalyticsController::class, 'jobStats']);
+
+            // Extended Company Profile (Blogs, Reviews, Followers)
+            $router->get('/company-profile/blogs', [\App\Controllers\Api\Employer\CompanyProfileController::class, 'getBlogs']);
+            $router->post('/company-profile/blogs', [\App\Controllers\Api\Employer\CompanyProfileController::class, 'createBlog']);
+            $router->delete('/company-profile/blogs/{id}', [\App\Controllers\Api\Employer\CompanyProfileController::class, 'deleteBlog']);
+            $router->get('/company-profile/reviews', [\App\Controllers\Api\Employer\CompanyProfileController::class, 'getReviews']);
+            $router->get('/company-profile/followers', [\App\Controllers\Api\Employer\CompanyProfileController::class, 'getFollowers']);
+
+            // Extended Applications
+            $router->post('/applications/{id}/note', [\App\Controllers\Api\Employer\ApplicationsController::class, 'addNote']);
+            $router->get('/applications/export', [\App\Controllers\Api\Employer\ApplicationsController::class, 'export']);
+            $router->post('/applications/{id}/generate-score', [\App\Controllers\Api\Employer\ApplicationsController::class, 'generateScore']);
+
+            // AI Job Matching
+            $router->get('/jobs/{slug}/candidates', [\App\Controllers\Api\Employer\JobMatchingController::class, 'getCandidatesForJob']);
+            $router->post('/jobs/{slug}/generate-scores', [\App\Controllers\Api\Employer\JobMatchingController::class, 'generateScores']);
+            $router->post('/jobs/{slug}/candidates/{candidate_id}/score', [\App\Controllers\Api\Employer\JobMatchingController::class, 'scoreCandidate']);
+
+            // KYC Verification
+            $router->post('/kyc/submit', [\App\Controllers\Api\Employer\KycController::class, 'submit']);
+            $router->get('/kyc/status', [\App\Controllers\Api\Employer\KycController::class, 'show']);
+
+            // Employer Verification Unlock Flow
+            $router->get('/verification/unlock/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'unlock']);
+            $router->post('/verification/checkout/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'checkout']);
+            $router->post('/verification/mark-paid/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'markPaid']);
+            $router->get('/verification/report/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'report']);
+            $router->get('/verification/details/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'details']);
+            $router->get('/verification/invoice/{id}', [\App\Controllers\Api\Employer\EmploymentVerificationController::class, 'invoice']);
+
+            // Extended Analytics
+            $router->get('/analytics/funnel', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getHiringFunnel']);
+            $router->get('/analytics/time-to-hire', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getTimeToHire']);
+            $router->get('/analytics/location', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getLocationAnalytics']);
+            $router->get('/analytics/job-engagement', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getJobEngagement']);
+            $router->get('/analytics/candidate-quality', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getCandidateQuality']);
+            $router->get('/analytics/communication', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getCommunicationAnalytics']);
+            $router->get('/analytics/sources', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getCandidateSources']);
+            $router->get('/analytics/interview-outcomes', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getInterviewOutcomes']);
+            $router->get('/analytics/offer-acceptance', [\App\Controllers\Api\Employer\AnalyticsController::class, 'getOfferAcceptanceRate']);
+            $router->get('/analytics/export', [\App\Controllers\Api\Employer\AnalyticsController::class, 'exportReport']);
+
+            // Social Jobs (Employer side)
+            $router->get('/social-jobs', [\App\Controllers\Api\Social\SocialJobsController::class, 'index']);
+            $router->post('/social-jobs', [\App\Controllers\Api\Social\SocialJobsController::class, 'store']);
+            $router->get('/social-jobs/{id}', [\App\Controllers\Api\Social\SocialJobsController::class, 'show']);
+            $router->put('/social-jobs/{id}', [\App\Controllers\Api\Social\SocialJobsController::class, 'update']);
+            $router->delete('/social-jobs/{id}', [\App\Controllers\Api\Social\SocialJobsController::class, 'delete']);
+
         });
 
     }); // ✅ close auth group

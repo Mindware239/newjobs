@@ -8,8 +8,8 @@ use App\Controllers\Api\ApiController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\User;
-use App\Models\EmployerProfile;
-use App\Models\Document;
+use App\Models\Employer;
+use App\Models\EmployerKycDocument;
 use App\Services\MailService;
 
 class ProfileController extends ApiController
@@ -33,7 +33,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
+        $profile = Employer::findByUserId((int)$user->id);
         if (!$profile) {
             $this->error($response, 'Profile not found', 404);
             return;
@@ -41,21 +41,16 @@ class ProfileController extends ApiController
 
         $this->success($response, [
             'id' => $profile->id,
-            'employer_id' => $profile->employer_id,
+            'employer_id' => $profile->user_id,
             'company_name' => $profile->company_name,
-            'company_description' => $profile->company_description,
-            'logo' => $profile->logo,
-            'banner' => $profile->banner,
+            'company_description' => $profile->description,
+            'logo' => $profile->logo_url,
             'website' => $profile->website,
             'industry' => $profile->industry,
-            'company_size' => $profile->company_size,
-            'location' => $profile->location,
-            'phone' => $profile->phone,
-            'email' => $profile->email,
-            'established_year' => $profile->established_year,
-            'verification_status' => $profile->verification_status,
-            'verified_at' => $profile->verified_at,
-            'social_links' => json_decode($profile->social_links ?? '{}', true)
+            'company_size' => $profile->size,
+            'verification_status' => $profile->kyc_status,
+            'verified' => $profile->verified,
+            'social_links' => []
         ]);
     }
 
@@ -75,11 +70,6 @@ class ProfileController extends ApiController
         $errors = $this->validate($data, [
             'company_name' => 'required',
             'company_description' => 'required',
-            'website' => 'sometimes',
-            'industry' => 'sometimes',
-            'company_size' => 'sometimes',
-            'location' => 'sometimes',
-            'phone' => 'sometimes',
         ]);
 
         if (!empty($errors)) {
@@ -87,27 +77,21 @@ class ProfileController extends ApiController
             return;
         }
 
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
+        $profile = Employer::findByUserId((int)$user->id);
         if (!$profile) {
-            $profile = new EmployerProfile();
-            $profile->employer_id = $user->id;
+            $profile = new Employer();
+            $profile->user_id = $user->id;
         }
 
-        $profile->fill([
-            'company_name' => $data['company_name'],
-            'company_description' => $data['company_description'],
-            'website' => $data['website'] ?? $profile->website,
-            'industry' => $data['industry'] ?? $profile->industry,
-            'company_size' => $data['company_size'] ?? $profile->company_size,
-            'location' => $data['location'] ?? $profile->location,
-            'phone' => $data['phone'] ?? $profile->phone,
-        ]);
-
+        $profile->company_name = $data['company_name'];
+        $profile->description = $data['company_description'];
+        $profile->website = $data['website'] ?? ($profile->website ?? null);
+        $profile->industry = $data['industry'] ?? ($profile->industry ?? null);
+        $profile->size = $data['company_size'] ?? ($profile->size ?? null);
         $profile->save();
 
-        $this->success($response, ['profile_id' => $profile->id], 'Profile updated successfully');
+        $this->success($response, ['id' => $profile->id], 'Profile updated successfully');
     }
-
     /**
      * POST /api/v1/employer/profile/logo
      * Upload company logo
@@ -141,9 +125,9 @@ class ProfileController extends ApiController
             return;
         }
 
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
+        $profile = Employer::findByUserId((int)$user->id);
         if ($profile) {
-            $profile->logo = '/storage/uploads/company-logos/' . $filename;
+            $profile->logo_url = '/storage/uploads/company-logos/' . $filename;
             $profile->save();
         }
 
@@ -156,40 +140,7 @@ class ProfileController extends ApiController
      */
     public function uploadBanner(Request $request, Response $response): void
     {
-        $user = $this->user($request);
-        if (!$user || $user->role !== 'employer') {
-            $this->error($response, 'Unauthorized', 401);
-            return;
-        }
-
-        if (!isset($_FILES['banner']) || $_FILES['banner']['error'] !== UPLOAD_ERR_OK) {
-            $this->error($response, 'Banner file is required', 400);
-            return;
-        }
-
-        $file = $_FILES['banner'];
-        $allowed = ['image/jpeg', 'image/png'];
-        if (!in_array($file['type'], $allowed)) {
-            $this->error($response, 'Invalid file type. Allowed: JPEG, PNG', 400);
-            return;
-        }
-
-        $filename = uniqid('banner_') . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
-        $uploadDir = __DIR__ . '/../../../../storage/uploads/company-banners/';
-        @mkdir($uploadDir, 0755, true);
-
-        if (!move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
-            $this->error($response, 'Failed to upload banner', 500);
-            return;
-        }
-
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
-        if ($profile) {
-            $profile->banner = '/storage/uploads/company-banners/' . $filename;
-            $profile->save();
-        }
-
-        $this->success($response, ['banner_url' => '/storage/uploads/company-banners/' . $filename], 'Banner uploaded');
+        $this->error($response, 'Banner upload not supported', 400);
     }
 
     /**
@@ -201,6 +152,12 @@ class ProfileController extends ApiController
         $user = $this->user($request);
         if (!$user || $user->role !== 'employer') {
             $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $profile = Employer::findByUserId((int)$user->id);
+        if (!$profile) {
+            $this->error($response, 'Profile not found', 404);
             return;
         }
 
@@ -226,12 +183,12 @@ class ProfileController extends ApiController
             return;
         }
 
-        $document = new Document();
+        $document = new EmployerKycDocument();
         $document->fill([
-            'employer_id' => $user->id,
-            'type' => $data['type'] ?? 'other',
+            'employer_id' => $profile->id,
+            'document_type' => $data['type'] ?? 'other',
             'file_path' => '/storage/uploads/company-documents/' . $filename,
-            'original_name' => $file['name']
+            'status' => 'pending'
         ]);
         $document->save();
 
@@ -250,7 +207,13 @@ class ProfileController extends ApiController
             return;
         }
 
-        $documents = Document::where('employer_id', '=', $user->id)
+        $profile = Employer::findByUserId((int)$user->id);
+        if (!$profile) {
+            $this->success($response, ['documents' => []]);
+            return;
+        }
+
+        $documents = EmployerKycDocument::where('employer_id', '=', $profile->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
@@ -258,9 +221,9 @@ class ProfileController extends ApiController
         foreach ($documents as $doc) {
             $data[] = [
                 'id' => $doc->id,
-                'type' => $doc->type,
+                'type' => $doc->document_type,
                 'file_path' => $doc->file_path,
-                'original_name' => $doc->original_name,
+                'status' => $doc->status,
                 'uploaded_at' => $doc->created_at
             ];
         }
@@ -272,7 +235,7 @@ class ProfileController extends ApiController
      * DELETE /api/v1/employer/profile/documents/{id}
      * Delete a document
      */
-    public function deleteDocument(Request $request, Response $response, array $params): void
+    public function deleteDocument(Request $request, Response $response, string $id): void
     {
         $user = $this->user($request);
         if (!$user || $user->role !== 'employer') {
@@ -280,8 +243,14 @@ class ProfileController extends ApiController
             return;
         }
 
-        $document = Document::find((int)$params['id']);
-        if (!$document || $document->employer_id !== $user->id) {
+        $profile = Employer::findByUserId((int)$user->id);
+        if (!$profile) {
+            $this->error($response, 'Profile not found', 404);
+            return;
+        }
+
+        $document = EmployerKycDocument::find((int)$id);
+        if (!$document || $document->employer_id !== $profile->id) {
             $this->error($response, 'Document not found', 404);
             return;
         }
@@ -302,16 +271,15 @@ class ProfileController extends ApiController
             return;
         }
 
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
+        $profile = Employer::findByUserId((int)$user->id);
         if (!$profile) {
             $this->error($response, 'Profile not found', 404);
             return;
         }
 
         $this->success($response, [
-            'status' => $profile->verification_status ?? 'pending',
-            'verified_at' => $profile->verified_at,
-            'reason' => $profile->rejection_reason ?? null
+            'status' => $profile->kyc_status ?? 'pending',
+            'verified' => $profile->verified,
         ]);
     }
 
@@ -321,29 +289,6 @@ class ProfileController extends ApiController
      */
     public function updateSocialLinks(Request $request, Response $response): void
     {
-        $user = $this->user($request);
-        if (!$user || $user->role !== 'employer') {
-            $this->error($response, 'Unauthorized', 401);
-            return;
-        }
-
-        $data = $request->getJsonBody();
-        $links = [
-            'linkedin' => $data['linkedin'] ?? null,
-            'twitter' => $data['twitter'] ?? null,
-            'facebook' => $data['facebook'] ?? null,
-            'instagram' => $data['instagram'] ?? null,
-        ];
-
-        $profile = EmployerProfile::where('employer_id', '=', $user->id)->first();
-        if (!$profile) {
-            $profile = new EmployerProfile();
-            $profile->employer_id = $user->id;
-        }
-
-        $profile->social_links = json_encode($links);
-        $profile->save();
-
-        $this->success($response, null, 'Social links updated');
+        $this->error($response, 'Social links update not supported yet', 400);
     }
 }

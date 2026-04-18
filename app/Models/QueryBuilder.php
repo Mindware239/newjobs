@@ -236,4 +236,63 @@ class QueryBuilder
         }
         return $values;
     }
+
+    public function paginate(int $perPage = 15, int $page = 1): array
+    {
+        $total = $this->count();
+        
+        $offset = ($page - 1) * $perPage;
+        
+        // Clone the builder to apply limit and offset without affecting original
+        $clone = clone $this;
+        $items = $clone->limit($perPage)->offset($offset)->get();
+        
+        return [
+            'data' => $items,
+            'total' => $total,
+            'per_page' => $perPage,
+            'current_page' => $page,
+            'last_page' => (int)ceil($total / $perPage)
+        ];
+    }
+
+    /**
+     * Delete records matching the current query conditions.
+     */
+    public function delete(): int
+    {
+        $table = $this->model->getTable();
+        $sql = "DELETE FROM {$table}";
+        $params = [];
+
+        if (!empty($this->wheres)) {
+            $sql .= " WHERE ";
+            $conditions = [];
+            foreach ($this->wheres as $index => $where) {
+                if (($where['type'] ?? '') === 'In') {
+                    $vals = $where['values'] ?? [];
+                    if (empty($vals)) {
+                        $conditions[] = "1=0";
+                        continue;
+                    }
+                    $placeholders = [];
+                    foreach ($vals as $k => $v) {
+                        $p = "w_{$index}_{$where['field']}_{$k}";
+                        $placeholders[] = ":{$p}";
+                        $params[$p] = $v;
+                    }
+                    $conditions[] = "{$where['field']} IN (" . implode(',', $placeholders) . ")";
+                } else {
+                    $paramName = "w_{$index}_{$where['field']}";
+                    $conditions[] = "{$where['field']} {$where['operator']} :{$paramName}";
+                    $params[$paramName] = $where['value'];
+                }
+            }
+            $sql .= implode(' AND ', $conditions);
+        }
+
+        $db = Database::getInstance();
+        $stmt = $db->query($sql, $params);
+        return $stmt->rowCount();
+    }
 }

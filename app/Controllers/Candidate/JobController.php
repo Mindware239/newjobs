@@ -31,15 +31,15 @@ class JobController extends BaseController
         }
 
         /** @var \App\Models\User|null $user */
-        $user = User::find($userId);
+        $user = User::find((int)$userId);
         if (!$user || !$user->isCandidate()) {
             $response->redirect('/');
             return null;
         }
 
-        $candidate = Candidate::findByUserId($userId);
+        $candidate = Candidate::findByUserId((int)$userId);
         if (!$candidate) {
-            $candidate = Candidate::createForUser($userId);
+            $candidate = Candidate::createForUser((int)$userId);
         }
 
         return $candidate;
