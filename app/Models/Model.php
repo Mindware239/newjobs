@@ -82,29 +82,20 @@ abstract class Model
 
     public function save(): bool
     {
-        try {
-            // Check if primary key exists and has a value (not null/empty)
-            $primaryKeyValue = $this->attributes[$this->primaryKey] ?? null;
-            if ($primaryKeyValue && $primaryKeyValue !== '0' && $primaryKeyValue !== 0) {
-                return $this->update();
-            }
-            return $this->insert();
-        } catch (\Exception $e) {
-            error_log("Model save error for {$this->table}: " . $e->getMessage());
-            error_log("Attributes: " . json_encode($this->attributes));
-            return false;
+        // Check if primary key exists and has a value (not null/empty)
+        $primaryKeyValue = $this->attributes[$this->primaryKey] ?? null;
+        if ($primaryKeyValue && $primaryKeyValue !== '0' && $primaryKeyValue !== 0) {
+            return $this->update();
         }
+        return $this->insert();
     }
 
     private function insert(): bool
     {
-        // CRITICAL: Filter out 'attributes' key and only include fillable fields
         $fields = array_filter(array_keys($this->attributes), function($k) {
-            // Never include 'attributes' as a database column
             if ($k === 'attributes') {
                 return false;
             }
-            // If fillable is defined, only include fillable fields
             if (!empty($this->fillable)) {
                 return in_array($k, $this->fillable);
             }
@@ -137,29 +128,24 @@ abstract class Model
             $this->getDb()->execute($sql, $params);
             $this->attributes[$this->primaryKey] = $this->getDb()->lastInsertId();
             return true;
-        } catch (\Exception $e) {
-            error_log("Model insert error for {$this->table}: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log("DATABASE INSERT ERROR [Table: {$this->table}]: " . $e->getMessage());
             error_log("SQL: " . $sql);
-            error_log("Attributes: " . json_encode($this->attributes));
-            return false;
+            error_log("PARAMS: " . json_encode($params));
+            throw new \Exception("Failed to insert record into {$this->table}: " . $e->getMessage());
         }
     }
 
     private function update(): bool
     {
         $id = $this->attributes[$this->primaryKey];
-        // CRITICAL: Filter out 'attributes' key if it exists (shouldn't, but safety check)
-        // Also filter out any keys that aren't in fillable (if fillable is defined)
         $fields = array_filter(array_keys($this->attributes), function($k) {
-            // Never include 'attributes' as a database column
             if ($k === 'attributes') {
                 return false;
             }
-            // Exclude primary key
             if ($k === $this->primaryKey) {
                 return false;
             }
-            // If fillable is defined, only include fillable fields
             if (!empty($this->fillable)) {
                 return in_array($k, $this->fillable);
             }
@@ -191,26 +177,29 @@ abstract class Model
         try {
             $this->getDb()->query($sql, $params);
             return true;
-        } catch (\Exception $e) {
-            error_log("Model update error for {$this->table}: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log("DATABASE UPDATE ERROR [Table: {$this->table}, ID: {$id}]: " . $e->getMessage());
             error_log("SQL: " . $sql);
-            error_log("Params: " . json_encode($params));
-            return false;
+            error_log("PARAMS: " . json_encode($params));
+            throw new \Exception("Failed to update record in {$this->table}: " . $e->getMessage());
         }
     }
 
     public function delete(): bool
     {
-        if (!isset($this->attributes[$this->primaryKey])) {
+        $id = $this->attributes[$this->primaryKey] ?? null;
+        if (!$id) {
             return false;
         }
         
         $sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey} = :id";
         try {
-            $this->getDb()->query($sql, ['id' => $this->attributes[$this->primaryKey]]);
+            $this->getDb()->query($sql, ['id' => $id]);
             return true;
-        } catch (\Exception $e) {
-            return false;
+        } catch (\Throwable $e) {
+            error_log("DATABASE DELETE ERROR [Table: {$this->table}, ID: {$id}]: " . $e->getMessage());
+            error_log("SQL: " . $sql);
+            throw new \Exception("Failed to delete record from {$this->table}: " . $e->getMessage());
         }
     }
 

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS employer_api_keys (
   name VARCHAR(255) NOT NULL,
   secret_hash VARCHAR(255) NOT NULL,
   allowed_ips TEXT NULL,
-  scopes JSON DEFAULT '[]',
+  scopes JSON,
   revoked TINYINT(1) DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_used_at DATETIME NULL,

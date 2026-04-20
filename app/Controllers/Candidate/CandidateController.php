@@ -980,10 +980,16 @@ class CandidateController extends BaseController
     public function saveProfile(Request $request, Response $response): void
     {
         $candidate = $this->ensureCandidate($request, $response);
-        if (!$candidate) return;
+        if (!$candidate) {
+            error_log("SAVE PROFILE ERROR: No candidate found in session");
+            return;
+        }
 
         $data = $request->getJsonBody() ?? $request->all();
         $section = $data['section'] ?? 'basic';
+        
+        error_log("SAVE PROFILE: Section: {$section}, User ID: " . ($_SESSION['user_id'] ?? 'none'));
+        error_log("SAVE PROFILE DATA: " . json_encode($data));
 
         try {
             switch ($section) {

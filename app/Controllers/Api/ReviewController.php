@@ -72,14 +72,20 @@ class ReviewController extends ApiController
         // Implementation depends on employment verification logic
 
         $review = new Review();
-        $review->fill([
-            'employer_id' => (int)$request->input('employer_id'),
-            'candidate_id' => $user->id,
-            'rating' => (int)$request->input('rating'),
-            'title' => $request->input('title'),
-            'review_text' => $request->input('review_text'),
-            'is_published' => true
-        ])->save();
+        try {
+            $review->fill([
+                'employer_id' => (int)$request->input('employer_id'),
+                'candidate_id' => $user->id,
+                'rating' => (int)$request->input('rating'),
+                'title' => $request->input('title'),
+                'review_text' => $request->input('review_text'),
+                'is_published' => true
+            ])->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, ['id' => $review->id], 'Review created', 201);
     }
@@ -138,7 +144,13 @@ class ReviewController extends ApiController
             return;
         }
 
-        $review->fill($request->getJsonBody())->save();
+        try {
+            $review->fill($request->getJsonBody())->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, ['id' => $review->id]);
     }
@@ -161,7 +173,13 @@ class ReviewController extends ApiController
             return;
         }
 
-        $review->delete();
+        try {
+            $review->delete();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Review deleted');
     }

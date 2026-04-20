@@ -409,9 +409,13 @@ class AuthController extends ApiController
         }
 
         $user->setPassword((string)$data['new_password']);
-        $user->save();
-
-        $this->success($response, [], 'Password updated successfully');
+        try {
+            $user->save();
+            $this->success($response, [], 'Password updated successfully');
+        } catch (\Throwable $e) {
+            error_log("API ChangePassword Error: " . $e->getMessage());
+            $this->error($response, 'Failed to update password. Please try again.', 500);
+        }
     }
 
     public function forgotPassword(Request $request, Response $response): void
@@ -426,9 +430,9 @@ class AuthController extends ApiController
 
         $user = User::where('email', '=', $email)->first();
         if ($user) {
-            $token = \App\Services\VerificationService::generateResetToken((int)$user->id);
-
             try {
+                $token = \App\Services\VerificationService::generateResetToken((int)$user->id);
+
                 $resetLink = ($_ENV['APP_URL'] ?? 'http://localhost') . '/reset-password?token=' . urlencode($token);
                 \App\Services\NotificationService::send(
                     (int)$user->id,
@@ -440,7 +444,7 @@ class AuthController extends ApiController
                     ['email']
                 );
             } catch (\Throwable $e) {
-                error_log('API forgotPassword email queue failed: ' . $e->getMessage());
+                error_log('API forgotPassword processing failed: ' . $e->getMessage());
             }
         }
 
@@ -473,9 +477,13 @@ class AuthController extends ApiController
         }
 
         $user->setPassword((string)$data['password']);
-        $user->save();
-
-        $this->success($response, [], 'Password reset successfully');
+        try {
+            $user->save();
+            $this->success($response, [], 'Password reset successfully');
+        } catch (\Throwable $e) {
+            error_log("API ResetPassword Save Error: " . $e->getMessage());
+            $this->error($response, 'Failed to reset password. Please try again.', 500);
+        }
     }
 
     public function verifyEmail(Request $request, Response $response): void

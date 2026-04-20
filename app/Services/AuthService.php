@@ -44,7 +44,11 @@ class AuthService
 
         // Update last login
         $user->last_login = date('Y-m-d H:i:s');
-        $user->save();
+        try {
+            $user->save();
+        } catch (\Throwable $e) {
+            error_log("AuthService Login Save Error: " . $e->getMessage());
+        }
 
         return $user;
     }
@@ -63,15 +67,17 @@ class AuthService
         ]);
         $user->setPassword($data['password']);
 
-        if ($user->save()) {
+        try {
+            $user->save();
             Candidate::createForUser((int)$user->id, [
                 'full_name' => $data['full_name'],
                 'mobile' => $data['mobile'] ?? null
             ]);
             return $user;
+        } catch (\Throwable $e) {
+            error_log("AuthService Register Candidate Error: " . $e->getMessage());
+            return null;
         }
-
-        return null;
     }
 
     public function registerEmployer(array $data): ?User
@@ -89,7 +95,8 @@ class AuthService
         ]);
         $user->setPassword($data['password']);
 
-        if ($user->save()) {
+        try {
+            $user->save();
             $employer = new Employer();
             $employer->fill([
                 'user_id' => $user->id,
@@ -99,9 +106,10 @@ class AuthService
             ]);
             $employer->save();
             return $user;
+        } catch (\Throwable $e) {
+            error_log("AuthService Register Employer Error: " . $e->getMessage());
+            return null;
         }
-
-        return null;
     }
 
     public function loginByPhone(string $phone): ?User
@@ -112,7 +120,11 @@ class AuthService
         }
 
         $user->last_login = date('Y-m-d H:i:s');
-        $user->save();
+        try {
+            $user->save();
+        } catch (\Throwable $e) {
+            error_log("AuthService LoginByPhone Save Error: " . $e->getMessage());
+        }
 
         return $user;
     }
@@ -149,27 +161,30 @@ class AuthService
         ]);
         $user->setPassword((string)($data['password'] ?? bin2hex(random_bytes(16))));
 
-        if (!$user->save()) {
-            return ['success' => false, 'error' => 'Failed to create candidate account'];
+        try {
+            $user->save();
+            
+            Candidate::createForUser((int)$user->id, [
+                'full_name' => $data['full_name'] ?? null,
+                'mobile' => $phone,
+                'created_by' => 'self',
+                'source' => 'phone_otp_registration',
+                'profile_status' => 'unverified',
+                'visibility' => 'limited',
+                'is_profile_complete' => 0,
+            ]);
+
+            $additionalMobile = $this->storeAdditionalMobile($user, (string)($data['additional_mobile'] ?? ($data['alternate_phone'] ?? '')));
+
+            return [
+                'success' => true,
+                'user' => $user,
+                'additional_mobile' => $additionalMobile,
+            ];
+        } catch (\Throwable $e) {
+            error_log("AuthService RegisterCandidateWithPhone Error: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to create candidate account. Please try again.'];
         }
-
-        Candidate::createForUser((int)$user->id, [
-            'full_name' => $data['full_name'] ?? null,
-            'mobile' => $phone,
-            'created_by' => 'self',
-            'source' => 'phone_otp_registration',
-            'profile_status' => 'unverified',
-            'visibility' => 'limited',
-            'is_profile_complete' => 0,
-        ]);
-
-        $additionalMobile = $this->storeAdditionalMobile($user, (string)($data['additional_mobile'] ?? ($data['alternate_phone'] ?? '')));
-
-        return [
-            'success' => true,
-            'user' => $user,
-            'additional_mobile' => $additionalMobile,
-        ];
     }
 
     public function registerEmployerWithPhone(array $data): array
@@ -209,46 +224,47 @@ class AuthService
         ]);
         $user->setPassword((string)($data['password'] ?? bin2hex(random_bytes(16))));
 
-        if (!$user->save()) {
-            return ['success' => false, 'error' => 'Failed to create employer account'];
+        try {
+            $user->save();
+
+            $employer = new Employer();
+            $employer->fill([
+                'user_id' => $user->id,
+                'company_name' => $companyName,
+                'company_slug' => $employer->generateSlug($companyName),
+                'website' => $data['website'] ?? null,
+                'description' => $data['description'] ?? null,
+                'industry' => $data['industry'] ?? null,
+                'size' => $data['company_size'] ?? null,
+                'country' => $data['country'] ?? null,
+                'state' => $data['state'] ?? null,
+                'city' => $data['city'] ?? null,
+                'postal_code' => $data['postal_code'] ?? null,
+                'kyc_status' => 'pending',
+            ]);
+
+            $employer->save();
+
+            $settings = new EmployerSetting();
+            $settings->fill([
+                'employer_id' => (int)$employer->id,
+                'billing_plan' => 'free',
+                'credits' => 0,
+                'timezone' => (($data['country'] ?? '') === 'India') ? 'Asia/Kolkata' : 'UTC',
+            ]);
+            $settings->save();
+
+            $additionalMobile = $this->storeAdditionalMobile($user, (string)($data['additional_mobile'] ?? ($data['alternate_phone'] ?? '')));
+
+            return [
+                'success' => true,
+                'user' => $user,
+                'additional_mobile' => $additionalMobile,
+            ];
+        } catch (\Throwable $e) {
+            error_log("AuthService RegisterEmployerWithPhone Error: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Failed to create employer account. Please try again.'];
         }
-
-        $employer = new Employer();
-        $employer->fill([
-            'user_id' => $user->id,
-            'company_name' => $companyName,
-            'company_slug' => $employer->generateSlug($companyName),
-            'website' => $data['website'] ?? null,
-            'description' => $data['description'] ?? null,
-            'industry' => $data['industry'] ?? null,
-            'size' => $data['company_size'] ?? null,
-            'country' => $data['country'] ?? null,
-            'state' => $data['state'] ?? null,
-            'city' => $data['city'] ?? null,
-            'postal_code' => $data['postal_code'] ?? null,
-            'kyc_status' => 'pending',
-        ]);
-
-        if (!$employer->save()) {
-            return ['success' => false, 'error' => 'Failed to create employer profile'];
-        }
-
-        $settings = new EmployerSetting();
-        $settings->fill([
-            'employer_id' => (int)$employer->id,
-            'billing_plan' => 'free',
-            'credits' => 0,
-            'timezone' => (($data['country'] ?? '') === 'India') ? 'Asia/Kolkata' : 'UTC',
-        ]);
-        $settings->save();
-
-        $additionalMobile = $this->storeAdditionalMobile($user, (string)($data['additional_mobile'] ?? ($data['alternate_phone'] ?? '')));
-
-        return [
-            'success' => true,
-            'user' => $user,
-            'additional_mobile' => $additionalMobile,
-        ];
     }
 
     public static function getCookieDomain(): string

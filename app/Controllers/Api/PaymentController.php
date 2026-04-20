@@ -95,17 +95,23 @@ class PaymentController extends ApiController
 
         // Create payment record
         $payment = new SubscriptionPayment();
-        $payment->fill([
-            'employer_id' => $user->id,
-            'plan_id' => $plan->id,
-            'amount' => $amount,
-            'currency' => 'INR',
-            'payment_method' => $paymentMethod,
-            'status' => 'pending',
-            'metadata' => json_encode([
-                'coupon_code' => $request->input('coupon_code')
-            ])
-        ])->save();
+        try {
+            $payment->fill([
+                'employer_id' => $user->id,
+                'plan_id' => $plan->id,
+                'amount' => $amount,
+                'currency' => 'INR',
+                'payment_method' => $paymentMethod,
+                'status' => 'pending',
+                'metadata' => json_encode([
+                    'coupon_code' => $request->input('coupon_code')
+                ])
+            ])->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         // Generate payment link based on method
         $paymentData = match($paymentMethod) {
@@ -165,27 +171,43 @@ class PaymentController extends ApiController
 
         if (!$isValid) {
             $payment->status = 'failed';
-            $payment->save();
+            try {
+                $payment->save();
+            } catch (\Throwable $e) {
+                error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            }
             $this->error($response, 'Payment verification failed', 400);
             return;
         }
 
         $payment->status = 'completed';
         $payment->completed_at = date('Y-m-d H:i:s');
-        $payment->save();
+        try {
+            $payment->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         // Create subscription
         $plan = $payment->plan;
         $subscription = new EmployerSubscription();
-        $subscription->fill([
-            'employer_id' => $user->id,
-            'plan_id' => $plan->id,
-            'payment_id' => $payment->id,
-            'starts_at' => date('Y-m-d H:i:s'),
-            'expires_at' => date('Y-m-d H:i:s', strtotime('+' . $plan->duration_days . ' days')),
-            'status' => 'active',
-            'auto_renewal' => true
-        ])->save();
+        try {
+            $subscription->fill([
+                'employer_id' => $user->id,
+                'plan_id' => $plan->id,
+                'payment_id' => $payment->id,
+                'starts_at' => date('Y-m-d H:i:s'),
+                'expires_at' => date('Y-m-d H:i:s', strtotime('+' . $plan->duration_days . ' days')),
+                'status' => 'active',
+                'auto_renewal' => true
+            ])->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         // Send confirmation email
         $this->mailService->send($user->email, 'subscription_confirmation', [
@@ -345,7 +367,13 @@ class PaymentController extends ApiController
 
         $subscription->status = 'cancelled';
         $subscription->cancelled_at = date('Y-m-d H:i:s');
-        $subscription->save();
+        try {
+            $subscription->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Subscription cancelled successfully');
     }
@@ -428,7 +456,13 @@ class PaymentController extends ApiController
 
         $payment->status = 'refund_requested';
         $payment->refund_reason = $request->input('reason');
-        $payment->save();
+        try {
+            $payment->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Refund request submitted');
     }

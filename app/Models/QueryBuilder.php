@@ -291,8 +291,15 @@ class QueryBuilder
             $sql .= implode(' AND ', $conditions);
         }
 
-        $db = Database::getInstance();
-        $stmt = $db->query($sql, $params);
-        return $stmt->rowCount();
+        try {
+            $db = Database::getInstance();
+            $stmt = $db->query($sql, $params);
+            return $stmt->rowCount();
+        } catch (\Throwable $e) {
+            error_log("QUERY BUILDER DELETE ERROR [Table: {$table}]: " . $e->getMessage());
+            error_log("SQL: " . $sql);
+            error_log("PARAMS: " . json_encode($params));
+            throw new \Exception("Failed to delete records from {$table}: " . $e->getMessage());
+        }
     }
 }

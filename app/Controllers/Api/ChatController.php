@@ -211,7 +211,13 @@ class ChatController extends ApiController
             return;
         }
 
-        $message->delete();
+        try {
+            $message->delete();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
         $this->success($response, [], 'Message deleted');
     }
 
@@ -243,7 +249,13 @@ class ChatController extends ApiController
         }
 
         $message->fill(['body' => $body]);
-        $message->save();
+        try {
+            $message->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, ['message' => $this->formatMessage($message, (int)$user->id)], 'Message updated');
     }
@@ -280,7 +292,13 @@ class ChatController extends ApiController
             return;
         }
 
-        $conversation->delete();
+        try {
+            $conversation->delete();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
         $this->success($response, [], 'Conversation deleted');
     }
 
@@ -371,7 +389,12 @@ class ChatController extends ApiController
                 'unread_candidate' => 0,
             ]);
 
-            $saved = $conversation->save();
+            try {
+                $saved = $conversation->save();
+            } catch (\Throwable $e) {
+                error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+                return [null, 'Database error occurred. Please try again.'];
+            }
             return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation'];
         }
 
@@ -396,7 +419,12 @@ class ChatController extends ApiController
             'unread_candidate' => 0,
         ]);
 
-        $saved = $conversation->save();
+        try {
+            $saved = $conversation->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            return [null, 'Database error occurred. Please try again.'];
+        }
         return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation'];
     }
 
@@ -411,7 +439,12 @@ class ChatController extends ApiController
             'is_read' => 0,
         ]);
 
-        if (!$message->save()) {
+        try {
+            if (!$message->save()) {
+                return null;
+            }
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
             return null;
         }
 
@@ -421,7 +454,12 @@ class ChatController extends ApiController
             'unread_employer' => $isEmployerSender ? 0 : ((int)($conversation->unread_employer ?? 0) + 1),
             'unread_candidate' => $isEmployerSender ? ((int)($conversation->unread_candidate ?? 0) + 1) : 0,
         ]);
-        $conversation->save();
+        
+        try {
+            $conversation->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+        }
 
         $recipientUserId = $isEmployerSender
             ? (int)$conversation->candidate_user_id
@@ -459,7 +497,11 @@ class ChatController extends ApiController
             $conversation->fill(['unread_candidate' => 0]);
         }
 
-        $conversation->save();
+        try {
+            $conversation->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+        }
     }
 
     private function formatMessage(Message $message, int $currentUserId): array

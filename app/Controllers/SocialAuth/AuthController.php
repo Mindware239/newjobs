@@ -286,12 +286,16 @@ $email = trim((string)($data['email'] ?? ''));
         'last_login' => date('Y-m-d H:i:s')
     ]);
     $user->setPassword($password);
-    if (!$user->save()) {
+    
+    try {
+        $user->save();
+    } catch (\Throwable $e) {
+        error_log("Registration Error for {$email}: " . $e->getMessage());
         if ($request->isAjax()) {
-            $response->json(['error' => 'Registration failed'], 500);
+            $response->json(['error' => 'Registration failed. Please try again later.'], 500);
             return;
         }
-        $response->view('social-services/login', ['error' => 'Registration failed']);
+        $response->view('social-services/login', ['error' => 'Registration failed. Please try again later.']);
         return;
     }
     
@@ -527,8 +531,11 @@ public function logout(Request $request, Response $response): void
             return;
         }
         $user->setPassword($password);
-        if (!$user->save()) {
-            $response->json(['error' => 'Failed to update password'], 500);
+        try {
+            $user->save();
+        } catch (\Throwable $e) {
+            error_log("Password Reset Error for user {$user->id}: " . $e->getMessage());
+            $response->json(['error' => 'Failed to update password. Please try again later.'], 500);
             return;
         }
         if ($redis->isAvailable()) {

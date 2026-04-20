@@ -86,7 +86,14 @@ class ProfileController extends ApiController
                 $user->is_phone_verified = 0;
             }
         }
-        $user->save();
+        
+        try {
+            $user->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         if ($user->isCandidate()) {
             $candidate = Candidate::findByUserId($user->id);
@@ -102,13 +109,17 @@ class ProfileController extends ApiController
                 'location' => $data['location'] ?? $candidate->location,
             ]);
             
-            if ($candidate->save()) {
-                $payload = $candidate->attributes;
-                $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
-                $this->success($response, $payload, 'Profile updated successfully');
-            } else {
-                $this->error($response, 'Failed to update profile', 500);
+            try {
+                $candidate->save();
+            } catch (\Throwable $e) {
+                error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+                $this->error($response, 'Database error occurred. Please try again.', 500);
+                return;
             }
+
+            $payload = $candidate->attributes;
+            $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
+            $this->success($response, $payload, 'Profile updated successfully');
         } elseif ($user->isEmployer()) {
             $employer = Employer::findByUserId($user->id);
             if (!$employer) {
@@ -124,13 +135,17 @@ class ProfileController extends ApiController
                 'size' => $data['company_size'] ?? $employer->size,
             ]);
 
-            if ($employer->save()) {
-                $payload = $employer->attributes;
-                $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
-                $this->success($response, $payload, 'Profile updated successfully');
-            } else {
-                $this->error($response, 'Failed to update profile', 500);
+            try {
+                $employer->save();
+            } catch (\Throwable $e) {
+                error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+                $this->error($response, 'Database error occurred. Please try again.', 500);
+                return;
             }
+
+            $payload = $employer->attributes;
+            $payload['additional_mobile'] = $prefs['contact']['additional_mobile'] ?? null;
+            $this->success($response, $payload, 'Profile updated successfully');
         } else {
             $this->error($response, 'Unsupported user role', 400);
         }

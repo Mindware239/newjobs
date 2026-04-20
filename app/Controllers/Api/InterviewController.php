@@ -61,20 +61,27 @@ class InterviewController extends ApiController
         }
 
         $interview = new Interview();
-        $interview->fill([
-            'application_id' => $application->id,
-            'scheduled_at' => $request->input('scheduled_at'),
-            'interview_type' => $request->input('interview_type'),
-            'duration_minutes' => $request->input('duration_minutes'),
-            'interviewer_notes' => $request->input('interviewer_notes'),
-            'status' => 'scheduled'
-        ])->save();
+        try {
+            $interview->fill([
+                'application_id' => $application->id,
+                'scheduled_at' => $request->input('scheduled_at'),
+                'interview_type' => $request->input('interview_type'),
+                'duration_minutes' => $request->input('duration_minutes'),
+                'interviewer_notes' => $request->input('interviewer_notes'),
+                'status' => 'scheduled'
+            ])->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         // Notify candidate
-        $this->notificationService->send(
-            $application->candidate_id,
+        NotificationService::send(
+            (int)$application->candidate_id,
             'interview_scheduled',
-            'Interview scheduled for ' . $application->job?->title,
+            'Interview scheduled',
+            'Interview scheduled for ' . ($application->job?->title ?? 'your application'),
             ['interview_id' => $interview->id]
         );
 
@@ -195,7 +202,13 @@ class InterviewController extends ApiController
             $interview->duration_minutes = $request->input('duration_minutes');
         }
 
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, ['id' => $interview->id]);
     }
@@ -225,7 +238,13 @@ class InterviewController extends ApiController
 
         $interview->status = 'cancelled';
         $interview->cancellation_reason = $request->input('reason');
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         // Notify other party
         $application = $interview->application;
@@ -268,7 +287,13 @@ class InterviewController extends ApiController
 
         $interview->scheduled_at = $request->input('scheduled_at');
         $interview->rescheduled_from = $interview->getOriginal('scheduled_at');
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Interview rescheduled');
     }
@@ -293,7 +318,13 @@ class InterviewController extends ApiController
 
         $interview->status = 'completed';
         $interview->completed_at = date('Y-m-d H:i:s');
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Interview marked as complete');
     }
@@ -328,7 +359,13 @@ class InterviewController extends ApiController
 
         $interview->feedback = $request->input('feedback');
         $interview->feedback_rating = $request->input('rating');
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Feedback added successfully');
     }
@@ -356,7 +393,7 @@ class InterviewController extends ApiController
             return;
         }
 
-        $token = $this->jitsiService->generateToken('interview_' . $interview->id, $user->id);
+        $token = JitsiService::generateToken('interview_' . $interview->id, $user->id);
 
         $this->success($response, [
             'token' => $token,
@@ -395,7 +432,13 @@ class InterviewController extends ApiController
 
         $interview->attended = $request->input('attended');
         $interview->attendance_notes = $request->input('notes');
-        $interview->save();
+        try {
+            $interview->save();
+        } catch (\Throwable $e) {
+            error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
+            $this->error($response, 'Database error occurred. Please try again.', 500);
+            return;
+        }
 
         $this->success($response, [], 'Attendance marked');
     }

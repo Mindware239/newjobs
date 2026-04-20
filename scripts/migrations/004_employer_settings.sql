@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS employer_settings (
   billing_plan VARCHAR(128) DEFAULT 'free',
   credits INT DEFAULT 0,
   timezone VARCHAR(64) DEFAULT 'Asia/Kolkata',
-  notification_pref JSON DEFAULT NULL,
+  notification_pref JSON,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE CASCADE

@@ -16,7 +16,7 @@ class Candidate extends Model
         'github_url', 'website_url', 'profile_strength', 'is_profile_complete',
         'is_verified', 'is_premium', 'premium_expires_at',
         'education_data', 'experience_data', 'skills_data', 'languages_data', 'preferences_data',
-        'certificates_data', 'verification_data', 'verification_documents', 'need_employer_verification',
+        'certificates_data', 'verification_data',
         'auto_apply_enabled', 'auto_apply_threshold', 'auto_apply_cooldown_minutes', 'auto_apply_last_run_at',
         'created_by', 'source', 'profile_status', 'visibility'
     ];
@@ -30,6 +30,8 @@ class Candidate extends Model
         // Use direct SQL query to ensure data is fetched correctly
         $sql = "SELECT * FROM {$instance->getTable()} WHERE user_id = :user_id LIMIT 1";
         $result = $instance->getDb()->fetchOne($sql, ['user_id' => $userId]);
+        
+        error_log("findByUserId: user_id={$userId}, result=" . ($result ? "FOUND(id=" . ($result['id'] ?? 'none') . ")" : "NOT FOUND"));
         
         if ($result) {
             // Ensure 'id' key exists (might be numeric key 0)
@@ -145,19 +147,11 @@ class Candidate extends Model
         }
 
         // Additional Info (10 points)
-        $totalPoints += 5;
-        $certificates = [];
-        if (!empty($this->attributes['certificates_data'])) {
-            $certificates = json_decode($this->attributes['certificates_data'], true) ?? [];
-        }
-        if (count($certificates) > 0) $points += 5;
-
-        // Additional Info (10 points)
         $totalPoints += 10;
         if (!empty($this->attributes['expected_salary_min'])) $points += 5;
         if (!empty($this->attributes['notice_period'])) $points += 5;
 
-        return (int) round(($points / $totalPoints) * 100);
+        return (int) round(($points / max($totalPoints, 1)) * 100);
     }
 
     /**
