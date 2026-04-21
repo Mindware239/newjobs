@@ -12,12 +12,19 @@ class Skill extends Model
 
     public function generateSlug(string $name): string
     {
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
+        
+        // Ensure slug is not empty
+        if (empty($slug)) {
+            $slug = 'skill-' . time();
+        }
+
         $baseSlug = $slug;
         $counter = 1;
 
+        // Check for duplicates
         while ($this->slugExists($slug)) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug . '-' . (time() + $counter);
             $counter++;
         }
 
