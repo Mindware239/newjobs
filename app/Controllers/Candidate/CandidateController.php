@@ -1256,12 +1256,13 @@ class CandidateController extends BaseController
         $expectedSalaryMin = $data['expected_salary_min'] ?? null;
         $expectedSalaryMax = $data['expected_salary_max'] ?? null;
         $currentSalary = $data['current_salary'] ?? null;
+        $noticePeriod = $data['notice_period'] ?? null;
 
         $candidate->fill([
             'expected_salary_min' => is_numeric($expectedSalaryMin) ? (int)$expectedSalaryMin : null,
             'expected_salary_max' => is_numeric($expectedSalaryMax) ? (int)$expectedSalaryMax : null,
             'current_salary' => is_numeric($currentSalary) ? (int)$currentSalary : null,
-            'notice_period' => $data['notice_period'] ?? null,
+            'notice_period' => is_numeric($noticePeriod) ? (int)$noticePeriod : null,
             'preferred_job_location' => $data['preferred_job_location'] ?? null,
             'portfolio_url' => $data['portfolio_url'] ?? null,
             'linkedin_url' => $data['linkedin_url'] ?? null,
