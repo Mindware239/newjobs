@@ -1191,7 +1191,11 @@ class CandidateController extends BaseController
                     $skill = Skill::where('name', '=', $skillName)->first();
                     if (!$skill) {
                         $skill = new Skill();
-                        $skill->fill(['name' => $skillName]);
+                        $slug = $skill->generateSlug($skillName);
+                        $skill->fill([
+                            'name' => $skillName,
+                            'slug' => $slug
+                        ]);
                         $skill->save();
                     }
                     
@@ -1231,10 +1235,15 @@ class CandidateController extends BaseController
 
     private function saveAdditional(Candidate $candidate, array $data): void
     {
+        // Explicitly handle numeric fields to avoid empty string issues with INT columns
+        $expectedSalaryMin = $data['expected_salary_min'] ?? null;
+        $expectedSalaryMax = $data['expected_salary_max'] ?? null;
+        $currentSalary = $data['current_salary'] ?? null;
+
         $candidate->fill([
-            'expected_salary_min' => $data['expected_salary_min'] ?? null,
-            'expected_salary_max' => $data['expected_salary_max'] ?? null,
-            'current_salary' => $data['current_salary'] ?? null,
+            'expected_salary_min' => is_numeric($expectedSalaryMin) ? (int)$expectedSalaryMin : null,
+            'expected_salary_max' => is_numeric($expectedSalaryMax) ? (int)$expectedSalaryMax : null,
+            'current_salary' => is_numeric($currentSalary) ? (int)$currentSalary : null,
             'notice_period' => $data['notice_period'] ?? null,
             'preferred_job_location' => $data['preferred_job_location'] ?? null,
             'portfolio_url' => $data['portfolio_url'] ?? null,
