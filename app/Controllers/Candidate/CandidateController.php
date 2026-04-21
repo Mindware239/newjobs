@@ -1190,17 +1190,22 @@ class CandidateController extends BaseController
                     // Get or create skill in skills table for reference
                     $skill = Skill::where('name', '=', $skillName)->first();
                     if (!$skill) {
-                        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $skillName), '-'));
+                        $slug = strtolower(trim($skillName));
+                        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+                        $slug = trim($slug, '-');
 
-                        //  Ensure slug is not empty
+                        // ✅ FIX EMPTY
                         if (empty($slug)) {
                             $slug = 'skill-' . time();
                         }
 
-                        //  Avoid duplicate slug
-                        $existing = Skill::where('slug', '=', $slug)->first();
-                        if ($existing) {
-                            $slug = $slug . '-' . time();
+                        // ✅ FIX DUPLICATES (LOOP)
+                        $originalSlug = $slug;
+                        $i = 1;
+
+                        while (Skill::where('slug', '=', $slug)->first()) {
+                            $slug = $originalSlug . '-' . $i;
+                            $i++;
                         }
 
                         $skill = new Skill();
