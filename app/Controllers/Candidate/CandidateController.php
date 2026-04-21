@@ -1192,12 +1192,12 @@ class CandidateController extends BaseController
                     if (!$skill) {
                         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $skillName), '-'));
 
-                        // 🔥 Ensure slug is not empty
+                        //  Ensure slug is not empty
                         if (empty($slug)) {
                             $slug = 'skill-' . time();
                         }
 
-                        // 🔥 Avoid duplicate slug
+                        //  Avoid duplicate slug
                         $existing = Skill::where('slug', '=', $slug)->first();
                         if ($existing) {
                             $slug = $slug . '-' . time();
