@@ -51,15 +51,21 @@ class FeedFetcher
                 return "error: HTTP $code";
             }
 
-            $items = ($source['feed_type'] ?? 'rss') === 'json' ? self::parseJson($body) : self::parseXml($body);
+            $type = $source['feed_type'] ?? 'rss';
+            $items = match ($type) {
+                'json' => self::parseJson($body),
+                'employmentnews' => self::parseEmploymentNews($body, $url),
+                default => self::parseXml($body),
+            };
             $counts = ['new' => 0, 'updated' => 0, 'skipped' => 0];
             $skipped = 0;
             foreach (array_slice($items, 0, self::MAX_ITEMS) as $item) {
                 if ($item['title'] === '') {
                     continue;
                 }
-                // Official sites often publish one feed for all news: keep only recruitment items.
-                if (!self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
+                // Official sites often publish one feed for all news: keep only recruitment items
+                // (the Employment News table lists only vacancies).
+                if ($type !== 'employmentnews' && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
                     $skipped++;
                     continue;
                 }
@@ -172,6 +178,86 @@ class FeedFetcher
      * Recognised keys: title, url|link, last_date, location, state, qualification, vacancies, salary,
      * description|summary|content_text, published|date_published.
      */
+    /**
+     * Employment News "All Jobs" table: issue date | organisation | post | method of appointment | last date.
+     * Dates are DD/MM/YYYY (the header says MM/DD but the rows are day-first). Rows have no detail page,
+     * so the official listing page is the source / apply link.
+     */
+    public static function parseEmploymentNews(string $html, string $pageUrl): array
+    {
+        $items = [];
+        $date = static function (string $s): ?string {
+            return preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', trim($s), $m) && checkdate((int)$m[2], (int)$m[1], (int)$m[3])
+                ? sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]) : null;
+        };
+        if (!preg_match_all('#<tr[^>]*>(.*?)</tr>#si', $html, $rows)) {
+            return [];
+        }
+        foreach ($rows[1] as $row) {
+            if (!preg_match_all('#<td[^>]*>(.*?)</td>#si', $row, $c) || count($c[1]) < 5) {
+                continue;
+            }
+            $cells = array_map(static fn($x) => trim((string)preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($x), ENT_QUOTES | ENT_HTML5, 'UTF-8'))), $c[1]);
+            [$issued, $org, $post, $method, $last] = array_slice($cells, 0, 5);
+            $issuedDate = $date($issued);
+            if ($org === '' || $post === '' || !$issuedDate) {
+                continue;
+            }
+            $orgName = self::titleCase($org);
+            $postName = self::titleCase($post);
+            $lastDate = $date($last);
+            $items[] = [
+                'title' => $postName . ' – ' . $orgName,
+                'org_name' => $orgName,
+                'org_type' => self::guessOrgType($org),
+                'summary' => "{$postName} at {$orgName}. Method of appointment: {$method}. Advertised in Employment News (Govt of India) on " . date('d M Y', strtotime($issuedDate))
+                    . ($lastDate ? '; last date ' . date('d M Y', strtotime($lastDate)) : '') . '. Read the full advertisement in Employment News before applying.',
+                'last_date' => $lastDate,
+                'published_at' => $issuedDate . ' 09:00:00',
+                'source_url' => $pageUrl,
+                'apply_url' => $pageUrl,
+                'guid_hash' => sha1('employmentnews|' . mb_strtolower($org . '|' . $post . '|' . $issuedDate)),
+            ];
+        }
+        return $items;
+    }
+
+    /** "NALANDA UNIVERSITY" → "Nalanda University", keeping acronyms (DNS, AIIMS, M/O) and small words lower-case. */
+    public static function titleCase(string $s): string
+    {
+        static $acronyms = ['AIIMS', 'ICMR', 'BHEL', 'ISRO', 'DRDO', 'NIPER', 'CSIR', 'ONGC', 'NTPC', 'GAIL', 'SAIL', 'UPSC', 'IBPS', 'NABARD', 'SIDBI', 'ICAR', 'BARC', 'HAL', 'BEL', 'IIT', 'NIT', 'IIM', 'IISER', 'NIELIT', 'ESIC', 'EPFO', 'CRPF', 'CISF', 'ITBP', 'NHAI', 'DMRC', 'FCI', 'LIC', 'SBI', 'RBI', 'NDMA'];
+        static $small = ['and', 'of', 'the', 'for', 'in', 'at', 'on', 'to', 'by', 'or', 'an', 'a'];
+        $out = [];
+        foreach (preg_split('/(\s+)/', trim($s), -1, PREG_SPLIT_DELIM_CAPTURE) as $i => $w) {
+            if (trim($w) === '') { $out[] = $w; continue; }
+            $core = preg_replace('/[^A-Za-z]/', '', $w);
+            $lower = mb_strtolower($w);
+            if (in_array(strtoupper($core), $acronyms, true) || str_contains($w, '/') || ($core !== '' && strlen($core) <= 4 && !preg_match('/[aeiouAEIOU]/', $core) && strtoupper($w) === $w)) {
+                $out[] = strtoupper($w);
+            } elseif ($i > 0 && in_array($lower, $small, true)) {
+                $out[] = $lower;
+            } else {
+                $out[] = mb_convert_case($lower, MB_CASE_TITLE, 'UTF-8');
+            }
+        }
+        return implode('', $out);
+    }
+
+    /** Organisation type from its name (Employment News lists every kind of Govt body). */
+    public static function guessOrgType(string $org): string
+    {
+        $o = mb_strtolower($org);
+        return match (true) {
+            (bool)preg_match('/railway|rrb|metro rail/', $o) => 'railways',
+            (bool)preg_match('/\b(army|navy|air force|indian coast guard|defence|drdo|ordnance)\b/', $o) => 'defence',
+            (bool)preg_match('/police|crpf|cisf|bsf|itbp|ssb|assam rifles|nsg/', $o) => 'police',
+            (bool)preg_match('/\bbank\b|nabard|sidbi|reserve bank/', $o) => 'bank',
+            (bool)preg_match('/limited|ltd\b|corporation/', $o) => 'psu',
+            (bool)preg_match('/state |government of [a-z]+ pradesh|govt\. of [a-z]+/', $o) => 'state_govt',
+            default => 'central_govt',
+        };
+    }
+
     public static function parseJson(string $json): array
     {
         $data = json_decode($json, true);

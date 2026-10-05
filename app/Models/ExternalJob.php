@@ -16,7 +16,10 @@ use App\Core\Database;
 class ExternalJob
 {
     public const ORG_TYPES = ['railways', 'defence', 'police', 'central_govt', 'state_govt', 'psu', 'bank', 'private', 'other'];
-    public const FEED_TYPES = ['rss', 'json', 'manual'];
+    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews'];
+
+    /** Employment News (Govt of India) "All Jobs" table – read hourly, new issue weekly. */
+    public const EMPLOYMENT_NEWS_URL = 'https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All';
     /** What a listing offers: a job, an internship, skill development training or an apprenticeship. */
     public const KINDS = ['job', 'internship', 'skill', 'apprenticeship'];
 
@@ -255,7 +258,7 @@ class ExternalJob
     {
         self::ensureSchema();
         return Database::getInstance()->fetchAll(
-            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json') AND feed_url IS NOT NULL AND feed_url <> ''
+            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews') AND feed_url IS NOT NULL AND feed_url <> ''
                AND (last_fetched_at IS NULL OR last_fetched_at < NOW() - INTERVAL 50 MINUTE)
              ORDER BY last_fetched_at IS NOT NULL, last_fetched_at ASC LIMIT " . (int)$limit
         );
@@ -314,7 +317,7 @@ class ExternalJob
             state VARCHAR(80) NULL,
             website VARCHAR(255) NULL,
             feed_url VARCHAR(500) NULL,
-            feed_type ENUM('rss','json','manual') NOT NULL DEFAULT 'manual',
+            feed_type ENUM('rss','json','manual','employmentnews') NOT NULL DEFAULT 'manual',
             kind ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job',
             suggested_feed VARCHAR(500) NULL,
             checked_at DATETIME NULL,
@@ -373,6 +376,27 @@ class ExternalJob
                     $pdo->exec("ALTER TABLE {$table} ADD COLUMN {$col} {$def}");
                 }
             }
+        }
+
+        // Existing installs: allow the Employment News table reader and switch that source on once.
+        try {
+            $ft = Database::getInstance()->fetchOne(
+                "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'external_job_sources' AND COLUMN_NAME = 'feed_type'"
+            );
+            if ($ft && !str_contains((string)$ft['t'], 'employmentnews')) {
+                $pdo->exec("ALTER TABLE external_job_sources MODIFY feed_type ENUM('rss','json','manual','employmentnews') NOT NULL DEFAULT 'manual'");
+            }
+        } catch (\Throwable $e) {
+            error_log('ExternalJob feed_type upgrade: ' . $e->getMessage());
+        }
+        $enMarker = dirname(__DIR__, 2) . '/storage/cache/employment_news.enabled';
+        if (!is_file($enMarker)) {
+            $pdo->exec("INSERT IGNORE INTO external_job_sources (name, org_type, website, kind) VALUES ('Employment News (Govt of India)', 'central_govt', 'https://www.employmentnews.gov.in', 'job')");
+            $st = $pdo->prepare("UPDATE external_job_sources SET feed_url = ?, feed_type = 'employmentnews', enabled = 1
+                                 WHERE name = 'Employment News (Govt of India)' AND (feed_url IS NULL OR feed_url = '')");
+            $st->execute([self::EMPLOYMENT_NEWS_URL]);
+            @mkdir(dirname($enMarker), 0775, true);
+            @file_put_contents($enMarker, date('c'));
         }
 
         // Seed / top up the directory of official sources whenever the data file changes
