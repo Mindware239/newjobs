@@ -41,6 +41,7 @@ $applyUrl = static fn(string $country, string $role = '') => '/apply/internation
             <?php endif; ?>
             <div class="ja-cta">
                 <span><b><?= $t('रजिस्ट्रेशन मुफ़्त', 'Registration is free') ?></b> · <?= $t("हर देश के लिए एक बार {$fee} (₹1,000 + GST)", "each country one-time {$fee} (₹1,000 + GST)") ?> · <?= $t('पासपोर्ट ज़रूरी', 'passport mandatory') ?></span>
+                <span style="flex-basis:100%;font-size:.82rem;color:#7f1d1d">⚠️ <?= $t('हर नौकरी दूतावास / कॉन्सुलेट या उस देश के मंत्रालय से स्वयं पक्का करें – धोखाधड़ी के लिए Jobsence ज़िम्मेदार नहीं।', 'Verify every job yourself with the embassy / consulate or that country’s ministry – Jobsence is not liable for fraud.') ?></span>
                 <a class="sd-btn" href="<?= $h($level === 'all' ? '/apply/international-job' : $applyUrl($country)) ?>"><?= $level === 'all' ? $tb('मुफ़्त रजिस्टर करें', 'Register free') : $tb("{$country} के लिए आवेदन करें", "Apply for {$country}") ?></a>
             </div>
         </div>
@@ -86,6 +87,7 @@ $applyUrl = static fn(string $country, string $role = '') => '/apply/internation
                 </div>
             <?php endif; ?>
 
+            <div class="ja-note" style="border-color:#fecaca;background:#fef2f2;color:#7f1d1d;font-weight:600">⚠️ <?= $tp(FormRegistry::abroadDisclaimer()) ?></div>
             <div class="ja-note">
                 <?= $t('Jobsence एक प्लेटफ़ॉर्म है, रिक्रूटिंग एजेंट नहीं। ECR पासपोर्ट वाले केवल eMigrate (emigrate.gov.in) पर पंजीकृत एजेंट के माध्यम से विदेश जाएँ। नौकरी या वीज़ा के लिए किसी को पैसे न दें।', 'Jobsence is a platform, not a recruiting agent. ECR passport holders must emigrate only through agents registered on eMigrate (emigrate.gov.in). Never pay anyone for a job or visa.') ?>
                 <?= $tp(FormRegistry::platformDisclaimer()) ?>

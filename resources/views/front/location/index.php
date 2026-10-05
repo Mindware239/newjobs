@@ -91,6 +91,7 @@ $points = [
                         'services' => $tb('सेवा चाहिए – Near Me पास', 'Need a service – Near Me pass'),
                     ][$kind] : $tb("{$k['hi']} के लिए आवेदन करें", "Apply for {$k['en']}") ?></a>
                     <?php if (isset($k['offer'])): ?><a class="sd-btn ghost" style="width:100%;text-align:center;margin-top:8px" href="<?= $h($k['offer']) ?>"><?= $kind === 'services' ? $tb('सेवा देते हैं? रजिस्टर करें', 'Provide a service? Enrol') : $tb('मुफ़्त रजिस्टर करें', 'Register free') ?></a><?php endif; ?>
+                    <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.82rem;color:#7f1d1d;font-weight:600">⚠️ <?= $tp(\App\Services\Registration\FormRegistry::abroadDisclaimer()) ?></p><?php endif; ?>
                     <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.85rem;color:#6b7280"><?= $t('रजिस्ट्रेशन मुफ़्त · ' . $name . ' अनलॉक: ₹1,180 (₹1,000 + GST) या USD 10, एक बार · पासपोर्ट ज़रूरी', 'Registration free · unlock ' . $name . ': ₹1,180 (₹1,000 + GST) or USD 10, one-time · passport mandatory') ?></p><?php endif; ?>
                 </div>
             </div>

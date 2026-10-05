@@ -1329,6 +1329,15 @@ class FormRegistry
         ];
     }
 
+    /** Jobs abroad: candidate verifies every job with the embassy / consulate or the country's ministry; Jobsence is not liable. */
+    public static function abroadDisclaimer(): array
+    {
+        return [
+            'Jobsence केवल एक प्लेटफ़ॉर्म है। विदेश की किसी भी नौकरी और नियोक्ता की सच्चाई उम्मीदवार स्वयं उस देश के भारत स्थित दूतावास / कॉन्सुलेट से, या सीधे उस देश की सरकार / श्रम मंत्रालय से, और भारत के eMigrate (emigrate.gov.in) पर पक्का करेगा। किसी भी धोखाधड़ी, जालसाज़ी या ठगी के लिए Jobsence ज़िम्मेदार नहीं है।',
+            'Jobsence is only a platform. The candidate will double-check every job and employer abroad personally – with that country’s embassy / consulate in India, or directly with that country’s government / labour ministry, and on India’s eMigrate (emigrate.gov.in). Jobsence is not liable for any cheating or fraud.',
+        ];
+    }
+
     /** Jobs abroad: free registration, then ₹1,000 + 18% GST (₹1,180) or USD 10 per country, one-time. */
     public const INTL_COUNTRY_FEE_INR = 1180.00;
     public const INTL_COUNTRY_FEE_USD = 10.00;
@@ -1352,6 +1361,7 @@ class FormRegistry
                 'title' => ['ज़रूरी जानकारी', 'Important'],
                 'points' => [
                     ['हर देश के लिए एकमुश्त ₹1,180 (₹1,000 + 18% GST) या USD 10 – किसी भी स्थिति में वापसी योग्य नहीं।', 'Each country: one-time ₹1,180 (₹1,000 + 18% GST) or USD 10 – non-refundable in any condition.'],
+                    self::abroadDisclaimer(),
                     ['वैध पासपोर्ट ज़रूरी है – पासपोर्ट नंबर और समाप्ति तिथि भरें।', 'A valid passport is mandatory – enter its number and expiry date.'],
                     ['Jobsence एक प्लेटफ़ॉर्म है, रिक्रूटिंग एजेंट नहीं। ECR पासपोर्ट वाले केवल eMigrate (emigrate.gov.in) पर पंजीकृत एजेंट के माध्यम से विदेश जाएँ और नियोक्ता की जाँच करें।', 'Jobsence is a platform, not a recruiting agent. ECR passport holders must emigrate only through agents registered on eMigrate (emigrate.gov.in), and should verify every employer there.'],
                     self::platformDisclaimer(),
@@ -1389,6 +1399,7 @@ class FormRegistry
                 ['रजिस्ट्रेशन मुफ़्त है; हर देश के लिए ₹1,180 या USD 10 का एकमुश्त शुल्क किसी भी स्थिति में वापसी योग्य नहीं है।', 'Registration is free; the one-time fee of ₹1,180 or USD 10 per country is non-refundable in any condition.'],
                 ['Jobsence रिक्रूटिंग एजेंट नहीं है और विदेश में नौकरी या वीज़ा की गारंटी नहीं देता। मैं विदेश जाने से पहले नियोक्ता और एजेंट की जाँच eMigrate पर करूँगा/करूँगी।', 'Jobsence is not a recruiting agent and does not guarantee any job or visa abroad. I will verify the employer and any agent on eMigrate before travelling.'],
                 ['मैं किसी को भी नौकरी या वीज़ा के लिए पैसे नहीं दूँगा/दूँगी और ऐसी माँग की शिकायत Jobsence से करूँगा/करूँगी।', 'I will not pay anyone money for a job or visa and will report any such demand to Jobsence.'],
+                self::abroadDisclaimer(),
                 self::platformDisclaimer(),
                 self::notGovt(),
             ],

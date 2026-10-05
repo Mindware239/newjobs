@@ -27,7 +27,7 @@ class Mentoring
 {
     public const DAILY_LIMIT = 3;
     public const TOTAL_LIMIT = ['mentorplan' => null, 'internplan' => 20, 'jobplan' => null];
-    public const AGREEMENT_VERSION = '2026-10-v2';
+    public const AGREEMENT_VERSION = '2026-10-v3';
     public const OTP_PURPOSE = 'mentoring_agreement';
     public const RESPONSE_DAYS = 7;
 
@@ -881,8 +881,11 @@ class Mentoring
                 '19. Training content – Training material belongs to the Provider / Jobsence; the Candidate will not record or share sessions without permission. Demo videos submitted by mentors are Jobsence property. Mentor emolument is per the Jobsence mentor terms, after successful training.'],
             'internship' => ['19. इंटर्नशिप – पेड इंटर्नशिप का स्टाइपेंड ₹8,000 से ₹5,00,000 प्रति माह के बीच होगा जैसा घोषित किया गया है; काम, अवधि और प्रमाणपत्र लिखित में तय होंगे। इंटर्न से इंटर्नशिप के बदले कोई शुल्क नहीं लिया जाएगा।',
                 '19. Internship – A paid internship’s stipend will be between ₹8,000 and ₹5,00,000 a month as declared; work, duration and certificate will be agreed in writing. No fee will be taken from the intern for the internship.'],
-            'job' => ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी।',
-                '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing.'],
+            'job' => $version === '2026-10-v2'
+                ? ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी।',
+                    '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing.']
+                : ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी। विदेश की नौकरी के लिए: ' . FormRegistry::abroadDisclaimer()[0],
+                    '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing. For jobs abroad: ' . FormRegistry::abroadDisclaimer()[1]],
             default => ['19. सेवा – काम का दायरा, क़ीमत, सामान और समय काम शुरू होने से पहले तय होंगे; ग्राहक भुगतान सीधे प्रदाता को करेगा; काम की गुणवत्ता और सुरक्षा प्रदाता की ज़िम्मेदारी है। Jobsence इस सेवा अनुबंध का पक्ष नहीं है।',
                 '19. Service – Scope, price, materials and timing are agreed before work starts; the Customer pays the Provider directly; workmanship and safety are the Provider’s responsibility. Jobsence is not a party to the service contract itself.'],
         };
