@@ -269,13 +269,60 @@
 
     <!-- Mode Toggle -->
     <div class="auth-toggle">
-        <button type="button" @click="authMode = 'password'" :class="authMode === 'password' ? 'active' : ''" class="auth-toggle-btn">Email Password</button>
-        <button type="button" @click="authMode = 'otp'" :class="authMode === 'otp' ? 'active' : ''" class="auth-toggle-btn" disabled style="opacity:0.5;cursor:not-allowed;">Mobile OTP</button>
+        <button type="button" @click="authMode = 'quick'; error = ''" :class="authMode === 'quick' ? 'active' : ''" class="auth-toggle-btn">मोबाइल / ईमेल · Mobile / Email</button>
+        <button type="button" @click="authMode = 'password'; error = ''" :class="authMode === 'password' ? 'active' : ''" class="auth-toggle-btn">पासवर्ड · Password</button>
     </div>
 
-    <form @submit.prevent="submitLogin">
+    <!-- Quick login: mobile or email → (remembered device ? in : email OTP) -->
+    <form x-show="authMode === 'quick'" @submit.prevent="step === 1 ? identify() : verifyOtp()" novalidate>
         <div class="fields">
-            <!-- Email -->
+            <div x-show="step === 1">
+                <label for="identifier" class="f-label">मोबाइल नंबर या ईमेल · Mobile number or email</label>
+                <div class="f-wrap">
+                    <span class="f-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </span>
+                    <input id="identifier" type="text" x-model.trim="quick.identifier" class="f-input" placeholder="98XXXXXXXX / you@example.com" autocomplete="username" inputmode="email" autofocus>
+                </div>
+                <p style="font-size:12px;color:#64748b;margin:8px 2px 0">इस डिवाइस पर पहले ईमेल OTP से लॉगिन किया है तो सीधे अंदर। / Logged in on this device before? You go straight in.</p>
+            </div>
+
+            <div x-show="step === 2" x-cloak>
+                <p style="font-size:13px;color:#334155;margin:0 0 10px">OTP भेजा गया · OTP sent to <b x-text="maskedEmail"></b>
+                    <button type="button" @click="step = 1; quick.otp = ''; error = ''" style="border:0;background:none;color:#f05537;font-weight:700;cursor:pointer">बदलें · Change</button></p>
+                <label for="otp" class="f-label">ईमेल OTP · Email OTP</label>
+                <div class="f-wrap">
+                    <input id="otp" type="text" x-ref="otp" x-model.trim="quick.otp" class="f-input" style="padding-left:14px;letter-spacing:.4em;font-size:20px;text-align:center" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+                </div>
+                <div class="options-row" style="margin-top:10px">
+                    <label class="rem-label" for="remember_device">
+                        <input id="remember_device" type="checkbox" x-model="quick.remember" class="rem-check">
+                        <span class="rem-text">इस डिवाइस को याद रखें · Remember this device</span>
+                    </label>
+                    <button type="button" class="forgot" style="border:0;background:none;cursor:pointer" :disabled="wait > 0" @click="identify(true)"
+                            x-text="wait > 0 ? ('Resend in ' + wait + 's') : 'OTP दोबारा · Resend'"></button>
+                </div>
+                <p style="font-size:11px;color:#94a3b8;margin:6px 2px 0">साझा / साइबर कैफ़े कंप्यूटर पर टिक हटाएँ। · Untick on a shared or cyber-café computer.</p>
+            </div>
+
+            <button type="submit" class="submit-btn" :disabled="isSubmitting">
+                <svg x-show="isSubmitting" x-cloak class="spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+                    <path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <span x-show="!isSubmitting" x-text="step === 1 ? 'आगे बढ़ें · Continue' : 'लॉगिन करें · Log in'"></span>
+                <span x-show="isSubmitting" x-cloak>…</span>
+            </button>
+            <p x-show="notFound" x-cloak style="font-size:13px;margin:4px 0 0;text-align:center">
+                नया खाता बनाएँ · Create an account:
+                <a href="/register-candidate" class="footer-link">Candidate</a> · <a href="/register-employer" class="footer-link">Employer</a>
+            </p>
+        </div>
+    </form>
+
+    <!-- Password login -->
+    <form x-show="authMode === 'password'" x-cloak @submit.prevent="submitLogin">
+        <div class="fields">
             <div>
                 <label for="email" class="f-label">Email Address</label>
                 <div class="f-wrap">
@@ -284,11 +331,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                     </span>
-                    <input id="email" type="email" required x-model="formData.email" class="f-input" placeholder="you@example.com">
+                    <input id="email" type="email" x-model="formData.email" class="f-input" placeholder="you@example.com" autocomplete="email">
                 </div>
             </div>
 
-            <!-- Password -->
             <div>
                 <label for="password" class="f-label">Password</label>
                 <div class="f-wrap">
@@ -297,8 +343,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </span>
-                    <input id="password" :type="showPassword ? 'text' : 'password'" required x-model="formData.password" class="f-input" placeholder="••••••••">
-                    <button type="button" class="pass-eye" @click="showPassword = !showPassword">
+                    <input id="password" :type="showPassword ? 'text' : 'password'" x-model="formData.password" class="f-input" placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="pass-eye" @click="showPassword = !showPassword" aria-label="Show password">
                         <svg x-show="!showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -310,16 +356,14 @@
                 </div>
             </div>
 
-            <!-- Options -->
             <div class="options-row">
                 <label class="rem-label" for="remember">
                     <input id="remember" type="checkbox" x-model="formData.remember" class="rem-check">
-                    <span class="rem-text">Remember me</span>
+                    <span class="rem-text">इस डिवाइस को याद रखें · Remember this device</span>
                 </label>
                 <a href="/forgot-password" class="forgot">Forgot?</a>
             </div>
 
-            <!-- Submit -->
             <button type="submit" class="submit-btn" :disabled="isSubmitting">
                 <svg x-show="isSubmitting" x-cloak class="spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
@@ -344,11 +388,8 @@
         $isEmployerContext = ($roleParam === 'employer') || (is_string($redirectParam) && strpos($redirectParam, '/employer/') === 0);
         $oauthRedirect = $isEmployerContext ? '/employer/dashboard' : '/candidate/dashboard';
     ?>
-    <div class="social-grid">
-        <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google"></a>
-        <a href="/auth/facebook?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"></a>
-        <a href="/auth/linkedin?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn"></a>
-        <a href="/auth/microsoft?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft"></a>
+    <div class="social-grid" style="grid-template-columns:1fr">
+        <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="social-btn" style="gap:10px;font-weight:700;color:#334155;text-decoration:none"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="">Google</a>
     </div>
 
     <!-- Sign Up -->
@@ -378,19 +419,65 @@
         return {
             isSubmitting: false,
             showPassword: false,
-            authMode: 'password',
+            authMode: urlParams.get('mode') === 'password' ? 'password' : 'quick',
             error: '<?= $error ?? '' ?>',
             success: urlParams.get('message') || '',
             registrationSuccess: urlParams.get('registered') === '1',
             registrationMessage: urlParams.get('email') ? `Account created for ${urlParams.get('email')}. Please login.` : 'Account created successfully.',
-            formData: { email: urlParams.get('email') || '', password: '', remember: false },
+            formData: { email: urlParams.get('email') || '', password: '', remember: true },
+            step: 1, notFound: false, maskedEmail: '', wait: 0, timer: null,
+            quick: { identifier: urlParams.get('email') || '', otp: '', remember: true },
+            redirectTo: urlParams.get('redirect') || '',
+            async post(url, body) {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
+                    body: JSON.stringify(Object.assign({ redirect: this.redirectTo }, body))
+                });
+                let data = {};
+                try { data = await res.json(); } catch (e) {}
+                return { ok: res.ok, data };
+            },
+            countdown(sec) {
+                this.wait = sec; clearInterval(this.timer);
+                this.timer = setInterval(() => { if (--this.wait <= 0) clearInterval(this.timer); }, 1000);
+            },
+            async identify(resend) {
+                this.error = ''; this.notFound = false;
+                if (!this.quick.identifier) { this.error = 'मोबाइल नंबर या ईमेल भरें · Enter your mobile number or email'; return; }
+                this.isSubmitting = true;
+                try {
+                    const { ok, data } = await this.post('/login/identify', { identifier: this.quick.identifier });
+                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
+                    if (ok && data.status === 'otp_sent') {
+                        this.maskedEmail = data.email; this.step = 2; this.countdown(data.wait || 30);
+                        this.$nextTick(() => this.$refs.otp && this.$refs.otp.focus());
+                        if (resend) this.success = 'OTP दोबारा भेजा गया · OTP sent again';
+                    } else {
+                        this.notFound = data.status === 'not_found';
+                        this.error = data.error || 'कुछ गलत हुआ, दोबारा प्रयास करें · Something went wrong, please try again';
+                    }
+                } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
+                this.isSubmitting = false;
+            },
+            async verifyOtp() {
+                this.error = '';
+                if (!/^\d{6}$/.test(this.quick.otp)) { this.error = '6 अंकों का OTP भरें · Enter the 6-digit OTP'; return; }
+                this.isSubmitting = true;
+                try {
+                    const { ok, data } = await this.post('/login/verify', { identifier: this.quick.identifier, otp: this.quick.otp, remember: this.quick.remember });
+                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
+                    this.error = data.error || 'OTP सही नहीं है · Incorrect OTP';
+                } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
+                this.isSubmitting = false;
+            },
             async submitLogin() {
                 this.isSubmitting = true; this.error = '';
                 try {
                     const res = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
-                        body: JSON.stringify(this.formData)
+                        body: JSON.stringify(Object.assign({ redirect: this.redirectTo }, this.formData))
                     });
                     const data = await res.json();
                     if (res.ok && (data.success || data.status)) {

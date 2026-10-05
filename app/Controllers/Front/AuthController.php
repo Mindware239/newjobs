@@ -15,6 +15,7 @@ use App\Models\EmployerKycDocument;
 use App\Core\RedisClient;
 use App\Repositories\AuthRepository;
 use App\Services\AuthService;
+use App\Services\TrustedDeviceService;
 use App\Services\AuthFlowService;
 use App\Services\VerificationService;
 use App\Services\GoogleOAuthService;
@@ -41,6 +42,21 @@ class AuthController extends BaseController
             $response->json(['errors' => $errors], 422);
             return;
         }
+        if (!in_array((string)$data['role'], ['candidate', 'employer'], true)) {
+            $response->json(['errors' => ['role' => 'Role must be candidate or employer']], 422);
+            return;
+        }
+        // Mobile number is mandatory for every account.
+        $mobileDigits = preg_replace('/\D/', '', (string)($data['mobile'] ?? $data['phone'] ?? ''));
+        $mobileDigits = strlen($mobileDigits) === 12 && str_starts_with($mobileDigits, '91') ? substr($mobileDigits, 2) : $mobileDigits;
+        if (!preg_match('/^[6-9]\d{9}$/', (string)$mobileDigits)) {
+            $response->json(['errors' => ['mobile' => 'A valid 10-digit mobile number is required']], 422);
+            return;
+        }
+        if ((new AuthService())->findUserByPhone($mobileDigits)) {
+            $response->json(['error' => 'Mobile number already registered'], 409);
+            return;
+        }
 
         // Check if user exists
         $existing = User::where('email', '=', $data['email'])->first();
@@ -53,6 +69,7 @@ class AuthController extends BaseController
         $user->fill([
             'email' => $data['email'],
             'role' => $data['role'],
+            'phone' => AuthService::normalizePhoneNumber($mobileDigits),
             'status' => 'pending'
         ]);
         /** @var \App\Models\User|null $user */
@@ -374,6 +391,7 @@ class AuthController extends BaseController
 
         // Auto-login after registration
         $this->signInUser($user);
+        TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Apple)
         error_log("✓ Session set - User ID: {$user->id}, Role: {$user->role}");
 
         // Send welcome / verification email and notify admin
@@ -615,6 +633,7 @@ class AuthController extends BaseController
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
             $_SESSION['candidate_id'] = (int)$candidate->id;
+            TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Apple)
             
             $authService = new \App\Services\AuthService();
             $jwtToken = $authService->generateToken($user);
@@ -918,17 +937,19 @@ class AuthController extends BaseController
 
         // Attach token to JSON response in API mode
         if ($isJson) {
-            $response->json([ 'success' => true, 'message' => 'Login successful', 'token' => $jwtToken, 'user' => $user->toArray(), 'redirect_to' => null ]);
+            if (filter_var($request->post('remember') ?? false, FILTER_VALIDATE_BOOLEAN) && !$this->isStaffUser($user)) {
+                TrustedDeviceService::trust((int)$user->id);
+            }
+            $_SESSION['has_mobile'] = trim((string)($user->phone ?? '')) !== '';
+            $to = $this->afterLoginUrl($user, (string)($request->get('redirect') ?? ($request->post('redirect') ?? '')));
+            $response->json([ 'success' => true, 'message' => 'Login successful', 'token' => $jwtToken, 'user' => $user->toArray(), 'redirect' => $to, 'redirect_to' => $to ]);
             return;
         }
         try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
         error_log("✓ Login successful - User ID: {$user->id}, Role: {$user->role}");
 
         // Determine redirect URL
-        $redirect = $request->get('redirect');
-        if (!$redirect || !$this->isValidRedirectUrl($redirect)) {
-            $redirect = $this->resolveRedirectForUser($user);
-        }
+        $redirect = $this->afterLoginUrl($user, (string)($request->get('redirect') ?? ''));
 
         $acceptHeader = $request->header('Accept') ?? '';
         $isJsonRequest = strpos($acceptHeader, 'application/json') !== false || $isJson;
@@ -1116,6 +1137,7 @@ class AuthController extends BaseController
             // Set session
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
+            TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Apple)
             if ($user->role === 'candidate') {
                 $candidate = \App\Models\Candidate::findByUserId($user->id);
                 if (!$candidate) {
@@ -1324,6 +1346,7 @@ class AuthController extends BaseController
             // Set session
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
+            TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Apple)
             if ($user->role === 'candidate') {
                 $candidate = \App\Models\Candidate::findByUserId($user->id);
                 if (!$candidate) {
@@ -2159,6 +2182,9 @@ class AuthController extends BaseController
 
     private function signInUser(User $user): void
     {
+        if (function_exists('session_regenerate_id') && session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
         $_SESSION['user_id'] = $user->id;
         $primaryRole = $user->role;
 
@@ -2188,7 +2214,7 @@ class AuthController extends BaseController
                     'visibility' => 'limited',
                     'is_profile_complete' => 0,
                     'created_by' => 'self',
-                    'source' => 'phone_otp_login'
+                    'source' => 'website'
                 ]);
             }
             if ($candidate && isset($candidate->attributes['id'])) {
@@ -2205,6 +2231,246 @@ class AuthController extends BaseController
             CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null);
         } catch (\Throwable $e) {
         }
+        if (($_ENV['WEB_JWT_COOKIE'] ?? '1') === '1') {
+            try {
+                $auth = new AuthService();
+                $auth->setTokenCookie($auth->generateToken($user));
+            } catch (\Throwable $e) {
+            }
+        }
+        $_SESSION['has_mobile'] = trim((string)($user->phone ?? '')) !== '';
+    }
+
+    // ------------------------------------------------------------------
+    // Smooth login: mobile number or email → (trusted device ? in : email OTP)
+    // ------------------------------------------------------------------
+
+    private const LOGIN_OTP_PURPOSE = 'login_device';
+
+    /** Account for "mobile number or email". */
+    private function findLoginUser(string $identifier): ?User
+    {
+        $identifier = trim($identifier);
+        $auth = new AuthService();
+        if (str_contains($identifier, '@')) {
+            return filter_var($identifier, FILTER_VALIDATE_EMAIL) ? $auth->findUserByAnyEmail($identifier) : null;
+        }
+        $digits = preg_replace('/\D/', '', $identifier);
+        return strlen((string)$digits) >= 10 ? $auth->findUserByPhone($identifier) : null;
+    }
+
+    /** Admin / sales staff always confirm with an email OTP – never a remembered device. */
+    private function isStaffUser(User $user): bool
+    {
+        if (in_array((string)$user->role, ['admin', 'super_admin', 'sales_manager', 'sales_executive'], true)) {
+            return true;
+        }
+        try {
+            foreach ($user->roles() as $r) {
+                if (in_array(strtolower((string)($r['slug'] ?? '')), ['admin', 'super_admin', 'sales_manager', 'sales_executive'], true)) {
+                    return true;
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+        return false;
+    }
+
+    private function safeRedirect(?string $url): ?string
+    {
+        $url = (string)$url;
+        return ($url !== '' && $url[0] === '/' && !str_starts_with($url, '//') && !str_starts_with($url, '/\\') && $this->isValidRedirectUrl($url)) ? $url : null;
+    }
+
+    /** Where to go after login: add the mobile number first if the account has none. */
+    private function afterLoginUrl(User $user, ?string $redirect): string
+    {
+        $to = $this->safeRedirect($redirect) ?? $this->resolveRedirectForUser($user);
+        return trim((string)($user->phone ?? '')) === '' ? '/account/mobile?next=' . rawurlencode($to) : $to;
+    }
+
+    private static function maskEmail(string $email): string
+    {
+        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
+        return mb_substr($local, 0, 2) . str_repeat('•', max(1, min(6, mb_strlen($local) - 2))) . '@' . $domain;
+    }
+
+    /**
+     * POST /login/identify {identifier, redirect}
+     * → {status: 'logged_in', redirect} on a remembered device, {status: 'otp_sent', email} or {status: 'not_found'}.
+     */
+    public function loginIdentify(Request $request, Response $response): void
+    {
+        $identifier = trim((string)($request->post('identifier') ?? ''));
+        if ($identifier === '') {
+            $response->json(['success' => false, 'error' => 'मोबाइल नंबर या ईमेल भरें / Enter your mobile number or email'], 422);
+            return;
+        }
+        $user = $this->findLoginUser($identifier);
+        if (!$user) {
+            $response->json(['success' => false, 'status' => 'not_found', 'error' => 'इस मोबाइल / ईमेल से कोई खाता नहीं मिला / No account found with this mobile number or email'], 404);
+            return;
+        }
+        if (($user->status ?? '') !== 'active') {
+            $response->json(['success' => false, 'error' => 'यह खाता सक्रिय नहीं है – gm@jobsence.com पर लिखें / This account is not active – write to gm@jobsence.com'], 403);
+            return;
+        }
+        $redirect = (string)($request->post('redirect') ?? '');
+
+        if (!$this->isStaffUser($user) && TrustedDeviceService::isTrusted((int)$user->id)) {
+            $this->signInUser($user);
+            TrustedDeviceService::trust((int)$user->id);
+            $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => $this->afterLoginUrl($user, $redirect)]);
+            return;
+        }
+
+        $email = strtolower(trim((string)($user->email ?? '')));
+        if ($email === '' || str_ends_with($email, '@mobile.local')) {
+            $response->json(['success' => false, 'error' => 'इस खाते में ईमेल नहीं है – पासवर्ड से लॉगिन करें या gm@jobsence.com पर लिखें / This account has no email – use your password or write to gm@jobsence.com'], 422);
+            return;
+        }
+        $last = (int)($_SESSION['login_otp_sent'][(int)$user->id] ?? 0);
+        if ($last > time() - 30) {
+            $response->json(['success' => true, 'status' => 'otp_sent', 'email' => self::maskEmail($email), 'wait' => 30 - (time() - $last)]);
+            return;
+        }
+        $sent = VerificationService::sendEmailAuthOTP($email, self::LOGIN_OTP_PURPOSE);
+        if (empty($sent['success'])) {
+            $response->json(['success' => false, 'error' => (string)($sent['error'] ?? 'OTP नहीं भेजा जा सका / Could not send the OTP')], !empty($sent['blocked']) ? 429 : 500);
+            return;
+        }
+        $_SESSION['login_otp_sent'][(int)$user->id] = time();
+        $_SESSION['login_otp_user'] = (int)$user->id;
+        $response->json(['success' => true, 'status' => 'otp_sent', 'email' => self::maskEmail($email), 'wait' => 30]);
+    }
+
+    /** POST /login/verify {identifier, otp, remember, redirect} – email OTP → signed in (+ remember this device). */
+    public function loginVerify(Request $request, Response $response): void
+    {
+        $user = $this->findLoginUser((string)($request->post('identifier') ?? ''));
+        if (!$user || (int)($_SESSION['login_otp_user'] ?? 0) !== (int)$user->id) {
+            $response->json(['success' => false, 'error' => 'दोबारा शुरू करें / Please start again'], 422);
+            return;
+        }
+        if (($user->status ?? '') !== 'active') {
+            $response->json(['success' => false, 'error' => 'यह खाता सक्रिय नहीं है / This account is not active'], 403);
+            return;
+        }
+        $check = VerificationService::verifyEmailAuthOTP(strtolower(trim((string)$user->email)), trim((string)($request->post('otp') ?? '')), self::LOGIN_OTP_PURPOSE);
+        if (empty($check['success'])) {
+            $response->json(['success' => false, 'error' => (string)($check['error'] ?? 'OTP सही नहीं है / Incorrect OTP')], !empty($check['blocked']) ? 429 : 422);
+            return;
+        }
+        unset($_SESSION['login_otp_user'], $_SESSION['login_otp_sent'][(int)$user->id]);
+        $this->signInUser($user);
+        $remember = filter_var($request->post('remember') ?? true, FILTER_VALIDATE_BOOLEAN);
+        if ($remember && !$this->isStaffUser($user)) {
+            TrustedDeviceService::trust((int)$user->id);
+        }
+        try {
+            \App\Core\Database::getInstance()->execute('UPDATE users SET is_email_verified = 1 WHERE id = ?', [(int)$user->id]);
+        } catch (\Throwable $e) {
+        }
+        $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => $this->afterLoginUrl($user, (string)($request->post('redirect') ?? ''))]);
+    }
+
+    // ------------------------------------------------------------------
+    // Mobile number is mandatory for every account
+    // ------------------------------------------------------------------
+
+    private function currentUser(): ?User
+    {
+        $id = (int)($_SESSION['user_id'] ?? 0);
+        return $id > 0 ? User::find($id) : null;
+    }
+
+    /** GET /account/mobile – one-time "add your mobile number" (no SMS; OTPs go by email). */
+    public function mobileForm(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login?redirect=' . rawurlencode('/account/mobile'));
+            return;
+        }
+        $next = $this->safeRedirect((string)$request->get('next', '')) ?? $this->resolveRedirectForUser($user);
+        if (trim((string)($user->phone ?? '')) !== '' && !$request->get('change')) {
+            $response->redirect($next);
+            return;
+        }
+        $response->view('auth/mobile', ['next' => $next, 'error' => null, 'phone' => '', 'title' => 'Add your mobile number – Jobsence'], 200, 'layout');
+    }
+
+    /** POST /account/mobile */
+    public function mobileSave(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login');
+            return;
+        }
+        $next = $this->safeRedirect((string)$request->post('next', '')) ?? $this->resolveRedirectForUser($user);
+        $digits = preg_replace('/\D/', '', (string)$request->post('mobile', ''));
+        $digits = strlen($digits) === 12 && str_starts_with($digits, '91') ? substr($digits, 2) : $digits;
+        $error = null;
+        if (!preg_match('/^[6-9]\d{9}$/', (string)$digits)) {
+            $error = 'सही 10 अंकों का मोबाइल नंबर भरें / Enter a valid 10-digit mobile number';
+        } elseif ((new AuthService())->findUserByPhone($digits, (int)$user->id)) {
+            $error = 'यह मोबाइल नंबर किसी दूसरे खाते में है / This mobile number belongs to another account';
+        }
+        if ($error) {
+            $response->view('auth/mobile', ['next' => $next, 'error' => $error, 'phone' => $digits, 'title' => 'Add your mobile number – Jobsence'], 422, 'layout');
+            return;
+        }
+        $phone = AuthService::normalizePhoneNumber($digits);
+        $db = \App\Core\Database::getInstance();
+        $db->execute('UPDATE users SET phone = ?, is_phone_verified = 0 WHERE id = ?', [$phone, (int)$user->id]);
+        if ($user->role === 'candidate') {
+            $db->execute("UPDATE candidates SET mobile = ? WHERE user_id = ? AND (mobile IS NULL OR mobile = '')", [$phone, (int)$user->id]);
+        }
+        $_SESSION['has_mobile'] = true;
+        $response->redirect($next);
+    }
+
+    /** GET /account/security – remembered devices + forget all. */
+    public function security(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login?redirect=' . rawurlencode('/account/security'));
+            return;
+        }
+        $response->view('auth/security', [
+            'user' => $user,
+            'devices' => TrustedDeviceService::listFor((int)$user->id),
+            'flash' => $this->takeSecurityFlash(),
+            'title' => 'Login & devices – Jobsence',
+        ], 200, 'layout');
+    }
+
+    /** POST /account/devices/forget {id?} – forget one device, or all when no id. */
+    public function forgetDevices(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login');
+            return;
+        }
+        $id = (int)$request->post('id', 0);
+        if ($id > 0) {
+            TrustedDeviceService::revoke((int)$user->id, $id);
+            $_SESSION['security_flash'] = 'डिवाइस हटाया गया / Device removed';
+        } else {
+            TrustedDeviceService::revokeAll((int)$user->id);
+            $_SESSION['security_flash'] = 'सभी डिवाइस भूले गए – अगली बार हर डिवाइस पर ईमेल OTP लगेगा / All devices forgotten – every device needs an email OTP next time';
+        }
+        $response->redirect('/account/security');
+    }
+
+    private function takeSecurityFlash(): ?string
+    {
+        $f = $_SESSION['security_flash'] ?? null;
+        unset($_SESSION['security_flash']);
+        return $f;
     }
 
     private function resolveRedirectForUser(User $user): string

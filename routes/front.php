@@ -96,6 +96,12 @@ $router->post('/employer/select-plan', [\App\Controllers\Employer\JobPostingLand
 // ==========================================
 $router->get('/login', [AuthController::class, 'login']);
 $router->post('/login', [AuthController::class, 'login'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/login/identify', [AuthController::class, 'loginIdentify'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/login/verify', [AuthController::class, 'loginVerify'], [$loginRateLimit, $csrfMiddleware]);
+$router->get('/account/mobile', [AuthController::class, 'mobileForm']);
+$router->post('/account/mobile', [AuthController::class, 'mobileSave'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/account/security', [AuthController::class, 'security']);
+$router->post('/account/devices/forget', [AuthController::class, 'forgetDevices'], [$csrfMiddleware]);
 $router->get('/register', [AuthController::class, 'registerCandidate']); // Default fallback
 $router->post('/register', [AuthController::class, 'register'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/register-employer', [AuthController::class, 'registerEmployer']);

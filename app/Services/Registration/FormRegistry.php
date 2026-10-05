@@ -1178,14 +1178,23 @@ class FormRegistry
     public const PROVIDER_PLAN_FEE = 155.00;
 
     /**
-     * Hiring plans for companies (3 full profiles a day). India: ₹216 (₹183 + 18% GST) / 3 days, ₹2,158 (₹1,829 + 18% GST) / 30 days – round totals.
-     * Outside India: USD 12 / 1 day, USD 200 / 30 days (no Indian GST – export of services).
+     * Hiring plans for companies (3 full profiles a day). India (round totals incl. 18% GST): 3, 7, 15 days, 1 month, 6 months (5 months' price), 1 year (9 months' price).
+     * Outside India: USD 12 / 1 day … USD 1,800 / 1 year (no Indian GST – export of services).
      */
     public const HIRING_PLANS = [
         'in3' => ['days' => 3, 'fee' => 216.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['3 दिन – ₹216 (₹183 + GST)', '3 days – ₹216 (₹183 + GST)']],
-        'in30' => ['days' => 30, 'fee' => 2158.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['30 दिन – ₹2,158 (₹1,829 + GST)', '30 days – ₹2,158 (₹1,829 + GST)']],
+        'in7' => ['days' => 7, 'fee' => 504.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['7 दिन – ₹504 (₹427 + GST)', '7 days – ₹504 (₹427 + GST)']],
+        'in15' => ['days' => 15, 'fee' => 1080.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['15 दिन – ₹1,080 (₹915 + GST)', '15 days – ₹1,080 (₹915 + GST)']],
+        'in30' => ['days' => 30, 'fee' => 2158.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['1 महीना – ₹2,158 (₹1,829 + GST)', '1 month – ₹2,158 (₹1,829 + GST)']],
+        'in180' => ['days' => 180, 'fee' => 10791.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['6 महीने (अर्धवार्षिक) – ₹10,791 (₹9,145 + GST)', '6 months (half-yearly) – ₹10,791 (₹9,145 + GST)']],
+        'in365' => ['days' => 365, 'fee' => 19424.00, 'currency' => 'INR', 'abroad' => false, 'label' => ['1 साल – ₹19,424 (₹16,461 + GST)', '1 year – ₹19,424 (₹16,461 + GST)']],
         'usd1' => ['days' => 1, 'fee' => 12.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['1 दिन – USD 12', '1 day – USD 12']],
-        'usd30' => ['days' => 30, 'fee' => 200.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['30 दिन – USD 200', '30 days – USD 200']],
+        'usd3' => ['days' => 3, 'fee' => 30.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['3 दिन – USD 30', '3 days – USD 30']],
+        'usd7' => ['days' => 7, 'fee' => 60.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['7 दिन – USD 60', '7 days – USD 60']],
+        'usd15' => ['days' => 15, 'fee' => 110.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['15 दिन – USD 110', '15 days – USD 110']],
+        'usd30' => ['days' => 30, 'fee' => 200.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['1 महीना – USD 200', '1 month – USD 200']],
+        'usd180' => ['days' => 180, 'fee' => 1000.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['6 महीने (अर्धवार्षिक) – USD 1,000', '6 months (half-yearly) – USD 1,000']],
+        'usd365' => ['days' => 365, 'fee' => 1800.00, 'currency' => 'USD', 'abroad' => true, 'label' => ['1 साल – USD 1,800', '1 year – USD 1,800']],
     ];
 
     private static function untilMatched(): array
@@ -1268,7 +1277,7 @@ class FormRegistry
             'fee' => 0.0,
             'title' => ['नौकरी देने वाली कंपनियाँ – मुफ़्त रजिस्ट्रेशन', 'Companies Hiring – Free Registration'],
             'button' => ['नौकरी देने वाली कंपनियाँ / दुकानें – मुफ़्त रजिस्टर करें', 'Companies & shops offering jobs – Register free'],
-            'intro' => ['मुफ़्त रजिस्टर करें और देखें कौन किस नौकरी के लिए तैयार है। जुड़ने के लिए भर्ती प्लान: ₹216 (3 दिन) या ₹2,158 (30 दिन); भारत के बाहर USD 12 (1 दिन) या USD 200 (30 दिन) – रोज़ 3 पूरी प्रोफ़ाइल और रिज़्यूमे।', 'Register free and see who is ready for which job. To connect, a hiring plan: ₹216 (3 days) or ₹2,158 (30 days); outside India USD 12 (1 day) or USD 200 (30 days) – 3 full profiles with resume a day.'],
+            'intro' => ['मुफ़्त रजिस्टर करें और देखें कौन किस नौकरी के लिए तैयार है। जुड़ने के लिए भर्ती प्लान: ₹216 (3 दिन) से ₹19,424 (1 साल) तक – 3, 7, 15 दिन, 1 महीना, 6 महीने या 1 साल; भारत के बाहर USD 12 (1 दिन) से – रोज़ 3 पूरी प्रोफ़ाइल और रिज़्यूमे।', 'Register free and see who is ready for which job. To connect, a hiring plan: from ₹216 (3 days) to ₹19,424 (1 year) – 3, 7, 15 days, 1 month, 6 months or 1 year; outside India from USD 12 (1 day) – 3 full profiles with resume a day.'],
             'categories_label' => ['आप किन पदों के लिए भर्ती करते हैं (सूची में खोजें)', 'Roles you hire for (search the list)'],
             'sections' => [
                 [
@@ -1312,7 +1321,7 @@ class FormRegistry
             ],
             'next_steps' => [
                 ['Jobsence टीम आपकी जानकारी सत्यापित करेगी – उसके बाद नौकरी चाहने वाले आपको देख सकेंगे।', 'The Jobsence team will verify your details – after that job seekers can see you.'],
-                ['अभी “मेरा डैशबोर्ड” खोलें और भर्ती प्लान लें – ₹216 (3 दिन) या ₹2,158 (30 दिन); भारत के बाहर USD 12 (1 दिन) या USD 200 (30 दिन)।', 'Open “My dashboard” now and get a hiring plan – ₹216 (3 days) or ₹2,158 (30 days); outside India USD 12 (1 day) or USD 200 (30 days).'],
+                ['अभी “मेरा डैशबोर्ड” खोलें और भर्ती प्लान लें – ₹216 (3 दिन) से ₹19,424 (1 साल) तक – 3, 7, 15 दिन, 1 महीना, 6 महीने या 1 साल; भारत के बाहर USD 12 (1 दिन) से।', 'Open “My dashboard” now and get a hiring plan – from ₹216 (3 days) to ₹19,424 (1 year) – 3, 7, 15 days, 1 month, 6 months or 1 year; outside India from USD 12 (1 day).'],
             ],
         ];
     }
@@ -1326,7 +1335,7 @@ class FormRegistry
                 'fee' => self::PROVIDER_PLAN_FEE,
                 'title' => ['भर्ती प्लान', 'Hiring Plan'],
                 'button' => ['भर्ती प्लान', 'Hiring Plan'],
-                'intro' => ['रोज़ 3 नौकरी चाहने वालों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौता – ₹216 (3 दिन), ₹2,158 (30 दिन), USD 12 (1 दिन) या USD 200 (30 दिन)।', 'Full profile, resume and agreement for 3 job seekers a day – ₹216 (3 days), ₹2,158 (30 days), USD 12 (1 day) or USD 200 (30 days).'],
+                'intro' => ['रोज़ 3 नौकरी चाहने वालों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौता – 3 दिन (₹216) से 1 साल (₹19,424) तक; भारत के बाहर USD 12 से।', 'Full profile, resume and agreement for 3 job seekers a day – 3 days (₹216) to 1 year (₹19,424); outside India from USD 12.'],
                 'sections' => [],
                 'declaration' => [self::agreementRule(), self::platformDisclaimer()],
                 'next_steps' => [['अपने डैशबोर्ड से उम्मीदवारों की प्रोफ़ाइल खोलें और समझौता भेजें।', 'Open candidate profiles from your dashboard and send agreements.']],

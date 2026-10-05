@@ -269,6 +269,20 @@ $email = trim((string)($data['email'] ?? ''));
         die("Invalid input");
     }
 
+    // Mobile number is mandatory for every account.
+    $mobileDigits = preg_replace('/\D/', '', (string)($data['mobile'] ?? ''));
+    $mobileDigits = strlen($mobileDigits) === 12 && str_starts_with($mobileDigits, '91') ? substr($mobileDigits, 2) : $mobileDigits;
+    $mobileError = !preg_match('/^[6-9]\d{9}$/', (string)$mobileDigits) ? 'Enter a valid 10-digit mobile number'
+        : ((new \App\Services\AuthService())->findUserByPhone($mobileDigits) ? 'This mobile number is already registered' : null);
+    if ($mobileError) {
+        if ($request->isAjax()) {
+            $response->json(['error' => $mobileError], 422);
+            return;
+        }
+        $response->view('social-services/login', ['initialMode' => 'register', 'error' => $mobileError]);
+        return;
+    }
+
     $existing = User::where('email','=',$email)->first();
     if ($existing) {
         if ($request->isAjax()) {
@@ -282,6 +296,7 @@ $email = trim((string)($data['email'] ?? ''));
     $user->fill([
         'email' => strtolower($email),
         'role' => $roleCanon,
+        'phone' => \App\Services\AuthService::normalizePhoneNumber($mobileDigits),
         'status' => 'active',
         'last_login' => date('Y-m-d H:i:s')
     ]);

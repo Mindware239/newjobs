@@ -69,8 +69,8 @@ class MentoringMailer
             <p>उम्मीदवार <b>{$h($masked)}</b> आपसे <b>{$h($skills)}</b> के लिए जुड़ना चाहते हैं और उन्होंने समझौते पर साइन कर दिया है।<br>
             Candidate <b>{$h($masked)}</b> wants to connect with you for <b>{$h($skills)}</b> and has signed the agreement.</p>
             " . ($kind === 'job'
-                ? "<p>उम्मीदवार देखने और साइन करने के लिए भर्ती प्लान लें – ₹216 (3 दिन) या ₹2,158 (30 दिन); भारत के बाहर USD 12 (1 दिन) या USD 200 (30 दिन)। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
-                   Get a hiring plan to see candidates and sign – ₹216 (3 days) or ₹2,158 (30 days); outside India USD 12 (1 day) or USD 200 (30 days). The fee is mandatory for both parties.</p>
+                ? "<p>उम्मीदवार देखने और साइन करने के लिए भर्ती प्लान लें – 3 दिन (₹216) से 1 साल (₹19,424) तक; भारत के बाहर USD 12 से। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
+                   Get a hiring plan to see candidates and sign – 3 days (₹216) to 1 year (₹19,424); outside India from USD 12. The fee is mandatory for both parties.</p>
                    <p>" . MentorMailer::button($url, 'भर्ती प्लान लें / Get a hiring plan', '#138808') . '</p>'
                 : "<p>उम्मीदवार देखने और साइन करने के लिए एक बार का शुल्क ₹155 (GST सहित) भरें – " . ($intern ? '10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20' : '30 दिन, रोज़ 3 प्रोफ़ाइल') . "। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
                    Pay the one-time fee of ₹155 (incl. GST) to see candidates and sign – " . ($intern ? '10 days, 3 profiles a day, up to 20' : '30 days, 3 profiles a day') . ". The fee is mandatory for both parties.</p>

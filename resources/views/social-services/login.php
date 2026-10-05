@@ -164,6 +164,12 @@ class="w-full border border-gray-300 rounded-md p-2.5">
 </div>
 
 <div>
+<label class="block text-sm font-medium">Mobile Number *</label>
+<input type="tel" name="mobile" x-model="registerForm.mobile" required inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile"
+class="w-full border border-gray-300 rounded-md p-2.5">
+</div>
+
+<div>
 <label class="block text-sm font-medium">Password *</label>
 <input type="password" name="password" x-model="registerForm.password" required
 class="w-full border border-gray-300 rounded-md p-2.5">
@@ -245,7 +251,7 @@ function authPage() {
         successMessage: '',
         csrfToken: '<?= $_SESSION['csrf_token'] ?? '' ?>',
         loginForm: { email: '', password: '' },
-        registerForm: { email: '', password: '', role: '' },
+        registerForm: { email: '', mobile: '', password: '', role: '' },
         forgotForm: { email: '' },
 
         async submitLogin() {

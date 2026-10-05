@@ -90,6 +90,19 @@ class AuthMiddleware implements MiddlewareInterface
 
         $request->setUser($user);
 
+        // Mobile number is mandatory for every web account (OTPs go by email; the mobile app API is exempt).
+        $path = $request->getPath();
+        if (trim((string)($user->phone ?? '')) === '' && !str_starts_with($path, '/api/')
+            && !preg_match('#^/(account/|logout|login|auth/)#', $path) && !$request->header('Authorization')) {
+            if ($request->getMethod() === 'GET' && !$request->isAjax()) {
+                $response->redirect('/account/mobile?next=' . urlencode($path));
+                return;
+            }
+            $response->setStatusCode(428);
+            $response->json(['error' => 'mobile_required', 'message' => 'Add your mobile number first', 'redirect' => '/account/mobile']);
+            return;
+        }
+
         // Role check
         if (isset($this->options['role'])) {
             $requiredRole = $this->options['role'];

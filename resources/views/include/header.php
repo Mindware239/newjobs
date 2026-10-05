@@ -537,6 +537,7 @@ window.MWMarketing = (function(){
                             
                             <div class="border-t border-gray-100 my-1"></div>
                             
+                            <a href="/account/security" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors">🔐 Login &amp; devices</a>
                             <a href="<?php echo $base; ?>logout" class="flex items-center gap-3 px-6 py-3 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                                 <span>Sign Out</span>
@@ -688,6 +689,7 @@ window.MWMarketing = (function(){
                                     <svg class="flex-shrink-0 w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     <span class="nav-link-gradient">Privacy Centre</span>
                                 </a>
+                                <a href="/account/security" class="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">🔐 Login &amp; devices</a>
                                 <a href="<?php echo $base; ?>logout" class="flex items-center gap-3 px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 hover:text-red-700 transition-colors">
                                     <svg class="flex-shrink-0 w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                                     Sign Out
