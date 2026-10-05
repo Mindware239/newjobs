@@ -2,7 +2,7 @@
     <h1 class="text-2xl font-semibold mb-4">Pay with Razorpay</h1>
     <p class="text-gray-600 mb-2">Amount: ₹<?= number_format($amount, 2) ?></p>
     <p class="text-sm text-gray-600 mb-6">Use test card 4111 1111 1111 1111 (CVV 123, OTP 123456) or UPI success@razorpay.</p>
-    <button id="payBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Pay Now</button>
+    <button id="payBtn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Pay Now</button>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -61,3 +61,14 @@ document.getElementById('payBtn').addEventListener('click', function(){
     rzp.open();
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+

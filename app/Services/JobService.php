@@ -163,6 +163,153 @@ class JobService
         ];
     }
 
+    public function searchJobs(array $filters, ?int $userId = null): array
+    {
+        $keyword = trim((string)($filters['keyword'] ?? ''));
+        $location = trim((string)($filters['location'] ?? ''));
+        $page = max(1, (int)($filters['page'] ?? 1));
+        $perPage = max(1, min(100, (int)($filters['per_page'] ?? 20)));
+
+        if (!empty($location) && empty($keyword)) {
+            $slug = strtolower(str_replace(' ', '-', $location));
+            $result = $this->getJobsByLocation($slug, $page, $perPage);
+            if ($this->hasJobs($result)) {
+                $result['search'] = $this->buildSearchMeta($keyword, $location, 'exact');
+                return $result;
+            }
+        }
+
+        if (!empty($location) && !empty($keyword)) {
+            $roleSlug = strtolower(str_replace(' ', '-', $keyword));
+            $locSlug = strtolower(str_replace(' ', '-', $location));
+            $result = $this->getJobsByRoleAndLocation($roleSlug, $locSlug, $page, $perPage);
+            if ($this->hasJobs($result)) {
+                $result['search'] = $this->buildSearchMeta($keyword, $location, 'exact');
+                return $result;
+            }
+        }
+
+        $jobsRaw = $this->repo->searchJobs($keyword, $location, $page, $perPage);
+        $total = $this->repo->countSearchJobs($keyword, $location);
+        $mode = 'exact';
+        $message = null;
+
+        if ($total === 0 && $keyword !== '' && $location !== '') {
+            $jobsRaw = $this->repo->searchJobs($keyword, '', $page, $perPage);
+            $total = $this->repo->countSearchJobs($keyword, '');
+            if ($total > 0) {
+                $mode = 'keyword_fallback';
+                $message = "No exact jobs found in {$location}. Showing matching jobs from other locations.";
+            }
+        }
+
+        return [
+            'jobs' => $this->formatJobsList($jobsRaw),
+            'filters' => [
+                'keyword' => $keyword,
+                'location' => $location
+            ],
+            'pageTitle' => $this->buildSearchTitle($keyword, $location),
+            'message' => $message,
+            'search' => $this->buildSearchMeta($keyword, $location, $mode, $message),
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => max(1, (int)ceil($total / $perPage))
+            ]
+        ];
+    }
+
+    private function hasJobs(?array $result): bool
+    {
+        return $result !== null && (int)($result['pagination']['total'] ?? 0) > 0;
+    }
+
+    private function buildSearchTitle(string $keyword, string $location): string
+    {
+        if ($keyword !== '' && $location !== '') {
+            return "{$keyword} Jobs in {$location}";
+        }
+
+        if ($keyword !== '') {
+            return "{$keyword} Jobs";
+        }
+
+        if ($location !== '') {
+            return "Jobs in {$location}";
+        }
+
+        return 'Latest Jobs';
+    }
+
+    private function buildSearchMeta(string $keyword, string $location, string $mode, ?string $message = null): array
+    {
+        return [
+            'keyword' => $keyword,
+            'location' => $location,
+            'mode' => $mode,
+            'is_exact_match' => $mode === 'exact',
+            'message' => $message
+        ];
+    }
+
+    public function getJobBySlug(string $slug, ?int $userId = null): ?array
+    {
+        $jobModel = \App\Models\Job::findBySlug($slug);
+        if (!$jobModel) return null;
+
+        $jobData = $jobModel->toArray();
+
+        // Add related info
+        $jobData['employer'] = $jobModel->employer() ? $jobModel->employer()->toArray() : null;
+        $jobData['skills'] = $jobModel->skills();
+        $jobData['benefits'] = $jobModel->benefits();
+        $jobData['qualifications'] = $jobModel->qualifications();
+
+        // Format locations
+        $locations = $jobModel->locations();
+        $jobData['locations'] = $locations; // Return structured locations
+        
+        $locStrings = [];
+        foreach ($locations as $loc) {
+            if (is_object($loc)) {
+                $locStrings[] = implode(', ', array_filter([$loc->city ?? $loc->city_name ?? '', $loc->state ?? $loc->state_name ?? '', $loc->country ?? $loc->country_name ?? '']));
+            } elseif (is_array($loc)) {
+                 $locStrings[] = implode(', ', array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']));
+            }
+        }
+        $jobData['location_display'] = !empty($locStrings) ? implode(' | ', $locStrings) : ($jobModel->is_remote == 1 ? 'Remote' : 'Location not specified');
+
+        return $jobData;
+    }
+
+    public function applyForJob(int $jobId, int $candidateId, int $userId): array
+    {
+        $existing = \App\Models\Application::where('job_id', '=', $jobId)
+            ->where('candidate_user_id', '=', $userId)
+            ->first();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'You have already applied for this job', 'code' => 400];
+        }
+
+        $application = new \App\Models\Application();
+        $application->fill([
+            'job_id' => $jobId,
+            'candidate_id' => $candidateId,
+            'candidate_user_id' => $userId,
+            'status' => 'applied',
+            'applied_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if ($application->save()) {
+            return ['success' => true, 'application_id' => $application->id];
+        }
+
+        return ['success' => false, 'message' => 'Failed to submit application', 'code' => 500];
+    }
+
     private function formatJobsList(array $jobsRaw): array
     {
         $jobs = [];
@@ -191,9 +338,9 @@ class JobService
                         }
                     }
                 }
-                $jobData['location_display'] = !empty($strings) ? implode(' | ', $strings) : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
+                $jobData['location_display'] = !empty($strings) ? implode(' | ', $strings) : (!empty($jobData['location']) ? $jobData['location'] : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified'));
             } else {
-                $jobData['location_display'] = $jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified';
+                $jobData['location_display'] = !empty($jobData['location']) ? $jobData['location'] : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
             }
 
             $jobs[] = $jobData;

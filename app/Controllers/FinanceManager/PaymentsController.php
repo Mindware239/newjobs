@@ -32,8 +32,10 @@ class PaymentsController extends BaseController
         }
 
         if ($search !== '') {
-            $where[] = '(e.company_name LIKE :search OR ep.txn_id LIKE :search OR u.email LIKE :search)';
-            $params['search'] = "%$search%";
+            $where[] = '(e.company_name LIKE :s1 OR ep.txn_id LIKE :s2 OR u.email LIKE :s3)';
+            $params['s1'] = "%$search%";
+            $params['s2'] = "%$search%";
+            $params['s3'] = "%$search%";
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';

@@ -21,7 +21,7 @@
   <div class="container-wf mx-auto px-6 py-4 flex items-center justify-between">
     <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
 
@@ -83,14 +83,14 @@
         </label>
         <input type="text"
                placeholder="Enter a keyword"
-               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary">
       </div>
 
       <div>
         <label class="block text-xs mb-1 text-gray-600">
           Filter by organization
         </label>
-        <select class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        <select class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 focus:ring-2 focus:ring-primary focus:border-primary">
           <option>Select an organization (account or listed by)</option>
         </select>
       </div>
@@ -135,7 +135,7 @@
             'draft' => 'bg-gray-100 text-gray-700 border border-gray-200',
             'active' => 'bg-green-100 text-green-700 border border-green-200',
             'pending' => 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-            'scheduled' => 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+            'scheduled' => 'bg-primary-50 text-primary-600 border border-primary-100',
             'expired' => 'bg-red-100 text-red-700 border border-red-200'
           ];
           $statusClass = $statusMap[$status] ?? $statusMap['draft'];
@@ -159,14 +159,14 @@
                 </span>
                 <?php if ($posted): ?>
                 <span class="inline-flex items-center gap-1">
-                  <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V10h14v9z"/></svg>
+                  <svg class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 15H5V10h14v9z"/></svg>
                   Posted: <?= $posted ?>
                 </span>
                 <?php endif; ?>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-              <a href="/social-employer/job/<?= (int)$job['id'] ?>/edit" class="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Edit</a>
+              <a href="/social-employer/job/<?= (int)$job['id'] ?>/edit" class="px-3 py-1.5 text-sm rounded-md bg-primary text-white hover:bg-primary-600">Edit</a>
               <form action="/social-employer/job/<?= (int)$job['id'] ?>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this listing?');" class="inline">
                 <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                 <button type="submit" class="px-3 py-1.5 text-sm rounded-md border border-red-300 text-red-600 hover:bg-red-50">Delete</button>
@@ -196,3 +196,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

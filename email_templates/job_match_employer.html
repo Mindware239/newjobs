@@ -1,0 +1,55 @@
+<!-- Match Score Badge -->
+<div style="text-align: center; margin-bottom: 25px;">
+    <div style="display: inline-block; background-color: {{match_color_bg}}; border: 1px solid {{match_color_border}}; padding: 10px 20px; border-radius: 99px;">
+        <span style="color: {{match_color_text}}; font-weight: 800; font-size: 18px;">{{match_score}}% Match Found</span>
+    </div>
+    <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Strong Alignment with your {{job_title}} requirement</p>
+</div>
+
+<!-- Header -->
+<h1 style="color: #111827; font-size: 24px; font-weight: 700; margin-bottom: 15px;">New Candidate Discovery</h1>
+<p style="font-size: 16px; color: #4b5563;">Hello, our matching engine has identified a high-potential candidate who matches your requirements for the <strong>{{job_title}}</strong> position.</p>
+
+<!-- Candidate Profile Card -->
+<div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; margin: 30px 0; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    <div style="padding: 25px; border-bottom: 1px solid #f3f4f6;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td width="70" valign="top">
+                    <img src="{{candidate_photo}}" alt="{{candidate_name}}" width="60" height="60" style="border-radius: 50%; display: block; object-fit: cover; border: 2px solid #ff5a36;" />
+                </td>
+                <td style="padding-left: 15px;">
+                    <h2 style="margin: 0; color: #111827; font-size: 20px;">{{candidate_name}}</h2>
+                    <p style="margin: 5px 0 0 0; font-weight: 600; color: #ff5a36;">{{professional_title}}</p>
+                    <p style="margin: 2px 0 0 0; font-size: 13px; color: #6b7280;">Experience: {{experience_years}} | Location: {{candidate_location}}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="padding: 25px; background-color: #fafafa;">
+        <h4 style="margin: 0 0 10px 0; color: #111827; font-size: 15px;">Skills Match Analysis:</h4>
+        <div style="margin-bottom: 15px;">
+            {{skills_badges_html}}
+        </div>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 14px; color: #4b5563;">
+            <tr>
+                <td style="padding-bottom: 8px;">🎓 <strong>Education:</strong> {{education_summary}}</td>
+            </tr>
+            <tr>
+                <td style="padding-bottom: 8px;">📄 <strong>Resume:</strong> {{resume_status}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Match Analysis -->
+<div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid #bbf7d0;">
+    <h3 style="margin: 0 0 8px 0; color: #166534; font-size: 16px;">Hiring Insight:</h3>
+    <p style="margin: 0; color: #15803d; font-size: 14px; line-height: 1.5;">This candidate matches {{match_score}}% of your requirements. They have extensive experience in {{top_skills}} and are located in your preferred region.</p>
+</div>
+
+<!-- Action Buttons -->
+<div style="text-align: center; margin-bottom: 30px;">
+    <a href="{{app_url}}/employer/candidates/{{candidate_id}}" class="btn" style="display: inline-block; background-color: #ff5a36; color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px; margin-right: 10px;">Review Candidate</a>
+    <a href="{{app_url}}/employer/interviews/schedule?candidate_id={{candidate_id}}" class="btn" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">Schedule Interview</a>
+</div>

@@ -50,7 +50,7 @@ class JobRecommendationsController extends BaseController
                     j.employment_type,
                     j.is_remote,
                     j.company_name,
-                    j.location,
+                    j.locations,
                     j.created_at,
                     cjs.overall_match_score,
                     cjs.recommendation,
@@ -88,7 +88,7 @@ class JobRecommendationsController extends BaseController
             'recommendedJobs' => $recommendedJobs,
             'trendingJobs' => $trendingJobs,
             'candidate' => $candidate
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     /**
@@ -109,7 +109,7 @@ class JobRecommendationsController extends BaseController
                     j.currency,
                     j.employment_type,
                     j.company_name,
-                    j.location,
+                    j.locations,
                     COUNT(a.id) AS application_count,
                     e.logo_url AS employer_logo
                 FROM jobs j

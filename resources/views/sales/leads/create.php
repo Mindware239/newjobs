@@ -36,7 +36,7 @@
                 <input type="hidden" name="assigned_to" value="<?= $user->id ?>">
             <?php endif; ?>
             <div class="md:col-span-2">
-                <button class="px-4 py-2 bg-purple-600 text-white rounded">Save Lead</button>
+                <button class="px-4 py-2 bg-primary text-white rounded">Save Lead</button>
             </div>
         </form>
     </div>
@@ -45,8 +45,19 @@
         <div class="font-semibold mb-4">CSV Upload</div>
         <form method="post" enctype="multipart/form-data" action="#" class="space-y-3">
             <input type="file" name="csv" accept=".csv" class="border rounded px-3 py-2">
-            <button class="px-4 py-2 border border-purple-600 text-purple-600 rounded">Upload (UI demo)</button>
+            <button class="px-4 py-2 border border-primary text-primary rounded">Upload (UI demo)</button>
         </form>
         <div class="text-xs text-gray-500 mt-2">Expected columns: company_name, contact_name, contact_email, contact_phone, stage, source, deal_value, currency, next_followup_at, assigned_to</div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

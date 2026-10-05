@@ -20,6 +20,9 @@ use App\Controllers\Api\Employer\JobController as EmployerJobController;
 use App\Controllers\Api\Employer\ProfileController as EmployerProfileController;
 use App\Controllers\Api\Employer\CandidateController;
 use App\Controllers\Api\Employer\DashboardController as EmployerDashboardController;
+use App\Controllers\Api\Employer\BillingController as EmployerBillingController;
+use App\Controllers\Api\Employer\InterviewController as EmployerInterviewController;
+use App\Controllers\Api\Employer\SettingsController as EmployerSettingsController;
 
 // Controllers - Candidate
 use App\Controllers\Api\Candidate\ResumeController;
@@ -27,6 +30,8 @@ use App\Controllers\Api\Candidate\ApplicationController;
 use App\Controllers\Api\Candidate\BookmarkController;
 use App\Controllers\Api\Candidate\ProfileController as CandidateProfileController;
 use App\Controllers\Api\Candidate\AlertController;
+use App\Controllers\Api\Candidate\SettingsController as CandidateSettingsController;
+use App\Controllers\Api\Candidate\ActivityController;
 
 // Controllers - Shared
 use App\Controllers\Api\ChatController;
@@ -48,6 +53,7 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
 
     // 1. Authentication (with Rate Limiting)
     $router->post('/login', [AuthController::class, 'login']);
+    $router->post('/send-email-otp', [AuthController::class, 'sendEmailOtp'], [new RateLimitMiddleware(5, 300)]);
     $router->post('/send-phone-otp', [AuthController::class, 'sendPhoneOtp'], [new RateLimitMiddleware(5, 300)]);
     $router->post('/login-phone', [AuthController::class, 'loginWithPhoneOtp'], [new RateLimitMiddleware(10, 300)]);
     $router->post('/register-candidate', [AuthController::class, 'registerCandidate']);
@@ -211,6 +217,11 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
             $router->get('/resumes/{id}', [ResumeController::class, 'show']);
             $router->put('/resumes/{id}', [ResumeController::class, 'update']);
             $router->delete('/resumes/{id}', [ResumeController::class, 'delete']);
+            $router->get('/resumes/{id}/sections', [ResumeController::class, 'sections']);
+            $router->post('/resumes/{id}/sections', [ResumeController::class, 'addSection']);
+            $router->put('/resumes/{id}/sections/{section_id}', [ResumeController::class, 'updateSection']);
+            $router->delete('/resumes/{id}/sections/{section_id}', [ResumeController::class, 'deleteSection']);
+            $router->patch('/resumes/{id}/sections/reorder', [ResumeController::class, 'reorderSections']);
             $router->post('/resumes/{id}/parse', [ResumeController::class, 'parse']);
             $router->get('/resumes/{id}/download', [ResumeController::class, 'download']);
             $router->get('/resumes/{id}/preview', [ResumeController::class, 'preview']);
@@ -220,6 +231,7 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
 
             // Applications
             $router->get('/applications', [ApplicationController::class, 'index']);
+            $router->get('/applied-jobs', [ApplicationController::class, 'index']);
             $router->get('/applications/{id}', [ApplicationController::class, 'show']);
             $router->post('/applications/{id}/withdraw', [ApplicationController::class, 'withdraw']);
             $router->post('/applications/{id}/offer/accept', [ApplicationController::class, 'acceptOffer']);
@@ -243,6 +255,18 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
             $router->delete('/alerts/{id}', [AlertController::class, 'delete']);
             $router->get('/alerts/{id}/matches', [AlertController::class, 'matchingCount']);
 
+            // Settings
+            $router->get('/settings', [CandidateSettingsController::class, 'index']);
+            $router->put('/settings', [CandidateSettingsController::class, 'update']);
+            $router->post('/settings/password', [CandidateSettingsController::class, 'changePassword']);
+            $router->post('/settings/send-otp', [CandidateSettingsController::class, 'sendPhoneOtp']);
+            $router->post('/settings/verify-otp', [CandidateSettingsController::class, 'verifyPhoneOtp']);
+            $router->delete('/settings/account', [CandidateSettingsController::class, 'deleteAccount']);
+
+            // Activity Logs
+            $router->get('/activity-logs', [ActivityController::class, 'index']);
+            $router->get('/activity-summary', [ActivityController::class, 'summary']);
+
             // Dashboard & Recommendations
             $router->get('/dashboard', [DashboardController::class, 'candidateDashboard']);
             $router->get('/jobs/recommended', [\App\Controllers\Api\Candidate\JobRecommendationsController::class, 'getRecommendedJobs']);
@@ -263,7 +287,9 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
 
             // Candidate Subscription
             $router->get('/premium/plans', [\App\Controllers\Api\Candidate\PremiumController::class, 'plans']);
+            $router->get('/upgrade', [\App\Controllers\Api\Candidate\PremiumController::class, 'plans']);
             $router->post('/premium/payment', [\App\Controllers\Api\Candidate\PremiumController::class, 'initiatePayment']);
+            $router->post('/premium/verify', [\App\Controllers\Api\Candidate\PremiumController::class, 'verifyPayment']);
             $router->get('/premium/billing', [\App\Controllers\Api\Candidate\PremiumController::class, 'billing']);
 
         });
@@ -272,6 +298,14 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
         // EMPLOYER ROUTES
         // ============================
         $router->group(['prefix' => '/employer'], function(Router $router) {
+
+            // Billing & Subscription data for mobile app
+            $router->get('/billing/overview', [EmployerBillingController::class, 'overview']);
+            $router->get('/billing/transactions', [EmployerBillingController::class, 'transactions']);
+            $router->get('/billing/invoices', [EmployerBillingController::class, 'invoices']);
+            $router->get('/billing/payment-methods', [EmployerBillingController::class, 'paymentMethods']);
+            $router->get('/billing/settings', [EmployerBillingController::class, 'settings']);
+            $router->get('/subscription/dashboard', [EmployerBillingController::class, 'subscriptionDashboard']);
 
             // Company Profile
             $router->get('/profile', [EmployerProfileController::class, 'show']);
@@ -368,8 +402,26 @@ $router->group(['prefix' => '/api/v1'], function(Router $router) {
             $router->put('/social-jobs/{id}', [\App\Controllers\Api\Social\SocialJobsController::class, 'update']);
             $router->delete('/social-jobs/{id}', [\App\Controllers\Api\Social\SocialJobsController::class, 'delete']);
 
+            // Interviews
+            $router->get('/interviews/stats', [EmployerInterviewController::class, 'stats']);
+            $router->get('/interviews', [EmployerInterviewController::class, 'index']);
+            $router->post('/interviews', [EmployerInterviewController::class, 'schedule']);
+            $router->get('/interviews/{id}', [EmployerInterviewController::class, 'show']);
+            $router->post('/interviews/{id}/reschedule', [EmployerInterviewController::class, 'reschedule']);
+            $router->post('/interviews/{id}/cancel', [EmployerInterviewController::class, 'cancel']);
+            $router->post('/interviews/{id}/complete', [EmployerInterviewController::class, 'complete']);
+
+            // Settings
+            $router->get('/settings', [EmployerSettingsController::class, 'index']);
+            $router->put('/settings/account', [EmployerSettingsController::class, 'updateAccount']);
+            $router->post('/settings/account/send-otp', [EmployerSettingsController::class, 'sendPhoneOtp']);
+            $router->post('/settings/account/verify-otp', [EmployerSettingsController::class, 'verifyPhoneOtp']);
+            $router->post('/settings/password', [EmployerSettingsController::class, 'updatePassword']);
+            $router->put('/settings/preferences', [EmployerSettingsController::class, 'updatePreferences']);
+            $router->put('/settings/company', [EmployerSettingsController::class, 'updateCompany']);
+
         });
 
-    }); // ✅ close auth group
+    }); // close auth group
 
-}); // ✅ close api/v1 group
+}); // close api/v1 group

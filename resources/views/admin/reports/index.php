@@ -8,7 +8,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">User Reports</h3>
             <p class="text-sm text-gray-600 mb-4">Export user data including employers and candidates</p>
-            <a href="/admin/reports/export?type=users&format=csv" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <a href="/admin/reports/export?type=users&format=csv" class="inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 Export Users (CSV)
             </a>
         </div>
@@ -16,7 +16,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Job Reports</h3>
             <p class="text-sm text-gray-600 mb-4">Export all job postings and their details</p>
-            <a href="/admin/reports/export?type=jobs&format=csv" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <a href="/admin/reports/export?type=jobs&format=csv" class="inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 Export Jobs (CSV)
             </a>
         </div>
@@ -24,10 +24,29 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Reports</h3>
             <p class="text-sm text-gray-600 mb-4">Export payment transactions and revenue data</p>
-            <a href="/admin/reports/export?type=payments&format=csv" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <a href="/admin/reports/export?type=payments&format=csv" class="inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 Export Payments (CSV)
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Incomplete Profiles</h3>
+            <p class="text-sm text-gray-600 mb-4">Export candidates with less than 100% profile strength</p>
+            <a href="/admin/reports/export?type=incomplete_profiles&format=csv" class="inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
+                Export Incomplete Profiles (CSV)
             </a>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

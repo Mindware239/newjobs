@@ -16,7 +16,7 @@
 
 <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
  <nav class="flex gap-6 text-sm text-gray-700">
@@ -150,7 +150,7 @@ Your cart is empty
 <div class="grid grid-cols-2 gap-3 mt-4">
     <button 
     @click.prevent="payWithJuspay()"
-    class="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-3 rounded font-semibold">
+    class="bg-primary hover:bg-primary-600 text-white w-full py-3 rounded font-semibold">
     PAY WITH JUSPAY
     </button>
     <button 
@@ -168,8 +168,8 @@ Your cart is empty
 
 <!-- FOOTER -->
 <footer class="bg-black text-white text-center py-10 mt-20">
-<p class="text-lg font-semibold">Mindware Infotech</p>
-<p class="text-sm mt-2">© 2025 Mindware Infotech</p>
+<p class="text-lg font-semibold">Jobsence</p>
+<p class="text-sm mt-2">© 2025 Jobsence</p>
 </footer>
 
 <!-- ================= SCRIPT ================= -->
@@ -243,3 +243,14 @@ function checkoutManager() {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

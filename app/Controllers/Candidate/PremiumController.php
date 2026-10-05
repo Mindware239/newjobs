@@ -184,15 +184,32 @@ class PremiumController extends BaseController
                 return;
             }
 
-            $purchase = new CandidatePremiumPurchase();
-            $purchase->fill([
-                'candidate_id' => $candidate->id,
-                'plan_type' => (string)$planId,
-                'amount' => $amount,
-                'payment_method' => $paymentMethod,
-                'status' => 'pending'
-            ]);
-            $purchase->save();
+            // Check if there is an existing pending purchase for this candidate and plan in the last hour
+            $purchase = CandidatePremiumPurchase::where('candidate_id', '=', (int)$candidate->id)
+                ->where('plan_type', '=', (string)$planId)
+                ->where('status', '=', 'pending')
+                ->where('created_at', '>', date('Y-m-d H:i:s', strtotime('-1 hour')))
+                ->first();
+
+            if (!$purchase) {
+                $purchase = new CandidatePremiumPurchase();
+                $purchase->fill([
+                    'candidate_id' => $candidate->id,
+                    'plan_type' => (string)$planId,
+                    'amount' => $amount,
+                    'payment_method' => $paymentMethod,
+                    'status' => 'pending'
+                ]);
+                $purchase->save();
+            } else {
+                // Update amount and method if they changed
+                $purchase->fill([
+                    'amount' => $amount,
+                    'payment_method' => $paymentMethod
+                ]);
+                $purchase->created_at = date('Y-m-d H:i:s'); // Refresh timestamp via __set
+                $purchase->save();
+            }
 
             switch ($paymentMethod) {
                 case 'razorpay':
@@ -234,6 +251,10 @@ class PremiumController extends BaseController
 
         $orderId = $request->get('order_id');
         $purchaseId = (int)$request->get('purchase_id');
+        if ($purchaseId <= 0 || strpos((string)$orderId, 'CAND-' . $purchaseId . '-') !== 0) {
+            $response->redirect('/candidate/premium/plans?error=invalid_order');
+            return;
+        }
         
         $config = require __DIR__ . '/../../../config/cashfree.php';
         $client = new \GuzzleHttp\Client([
@@ -260,6 +281,12 @@ class PremiumController extends BaseController
                     // Update purchase and activate premium
                     $purchase = CandidatePremiumPurchase::find($purchaseId);
                     if ($purchase && $purchase->status === 'pending') {
+                        $paidAmount = (float)($latest['payment_amount'] ?? $body['order_amount'] ?? 0);
+                        $expectedAmount = (float)($purchase->attributes['amount'] ?? 0);
+                        if ($paidAmount > 0 && abs($paidAmount - $expectedAmount) > 0.01) {
+                            $response->redirect('/candidate/premium/plans?error=amount_mismatch');
+                            return;
+                        }
                         $purchase->fill([
                             'payment_id' => (string)$latest['cf_payment_id'],
                             'status' => 'completed'
@@ -290,6 +317,8 @@ class PremiumController extends BaseController
         $data = $request->getJsonBody() ?? $request->all();
         $purchaseId = (int)($data['purchase_id'] ?? 0);
         $paymentId = $data['payment_id'] ?? '';
+        $razorpayOrderId = (string)($data['razorpay_order_id'] ?? '');
+        $razorpaySignature = (string)($data['razorpay_signature'] ?? '');
         $status = $data['status'] ?? 'failed';
 
         $purchase = $purchaseId > 0 ? CandidatePremiumPurchase::find($purchaseId) : null;
@@ -299,6 +328,39 @@ class PremiumController extends BaseController
         }
 
         if ($status === 'success' || $status === 'completed') {
+            $method = strtolower((string)($purchase->attributes['payment_method'] ?? ''));
+            if ($method === 'razorpay') {
+                if ($paymentId === '' || $razorpayOrderId === '' || $razorpaySignature === '') {
+                    $response->json(['error' => 'Missing Razorpay verification data'], 422);
+                    return;
+                }
+                try {
+                    $config = require __DIR__ . '/../../../config/razorpay.php';
+                    $api = new Api((string)($config['key_id'] ?? ''), (string)($config['key_secret'] ?? ''));
+                    $api->utility->verifyPaymentSignature([
+                        'razorpay_order_id' => $razorpayOrderId,
+                        'razorpay_payment_id' => $paymentId,
+                        'razorpay_signature' => $razorpaySignature
+                    ]);
+                    $rzpPayment = $api->payment->fetch($paymentId);
+                    $expectedAmount = (int)round((float)($purchase->attributes['amount'] ?? 0) * 100);
+                    $paidAmount = (int)($rzpPayment->amount ?? 0);
+                    if ($expectedAmount !== $paidAmount) {
+                        $response->json(['error' => 'Payment amount mismatch'], 400);
+                        return;
+                    }
+                    $notes = (array)($rzpPayment->notes ?? []);
+                    $notePurchaseId = (int)($notes['purchase_id'] ?? 0);
+                    if ($notePurchaseId !== (int)$purchase->attributes['id']) {
+                        $response->json(['error' => 'Payment does not belong to this purchase'], 400);
+                        return;
+                    }
+                } catch (\Throwable $e) {
+                    error_log('Candidate Razorpay verify error: ' . $e->getMessage());
+                    $response->json(['error' => 'Payment verification failed'], 400);
+                    return;
+                }
+            }
             // Update purchase
             $purchase->fill([
                 'payment_id' => $paymentId,
@@ -473,7 +535,7 @@ class PremiumController extends BaseController
                 'amount' => $amountPaise,
                 'currency' => 'INR',
                 'key' => $keyId,
-                'name' => 'Mindware Infotech',
+                'name' => 'Jobsence',
                 'description' => 'Candidate Premium',
                 'callback_url' => ($config['app_url'] ?? 'http://localhost') . '/candidate/premium/payment/callback'
             ];
@@ -485,7 +547,7 @@ class PremiumController extends BaseController
                 'amount' => $amountPaise,
                 'currency' => 'INR',
                 'key' => $keyId ?: ($_ENV['RAZORPAY_KEY'] ?? 'rzp_test_key'),
-                'name' => 'Mindware Infotech',
+                'name' => 'Jobsence',
                 'description' => 'Candidate Premium',
                 'callback_url' => ($config['app_url'] ?? 'http://localhost') . '/candidate/premium/payment/callback'
             ];
@@ -516,7 +578,7 @@ class PremiumController extends BaseController
     private function generateReceipt(int $candidateId, CandidatePremiumPurchase $purchase, ?Candidate $candidate): string
     {
         try {
-            $company = $_ENV['COMPANY_NAME'] ?? ($_ENV['APP_NAME'] ?? 'Mindware Infotech');
+            $company = $_ENV['COMPANY_NAME'] ?? ($_ENV['APP_NAME'] ?? 'Jobsence');
             $plan = ucfirst(str_replace('_', ' ', (string)$purchase->attributes['plan_type']));
             $amount = (float)($purchase->attributes['amount'] ?? 0);
             $taxRate = (float)($_ENV['TAX_RATE'] ?? 0.18);
@@ -579,7 +641,7 @@ class PremiumController extends BaseController
             'title' => 'Billing & Receipts',
             'candidate' => $candidate,
             'items' => $items
-        ]);
+        ], 200, 'candidate/layout');
     }
 }
 

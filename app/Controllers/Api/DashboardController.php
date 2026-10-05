@@ -6,10 +6,17 @@ namespace App\Controllers\Api;
 
 use App\Core\Request;
 use App\Core\Response;
-use App\Core\Database;
+use App\Repositories\ApiDashboardRepository;
 
 class DashboardController extends ApiController
 {
+    private ApiDashboardRepository $dashboardRepository;
+
+    public function __construct()
+    {
+        $this->dashboardRepository = new ApiDashboardRepository();
+    }
+
     /**
      * @OA\Get(
      *     path="/api/v1/dashboard",
@@ -22,43 +29,41 @@ class DashboardController extends ApiController
     public function index(Request $request, Response $response): void
     {
         $user = $this->user($request);
-        $db = Database::getInstance();
         $data = [];
 
         if ($user->isCandidate()) {
-            $candidateId = (int)($db->fetchOne("SELECT id FROM candidates WHERE user_id = :uid", ['uid' => $user->id])['id'] ?? 0);
-            
-            $data = [
-                'total_applications' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM applications WHERE candidate_id = :cid", ['cid' => $candidateId])['count'] ?? 0),
-                'shortlisted_applications' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM applications WHERE candidate_id = :cid AND status = 'shortlisted'", ['cid' => $candidateId])['count'] ?? 0),
-                'rejected_applications' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM applications WHERE candidate_id = :cid AND status = 'rejected'", ['cid' => $candidateId])['count'] ?? 0),
-                'saved_jobs' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM job_bookmarks WHERE user_id = :uid", ['uid' => $user->id])['count'] ?? 0),
-                'recent_applications' => $db->fetchAll(
-                    "SELECT a.*, j.title, e.company_name 
-                     FROM applications a 
-                     JOIN jobs j ON a.job_id = j.id 
-                     JOIN employers e ON j.employer_id = e.id 
-                     WHERE a.candidate_id = :cid 
-                     ORDER BY a.applied_at DESC LIMIT 5",
-                    ['cid' => $candidateId]
-                )
-            ];
+            $candidateId = $this->dashboardRepository->getCandidateIdByUserId((int)$user->id);
+            $data = $this->dashboardRepository->getCandidateDashboardData($candidateId, (int)$user->id);
         } elseif ($user->isEmployer()) {
-            $employerId = (int)($db->fetchOne("SELECT id FROM employers WHERE user_id = :uid", ['uid' => $user->id])['id'] ?? 0);
-            
-            $data = [
-                'total_jobs' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM jobs WHERE employer_id = :eid", ['eid' => $employerId])['count'] ?? 0),
-                'active_jobs' => (int)($db->fetchOne("SELECT COUNT(*) as count FROM jobs WHERE employer_id = :eid AND status = 'published'", ['eid' => $employerId])['count'] ?? 0),
-                'total_applications' => (int)($db->fetchOne(
-                    "SELECT COUNT(*) as count FROM applications a JOIN jobs j ON a.job_id = j.id WHERE j.employer_id = :eid",
-                    ['eid' => $employerId]
-                )['count'] ?? 0),
-                'recent_jobs' => $db->fetchAll(
-                    "SELECT * FROM jobs WHERE employer_id = :eid ORDER BY created_at DESC LIMIT 5",
-                    ['eid' => $employerId]
-                )
-            ];
+            $employerId = $this->dashboardRepository->getEmployerIdByUserId((int)$user->id);
+            $data = $this->dashboardRepository->getEmployerDashboardData($employerId);
         }
+
+        $this->success($response, $data);
+    }
+
+    /**
+     * GET /api/v1/candidate/dashboard
+     * Explicit candidate dashboard for mobile app
+     */
+    public function candidateDashboard(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $candidateId = $this->dashboardRepository->getCandidateIdByUserId((int)$user->id);
+        $data = $this->dashboardRepository->getCandidateDashboardData($candidateId, (int)$user->id);
+        
+        // Add more mobile-specific dashboard data if needed
+        $data['user'] = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => $user->avatar,
+            'is_verified' => (bool)$user->is_email_verified
+        ];
 
         $this->success($response, $data);
     }

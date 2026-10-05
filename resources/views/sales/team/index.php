@@ -16,7 +16,7 @@ if (!isset($kpis)) {
             <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Sales Team</h2>
             <p class="text-slate-500 text-sm mt-1">Manage team members and performance.</p>
         </div>
-        <button onclick="document.getElementById('addMemberForm').classList.toggle('hidden')" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 flex items-center gap-2">
+        <button onclick="document.getElementById('addMemberForm').classList.toggle('hidden')" class="px-4 py-2 bg-primary text-white rounded-xl font-medium hover:bg-primary-600 transition-colors shadow-lg shadow-primary-100 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -30,15 +30,15 @@ if (!isset($kpis)) {
         <form action="/sales/team/add" method="post" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="md:col-span-1">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                <input name="name" type="text" placeholder="e.g. Jane Doe" class="w-full text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <input name="name" type="text" placeholder="e.g. Jane Doe" class="w-full text-sm border-slate-200 rounded-lg focus:ring-primary focus:border-primary">
             </div>
             <div class="md:col-span-1">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                <input name="email" type="email" placeholder="jane@company.com" class="w-full text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <input name="email" type="email" placeholder="jane@company.com" class="w-full text-sm border-slate-200 rounded-lg focus:ring-primary focus:border-primary">
             </div>
             <div class="md:col-span-1">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                <select name="role" class="w-full text-sm border-slate-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <select name="role" class="w-full text-sm border-slate-200 rounded-lg focus:ring-primary focus:border-primary">
                     <option value="executive">Sales Executive</option>
                     <option value="manager">Sales Manager</option>
                 </select>
@@ -77,11 +77,11 @@ if (!isset($kpis)) {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <?php if (($e['role'] ?? '') === 'sales_manager' || ($e['role'] ?? '') === 'manager'): ?>
-                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-50 text-primary-900 border border-primary-100">
                                     Manager
                                 </span>
                             <?php else: ?>
-                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-50 text-primary-900 border border-primary-100">
                                     Executive
                                 </span>
                             <?php endif; ?>
@@ -102,7 +102,7 @@ if (!isset($kpis)) {
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="/sales/manager/view-executive/<?= $uid ?>" class="inline-flex items-center px-3 py-1.5 border border-indigo-200 text-xs font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors mr-2">
+                            <a href="/sales/manager/view-executive/<?= $uid ?>" class="inline-flex items-center px-3 py-1.5 border border-primary-100 text-xs font-medium rounded-lg text-primary-600 bg-primary-50 hover:bg-primary-50 transition-colors mr-2">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -124,3 +124,14 @@ if (!isset($kpis)) {
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

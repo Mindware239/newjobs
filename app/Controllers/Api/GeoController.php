@@ -33,11 +33,7 @@ class GeoController extends ApiController
      */
     public function states(Request $request, Response $response): void
     {
-        $country = $request->get('country', '');
-        if (empty($country)) {
-            $this->error($response, 'Country is required', 400);
-            return;
-        }
+        $country = (string)($request->get('country_id') ?? $request->get('country_code') ?? $request->get('country', ''));
 
         $result = $this->geoService->getStates($country);
         $this->success($response, $result);
@@ -49,13 +45,8 @@ class GeoController extends ApiController
      */
     public function cities(Request $request, Response $response): void
     {
-        $state = $request->get('state', '');
-        $country = $request->get('country', '');
-
-        if (empty($state)) {
-            $this->error($response, 'State is required', 400);
-            return;
-        }
+        $state = (string)($request->get('state_id') ?? $request->get('state', ''));
+        $country = (string)($request->get('country_id') ?? $request->get('country_code') ?? $request->get('country', ''));
 
         $result = $this->geoService->getCities($state, $country);
         $this->success($response, $result);

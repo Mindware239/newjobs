@@ -1,6 +1,6 @@
 <div class="max-w-5xl mx-auto">
   <div class="mb-8">
-    <a href="/candidate/verification" class="text-sm text-blue-600">&larr; Back</a>
+    <a href="/candidate/verification" class="text-sm text-primary">&larr; Back</a>
   </div>
   <div class="bg-white shadow rounded-lg p-6 mb-6">
     <h2 class="text-lg font-semibold mb-2">Employment</h2>
@@ -38,7 +38,7 @@
           <label class="block text-sm font-medium text-gray-700">Upload PDF/DOC/JPG (max 5MB)</label>
           <input type="file" name="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg" class="mt-1 block w-full rounded-md border-gray-300" required />
         </div>
-        <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Upload</button>
+        <button class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Upload</button>
       </form>
 
       <div class="mt-6">
@@ -55,7 +55,7 @@
             ?>
             <li class="flex items-center justify-between">
               <span><?= htmlspecialchars(($doc['doc_type'] ?? '') . ' — ' . $name) ?></span>
-              <a href="<?= htmlspecialchars($doc['file_path'] ?? '') ?>" target="_blank" class="text-blue-600 hover:text-blue-800">Preview</a>
+              <a href="<?= htmlspecialchars($doc['file_path'] ?? '') ?>" target="_blank" class="text-primary hover:text-primary-900">Preview</a>
             </li>
           <?php endforeach; ?>
           <?php if (empty($documents ?? [])): ?>
@@ -94,7 +94,7 @@
             <input type="text" name="gst" class="mt-1 block w-full rounded-md border-gray-300" />
           </div>
         </div>
-        <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Send Verification Email</button>
+        <button class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Send Verification Email</button>
       </form>
       <div class="mt-4 text-sm text-gray-600">
         <?php if (!empty($request)): ?>
@@ -106,3 +106,14 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

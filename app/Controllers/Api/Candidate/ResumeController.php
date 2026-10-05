@@ -360,6 +360,156 @@ class ResumeController extends ApiController
     }
 
     /**
+     * GET /candidate/resumes/{id}/sections
+     * List all sections of a resume
+     */
+    public function sections(Request $request, Response $response, int $id): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $resume = Resume::find($id);
+        if (!$resume || $resume->candidate_id !== $user->id) {
+            $this->error($response, 'Resume not found', 404);
+            return;
+        }
+
+        $this->success($response, [
+            'sections' => $resume->getSectionsArray()
+        ]);
+    }
+
+    /**
+     * POST /candidate/resumes/{id}/sections
+     * Add a new section to a resume
+     */
+    public function addSection(Request $request, Response $response, int $id): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $resume = Resume::find($id);
+        if (!$resume || $resume->candidate_id !== $user->id) {
+            $this->error($response, 'Resume not found', 404);
+            return;
+        }
+
+        $data = $request->getJsonBody();
+        $errors = $this->validate($data, [
+            'section_type' => 'required|string',
+            'section_data' => 'required|array'
+        ]);
+
+        if (!empty($errors)) {
+            $this->validationError($response, $errors);
+            return;
+        }
+
+        $section = new \App\Models\ResumeSection();
+        $section->fill([
+            'resume_id' => $resume->id,
+            'section_type' => $data['section_type'],
+            'section_data' => json_encode($data['section_data']),
+            'sort_order' => $data['sort_order'] ?? 0,
+            'is_visible' => $data['is_visible'] ?? 1
+        ])->save();
+
+        $this->success($response, ['id' => $section->id], 'Section added successfully', 201);
+    }
+
+    /**
+     * PUT /candidate/resumes/{id}/sections/{section_id}
+     * Update a resume section
+     */
+    public function updateSection(Request $request, Response $response, int $id, int $section_id): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $section = \App\Models\ResumeSection::find($section_id);
+        if (!$section || $section->resume_id !== $id) {
+            $this->error($response, 'Section not found', 404);
+            return;
+        }
+
+        $data = $request->getJsonBody();
+        if (isset($data['section_data'])) {
+            $section->section_data = json_encode($data['section_data']);
+        }
+        if (isset($data['sort_order'])) {
+            $section->sort_order = $data['sort_order'];
+        }
+        if (isset($data['is_visible'])) {
+            $section->is_visible = $data['is_visible'] ? 1 : 0;
+        }
+
+        $section->save();
+
+        $this->success($response, ['id' => $section->id], 'Section updated');
+    }
+
+    /**
+     * DELETE /candidate/resumes/{id}/sections/{section_id}
+     * Delete a resume section
+     */
+    public function deleteSection(Request $request, Response $response, int $id, int $section_id): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $section = \App\Models\ResumeSection::find($section_id);
+        if (!$section || $section->resume_id !== $id) {
+            $this->error($response, 'Section not found', 404);
+            return;
+        }
+
+        $section->delete();
+
+        $this->success($response, [], 'Section deleted');
+    }
+
+    /**
+     * PATCH /candidate/resumes/{id}/sections/reorder
+     * Reorder sections
+     */
+    public function reorderSections(Request $request, Response $response, int $id): void
+    {
+        $user = $this->user($request);
+        if (!$user || $user->role !== 'candidate') {
+            $this->error($response, 'Unauthorized', 401);
+            return;
+        }
+
+        $data = $request->getJsonBody();
+        if (!isset($data['orders']) || !is_array($data['orders'])) {
+            $this->error($response, 'Orders array is required', 400);
+            return;
+        }
+
+        foreach ($data['orders'] as $order) {
+            if (isset($order['id'], $order['sort_order'])) {
+                \App\Models\ResumeSection::where('id', '=', $order['id'])
+                    ->where('resume_id', '=', $id)
+                    ->update(['sort_order' => $order['sort_order']]);
+            }
+        }
+
+        $this->success($response, [], 'Sections reordered');
+    }
+
+    /**
      * GET /candidate/resume-templates
      * List resume templates
      */

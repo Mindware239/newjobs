@@ -3,7 +3,7 @@
     <h1 class="text-3xl font-bold text-gray-900">Verification Management</h1>
     <p class="mt-2 text-sm text-gray-600">Assign, track and approve employer KYC</p>
     <div class="mt-2">
-      <a href="/master/verifications/candidates" class="text-blue-600 hover:text-blue-800">Go to Candidate Verifications →</a>
+      <a href="/master/verifications/candidates" class="text-primary hover:text-primary-900">Go to Candidate Verifications →</a>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
     </div>
     <a href="/master/verifications/queue" class="bg-white rounded-lg shadow p-4 hover:bg-gray-50">
       <div class="text-sm text-gray-500">My Queue</div>
-      <div class="text-sm font-medium text-blue-600 mt-1">View assigned verifications →</div>
+      <div class="text-sm font-medium text-primary mt-1">View assigned verifications →</div>
     </a>
   </div>
 
@@ -34,7 +34,7 @@
         <option value="approved" <?= ($filters['status'] ?? '') === 'approved' ? 'selected' : '' ?>>Approved</option>
         <option value="rejected" <?= ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' ?>>Rejected</option>
       </select>
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Filter</button>
+      <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Filter</button>
     </form>
   </div>
 
@@ -77,7 +77,7 @@
             </form>
           </td>
           <td class="px-6 py-4 text-right">
-            <a href="/master/verifications/<?= (int)$e['id'] ?>" class="text-blue-600 hover:text-blue-800">View</a>
+            <a href="/master/verifications/<?= (int)$e['id'] ?>" class="text-primary hover:text-primary-900">View</a>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -88,3 +88,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

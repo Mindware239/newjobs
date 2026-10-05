@@ -4,7 +4,6 @@ $user = $candidate ? $candidate->user() : null;
 $userEmail = $user ? $user->attributes['email'] ?? '' : '';
 $unreadMessages = $unreadMessages ?? 0;
 $unreadNotifications = $unreadNotifications ?? 0;
-ob_start();
 ?>
 <div x-data="savedJobsPage()" x-cloak>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -17,20 +16,20 @@ ob_start();
         <div class="border-b border-gray-200 mb-8">
             <nav class="flex space-x-8" aria-label="Tabs">
                 <button @click="activeTab = 'saved'"
-                   :class="activeTab === 'saved' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                   :class="activeTab === 'saved' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm relative transition-colors">
                     Saved Jobs
                     <span class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium" 
-                          :class="activeTab === 'saved' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          :class="activeTab === 'saved' ? 'bg-primary-50 text-primary' : 'bg-gray-100 text-gray-600'">
                         <?= count($savedJobs ?? []) ?>
                     </span>
                 </button>
                 <button @click="activeTab = 'applied'"
-                   :class="activeTab === 'applied' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                   :class="activeTab === 'applied' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                     Applied
                     <span class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium" 
-                          :class="activeTab === 'applied' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          :class="activeTab === 'applied' ? 'bg-primary-50 text-primary' : 'bg-gray-100 text-gray-600'">
                         <?= count($appliedJobs ?? []) ?>    
                     </span>
                 </button>
@@ -59,7 +58,7 @@ ob_start();
                 </div>
                 <h2 class="text-xl font-bold text-gray-900 mb-2">No saved jobs yet</h2>
                 <p class="text-gray-500 mb-8 max-w-sm mx-auto">Jobs you save will appear here so you can easily find and apply to them later.</p>
-                <a href="/candidate/jobs" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                <a href="/candidate/jobs" class="inline-flex items-center px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-600 transition shadow-lg shadow-primary-100">
                     Browse Jobs
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
@@ -75,7 +74,7 @@ ob_start();
                         <!-- Logo -->
                         <div class="flex-shrink-0">
                             <?php if (!empty($job['company_logo'])): ?>
-                                <img src="<?= htmlspecialchars($job['company_logo']) ?>" 
+                                <img src="<?= htmlspecialchars(fix_url($job['company_logo'])) ?>" 
                                      alt="<?= htmlspecialchars($job['company_name'] ?? '') ?>"
                                      class="w-16 h-16 rounded-lg object-contain bg-white border border-gray-100 p-1">
                             <?php else: ?>
@@ -89,7 +88,7 @@ ob_start();
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between">
                                 <div>
-                                    <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">       
+                                    <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors mb-1">       
                                         <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>">
                                             <?= htmlspecialchars($job['title'] ?? 'Job Title') ?>
                                         </a>
@@ -124,7 +123,7 @@ ob_start();
                                 </span>
 
                                 <?php if (!empty($job['salary_display'])): ?>
-                                <span class="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-medium">   
+                                <span class="flex items-center gap-1.5 px-2 py-0.5 bg-primary-50 text-primary-600 rounded font-medium">   
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
@@ -135,21 +134,31 @@ ob_start();
 
                             <div class="flex items-center gap-3 mt-5 pt-4 border-t border-gray-100">
                                 <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" 
-                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition">
+                                   class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition">
                                     View Details
                                 </a>
-                                <?php if (isset($applications[$job['id']])): ?>
-                                <span class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg border border-blue-100">
+                                <?php 
+                                $jobId = $job['id'] ?? 0;
+                                if (isset($applications[$jobId])): 
+                                ?>
+                                <span class="inline-flex items-center px-3 py-1 bg-primary-50 text-primary-600 text-sm font-medium rounded-lg border border-primary">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     Applied
                                 </span>
                                 <?php else: ?>
-                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>/apply" 
-                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition">
+                                <?php if (($job['job_type'] ?? 'internal') === 'external' && !empty($job['apply_link'])): ?>
+                                <a href="<?= htmlspecialchars($job['apply_link']) ?>" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition">
+                                    Apply on Company Site
+                                </a>
+                                <?php else: ?>
+                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $jobId) ?>/apply" 
+                                   class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition">
                                     Apply Now
                                 </a>
+                                <?php endif; ?>
                                 <?php endif; ?>
                                 <span class="text-xs text-gray-400 ml-auto">
                                     Saved <?= date('M d, Y', strtotime($job['saved_at'])) ?>
@@ -174,7 +183,7 @@ ob_start();
                 </div>
                 <h2 class="text-xl font-bold text-gray-900 mb-2">No applications yet</h2>
                 <p class="text-gray-500 mb-8 max-w-sm mx-auto">Track your applications here. Start applying to jobs to see them listed.</p>
-                <a href="/candidate/jobs" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                <a href="/candidate/jobs" class="inline-flex items-center px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-600 transition shadow-lg shadow-primary-100">
                     Find a Job
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -186,17 +195,17 @@ ob_start();
                 <?php foreach ($appliedJobs as $job): ?>
                 <div class="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-start gap-4 mb-4">
                             <?php if (!empty($job['company_logo'])): ?>
-                                <img src="<?= htmlspecialchars($job['company_logo']) ?>" class="w-12 h-12 rounded-lg object-contain bg-gray-50 border border-gray-100 p-1">
+                                <img src="<?= htmlspecialchars(fix_url($job['company_logo'])) ?>" class="w-12 h-12 rounded-lg object-contain bg-gray-50 border border-gray-100 p-1">
                             <?php else: ?>
-                                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
+                                <div class="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center text-primary font-bold border border-primary">
                                     <?= strtoupper(substr($job['company_name'] ?? 'C', 0, 1)) ?>
                                 </div>
                             <?php endif; ?>
                             <div>
                                 <h3 class="font-bold text-gray-900">
-                                    <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="hover:text-blue-600 transition">
+                                    <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="hover:text-primary transition">
                                         <?= htmlspecialchars($job['title'] ?? 'Job Title') ?>
                                     </a>
                                 </h3>
@@ -204,8 +213,20 @@ ob_start();
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
-                            <span class="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-100 capitalize">
-                                <?= $applications[$job['id']] ?? 'applied' ?>
+                            <?php 
+                            $jobId = $job['id'] ?? 0;
+                            $status = $applications[$jobId] ?? 'applied';
+                            $status = !empty($status) ? $status : 'applied';
+                            $application_id = $application_ids[$jobId] ?? null;
+                            
+                            if ($application_id && (strtolower($status) === 'applied' || strtolower($status) === 'reviewing' || strtolower($status) === 'screening')): 
+                            ?>
+                            <button onclick="withdrawApplication(<?= $application_id ?>)" class="text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-colors">
+                                Withdraw
+                            </button>
+                            <?php endif; ?>
+                            <span class="px-3 py-1 bg-primary-50 text-primary-600 text-sm font-semibold rounded-lg border border-primary capitalize">
+                                <?= htmlspecialchars($status) ?>
                             </span>
                             <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="text-gray-400 hover:text-gray-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,10 +279,41 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
+
+async function withdrawApplication(applicationId) {
+    if (!confirm('Are you sure you want to withdraw this application? This action cannot be undone.')) return;
+    
+    try {
+        const response = await fetch(`/api/v1/candidate/applications/${applicationId}/withdraw`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Application withdrawn successfully');
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to withdraw application');
+        }
+    } catch (error) {
+        console.error('Error withdrawing application:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
 </script>
 
-<?php
-$content = ob_get_clean();
-$title = 'My Jobs';
-require __DIR__ . '/../layout.php';
-?>
+
+
+
+
+
+
+
+
+
+
+

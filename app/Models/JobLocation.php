@@ -17,6 +17,26 @@ class JobLocation extends Model
         return Job::find($this->attributes['job_id'] ?? 0);
     }
 
+    public static function getForJob(int $jobId): array
+    {
+        $instance = new self();
+        $db = $instance->getDb();
+        return $db->fetchAll(
+            "SELECT 
+                COALESCE(c.name, jl.city) as city, 
+                COALESCE(s.name, jl.state) as state, 
+                COALESCE(co.name, jl.country) as country,
+                jl.latitude,
+                jl.longitude
+             FROM job_locations jl
+             LEFT JOIN cities c ON jl.city_id = c.id
+             LEFT JOIN states s ON jl.state_id = s.id
+             LEFT JOIN countries co ON jl.country_id = co.id
+             WHERE jl.job_id = :job_id",
+            ['job_id' => $jobId]
+        );
+    }
+
     public static function getDistinctRaw(): array
     {
         $db = (new static())->getDb();

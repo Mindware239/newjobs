@@ -85,18 +85,43 @@ class AuthController extends BaseController
                     'created_by' => 'self',
                     'source' => 'self_registration'
                 ]));
-                try {
-                    \App\Services\NotificationService::queueEmail(
-                        $user->email,
-                        'candidate_welcome',
-                        ['candidate_user_id' => (int)$user->id]
-                    );
-                } catch (\Exception $e) {}
-                try {
-                    $matchService = new \App\Services\JobMatchService();
-                    $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
-                    $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
-                } catch (\Throwable $t) {}
+                // Send welcome / verification email and notify admin
+            try {
+                // Send email verification OTP
+                \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+
+                // Send role-based welcome email
+                \App\Services\NotificationService::send(
+                    (int)$user->id,
+                    'candidate_welcome',
+                    'Welcome to ' . (getenv('PORTAL_NAME') ?: 'Jobsence'),
+                    'Welcome, ' . $data['full_name'] . '! Thanks for joining Jobsence. We\'re excited to help you find your next career opportunity.',
+                    ['candidate_name' => $data['full_name']],
+                    null,
+                    ['email']
+                );
+
+                // Notify Admin about new candidate registration
+                $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+                \App\Services\MailService::sendEmail(
+                    $adminMail,
+                    'New Candidate Registered: ' . $data['full_name'],
+                    "<p>A new candidate has registered on the platform:</p>
+                     <ul>
+                        <li><strong>Name:</strong> {$data['full_name']}</li>
+                        <li><strong>Email:</strong> {$user->email}</li>
+                        <li><strong>Mobile:</strong> {$data['mobile']}</li>
+                     </ul>"
+                );
+            } catch (\Throwable $e) {
+                error_log('Failed to send notifications during candidate registration: ' . $e->getMessage());
+            }
+
+            try {
+                $matchService = new \App\Services\JobMatchService();
+                $matchService->findMatchingJobsForCandidateAndNotifyEmployers($candidate);
+                $matchService->findMatchingJobsForCandidateAndNotifyCandidate($candidate);
+            } catch (\Throwable $t) {}
             }
 
             $response->json(['message' => 'Registration successful', 'user_id' => $user->id], 201);
@@ -137,6 +162,10 @@ class AuthController extends BaseController
             }
             
             error_log("Registration data received: " . json_encode(array_keys($data)));
+
+            if (!isset($data['confirm_password']) && isset($data['password_confirm'])) {
+                $data['confirm_password'] = $data['password_confirm'];
+            }
             
             $errors = $this->validate($data, [
                 'full_name' => 'required',
@@ -149,6 +178,34 @@ class AuthController extends BaseController
 
             if (!empty($errors)) {
                 $response->json(['errors' => $errors], 422);
+                return;
+            }
+
+            $phoneDigits = preg_replace('/\D+/', '', (string)($data['phone'] ?? ''));
+            if (!preg_match('/^[0-9]{10}$/', $phoneDigits)) {
+                $response->json(['error' => 'Mobile Number must be 10 digits'], 422);
+                return;
+            }
+
+            $postalCode = trim((string)($data['pincode'] ?? $data['postal_code'] ?? ($data['address']['postal_code'] ?? '')));
+            if ($postalCode !== '' && !preg_match('/^[0-9]{6}$/', $postalCode)) {
+                $response->json(['error' => 'Pin Code must be exactly 6 digits'], 422);
+                return;
+            }
+
+            $gstin = strtoupper(trim((string)($data['gstin'] ?? $data['tax_id'] ?? '')));
+            if ($gstin !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $gstin)) {
+                $response->json(['error' => 'Please enter valid GSTIN number.'], 422);
+                return;
+            }
+
+            $emailVerification = VerificationService::verifyEmailAuthOTP(
+                (string)($data['email'] ?? ''),
+                (string)($data['email_otp'] ?? ''),
+                'register_employer'
+            );
+            if (empty($emailVerification['success'])) {
+                $response->json(['error' => $emailVerification['error'] ?? 'Invalid or expired email OTP'], 422);
                 return;
             }
 
@@ -200,18 +257,22 @@ class AuthController extends BaseController
         }
         $employer->fill([
             'user_id' => $user->id,
+            'register_as' => $data['register_as'] ?? 'company',
             'company_name' => $data['company_name'] ?? '',
             'company_slug' => $employer->generateSlug($data['company_name'] ?? ('company-' . $user->id)),
             'website' => $data['website'] ?? null,
             'description' => $data['description'] ?? null,
             'industry' => $industry,
             'company_type' => $data['company_type'] ?? null,
+            'profession_type' => $data['profession_type'] ?? null,
+            'service_category' => $data['service_category'] ?? null,
             'size' => $data['company_size'] ?? null,
             'address' => !empty($address) ? json_encode($address, JSON_UNESCAPED_UNICODE) : null,
-            'country' => $data['country'] ?? null,
+            'country' => $data['country'] ?? 'India',
             'state' => $address['state'] ?? null,
             'city' => $address['city'] ?? null,
-            'postal_code' => $address['postal_code'] ?? null,
+            'postal_code' => $postalCode ?: null,
+            'tax_id' => $gstin ?: null,
             'kyc_status' => 'not_submitted'
         ]);
         
@@ -311,6 +372,40 @@ class AuthController extends BaseController
         $_SESSION['user_role'] = $user->role;
         error_log("✓ Session set - User ID: {$user->id}, Role: {$user->role}");
 
+        // Send welcome / verification email and notify admin
+        try {
+            // Send email verification OTP
+            \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+
+            // Send role-based welcome email
+            $compName = $data['company_name'] ?? 'Jobsence';
+            \App\Services\NotificationService::send(
+                (int)$user->id,
+                'employer_welcome',
+                'Welcome to ' . (getenv('PORTAL_NAME') ?: 'Jobsence'),
+                'Welcome, ' . $data['full_name'] . '! Your employer account has been created. Please complete your KYC verification to start posting jobs.',
+                ['employer_name' => $data['full_name'], 'company_name' => $compName],
+                null,
+                ['email']
+            );
+
+            // Notify Admin about new employer registration
+            $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+            \App\Services\MailService::sendEmail(
+                $adminMail,
+                'New Employer Registered: ' . $compName,
+                "<p>A new employer has registered on the platform:</p>
+                 <ul>
+                    <li><strong>Company:</strong> {$compName}</li>
+                    <li><strong>Contact Name:</strong> {$data['full_name']}</li>
+                    <li><strong>Email:</strong> {$user->email}</li>
+                    <li><strong>Mobile:</strong> {$data['phone']}</li>
+                 </ul>"
+            );
+        } catch (\Throwable $e) {
+            error_log('Failed to send notifications during employer registration: ' . $e->getMessage());
+        }
+
         // Always return JSON with redirect info for JavaScript to handle
         $redirectUrl = '/employer/profile?setup=1';
         
@@ -363,6 +458,24 @@ class AuthController extends BaseController
                     $response->view('auth/register-candidate', [
                         'title' => 'Candidate Registration',
                         'errors' => $errors,
+                        'old' => $data
+                    ]);
+                }
+                return;
+            }
+
+            $emailVerification = VerificationService::verifyEmailAuthOTP(
+                (string)($data['email'] ?? ''),
+                (string)($data['email_otp'] ?? ''),
+                'register_candidate'
+            );
+            if (empty($emailVerification['success'])) {
+                if ($isJson) {
+                    $response->json(['error' => $emailVerification['error'] ?? 'Invalid or expired email OTP'], 422);
+                } else {
+                    $response->view('auth/register-candidate', [
+                        'title' => 'Candidate Registration',
+                        'error' => $emailVerification['error'] ?? 'Invalid or expired email OTP',
                         'old' => $data
                     ]);
                 }
@@ -676,19 +789,25 @@ class AuthController extends BaseController
 
     public function sendPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $response->json([
+            'success' => false,
+            'error' => 'Mobile OTP login/registration is coming soon. Please use Email OTP.'
+        ], 503);
+    }
 
-        if ($phone === '') {
-            $response->json(['error' => 'Phone number is required'], 422);
+    public function sendEmailOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $email = trim((string)($data['email'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $role = trim((string)($data['role'] ?? ''));
+
+        if ($email === '') {
+            $response->json(['error' => 'Email is required'], 422);
             return;
         }
 
-        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, [
-            'role' => $data['role'] ?? null,
-        ]);
-
+        $result = VerificationService::sendEmailAuthOTP($email, $purpose, ['role' => $role]);
         if (empty($result['success'])) {
             $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
             return;
@@ -696,138 +815,35 @@ class AuthController extends BaseController
 
         $payload = [
             'success' => true,
-            'message' => 'OTP sent successfully',
-            'phone' => $result['phone'],
-            'purpose' => $result['purpose'],
-            'mode' => $result['mode'] ?? 'sms',
+            'message' => 'OTP sent to your email',
+            'email' => $result['email'] ?? $email,
+            'purpose' => $result['purpose'] ?? $purpose,
         ];
-
-        if (!empty($result['otp_preview'])) {
-            $payload['otp_preview'] = $result['otp_preview'];
-        }
-
         $response->json($payload);
     }
 
     public function loginWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $otp = trim((string)($data['otp'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
-
-        if ($phone === '' || $otp === '') {
-            $response->json(['error' => 'phone and otp are required'], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $user = $authService->loginByPhone($phone);
-        if (!$user) {
-            $response->json(['error' => 'Account not found for this phone number'], 404);
-            return;
-        }
-
-        $this->signInUser($user);
         $response->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'redirect' => $this->resolveRedirectForUser($user),
-            'user' => [
-                'id' => (int)$user->id,
-                'email' => $user->email,
-                'role' => $user->role,
-                'phone' => $user->phone,
-            ],
-        ]);
+            'success' => false,
+            'error' => 'Mobile OTP login is coming soon. Please use Email OTP login.'
+        ], 503);
     }
 
     public function registerCandidateWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $errors = $this->validate($data, [
-            'phone' => 'required',
-            'otp' => 'required',
-            'full_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
-        ]);
-
-        if (!empty($errors)) {
-            $response->json(['errors' => $errors], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $result = $authService->registerCandidateWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
-            return;
-        }
-
-        $user = $result['user'];
-        $this->signInUser($user);
-
         $response->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'redirect' => $this->resolveRedirectForUser($user),
-            'user_id' => (int)$user->id,
-            'additional_mobile' => $result['additional_mobile'] ?? null,
-        ], 201);
+            'success' => false,
+            'error' => 'Mobile OTP candidate registration is coming soon. Please use Email OTP registration.'
+        ], 503);
     }
 
     public function registerEmployerWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $errors = $this->validate($data, [
-            'phone' => 'required',
-            'otp' => 'required',
-            'company_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
-        ]);
-
-        if (!empty($errors)) {
-            $response->json(['errors' => $errors], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $result = $authService->registerEmployerWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
-            return;
-        }
-
-        $user = $result['user'];
-        $this->signInUser($user);
-
         $response->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'redirect' => $this->resolveRedirectForUser($user),
-            'user_id' => (int)$user->id,
-            'additional_mobile' => $result['additional_mobile'] ?? null,
-        ], 201);
+            'success' => false,
+            'error' => 'Mobile OTP employer registration is coming soon. Please use Email OTP registration.'
+        ], 503);
     }
 
     public function googleLogin(Request $request, Response $response): void

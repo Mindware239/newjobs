@@ -27,10 +27,10 @@ if (!isset($columns)) {
 }
 
 $stages = [
-    'new' => ['label' => 'New Lead', 'color' => 'bg-indigo-100 text-indigo-700', 'border' => 'border-indigo-200'],
-    'contacted' => ['label' => 'Contacted', 'color' => 'bg-blue-100 text-blue-700', 'border' => 'border-blue-200'],
+    'new' => ['label' => 'New Lead', 'color' => 'bg-primary-50 text-primary-600', 'border' => 'border-primary-100'],
+    'contacted' => ['label' => 'Contacted', 'color' => 'bg-primary-50 text-primary-600', 'border' => 'border-primary-100'],
     'follow_up' => ['label' => 'Follow Up', 'color' => 'bg-amber-100 text-amber-700', 'border' => 'border-amber-200'],
-    'demo_done' => ['label' => 'Demo Done', 'color' => 'bg-purple-100 text-purple-700', 'border' => 'border-purple-200'],
+    'demo_done' => ['label' => 'Demo Done', 'color' => 'bg-primary-50 text-primary-600', 'border' => 'border-primary-100'],
     'payment_pending' => ['label' => 'Payment Pending', 'color' => 'bg-orange-100 text-orange-700', 'border' => 'border-orange-200'],
     'converted' => ['label' => 'Converted', 'color' => 'bg-emerald-100 text-emerald-700', 'border' => 'border-emerald-200'],
     'lost' => ['label' => 'Lost', 'color' => 'bg-slate-100 text-slate-700', 'border' => 'border-slate-200'],
@@ -57,7 +57,7 @@ $stages = [
                 </svg>
                 Filter
             </button>
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 flex items-center gap-2">
+            <button class="px-4 py-2 bg-primary text-white rounded-xl font-medium hover:bg-primary-600 transition-colors shadow-lg shadow-primary-100 flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -101,7 +101,7 @@ $stages = [
                         </div>
                     <?php else: ?>
                         <?php foreach ($deals as $deal): ?>
-                        <div class="group bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-300 transition-all cursor-move relative">
+                        <div class="group bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-primary transition-all cursor-move relative">
                             <!-- Priority Indicator -->
                             <?php if (($deal['priority'] ?? '') === 'high'): ?>
                                 <div class="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 ring-2 ring-red-100" title="High Priority"></div>
@@ -114,7 +114,7 @@ $stages = [
                                 <span class="px-2 py-1 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
                                     $<?= number_format($deal['value'] ?? 0) ?>
                                 </span>
-                                <span class="px-2 py-1 text-xs font-medium rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                <span class="px-2 py-1 text-xs font-medium rounded-lg bg-primary-50 text-primary border border-primary">
                                     SaaS
                                 </span>
                             </div>
@@ -126,7 +126,7 @@ $stages = [
                                     </div>
                                     <span class="text-xs text-slate-400"><?= htmlspecialchars($deal['date'] ?? 'today') ?></span>
                                 </div>
-                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 transition-all">
+                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary transition-all">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                     </svg>
@@ -155,3 +155,14 @@ $stages = [
     border-radius: 20px;
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+

@@ -12,7 +12,7 @@
         <div class="bg-white rounded-xl shadow p-8">
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-2xl font-bold">Batch #<?= (int)$batch->id ?></h1>
-                <a href="/bulk/batches/<?= (int)$batch->id ?>" class="text-sm text-blue-600">Refresh</a>
+                <a href="/bulk/batches/<?= (int)$batch->id ?>" class="text-sm text-primary">Refresh</a>
             </div>
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <div class="rounded-lg bg-gray-50 p-4">
@@ -74,3 +74,14 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

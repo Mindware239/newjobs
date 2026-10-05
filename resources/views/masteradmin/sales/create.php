@@ -9,7 +9,7 @@
             </p>
         </div>
         <div class="mt-4 flex md:mt-0 md:ml-4">
-            <a href="/master/sales/leads" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <a href="/master/sales/leads" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                 Cancel
             </a>
         </div>
@@ -28,25 +28,25 @@
                         <div class="col-span-1">
                             <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">Company Name <span class="text-red-500">*</span></label>
                             <input type="text" name="company_name" id="company_name" required 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                         </div>
 
                         <div class="col-span-1">
                             <label for="contact_name" class="block text-sm font-medium text-gray-700 mb-1">Contact Name <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_name" id="contact_name" required 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                         </div>
 
                         <div class="col-span-1">
                             <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                             <input type="email" name="contact_email" id="contact_email" 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                         </div>
 
                         <div class="col-span-1">
                             <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                             <input type="text" name="contact_phone" id="contact_phone" 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                         </div>
                     </div>
                 </div>
@@ -64,10 +64,10 @@
                                     <span class="text-gray-500 sm:text-sm">$</span>
                                 </div>
                                 <input type="number" name="deal_value" id="deal_value" step="0.01" placeholder="0.00" 
-                                    class="block w-full pl-7 pr-12 px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                    class="block w-full pl-7 pr-12 px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                                 <div class="absolute inset-y-0 right-0 flex items-center">
                                     <label for="currency" class="sr-only">Currency</label>
-                                    <select id="currency" name="currency" class="focus:ring-indigo-500 focus:border-indigo-500 h-full py-0 pl-2 pr-7 border-transparent bg-transparent text-gray-500 sm:text-sm rounded-md">
+                                    <select id="currency" name="currency" class="focus:ring-primary focus:border-primary h-full py-0 pl-2 pr-7 border-transparent bg-transparent text-gray-500 sm:text-sm rounded-md">
                                         <option value="INR">INR</option>
                                         <option value="USD">USD</option>
                                         <option value="EUR">EUR</option>
@@ -80,7 +80,7 @@
                         <div class="sm:col-span-3">
                             <label for="source" class="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
                             <select id="source" name="source" 
-                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md transition duration-150 ease-in-out border">
+                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md transition duration-150 ease-in-out border">
                                 <option value="manual">Manual Entry</option>
                                 <option value="website">Website Inquiry</option>
                                 <option value="referral">Referral</option>
@@ -100,7 +100,7 @@
                         <div class="col-span-1">
                             <label for="assigned_to" class="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
                             <select id="assigned_to" name="assigned_to" 
-                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md transition duration-150 ease-in-out border">
+                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md transition duration-150 ease-in-out border">
                                 <option value="">-- Unassigned --</option>
                                 <?php foreach ($salesTeam as $staff): ?>
                                     <option value="<?= $staff['id'] ?>">
@@ -113,7 +113,7 @@
                         <div class="col-span-1">
                             <label for="stage" class="block text-sm font-medium text-gray-700 mb-1">Initial Stage</label>
                             <select id="stage" name="stage" 
-                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md transition duration-150 ease-in-out border">
+                                class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md transition duration-150 ease-in-out border">
                                 <option value="new">New</option>
                                 <option value="contacted">Contacted</option>
                                 <option value="demo_done">Demo Done</option>
@@ -125,7 +125,7 @@
                         <div class="col-span-1">
                             <label for="next_followup_at" class="block text-sm font-medium text-gray-700 mb-1">Next Follow-up</label>
                             <input type="datetime-local" name="next_followup_at" id="next_followup_at" 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out">
                         </div>
                     </div>
 
@@ -133,7 +133,7 @@
                         <div class="relative flex items-start">
                             <div class="flex items-center h-5">
                                 <input id="is_urgent" name="is_urgent" type="checkbox" 
-                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded transition duration-150 ease-in-out">
+                                    class="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded transition duration-150 ease-in-out">
                             </div>
                             <div class="ml-3 text-sm">
                                 <label for="is_urgent" class="font-medium text-gray-700">Urgent Lead</label>
@@ -143,7 +143,7 @@
                         <div class="relative flex items-start">
                             <div class="flex items-center h-5">
                                 <input id="is_featured" name="is_featured" type="checkbox" 
-                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded transition duration-150 ease-in-out">
+                                    class="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded transition duration-150 ease-in-out">
                             </div>
                             <div class="ml-3 text-sm">
                                 <label for="is_featured" class="font-medium text-gray-700">Featured</label>
@@ -157,7 +157,7 @@
                 <div>
                     <label for="internal_notes" class="block text-sm font-medium text-gray-700 mb-1">Internal Notes</label>
                     <textarea id="internal_notes" name="internal_notes" rows="4" 
-                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"></textarea>
+                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out"></textarea>
                 </div>
 
             </div>
@@ -166,10 +166,21 @@
                 <a href="/master/sales/leads" class="text-sm font-medium text-gray-700 hover:text-gray-500 mr-5">
                     Cancel
                 </a>
-                <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150 ease-in-out">
                     Create Lead
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

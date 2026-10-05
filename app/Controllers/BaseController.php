@@ -18,8 +18,17 @@ abstract class BaseController
         header('X-Content-Type-Options: nosniff');
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header("Permissions-Policy: geolocation=(self), camera=()");
-        header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+        $jitsiDomain = trim((string)($_ENV['JITSI_DOMAIN'] ?? 'meet.jit.si'));
+        $jitsiDomain = rtrim((string)preg_replace('#^https?://#i', '', $jitsiDomain), '/');
+        $jitsiDomain = preg_replace('/[^A-Za-z0-9.-]/', '', $jitsiDomain) ?: 'meet.jit.si';
+        if ($jitsiDomain === '' || strtolower($jitsiDomain) === 'your-jitsi-domain.com') {
+            $jitsiDomain = 'meet.jit.si';
+        }
+        $jitsiOrigin = 'https://' . $jitsiDomain;
+        header('Permissions-Policy: geolocation=(self), camera=(self "https://meet.jit.si" "' . $jitsiOrigin . '"), microphone=(self "https://meet.jit.si" "' . $jitsiOrigin . '"), display-capture=(self "https://meet.jit.si" "' . $jitsiOrigin . '"), fullscreen=(self "https://meet.jit.si" "' . $jitsiOrigin . '"), autoplay=(self "https://meet.jit.si" "' . $jitsiOrigin . '")');
+        if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443')) {
+            header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+        }
         $this->loadCurrentUser();
         $this->verifyCsrf(new Request());
     }
@@ -201,7 +210,21 @@ abstract class BaseController
             return;
         }
 
-        $path = $request->getPath();
+        $path = '/' . ltrim((string)$request->getPath(), '/');
+        $csrfExempt = [
+            '/webhook/razorpay',
+            '/gateway/cashfree/webhook',
+            '/candidate/premium/cashfree/webhook',
+            '/payments/razorpay/webhook',
+            '/payments/cashfree/webhook',
+            '/api/v1/payments/razorpay/webhook',
+            '/api/v1/payments/cashfree/webhook',
+        ];
+        foreach ($csrfExempt as $exempt) {
+            if ($path === $exempt || strpos($path, $exempt) === 0) {
+                return;
+            }
+        }
         if (strpos($path, '/api/') === 0) {
             return;
         }
@@ -224,6 +247,44 @@ abstract class BaseController
             http_response_code(419);
             exit('CSRF token expired');
         }
+    }
+
+    /**
+     * Standard success response
+     */
+    protected function success(
+        Response $response,
+        $data = [],
+        string $message = "Success",
+        int $code = 200
+    ): void {
+        $response->json([
+            'status' => true,
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+            'error' => null,
+            'errors' => null
+        ], $code);
+    }
+
+    /**
+     * Standard error response
+     */
+    protected function error(
+        Response $response,
+        string $message,
+        int $code = 400,
+        ?array $errors = null
+    ): void {
+        $response->json([
+            'status' => false,
+            'success' => false,
+            'message' => $message,
+            'data' => null,
+            'error' => $message,
+            'errors' => $errors
+        ], $code);
     }
 }
 

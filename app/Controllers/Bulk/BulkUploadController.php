@@ -7,13 +7,20 @@ namespace App\Controllers\Bulk;
 use App\Controllers\BaseController;
 use App\Core\Request;
 use App\Core\Response;
-use App\Core\Database;
 use App\Models\BulkUploadAccount;
 use App\Models\ResumeBatch;
 use App\Models\ResumeFile;
+use App\Repositories\BulkUploadRepository;
 
 class BulkUploadController extends BaseController
 {
+    private BulkUploadRepository $bulkUploadRepository;
+
+    public function __construct()
+    {
+        $this->bulkUploadRepository = new BulkUploadRepository();
+    }
+
     private function currentAccount(): ?BulkUploadAccount
     {
         $id = (int)($_SESSION['bulk_account_id'] ?? 0);
@@ -206,9 +213,8 @@ class BulkUploadController extends BaseController
                 }
             }
         }
-        $db = Database::getInstance();
         if ($accepted > 0) {
-            $db->execute("UPDATE bulk_upload_accounts SET limit_used = COALESCE(limit_used,0) + :c WHERE id = :id", ['c' => $accepted, 'id' => $acc->id]);
+            $this->bulkUploadRepository->incrementAccountLimitUsed((int)$acc->id, (int)$accepted);
         } else {
             error_log("BulkUpload: no files accepted for batch {$batch->id}");
         }
@@ -281,9 +287,8 @@ class BulkUploadController extends BaseController
     {
         $acc = $this->currentAccount();
         if (!$acc) { $response->redirect('/bulk/login'); return; }
-        $db = Database::getInstance();
-        $files = $db->fetchAll("SELECT rf.* FROM resume_files rf INNER JOIN resume_batches rb ON rf.batch_id = rb.id WHERE rb.bulk_account_id = :id ORDER BY rf.id DESC LIMIT 200", ['id' => (int)$acc->id]);
-        $agg = $db->fetchAll("SELECT rf.status AS status, COUNT(*) c FROM resume_files rf INNER JOIN resume_batches rb ON rf.batch_id = rb.id WHERE rb.bulk_account_id = :id GROUP BY rf.status", ['id' => (int)$acc->id]);
+        $files = $this->bulkUploadRepository->getFilesForAccount((int)$acc->id, 200);
+        $agg = $this->bulkUploadRepository->getFileStatusAggregateForAccount((int)$acc->id);
         $p=0;$f=0;$pn=0; foreach ($agg as $a){ if (($a['status']??'')==='processed') $p+=(int)$a['c']; elseif (($a['status']??'')==='failed') $f+=(int)$a['c']; else $pn+=(int)$a['c']; }
         $remaining = max(0, (int)$acc->attributes['limit_total'] - (int)($acc->attributes['limit_used'] ?? 0));
         $response->view('bulk/files', [
@@ -299,8 +304,7 @@ class BulkUploadController extends BaseController
         $acc = $this->currentAccount();
         if (!$acc) { $response->redirect('/bulk/login'); return; }
         $fileId = (int)$request->param('id', 0);
-        $db = Database::getInstance();
-        $f = $db->fetchOne("SELECT rf.* FROM resume_files rf INNER JOIN resume_batches rb ON rf.batch_id = rb.id WHERE rf.id = :id AND rb.bulk_account_id = :bid", ['id' => $fileId, 'bid' => (int)$acc->id]) ?? [];
+        $f = $this->bulkUploadRepository->findFileForAccount($fileId, (int)$acc->id) ?? [];
         if (!$f) { $response->setStatusCode(404); $response->setBody('File not found'); return; }
         $response->download((string)$f['filepath'], (string)($f['filename'] ?? basename((string)$f['filepath'])));
     }

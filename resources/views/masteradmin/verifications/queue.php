@@ -24,7 +24,7 @@
           <td class="px-6 py-4 text-gray-700"><?= htmlspecialchars($e['employer_email'] ?? '') ?></td>
           <td class="px-6 py-4 text-gray-500">Pending</td>
           <td class="px-6 py-4 text-right">
-            <a href="/master/verifications/<?= (int)$e['id'] ?>" class="text-blue-600 hover:text-blue-800">Verify</a>
+            <a href="/master/verifications/<?= (int)$e['id'] ?>" class="text-primary hover:text-primary-900">Verify</a>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -35,4 +35,15 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

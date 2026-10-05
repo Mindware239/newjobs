@@ -24,7 +24,7 @@ echo "== Job Match + Notifications Test ==\n";
 // Load env if available
 try {
     if (class_exists('\\Dotenv\\Dotenv')) {
-        \Dotenv\Dotenv::createImmutable($root)->safeLoad();
+        \Dotenv\Dotenv::createUnsafeMutable($root)->safeLoad();
     }
 } catch (\Throwable $t) {}
 

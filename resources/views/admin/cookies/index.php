@@ -4,15 +4,15 @@
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-gray-900">Cookie & Consent Management</h1>
     <div class="flex gap-2">
-      <a href="/admin/cookies/export" class="px-3 py-2 bg-indigo-600 text-white rounded-md">Export Consents CSV</a>
+      <a href="/admin/cookies/export" class="px-3 py-2 bg-primary text-white rounded-md">Export Consents CSV</a>
       <button @click="forceReconsent" class="px-3 py-2 bg-orange-600 text-white rounded-md">Force Re‑consent</button>
     </div>
   </div>
   <div class="flex items-center gap-3">
-    <button @click="tab='overview'" :class="tab==='overview'?'bg-indigo-600 text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Overview</button>
-    <button @click="tab='categories'" :class="tab==='categories'?'bg-indigo-600 text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Categories</button>
-    <button @click="tab='policy'" :class="tab==='policy'?'bg-indigo-600 text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Policy</button>
-    <button @click="tab='definitions'" :class="tab==='definitions'?'bg-indigo-600 text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Definitions</button>
+    <button @click="tab='overview'" :class="tab==='overview'?'bg-primary text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Overview</button>
+    <button @click="tab='categories'" :class="tab==='categories'?'bg-primary text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Categories</button>
+    <button @click="tab='policy'" :class="tab==='policy'?'bg-primary text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Policy</button>
+    <button @click="tab='definitions'" :class="tab==='definitions'?'bg-primary text-white':'bg-white text-gray-700'" class="px-4 py-2 rounded-lg border">Definitions</button>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-show="tab==='overview'">
@@ -52,7 +52,7 @@
         <div class="text-sm">
           <div class="flex items-center justify-between">
             <span>Version</span>
-            <span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border"><?= htmlspecialchars($activePolicy['version_number'] ?? '') ?></span>
+            <span class="px-2 py-0.5 rounded bg-primary-50 text-primary-600 border"><?= htmlspecialchars($activePolicy['version_number'] ?? '') ?></span>
           </div>
           <div class="flex items-center justify-between mt-2">
             <span>Published</span>
@@ -62,7 +62,7 @@
             <span>Re‑consent</span>
             <span><?= ((int)($activePolicy['requires_reconsent'] ?? 0)===1)?'Yes':'No' ?></span>
           </div>
-          <a href="/cookie/policy" class="block mt-3 text-indigo-600">View Full Policy →</a>
+          <a href="/cookie/policy" class="block mt-3 text-primary">View Full Policy →</a>
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@
                 <div class="flex items-center gap-2">
                   <span class="font-semibold text-gray-900"><?= htmlspecialchars($cat['name']) ?></span>
                   <?php if ((int)($cat['is_mandatory'] ?? 0) === 1): ?>
-                    <span class="text-xs px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">Mandatory</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-primary-50 text-primary-600 border border-primary">Mandatory</span>
                   <?php endif; ?>
                   <?php if ((int)($cat['is_active'] ?? 1) === 1): ?>
                     <span class="text-xs px-2 py-0.5 rounded bg-green-50 text-green-700 border border-green-100">Active</span>
@@ -130,7 +130,7 @@
         </table>
       </div>
       <div class="mt-4">
-        <button @click="editDefinition(null)" class="px-3 py-2 bg-indigo-600 text-white rounded-md">Add Definition</button>
+        <button @click="editDefinition(null)" class="px-3 py-2 bg-primary text-white rounded-md">Add Definition</button>
       </div>
     </div>
   </div>
@@ -151,7 +151,7 @@
               </div>
               <div class="text-xs text-gray-500 mt-1">Effective: <?= htmlspecialchars($v['effective_from']) ?> · Re‑consent: <?= ((int)$v['requires_reconsent']===1)?'Yes':'No' ?></div>
             </div>
-            <a class="text-xs text-indigo-600 hover:underline" href="/cookie/policy?version=<?= urlencode($v['version_number']) ?>">View</a>
+            <a class="text-xs text-primary hover:underline" href="/cookie/policy?version=<?= urlencode($v['version_number']) ?>">View</a>
           </div>
           <?php endforeach; ?>
         </div>
@@ -204,7 +204,7 @@
         </div>
         <div class="mt-4 flex justify-end gap-2">
           <button @click="showDefModal=false" class="px-3 py-2 bg-gray-100 rounded">Cancel</button>
-          <button @click="saveDefinition" class="px-3 py-2 bg-indigo-600 text-white rounded">Save</button>
+          <button @click="saveDefinition" class="px-3 py-2 bg-primary text-white rounded">Save</button>
         </div>
       </div>
     </div>
@@ -271,9 +271,20 @@ function cookieAdmin(){
       datasets:[{
         label:'Accepted',
         data:[<?= (int)($stats['functional'] ?? 0) ?>,<?= (int)($stats['analytics'] ?? 0) ?>,<?= (int)($stats['marketing'] ?? 0) ?>,<?= (int)($stats['performance'] ?? 0) ?>],
-        backgroundColor:['#6366F1','#10B981','#F59E0B','#8B5CF6']
+        backgroundColor:['#f05537','#10B981','#F59E0B','#f05537']
       }]
     };
     new Chart(ctx,{type:'bar',data:data,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
   })();
 </script>
+
+
+
+
+
+
+
+
+
+
+

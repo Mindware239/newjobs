@@ -16,6 +16,11 @@ class InterviewRoomController extends BaseController
 {
     public function room(Request $request, Response $response): void
     {
+        $jitsi = new JitsiService();
+        if (!$this->ensureSecureMediaOrigin($request, $response, $jitsi, false)) {
+            return;
+        }
+
         if (!$this->requireAuth($request, $response)) {
             return;
         }
@@ -80,8 +85,6 @@ class InterviewRoomController extends BaseController
             return;
         }
 
-        $jitsi = new JitsiService();
-
         $employerId = (int)$row['employer_id'];
         $premiumNow = $jitsi->isPremiumForEmployer($employerId);
 
@@ -101,20 +104,14 @@ class InterviewRoomController extends BaseController
         ];
 
         $status = (string)($row['status'] ?? 'scheduled');
-        // CRITICAL FIX: Allow candidates to load Jitsi if room exists (not just when status is 'live')
-        // This fixes the issue where candidate can't join even when employer has started the meeting
         $roomExists = !empty($row['room_name']);
-        
+        $roomCanStillJoin = $roomExists && empty($row['ended_at']) && !in_array($status, ['cancelled', 'completed'], true);
         if ($capabilities['can_start'] || $isAdmin) {
-            // Employer/admin can always load Jitsi (they can start meetings)
             $canLoadJitsi = true;
         } elseif ($isCandidate) {
-            // Candidate can load Jitsi if:
-            // 1. Status is 'live' (normal case), OR
-            // 2. Room exists (allows late joiners even if status shows as completed)
-            $canLoadJitsi = ($status === 'live') || ($roomExists && $status !== 'cancelled');
+            $canLoadJitsi = $status === 'live' || $roomCanStillJoin;
         } else {
-            $canLoadJitsi = ($status === 'live');
+            $canLoadJitsi = $status === 'live' && $roomExists;
         }
 
         $displayName = $this->currentUser->attributes['name']
@@ -130,6 +127,7 @@ class InterviewRoomController extends BaseController
             'capabilities' => $capabilities,
             'jitsi_domain' => $jitsi->getDomain(),
             'jitsi_app_name' => $jitsi->getAppName(),
+            'jitsi_config' => $jitsi->getClientConfig(),
             'display_name' => (string)$displayName,
             'can_load_jitsi' => $canLoadJitsi
         ], 200, 'interviews/layout');
@@ -137,6 +135,11 @@ class InterviewRoomController extends BaseController
 
     public function state(Request $request, Response $response): void
     {
+        $jitsi = new JitsiService();
+        if (!$this->ensureSecureMediaOrigin($request, $response, $jitsi, true)) {
+            return;
+        }
+
         if (!$this->requireAuth($request, $response)) {
             return;
         }
@@ -170,35 +173,19 @@ class InterviewRoomController extends BaseController
         }
 
         $status = (string)($row['status'] ?? 'scheduled');
+        $roomNameVal = (string)($row['room_name'] ?? '');
+        $roomCanStillJoin = $roomNameVal !== '' && empty($row['ended_at']) && !in_array($status, ['cancelled', 'completed'], true);
+        $canJoin = $isAdmin || $isEmployerOwner || ($isCandidate && ($status === 'live' || $roomCanStillJoin));
+
         $roomName = null;
         $roomPassword = null;
-        
-        // CRITICAL: Allow candidates to join if room exists (even if status shows completed)
-        // This fixes the issue where candidate can't join even when employer is waiting
-        $roomNameVal = (string)($row['room_name'] ?? '');
-        if ($roomNameVal !== '') {
-            $roomName = $roomNameVal;
-            // If room exists, always allow password to be retrieved for candidates
-            $enc = (string)($row['room_password_enc'] ?? '');
-            if ($enc !== '') {
-                $roomPassword = (new JitsiService())->decrypt($enc);
-            }
-        }
-        
-        // CRITICAL FIX: Allow candidate to join if room exists (status might be completed but room still active)
-        // Only prevent joining if explicitly ended and room doesn't exist
-        $canJoin = false;
-        if ($isAdmin || $isEmployerOwner) {
-            $canJoin = true; // Admin/employer can always join
-        } elseif ($isCandidate) {
-            // Candidate can join if:
-            // 1. Status is 'live' (normal case), OR
-            // 2. Room exists and hasn't been explicitly ended (allows late joiners)
-            if ($status === 'live') {
-                $canJoin = true;
-            } elseif ($status !== 'cancelled' && $roomName !== '') {
-                // Allow candidate to join if room exists (might be showing as completed but room is still active)
-                $canJoin = true;
+        if ($canJoin) {
+            if ($roomNameVal !== '') {
+                $roomName = $roomNameVal;
+                $enc = (string)($row['room_password_enc'] ?? '');
+                if ($enc !== '') {
+                    $roomPassword = (new JitsiService())->decrypt($enc);
+                }
             }
         }
         
@@ -215,6 +202,11 @@ class InterviewRoomController extends BaseController
 
     public function start(Request $request, Response $response): void
     {
+        $jitsi = new JitsiService();
+        if (!$this->ensureSecureMediaOrigin($request, $response, $jitsi, true)) {
+            return;
+        }
+
         if (!$this->requireAuth($request, $response)) {
             return;
         }
@@ -241,8 +233,6 @@ class InterviewRoomController extends BaseController
             $response->json(['error' => 'Forbidden'], 403);
             return;
         }
-
-        $jitsi = new JitsiService();
 
         $roomName = (string)($row['room_name'] ?? '');
         $roomPassEnc = (string)($row['room_password_enc'] ?? '');
@@ -329,6 +319,11 @@ class InterviewRoomController extends BaseController
 
     public function event(Request $request, Response $response): void
     {
+        $jitsi = new JitsiService();
+        if (!$this->ensureSecureMediaOrigin($request, $response, $jitsi, true)) {
+            return;
+        }
+
         if (!$this->requireAuth($request, $response)) {
             return;
         }
@@ -477,6 +472,40 @@ class InterviewRoomController extends BaseController
         ], 200, 'interviews/layout');
     }
 
+    public function joinWithToken(Request $request, Response $response): void
+    {
+        $jitsi = new JitsiService();
+        if (!$this->ensureSecureMediaOrigin($request, $response, $jitsi, false)) {
+            return;
+        }
+
+        $token = (string)$request->get('token', '');
+        $payload = \App\Services\NotificationService::validateJoinToken($token);
+        if (!$payload) {
+            $response->view('errors/403', ['message' => 'Invalid or expired interview link'], 403);
+            return;
+        }
+
+        if (!$this->currentUser) {
+            $response->redirect('/login?next=' . urlencode('/interview/join?token=' . $token));
+            return;
+        }
+
+        $userId = (int)$this->currentUser->id;
+        if ($userId !== (int)($payload['user_id'] ?? 0) && !$this->currentUser->isAdmin()) {
+            $response->view('errors/403', ['message' => 'This interview link is not assigned to your account'], 403);
+            return;
+        }
+
+        $interviewId = (int)($payload['interview_id'] ?? 0);
+        if ($interviewId <= 0) {
+            $response->view('errors/404', ['message' => 'Interview not found'], 404);
+            return;
+        }
+
+        $response->redirect('/interviews/' . $interviewId . '/room');
+    }
+
     private function logEvent(int $interviewId, string $type, array $data, Request $request): void
     {
         $evt = new InterviewEvent();
@@ -491,5 +520,48 @@ class InterviewRoomController extends BaseController
             'created_at' => date('Y-m-d H:i:s')
         ]);
         $evt->save();
+    }
+
+    private function ensureSecureMediaOrigin(Request $request, Response $response, JitsiService $jitsi, bool $json): bool
+    {
+        if (!$jitsi->shouldForceHttps() || $this->isSecureRequest() || $this->isLocalRequestHost()) {
+            return true;
+        }
+
+        if ($json) {
+            $response->json([
+                'success' => false,
+                'error' => 'HTTPS is required for video interviews. Please reload this page using https://.'
+            ], 426);
+            return false;
+        }
+
+        $host = (string)($_SERVER['HTTP_HOST'] ?? '');
+        $uri = $request->getUri();
+        if ($host !== '') {
+            $response->redirect('https://' . $host . $uri, 301);
+            return false;
+        }
+
+        $response->view('errors/403', ['message' => 'HTTPS is required for video interviews.'], 403);
+        return false;
+    }
+
+    private function isSecureRequest(): bool
+    {
+        $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+        $forwardedProto = strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+        $forwardedSsl = strtolower((string)($_SERVER['HTTP_X_FORWARDED_SSL'] ?? ''));
+
+        return ($https !== '' && $https !== 'off')
+            || (string)($_SERVER['SERVER_PORT'] ?? '') === '443'
+            || $forwardedProto === 'https'
+            || $forwardedSsl === 'on';
+    }
+
+    private function isLocalRequestHost(): bool
+    {
+        $host = preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? ''));
+        return in_array(strtolower((string)$host), ['localhost', '127.0.0.1', '::1'], true);
     }
 }

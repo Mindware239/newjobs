@@ -79,7 +79,7 @@ class EmploymentVerificationController extends BaseController
         $response->redirect('/employer/verification/success?unlock=' . $unlockId);
     }
 
-    public function success(Request $request, Response $response): void
+    public function verificationSuccess(Request $request, Response $response): void
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $unlockId = (int)$request->get('unlock', 0);

@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900">Automation Rules</h1>
-        <a href="/sales/manager/automation/create" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+        <a href="/sales/manager/automation/create" class="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-lg">
             Add Rule
         </a>
     </div>
@@ -29,7 +29,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="#" class="text-blue-600 hover:text-blue-900">Edit</a>
+                        <a href="#" class="text-primary hover:text-primary">Edit</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -37,3 +37,14 @@
         </table>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

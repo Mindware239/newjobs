@@ -1,5 +1,5 @@
 <?php
-// Employer Registration Page - Mindware Infotech
+// Employer Registration Page -Jobsence
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Employer Registration - Mindware Infotech</title>
+    <title>Employer Registration -Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -67,14 +67,14 @@
             top: 0;
             height: 100vh;
             overflow: hidden;
-            background: linear-gradient(150deg, #eef2ff 0%, #e0e7ff 38%, #dbeafe 72%, #eff6ff 100%);
+            background: #f8fafc;
         }
 
         /* Dot grid */
         .l-dots {
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(circle, rgba(99, 102, 241, .18) 1px, transparent 1px);
+            background-image: none;
             background-size: 28px 28px;
             opacity: .55;
         }
@@ -83,7 +83,7 @@
         .blob {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
+            filter: none;
             pointer-events: none;
         }
 
@@ -152,7 +152,7 @@
             width: 36px;
             height: 36px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            background: #f05537;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -165,7 +165,7 @@
         .l-logo-name {
             font-weight: 700;
             font-size: 15px;
-            color: #1e1b4b;
+            color: #0f172a;
             letter-spacing: -.2px;
         }
 
@@ -218,7 +218,7 @@
             padding: 5px 13px;
             font-size: 11px;
             font-weight: 600;
-            color: #4338ca;
+            color: #f05537;
             letter-spacing: .5px;
             text-transform: uppercase;
         }
@@ -227,7 +227,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #4f46e5;
+            background: #f05537;
             animation: spulse 2s ease-in-out infinite;
         }
 
@@ -248,15 +248,15 @@
         .s-title {
             font-size: clamp(22px, 2.5vw, 32px);
             font-weight: 800;
-            color: #1e1b4b;
+            color: #0f172a;
             line-height: 1.2;
             letter-spacing: -.6px;
         }
 
         .s-title .acc {
-            background: linear-gradient(135deg, #4f46e5, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background: none;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: currentColor;
             background-clip: text;
         }
 
@@ -279,17 +279,17 @@
             border: 1px solid rgba(199, 210, 254, .8);
             border-radius: 12px;
             padding: 12px 14px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: none;
         }
 
         .stat-v {
             font-size: 20px;
             font-weight: 800;
-            color: #1e1b4b;
+            color: #0f172a;
         }
 
         .stat-v span {
-            color: #4f46e5;
+            color: #f05537;
         }
 
         .stat-l {
@@ -342,7 +342,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: none;
         }
 
         .co-logo {
@@ -380,9 +380,9 @@
         }
 
         .co-tag.premium {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
+            background: #fff1ed;
+            color: #FF6A3D;
+            border: 1px solid #fff1ed;
         }
 
         .co-tag.verified {
@@ -416,7 +416,7 @@
         }
 
         .s-dot.active {
-            background: #4f46e5;
+            background: #f05537;
             max-width: 50px;
             box-shadow: 0 0 8px rgba(79, 70, 229, .35);
         }
@@ -431,8 +431,8 @@
             height: 32px;
             border-radius: 50%;
             background: white;
-            border: 1.5px solid #e0e7ff;
-            color: #4338ca;
+            border: 1.5px solid #fff1ed;
+            color: #f05537;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -442,7 +442,7 @@
         }
 
         .s-arr:hover {
-            background: #eef2ff;
+            background: #fff3ef;
             border-color: #c7d2fe;
             transform: scale(1.07);
         }
@@ -462,7 +462,7 @@
 
         .s-prog-bar {
             height: 100%;
-            background: linear-gradient(90deg, #4f46e5, #3b82f6);
+            background: #f05537;
             border-radius: 2px;
             transition: width .1s linear;
         }
@@ -482,9 +482,151 @@
 
         .r-box {
             width: 100%;
-            max-width: 420px;
+            max-width: 800px; /* Increased for two-column layout */
             animation: fadeUp .5s cubic-bezier(.4, 0, .2, 1) both;
         }
+
+        @media(max-width:860px) {
+            .r-box {
+                max-width: 480px;
+            }
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 24px;
+            margin-bottom: 24px;
+        }
+
+        @media(max-width:640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+        }
+
+        /* ═══════════════════════════════════════
+           OTP MODAL
+        ═══════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: none;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 460px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 32px;
+            position: relative;
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover { color: #475569; }
+
+        .otp-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        .otp-field {
+            width: 45px;
+            height: 52px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .otp-field:focus {
+            border-color: #f05537;
+            box-shadow: 0 0 0 3px rgba(240, 85, 55, 0.1);
+        }
+
+        /* Searchable Select */
+        .s-select-wrap {
+            position: relative;
+        }
+        .s-select-display {
+            width: 100%;
+            padding: 10px 14px;
+            background: #f9fafb;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 13.5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .s-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            margin-top: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .s-select-search {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .s-select-option {
+            padding: 10px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .s-select-option:hover { background: #f8fafc; }
+        .s-select-option.selected { background: #fff1ed; color: #f05537; font-weight: 600; }
+
+        .left-panel{background:var(--page, #f6f7f9)!important;}
+        .l-dots,.blob{display:none!important;}
+        .l-logo-mark,.brand-mark,.sub-btn{background:#f05537!important;box-shadow:0 4px 12px rgba(240,85,55,.18)!important;}
+        .s-title .acc{background:none!important;-webkit-text-fill-color:currentColor!important;color:#111827!important;}
+        .s-prog-bar{background:#f05537!important;}
+
+        /* ... existing styles ... */
 
         @keyframes fadeUp {
             from {
@@ -503,7 +645,7 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            font-size: 12.5px;
+            font-size: 15.5px;
             font-weight: 500;
             color: #9ca3af;
             text-decoration: none;
@@ -516,8 +658,9 @@
         }
 
         .back-lnk svg {
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
         }
 
         /* Brand */
@@ -533,7 +676,7 @@
             height: 42px;
             border-radius: 12px;
             flex-shrink: 0;
-            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            background: #f05537;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -639,7 +782,7 @@
         }
 
         .fi:focus {
-            border-color: #4f46e5;
+            border-color: #f05537;
             background: #fff;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, .1);
         }
@@ -654,7 +797,26 @@
         }
 
         .fi.has-icon {
-            padding-right: 42px;
+            padding-left: 42px;
+        }
+
+        .fi-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .fi-wrap:focus-within .fi-icon {
+            color: #f05537;
+        }
+
+        /* Dropdown with Icon */
+        .s-select-display.has-icon {
+            padding-left: 42px;
         }
 
         .eye-btn {
@@ -808,15 +970,15 @@
         .sug-box {
             margin-top: 8px;
             padding: 9px 12px;
-            background: #eff6ff;
-            border-left: 3px solid #3b82f6;
+            background: #fff1ed;
+            border-left: 3px solid #FF6A3D;
             border-radius: 7px;
         }
 
         .sug-ttl {
             font-size: 11.5px;
             font-weight: 700;
-            color: #1d4ed8;
+            color: #FF6A3D;
             margin-bottom: 3px;
         }
 
@@ -827,7 +989,7 @@
 
         .sug-list li {
             font-size: 11px;
-            color: #1d4ed8;
+            color: #FF6A3D;
             margin-bottom: 2px;
         }
 
@@ -874,7 +1036,7 @@
 
         .soc-btn:hover {
             border-color: #c7d2fe;
-            background: #f5f3ff;
+            background: #fff5f2;
             transform: translateY(-1px);
             box-shadow: 0 3px 10px rgba(79, 70, 229, .1);
         }
@@ -898,7 +1060,7 @@
             height: 14px;
             margin-top: 2px;
             flex-shrink: 0;
-            accent-color: #4f46e5;
+            accent-color: #f05537;
             cursor: pointer;
         }
 
@@ -909,13 +1071,13 @@
         }
 
         .terms-txt a {
-            color: #4f46e5;
+            color: #f05537;
             font-weight: 600;
             text-decoration: none;
         }
 
         .terms-txt a:hover {
-            color: #4338ca;
+            color: #f05537;
             text-decoration: underline;
         }
 
@@ -923,7 +1085,7 @@
         .sub-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            background: #f05537;
             color: white;
             border: none;
             border-radius: 11px;
@@ -1001,13 +1163,442 @@
 
         .r-footer a {
             font-weight: 700;
-            color: #4f46e5;
+            color: #f05537;
             text-decoration: none;
         }
 
         .r-footer a:hover {
-            color: #4338ca;
+            color: #f05537;
             text-decoration: underline;
+        }
+
+        /* Professional employer registration refresh */
+        :root {
+            --brand: #f05537;
+            --brand-strong: #de4328;
+            --brand-soft: #fff3ef;
+            --ink: #111827;
+            --muted: #667085;
+            --line: #e5e7eb;
+            --page: #f6f7f9;
+            --panel: rgba(255, 255, 255, .86);
+            --panel-strong: #ffffff;
+        }
+
+        body {
+            color: var(--ink);
+            background: var(--page);
+        }
+
+        .page-wrap {
+            grid-template-columns: minmax(420px, .9fr) minmax(620px, 1.1fr);
+            background: var(--page);
+        }
+
+        .left-panel {
+            background: var(--page);
+            border-right: 0;
+            height: auto;
+            min-height: 100vh;
+            position: relative;
+            overflow: visible;
+        }
+
+        .l-dots,
+        .blob {
+            display: none;
+        }
+
+        .l-inner {
+            padding: 34px 42px;
+            gap: 28px;
+        }
+
+        .l-logo-mark,
+        .brand-mark {
+            background: var(--brand);
+            border-radius: 10px;
+            box-shadow: none;
+        }
+
+        .l-logo-name,
+        .brand-name {
+            color: var(--ink);
+            font-weight: 800;
+        }
+
+        .employer-visual {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 0;
+            background: var(--panel-strong);
+            box-shadow: none;
+        }
+
+        .employer-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            object-position: 52% center;
+            display: block;
+        }
+
+        .slider-wrap {
+            justify-content: flex-start;
+        }
+
+        .slide {
+            gap: 16px;
+        }
+
+        .s-badge {
+            background: var(--brand-soft);
+            border-color: #ffd8cc;
+            color: var(--brand-strong);
+            border-radius: 999px;
+            padding: 6px 12px;
+        }
+
+        .s-pulse {
+            background: var(--brand);
+            animation: none;
+        }
+
+        .s-title {
+            font-size: clamp(28px, 3vw, 40px);
+            letter-spacing: -.4px;
+            line-height: 1.12;
+        }
+
+        .s-title .acc {
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: var(--brand);
+        }
+
+        .s-desc {
+            max-width: 430px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .benefit-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #344054;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .benefit-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--brand-soft);
+            color: var(--brand);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .stat-row {
+            gap: 12px;
+        }
+
+        .stat-c,
+        .co-card {
+            background: rgba(255, 255, 255, .78);
+            border-color: rgba(240, 85, 55, .14);
+            border-radius: 8px;
+            backdrop-filter: none;
+            box-shadow: 0 10px 24px rgba(17, 24, 39, .05);
+        }
+
+        .stat-l,
+        .co-sub {
+            color: var(--muted);
+        }
+
+        .feat-wrap {
+            border-top-color: var(--line);
+            gap: 8px;
+        }
+
+        .feat-row {
+            padding: 8px 0;
+            color: #344054;
+            font-weight: 500;
+        }
+
+        .feat-ic {
+            background: var(--brand-soft) !important;
+            color: var(--brand);
+            border: 1px solid #ffd8cc;
+            font-weight: 800;
+        }
+
+        .co-logo {
+            background: var(--brand) !important;
+            border-radius: 8px;
+        }
+
+        .co-tag.premium,
+        .co-tag.verified {
+            background: #f9fafb;
+            color: #344054;
+            border-color: var(--line);
+        }
+
+        #slide1 .s-desc,
+        #slide1 .feat-ic,
+        #slide2 .co-sub,
+        #slide2 .co-tag {
+            font-size: 0;
+        }
+
+        #slide1 .s-desc::after {
+            content: "From smart job posting to applicant tracking - your complete hiring toolkit in one platform.";
+            font-size: 14px;
+        }
+
+        #slide1 .feat-row:nth-child(1) .feat-ic::after { content: "1"; }
+        #slide1 .feat-row:nth-child(2) .feat-ic::after { content: "2"; }
+        #slide1 .feat-row:nth-child(3) .feat-ic::after { content: "3"; }
+        #slide1 .feat-row:nth-child(4) .feat-ic::after { content: "4"; }
+
+        #slide1 .feat-ic::after {
+            font-size: 13px;
+        }
+
+        #slide2 .co-card:nth-child(1) .co-sub::after { content: "Mumbai - 12 hires this month"; }
+        #slide2 .co-card:nth-child(2) .co-sub::after { content: "Bangalore - 8 hires this month"; }
+        #slide2 .co-card:nth-child(3) .co-sub::after { content: "Delhi - 5 hires this month"; }
+        #slide2 .co-sub::after { font-size: 11px; }
+        #slide2 .co-tag.premium::after { content: "Premium"; }
+        #slide2 .co-tag.verified::after { content: "Verified"; }
+        #slide2 .co-tag::after { font-size: 10px; }
+
+        .s-dot {
+            background: #d0d5dd;
+        }
+
+        .s-dot.active,
+        .s-prog-bar {
+            background: var(--brand);
+            box-shadow: none;
+        }
+
+        .s-arr {
+            border-color: var(--line);
+            color: var(--brand);
+            box-shadow: none;
+        }
+
+        .s-arr:hover {
+            background: var(--brand-soft);
+            border-color: #ffd8cc;
+            transform: none;
+        }
+
+        .right-panel {
+            background: var(--page);
+            padding: 36px 48px;
+            overflow-y: visible;
+        }
+
+        .r-box {
+            max-width: 860px;
+            background: var(--panel);
+            border: 1px solid rgba(240, 85, 55, .14);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 18px 48px rgba(17, 24, 39, .08);
+        }
+
+        .back-lnk {
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        .brand-row {
+            margin-bottom: 18px;
+        }
+
+        .brand-sub,
+        .r-sub {
+            color: var(--muted);
+        }
+
+        .r-h1 {
+            font-size: clamp(26px, 2.4vw, 34px);
+            line-height: 1.18;
+            letter-spacing: -.3px;
+            margin-bottom: 8px;
+        }
+
+        .r-sub {
+            font-size: 14px;
+            margin-bottom: 26px;
+        }
+
+        .form-grid {
+            gap: 18px 20px;
+            margin-bottom: 20px;
+        }
+
+        .fg {
+            margin-bottom: 0;
+        }
+
+        .fl {
+            color: #344054;
+            font-size: 12.5px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .fi,
+        .s-select-display {
+            height: 46px;
+            background: #fff;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            color: var(--ink);
+            font-size: 14px;
+        }
+
+        .fi::placeholder {
+            color: #98a2b3;
+        }
+
+        .fi:hover,
+        .s-select-display:hover {
+            border-color: #b8c0cc;
+        }
+
+        .fi:focus,
+        .s-select-display:focus,
+        .s-select-wrap:focus-within .s-select-display {
+            border-color: var(--brand);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(240, 85, 55, .12);
+        }
+
+        .fi-icon,
+        .fi-wrap:focus-within .fi-icon {
+            color: #667085;
+        }
+
+        .s-select-dropdown {
+            border-color: var(--line);
+            border-radius: 8px;
+            box-shadow: 0 12px 24px rgba(17, 24, 39, .10);
+        }
+
+        .s-select-option.selected,
+        .s-select-option:hover {
+            background: var(--brand-soft);
+            color: var(--brand-strong);
+        }
+
+        .terms-row {
+            margin: 18px 0 20px;
+        }
+
+        .terms-cb {
+            width: 18px;
+            height: 18px;
+        }
+
+        .terms-txt {
+            color: #475467;
+            font-size: 13px;
+        }
+
+        .sub-btn {
+            min-height: 48px;
+            padding: 13px 22px;
+            background: var(--brand);
+            border-radius: 6px;
+            box-shadow: 0 8px 18px rgba(240, 85, 55, .20);
+            font-size: 14.5px;
+        }
+
+        .sub-btn:hover:not(:disabled) {
+            background: var(--brand-strong);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(240, 85, 55, .24);
+        }
+
+        .modal-overlay {
+            backdrop-filter: none;
+        }
+
+        @media(max-width:1100px) {
+            .page-wrap {
+                grid-template-columns: minmax(360px, .8fr) minmax(560px, 1.2fr);
+            }
+
+            .left-panel {
+                display: none !important;
+            }
+        }
+
+        @media(max-width:860px) {
+            .page-wrap {
+                display: block;
+                min-height: 100vh;
+            }
+
+            .right-panel {
+                min-height: 100vh;
+                padding: 18px;
+            }
+
+            .r-box {
+                max-width: none;
+                padding: 22px 18px;
+                border-radius: 8px;
+            }
+        }
+
+        @media(max-width:640px) {
+            .form-grid {
+                gap: 16px;
+            }
+
+            .r-h1 {
+                font-size: 25px;
+            }
+
+            .brand-mark {
+                width: 38px;
+                height: 38px;
+            }
+
+            .fi,
+            .s-select-display {
+                height: 48px;
+                font-size: 14px;
+            }
+
+            .sub-btn {
+                width: 100%;
+                max-width: none !important;
+            }
         }
     </style>
 </head>
@@ -1041,8 +1632,12 @@
 
                 <!-- Logo -->
                 <div class="l-logo">
-                    <div class="l-logo-mark">M</div>
-                    <span class="l-logo-name">Mindware</span>
+                    <div class="l-logo-mark">JS</div>
+                    <span class="l-logo-name">Jobsence</span>
+                </div>
+
+                <div class="employer-visual">
+                    <img src="/assets/images/Business-Process-Management-Software.jpg" alt="Hiring team reviewing candidates">
                 </div>
 
                 <!-- Slider -->
@@ -1052,8 +1647,13 @@
                         <!-- Slide 1: Stats -->
                         <div class="slide active" id="slide0">
                             <div class="s-badge"><span class="s-pulse"></span>For Employers</div>
-                            <div class="s-title">Hire Faster<br>with <span class="acc">Mindware</span></div>
+                            <div class="s-title">Hire Faster<br>with <span class="acc">Jobsence</span></div>
                             <div class="s-desc">Connect with thousands of pre-screened, verified candidates and fill your positions faster than ever.</div>
+                            <div class="benefit-list">
+                                <div class="benefit-item"><span class="benefit-icon">&#10003;</span><span>Post roles, manage applicants, and track hiring activity from one employer workspace.</span></div>
+                                <div class="benefit-item"><span class="benefit-icon">&#10003;</span><span>Reach verified candidates with cleaner company branding and recruiter controls.</span></div>
+                                <div class="benefit-item"><span class="benefit-icon">&#10003;</span><span>Built for HR teams that need a fast, reliable registration and onboarding flow.</span></div>
+                            </div>
                             <div class="stat-row">
                                 <div class="stat-c">
                                     <div class="stat-v">50<span>K+</span></div>
@@ -1077,19 +1677,19 @@
                             <div class="s-desc">From smart job posting to applicant tracking — your complete hiring toolkit in one platform.</div>
                             <div class="feat-wrap">
                                 <div class="feat-row">
-                                    <div class="feat-ic" style="background:#eef2ff;">📋</div>
+                                    <div class="feat-ic">1</div>
                                     Post unlimited jobs with smart templates
                                 </div>
                                 <div class="feat-row">
-                                    <div class="feat-ic" style="background:#eff6ff;">🔍</div>
+                                    <div class="feat-ic">2</div>
                                     AI-powered candidate filtering & matching
                                 </div>
                                 <div class="feat-row">
-                                    <div class="feat-ic" style="background:#fef3c7;">📊</div>
+                                    <div class="feat-ic">3</div>
                                     Full ATS with pipeline management
                                 </div>
                                 <div class="feat-row">
-                                    <div class="feat-ic" style="background:#ecfdf5;">🏢</div>
+                                    <div class="feat-ic">4</div>
                                     Company branding & profile controls
                                 </div>
                             </div>
@@ -1099,10 +1699,10 @@
                         <div class="slide" id="slide2">
                             <div class="s-badge"><span class="s-pulse"></span>Trusted By</div>
                             <div class="s-title">Top Companies<br><span class="acc">Hire Here</span></div>
-                            <div class="s-desc">Join hundreds of growing companies who found their best talent through Mindware's network.</div>
+                            <div class="s-desc">Join hundreds of growing companies who found their best talent through Jobsence's network.</div>
                             <div class="co-wrap">
                                 <div class="co-card">
-                                    <div class="co-logo" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">T</div>
+                                    <div class="co-logo">T</div>
                                     <div>
                                         <div class="co-name">TechSolutions Pvt. Ltd.</div>
                                         <div class="co-sub">Mumbai · 12 hires this month</div>
@@ -1110,7 +1710,7 @@
                                     <span class="co-tag premium">⭐ Premium</span>
                                 </div>
                                 <div class="co-card">
-                                    <div class="co-logo" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">G</div>
+                                    <div class="co-logo">G</div>
                                     <div>
                                         <div class="co-name">GrowthMark Analytics</div>
                                         <div class="co-sub">Bangalore · 8 hires this month</div>
@@ -1118,7 +1718,7 @@
                                     <span class="co-tag premium">⭐ Premium</span>
                                 </div>
                                 <div class="co-card">
-                                    <div class="co-logo" style="background:linear-gradient(135deg,#10b981,#06b6d4);">N</div>
+                                    <div class="co-logo">N</div>
                                     <div>
                                         <div class="co-name">NexGen Innovations</div>
                                         <div class="co-sub">Delhi · 5 hires this month</div>
@@ -1163,22 +1763,28 @@
             <div x-data="employerRegistrationForm()" x-cloak class="r-box">
 
                 <a href="/" class="back-lnk">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    <svg fill="currentColor" viewBox="0 0 512 512" aria-hidden="true">
+                        <path d="M18.1 273.3c-24.1-24.1-24.1-63.1 0-87.2L186.1 18.1c24.1-24.1 63.1-24.1 87.2 0s24.1 63.1 0 87.2L210.6 168H448c35.3 0 64 28.7 64 64s-28.7 64-64 64H210.6l62.7 62.7c24.1 24.1 24.1 63.1 0 87.2s-63.1 24.1-87.2 0L18.1 273.3z" />
                     </svg>
                     Back to Home
                 </a>
 
                 <div class="brand-row">
-                    <div class="brand-mark">M</div>
+                    <div class="brand-mark">JS</div>
                     <div>
-                        <div class="brand-name">Mindware</div>
+                        <div class="brand-name">Jobsence</div>
                         <div class="brand-sub">Recruitment Platform</div>
                     </div>
                 </div>
 
                 <h1 class="r-h1">Create your employer account</h1>
                 <p class="r-sub">Join our trusted recruitment platform — it's free to get started.</p>
+                <?php $offering = $_GET['offering'] ?? ''; if (in_array($offering, ['internship', 'jobs'], true)): ?>
+                    <p class="r-sub" style="background:#fff1ed;border:1px solid #f05537;border-radius:10px;padding:8px 12px;color:#1a1a1a;font-weight:700">
+                        <?= $offering === 'internship' ? 'इंटर्नशिप देने वाली कंपनी रजिस्ट्रेशन / Registration for companies offering Internship' : 'नौकरी देने वाली कंपनी रजिस्ट्रेशन / Registration for companies offering Jobs' ?>
+                    </p>
+                <?php endif; ?>
+                <p class="r-sub" style="font-size:.85rem">एक कंपनी = एक Email + एक Mobile + एक GST। इनमें से कोई भी पहले से रजिस्टर्ड हो तो नई कंपनी नहीं बनेगी। / One company = one Email + Mobile + GST; if any one is already registered, a new company cannot be created.</p>
 
                 <!-- Error alert -->
                 <div x-show="error"
@@ -1204,332 +1810,369 @@
                     <span x-text="success"></span>
                 </div>
 
-                <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
-                    <button type="button" @click="authMode='password'; error=''; success=''"
-                        :class="authMode === 'password' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
-                        class="auth-toggle-btn">
-                        Email Password
-                    </button>
-                    <button type="button" @click="authMode='otp'; error=''; success=''"
-                        :class="authMode === 'otp' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
-                        class="auth-toggle-btn">
-                        Mobile OTP
-                    </button>
-                </div>
-
-                <form @submit.prevent="authMode === 'otp' ? submitOtpRegistration() : submitRegistration()" novalidate>
-
-                    <div x-show="authMode === 'password'" x-cloak>
-                          <!-- ── Full Name ── -->
+                <form @submit.prevent="handleCreateAccount()" novalidate>
+                    <div class="form-grid">
+                        <!-- Row 1 -->
                         <div class="fg">
-                            <label class="fl">Full Name <span class="req">*</span></label>
+                            <label class="fl">Your Company Name <span class="req">*</span></label>
                             <div class="fi-wrap">
-                                <input type="text"
-                                    name="full_name"
-                                    x-model="formData.full_name"
-                                    required
-                                    placeholder="Your full name as PAN"
-                                    class="fi">
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4v1h6v-1"></path></svg>
+                                </span>
+                                <input type="text" x-model="formData.company_name" required placeholder="Enter company name" class="fi has-icon">
                             </div>
                         </div>
-                        <!-- ── Company Name ── -->
                         <div class="fg">
-                            <label class="fl">Company Name <span class="req">*</span></label>
+                            <label class="fl">Official Email Address <span class="req">*</span></label>
                             <div class="fi-wrap">
-                                <input type="text" name="company_name"x-model="formData.company_name" required
-                                    placeholder="Your company name "
-                                    class="fi">
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                </span>
+                                <input type="email" x-model="formData.email" @blur="checkUnique('email')" required placeholder="official@company.com" class="fi has-icon">
+                                <p x-show="uniqueErrors.email" class="f-err" x-text="uniqueErrors.email"></p>
                             </div>
                         </div>
 
+                        <!-- Row 2 -->
+                        <div class="fg">
+                            <label class="fl">Mobile <span class="req">*</span></label>
+                            <div class="fi-wrap">
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 2h10a2 2 0 012 2v16a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 18h2"></path></svg>
+                                </span>
+                                <input type="tel" x-model="formData.phone" @input="formData.phone = formData.phone.replace(/\D+/g, '').slice(0, 10); validateMobile()" @blur="checkUnique('mobile')" maxlength="10" required placeholder="10-digit mobile number" class="fi has-icon">
+                                <p x-show="mobileError" class="f-err" x-text="mobileError"></p>
+                                <p x-show="uniqueErrors.mobile" class="f-err" x-text="uniqueErrors.mobile"></p>
+                            </div>
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Contact Person Name <span class="req">*</span></label>
+                            <div class="fi-wrap">
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                </span>
+                                <input type="text" x-model="formData.full_name" required placeholder="Enter contact person name" class="fi has-icon">
+                            </div>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="fg">
+                            <label class="fl">Register As <span class="req">*</span></label>
+                            <div class="fi-wrap">
+                                <span class="fi-icon">
+                                    <template x-if="registerAs === 'company'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4v1h6v-1"></path></svg>
+                                    </template>
+                                    <template x-if="registerAs === 'individual'">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    </template>
+                                </span>
+                                <select x-model="registerAs" @change="formData.register_as = registerAs" class="fi has-icon">
+                                    <option value="company">Company / Business</option>
+                                    <option value="individual">Individual / Proprietor</option>
+                                </select>
+                            </div>
+                        </div>
                         
-
-                        <!-- ── Mobile Number ── -->
+                        <!-- Row 3 Right: Conditional Register Type Option -->
                         <div class="fg">
-                            <label class="fl">Mobile Number <span class="req">*</span></label>
-                            <div class="fi-wrap">
-                                <input type="tel"
-                                    name="phone"
-                                    x-model="formData.phone"
-                                    required
-                                    placeholder="Enter mobile number"
-                                    class="fi">
-                            </div>
+                            <template x-if="registerAs === 'company'">
+                                <div>
+                                    <label class="fl">Industry Type <span class="req">*</span></label>
+                                    <div class="s-select-wrap" @click.away="showIndustryDropdown = false">
+                                        <div class="s-select-display has-icon" @click="showIndustryDropdown = !showIndustryDropdown">
+                                            <span class="fi-icon" style="left: 14px;">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                            </span>
+                                            <span x-text="formData.industry || 'Select Industry Type'" :class="!formData.industry ? 'text-gray-400' : ''"></span>
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                        <div x-show="showIndustryDropdown" x-cloak class="s-select-dropdown">
+                                            <div class="s-select-search">
+                                                <input type="text" x-model="industrySearch" placeholder="Search industry..." class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+                                            </div>
+                                            <template x-for="ind in filteredIndustries" :key="ind">
+                                                <div class="s-select-option" :class="formData.industry === ind ? 'selected' : ''" @click="selectIndustry(ind)" x-text="ind"></div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="registerAs === 'individual'">
+                                <div>
+                                    <label class="fl">Profession Type <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                        </span>
+                                        <select x-model="formData.profession_type" class="fi has-icon">
+                                            <option value="">Select Profession Type</option>
+                                            <option>HR Consultant</option>
+                                            <option>Freelancer Recruiter</option>
+                                            <option>Staffing Partner</option>
+                                            <option>Career Consultant</option>
+                                            <option>Trainer</option>
+                                            <option>Placement Consultant</option>
+                                            <option>Business Owner</option>
+                                            <option>Recruitment Freelancer</option>
+                                            <option>Hiring Partner</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
-                        <!-- ── Email ── -->
-                        <div class="fg">
-                            <label class="fl">Email Address <span class="req">*</span></label>
-                            <div class="fi-wrap">
-                                <input type="email"
-                                    name="email"
-                                    x-model="formData.email"
-                                    @input="validateEmail()"
-                                    @blur="validateEmail()"
-                                    required
-                                    placeholder="company@email.com"
-                                    :class="(emailValid && formData.email.length > 0) ? 'ok' : (emailError ? 'err' : '')"
-                                    class="fi">
+                        <!-- Row 4 -->
+                        <template x-if="registerAs === 'company'">
+                            <div style="display: contents;">
+                                <div class="fg">
+                                    <label class="fl">Company Type <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4v1h6v-1"></path></svg>
+                                        </span>
+                                        <select x-model="formData.company_type" class="fi has-icon">
+                                            <option value="">Select Company Type</option>
+                                            <option>Private Limited Company</option>
+                                            <option>Public Limited Company</option>
+                                            <option>Limited Liability Partnership (LLP)</option>
+                                            <option>Partnership Firm</option>
+                                            <option>Sole Proprietorship</option>
+                                            <option>One Person Company (OPC)</option>
+                                            <option>Startup</option>
+                                            <option>MSME</option>
+                                            <option>Government Organization</option>
+                                            <option>Public Sector Unit (PSU)</option>
+                                            <option>Semi Government Organization</option>
+                                            <option>NGO</option>
+                                            <option>Non Profit Organization</option>
+                                            <option>Trust</option>
+                                            <option>School</option>
+                                            <option>College</option>
+                                            <option>University</option>
+                                            <option>Hospital</option>
+                                            <option>Clinic</option>
+                                            <option>Healthcare Center</option>
+                                            <option>Manufacturing Company</option>
+                                            <option>Service Provider</option>
+                                            <option>Distributor</option>
+                                            <option>Dealer</option>
+                                            <option>Wholesaler</option>
+                                            <option>Retailer</option>
+                                            <option>Importer</option>
+                                            <option>Exporter</option>
+                                            <option>IT Company</option>
+                                            <option>Software Company</option>
+                                            <option>Web Development Company</option>
+                                            <option>Digital Marketing Agency</option>
+                                            <option>Consultancy</option>
+                                            <option>Recruitment Agency</option>
+                                            <option>BPO</option>
+                                            <option>KPO</option>
+                                            <option>E-Commerce Company</option>
+                                            <option>Marketplace Seller</option>
+                                            <option>Factory</option>
+                                            <option>Warehouse</option>
+                                            <option>Logistics Company</option>
+                                            <option>Transport Company</option>
+                                            <option>Construction Company</option>
+                                            <option>Real Estate Company</option>
+                                            <option>Media Company</option>
+                                            <option>Advertising Agency</option>
+                                            <option>Bank</option>
+                                            <option>Insurance Company</option>
+                                            <option>Finance Company</option>
+                                            <option>Telecom Company</option>
+                                            <option>Electronics Company</option>
+                                            <option>Restaurant</option>
+                                            <option>Hotel</option>
+                                            <option>Travel Agency</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="fg">
+                                    <label class="fl">Company Size <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        </span>
+                                        <select x-model="formData.company_size" class="fi has-icon">
+                                            <option value="">Select Company Size</option>
+                                            <option value="1-10">1-10 Employees</option>
+                                            <option value="11-50">11-50 Employees</option>
+                                            <option value="51-200">51-200 Employees</option>
+                                            <option value="201-500">201-500 Employees</option>
+                                            <option value="501-1000">501-1000 Employees</option>
+                                            <option value="1001+">1000+ Employees</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="f-hint">We'll use this to create your account. You can add company details after registration.</p>
-                            <p x-show="emailError" class="f-err">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                                <span x-text="emailError"></span>
-                            </p>
-                        </div>
+                        </template>
 
-                        <!-- ── Password ── -->
+                        <template x-if="registerAs === 'individual'">
+                            <div style="display: contents;">
+                                <div class="fg">
+                                    <label class="fl">Service Category <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        </span>
+                                        <input type="text" x-model="formData.service_category" required placeholder="e.g. Recruitment, Training" class="fi has-icon">
+                                    </div>
+                                </div>
+                                <div class="fg">
+                                    <label class="fl">GSTIN <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        </span>
+                                        <input type="text" x-model="formData.gstin" @input="validateGstin()" @blur="checkUnique('gstin')" :disabled="formData.no_gst" maxlength="15" placeholder="Enter GST number" class="fi has-icon">
+                                        <p x-show="gstinError" class="f-err" x-text="gstinError"></p>
+                                        <p x-show="uniqueErrors.gstin" class="f-err" x-text="uniqueErrors.gstin"></p>
+                                        <label style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:.85rem;font-weight:600">
+                                            <input type="checkbox" x-model="formData.no_gst" @change="if (formData.no_gst) { formData.gstin = ''; gstinError = ''; uniqueErrors.gstin = ''; }">
+                                            मेरे पास GST नहीं है / I don’t have GST
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Row 5 -->
+                        <template x-if="registerAs === 'company'">
+                            <div style="display: contents;">
+                                <div class="fg">
+                                    <label class="fl">GSTIN <span class="req">*</span></label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        </span>
+                                        <input type="text" x-model="formData.gstin" @input="validateGstin()" @blur="checkUnique('gstin')" :disabled="formData.no_gst" maxlength="15" placeholder="Enter GST number" class="fi has-icon">
+                                        <p x-show="gstinError" class="f-err" x-text="gstinError"></p>
+                                        <p x-show="uniqueErrors.gstin" class="f-err" x-text="uniqueErrors.gstin"></p>
+                                        <label style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:.85rem;font-weight:600">
+                                            <input type="checkbox" x-model="formData.no_gst" @change="if (formData.no_gst) { formData.gstin = ''; gstinError = ''; uniqueErrors.gstin = ''; }">
+                                            मेरे पास GST नहीं है / I don’t have GST
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="fg">
+                                    <label class="fl">Company Website (Optional)</label>
+                                    <div class="fi-wrap">
+                                        <span class="fi-icon">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                                        </span>
+                                        <input type="url" x-model="formData.website" placeholder="https://www.company.com" class="fi has-icon">
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Row 6 -->
+                        <div class="fg">
+                            <label class="fl">Pin Code <span class="req">*</span></label>
+                            <div class="fi-wrap">
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                </span>
+                                <input type="text" x-model="formData.pincode" @input="formData.pincode = formData.pincode.replace(/\D+/g, '').slice(0, 6); validatePincode()" maxlength="6" required placeholder="6-digit pin code" class="fi has-icon">
+                                <p x-show="pincodeError" class="f-err" x-text="pincodeError"></p>
+                            </div>
+                        </div>
                         <div class="fg">
                             <label class="fl">Password <span class="req">*</span></label>
                             <div class="fi-wrap">
-                                <input :type="showPassword ? 'text' : 'password'"
-                                    name="password"
-                                    x-model="formData.password"
-                                    @input="checkPasswordStrength()"
-                                    required
-                                    placeholder="Create a strong password"
-                                    :class="passwordValid ? 'ok' : (passwordError ? 'err' : '')"
-                                    class="fi has-icon">
-                                <button type="button" class="eye-btn" @click="showPassword = !showPassword" aria-label="Toggle password">
-                                    <svg x-show="!showPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    <svg x-show="showPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.717m0 0L21 21" />
-                                    </svg>
-                                </button>
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                </span>
+                                <input type="password" x-model="formData.password" required placeholder="Create password" class="fi has-icon">
                             </div>
-
-                            <!-- Strength bar -->
-                            <div x-show="formData.password.length > 0" class="str-wrap">
-                                <div class="str-bar">
-                                    <div class="str-fill"
-                                        :style="'width:' + passwordStrengthBarStyle + ';background:' + passwordStrengthBarColor + ';'"></div>
-                                </div>
-                                <div class="str-row">
-                                    <span class="str-lbl" :style="'color:' + passwordStrengthBarColor" x-text="passwordStrengthText"></span>
-                                    <span class="str-chars" x-text="formData.password.length + ' / 20 chars'"></span>
-                                </div>
-                            </div>
-
-                            <!-- Requirements -->
-                            <div x-show="formData.password.length > 0" class="req-panel">
-                                <div class="req-head">Password Requirements</div>
-                                <div class="rq" :class="passwordChecks.lowercase ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.lowercase ? '✓' : '·'"></span>
-                                    At least one lowercase letter (a-z)
-                                </div>
-                                <div class="rq" :class="passwordChecks.uppercase ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.uppercase ? '✓' : '·'"></span>
-                                    At least one uppercase letter (A-Z)
-                                </div>
-                                <div class="rq" :class="passwordChecks.number ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.number ? '✓' : '·'"></span>
-                                    At least one number (0-9)
-                                </div>
-                                <div class="rq" :class="passwordChecks.special ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.special ? '✓' : '·'"></span>
-                                    At least one special character (!@#$%^&*…)
-                                </div>
-                                <div class="rq" :class="passwordChecks.length ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.length ? '✓' : '·'"></span>
-                                    Between 8 and 20 characters
-                                </div>
-                                <div class="rq" :class="passwordChecks.noCommon ? 'met' : ''">
-                                    <span class="rq-ic" x-text="passwordChecks.noCommon ? '✓' : '·'"></span>
-                                    Not a common password
-                                </div>
-                                <!-- Suggestions -->
-                                <div x-show="!passwordValid && passwordSuggestions.length > 0" class="sug-box">
-                                    <div class="sug-ttl">💡 Suggestions to strengthen your password:</div>
-                                    <ul class="sug-list">
-                                        <template x-for="s in passwordSuggestions" :key="s">
-                                            <li x-text="s"></li>
-                                        </template>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <p x-show="passwordError" class="f-err" style="margin-top:6px;">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                                <span x-text="passwordError"></span>
-                            </p>
                         </div>
 
-                        <!-- ── Confirm Password ── -->
+                        <!-- Row 7 -->
                         <div class="fg">
                             <label class="fl">Confirm Password <span class="req">*</span></label>
                             <div class="fi-wrap">
-                                <input :type="showConfirmPassword ? 'text' : 'password'"
-                                    name="confirm_password"
-                                    x-model="formData.password_confirm"
-                                    @input="validatePasswordMatch()"
-                                    required
-                                    placeholder="Re-enter your password"
-                                    :class="(passwordMatch && formData.password_confirm.length > 0) ? 'ok' : (passwordMatchError ? 'err' : '')"
-                                    class="fi has-icon">
-                                <button type="button" class="eye-btn" @click="showConfirmPassword = !showConfirmPassword" aria-label="Toggle confirm">
-                                    <svg x-show="!showConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    <svg x-show="showConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.717m0 0L21 21" />
-                                    </svg>
-                                </button>
+                                <span class="fi-icon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11V7a3 3 0 016 0v4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 16l1.5 1.5 3.5-3.5"></path></svg>
+                                </span>
+                                <input type="password" x-model="formData.password_confirm" required placeholder="Confirm password" class="fi has-icon">
                             </div>
-                            <p x-show="passwordMatch && formData.password_confirm.length > 0" class="f-ok">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                Passwords match
-                            </p>
-                            <p x-show="passwordMatchError" class="f-err">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                                <span x-text="passwordMatchError"></span>
-                            </p>
                         </div>
-
-                        <!-- ── Terms ── -->
-                        <div class="terms-row">
-                            <input type="checkbox" id="agree_terms" x-model="formData.agree_terms" required class="terms-cb">
-                            <label for="agree_terms" class="terms-txt">
-                                I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>
-                            </label>
-                        </div>
-
-                        <!-- ── Social OAuth ── -->
-                        <div class="divider">
-                            <div class="div-line"></div>
-                            <span class="div-txt">Or continue with</span>
-                            <div class="div-line"></div>
-                        </div>
-                        <div class="soc-grid">
-                            <a href="/auth/google?redirect=/employer/dashboard" class="soc-btn" aria-label="Google">
-                                <img alt="Google" src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png">
-                            </a>
-                            <a href="/auth/facebook?redirect=/employer/dashboard" class="soc-btn" aria-label="Facebook">
-                                <svg viewBox="0 0 24 24">
-                                    <path fill="#1877F2" d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.09 4.388 23.092 10.125 24v-8.437H7.078V12.07h3.047V9.412c0-3.007 1.792-4.667 4.533-4.667 1.313 0 2.686.235 2.686.235v2.955h-1.513c-1.49 0-1.953.93-1.953 1.887v2.248h3.328l-.532 3.493h-2.796V24C19.612 23.092 24 18.09 24 12.073z" />
-                                    <path fill="#fff" d="M16.906 15.563l.532-3.493h-3.328V9.822c0-.957.463-1.887 1.953-1.887h1.513V4.98s-1.373-.235-2.686-.235c-2.741 0-4.533 1.66-4.533 4.667v2.658H7.078v3.055h3.047V24h3.984v-8.437h2.796z" />
-                                </svg>
-                            </a>
-                            <a href="/auth/linkedin?redirect=/employer/dashboard" class="soc-btn" aria-label="LinkedIn">
-                                <svg viewBox="0 0 24 24">
-                                    <rect width="24" height="24" rx="4" fill="#0A66C2" />
-                                    <path fill="#fff" d="M6.21 9.03h2.61v8.16H6.21V9.03zm1.31-4.22c.84 0 1.52.68 1.52 1.52s-.68 1.52-1.52 1.52-1.52-.68-1.52-1.52.68-1.52 1.52-1.52zM10.28 9.03h2.5v1.12h.04c.35-.66 1.19-1.36 2.45-1.36 2.62 0 3.1 1.72 3.1 3.95v4.44h-2.6v-3.93c0-.94-.02-2.16-1.32-2.16-1.32 0-1.52 1.03-1.52 2.09v4H10.28V9.03z" />
-                                </svg>
-                            </a>
-                            <a href="/auth/microsoft?redirect=/employer/dashboard" class="soc-btn" aria-label="Microsoft">
-                                <svg viewBox="0 0 24 24">
-                                    <rect x="2" y="2" width="9" height="9" fill="#F25022" />
-                                    <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
-                                    <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
-                                    <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
-                                </svg>
-                            </a>
-                        </div>
-
-                        <!-- ── Submit ── -->
-                        <button type="submit"
-                            :disabled="isSubmitting || !emailValid || (formData.password || '').length < 6"
-                            class="sub-btn">
-                            <template x-if="!isSubmitting">
-                                <span style="display:flex;align-items:center;gap:7px;">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4v1h6v-1" />
-                                    </svg>
-                                    Create Employer Account
-                                </span>
-                            </template>
-                            <template x-if="isSubmitting">
-                                <span style="display:flex;align-items:center;gap:8px;">
-                                    <span class="spin"></span>
-                                    Creating Account...
-                                </span>
-                            </template>
-                        </button>
-
-                        <!-- ── Sign in link ── -->
                     </div>
 
-                    <div x-show="authMode === 'password'" x-cloak>
-                        <!-- ── Sign in link ── -->
-                        <p class="r-footer" style="margin-top: 15px;">
-                            Already have an account?
-                            <a href="/login?role=employer">Sign in</a>
-                        </p>
+                    <div class="terms-row">
+                        <input type="checkbox" id="agree_terms" x-model="formData.agree_terms" required class="terms-cb">
+                        <label for="agree_terms" class="terms-txt">
+                            I agree to the <a href="https://jobsence.com/terms">Terms and Conditions</a> and <a href="https://jobsence.com/privacy">Privacy Policy</a>
+                        </label>
                     </div>
 
-                    <div x-show="authMode === 'otp'" x-cloak>
-                        <div class="fg">
-                            <label class="fl">Company Name <span class="req">*</span></label>
-                            <div class="fi-wrap">
-                                <input type="text" x-model="otpForm.company_name" placeholder="Your company name" class="fi">
-                            </div>
-                        </div>
-                        <div class="fg">
-                            <label class="fl">Primary Mobile Number <span class="req">*</span></label>
-                            <div class="fi-wrap">
-                                <input type="tel" x-model="otpForm.phone" placeholder="Enter mobile number" class="fi">
-                            </div>
-                        </div>
-                        <div class="fg">
-                            <label class="fl">Additional Mobile Number</label>
-                            <div class="fi-wrap">
-                                <input type="tel" x-model="otpForm.additional_mobile" placeholder="Optional second number" class="fi">
-                            </div>
-                        </div>
-                        <div class="fg">
-                            <label class="fl">Email Address</label>
-                            <div class="fi-wrap">
-                                <input type="email" x-model="otpForm.email" placeholder="Optional company email" class="fi">
-                            </div>
-                        </div>
-                        <div class="fg">
-                            <label class="fl">OTP <span class="req">*</span></label>
-                            <div style="display:flex;gap:8px;">
-                                <input type="text" x-model="otpForm.otp" maxlength="6" placeholder="6-digit OTP" class="fi" style="flex:1;">
-                                <button type="button"
-                                    @click="sendOtp()"
-                                    :disabled="isSendingOtp || !otpForm.phone || otpCooldown > 0"
-                                    style="padding:0 14px;border:none;border-radius:10px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
-                                    <span x-show="!isSendingOtp && otpCooldown === 0">Send OTP</span>
-                                    <span x-show="isSendingOtp">Sending...</span>
-                                    <span x-show="!isSendingOtp && otpCooldown > 0" x-text="otpCooldown + 's'"></span>
-                                </button>
-                            </div>
-                            <p x-show="otpPreview" class="f-hint">Test OTP: <span x-text="otpPreview"></span></p>
-                        </div>
-                        <div class="terms-row">
-                            <input type="checkbox" id="agree_terms_otp_employer" x-model="otpForm.agree_terms" class="terms-cb">
-                            <label for="agree_terms_otp_employer" class="terms-txt">
-                                I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>
-                            </label>
-                        </div>
-                        <button type="submit"
-                            :disabled="isSubmitting || !otpForm.company_name || !otpForm.phone || !otpForm.otp || !otpForm.agree_terms"
-                            class="sub-btn">
-                            <template x-if="!isSubmitting">
-                                <span style="display:flex;align-items:center;gap:7px;">Create Employer With OTP</span>
-                            </template>
-                            <template x-if="isSubmitting">
-                                <span style="display:flex;align-items:center;gap:8px;">
-                                    <span class="spin"></span>
-                                    Creating Account...
-                                </span>
-                            </template>
-                        </button>
-                    </div>
-
+                    <!-- Submit -->
+                    <button type="submit" :disabled="isSubmitting || !formData.agree_terms" class="sub-btn" style="max-width: 320px; margin: 0 auto 24px; display: flex;">
+                        <span x-show="!isSubmitting">Create Account</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <span class="spin"></span> Processing...
+                        </span>
+                    </button>
+                    
+                    <p class="r-footer">
+                        Already have an account?
+                        <a href="/login?role=employer">Sign in</a>
+                    </p>
                 </form>
+
+                <!-- OTP Modal -->
+                <div x-show="showOtpModal" x-cloak class="modal-overlay">
+                    <div class="modal-card" @click.away="showOtpModal = false">
+                        <div class="modal-close" @click="showOtpModal = false">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-24 h-24 bg-orange-50 text-primary rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.0403M5 14.5V11a7 7 0 1114 0v3.5m-14 3.5h14a2 2 0 002-2v-3a2 2 0 00-2-2H5a2 2 0 00-2 2v3a2 2 0 002 2z"></path></svg>
+                                <div class="absolute -right-1 -top-1 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                </div>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-1">OTP Verification</h2>
+                            <p class="text-sm text-gray-500">Verify your employer account securely</p>
+                        </div>
+
+                        <div class="mt-8">
+                            <p class="text-center text-sm text-gray-600 mb-2">We have sent OTP to your registered email</p>
+                            <p class="text-center font-semibold text-gray-900" x-text="formData.email"></p>
+
+                            <div class="otp-input-group">
+                                <template x-for="(v, i) in otpValues" :key="i">
+                                    <input type="text" maxlength="1" x-model="otpValues[i]"
+                                           @input="handleOtpInput(i, $event)"
+                                           @keydown="handleOtpKeydown(i, $event)"
+                                           class="otp-field">
+                                </template>
+                            </div>
+
+                            <button @click="verifyOtp()" :disabled="isSubmitting || otpValues.join('').length < 6" class="sub-btn mt-4">
+                                <span x-show="!isSubmitting">Verify OTP</span>
+                                <span x-show="isSubmitting" class="flex items-center gap-2">
+                                    <span class="spin"></span> Verifying...
+                                </span>
+                            </button>
+
+                            <div class="text-center mt-6">
+                                <p class="text-sm text-gray-500 mb-2">Didn't receive OTP?</p>
+                                <button @click="resendOtp()" :disabled="otpResendTimer > 0" class="text-sm font-bold text-primary hover:underline disabled:opacity-50 disabled:no-underline">
+                                    <span x-show="otpResendTimer === 0">Resend OTP</span>
+                                    <span x-show="otpResendTimer > 0" x-text="'Resend in ' + otpResendTimer + 's'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1600,159 +2243,153 @@
         function employerRegistrationForm() {
             return {
                 isSubmitting: false,
-                authMode: 'password',
                 error: '',
                 success: '',
-                showPassword: false,
-                showConfirmPassword: false,
-                emailValid: true,
-                emailError: '',
-                isSendingOtp: false,
-                otpCooldown: 0,
-                otpPreview: '',
-                otpTimer: null,
-                modeActiveStyle: 'background:#ffffff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)',
-                modeInactiveStyle: 'background:transparent;color:#6b7280',
-                passwordValid: false,
-                passwordError: '',
-                passwordMatch: false,
-                passwordMatchError: '',
-                passwordStrengthText: '',
-                passwordStrengthBarStyle: '0%',
-                passwordStrengthBarColor: '#ef4444',
-                passwordChecks: {
-                    lowercase: false,
-                    uppercase: false,
-                    number: false,
-                    special: false,
-                    length: false,
-                    noCommon: false
-                },
-                passwordSuggestions: [],
+                showOtpModal: false,
+                otpValues: ['', '', '', '', '', ''],
+                otpResendTimer: 0,
+                otpResendInterval: null,
+                gstinError: '',
+                uniqueErrors: { email: '', mobile: '', gstin: '' },
+                pincodeError: '',
+                mobileError: '',
+                registerAs: 'company', // 'company' or 'individual'
+                industrySearch: '',
+                showIndustryDropdown: false,
+                industries: [
+                    'IT / Software', 'Manufacturing', 'Sales & Marketing', 'Finance & Accounting',
+                    'Healthcare & Medical', 'Education & Training', 'Retail & E-commerce',
+                    'Hospitality & Tourism', 'Construction & Real Estate', 'Logistics & Supply Chain',
+                    'Banking & Financial Services', 'Telecommunications', 'Automotive', 'Pharmaceutical',
+                    'Food & Beverage', 'Textiles & Apparel', 'Energy & Power', 'Media & Entertainment',
+                    'Aviation & Aerospace', 'Shipping & Maritime', 'Agriculture & Farming', 'Legal Services',
+                    'Consulting', 'Human Resources', 'Customer Service', 'Administrative & Clerical',
+                    'Engineering', 'Designing & Creativity', 'Research & Development', 'Quality Assurance',
+                    'Project Management', 'Operations', 'Procurement & Purchasing', 'Warehouse & Distribution',
+                    'Security & Safety', 'Maintenance & Repair', 'Beauty & Wellness', 'Fitness & Sports',
+                    'Event Management', 'Non-Profit & NGO', 'Government & Public Sector', 'Insurance',
+                    'Real Estate', 'Travel & Tourism', 'Fashion & Apparel', 'Gaming & Animation',
+                    'Digital Marketing', 'Content Writing', 'Data Science & Analytics', 'Cybersecurity'
+                ],
                 formData: {
                     company_name: '',
-                    full_name: '',
-                    phone: '',
                     email: '',
+                    phone: '',
+                    full_name: '', // Maps to Contact Person
+                    register_as: 'company',
+                    industry: '',
+                    company_type: '',
+                    company_size: '',
+                    gstin: '',
+                    no_gst: false,
+                    website: '',
+                    pincode: '',
                     password: '',
                     password_confirm: '',
                     agree_terms: false,
-                    company_type: '',
-                    industry: '',
-                    industry_custom: ''
+                    profession_type: '',
+                    service_category: ''
                 },
-                otpForm: {
-                    company_name: '',
-                    phone: '',
-                    additional_mobile: '',
-                    email: '',
-                    otp: '',
-                    purpose: 'auth',
-                    agree_terms: false
-                },
-                init() {},
-                validateEmail() {
-                    const email = this.formData.email;
-                    if (!email) {
-                        this.emailValid = true;
-                        this.emailError = '';
-                        return;
-                    }
-                    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-                    if (!emailRegex.test(email)) {
-                        this.emailValid = false;
-                        this.emailError = 'Please enter a valid email address';
-                    } else {
-                        this.emailValid = true;
-                        this.emailError = '';
-                    }
-                },
-                checkPasswordStrength() {
-                    const pw = this.formData.password || '';
-                    this.passwordChecks = {
-                        lowercase: /[a-z]/.test(pw),
-                        uppercase: /[A-Z]/.test(pw),
-                        number: /[0-9]/.test(pw),
-                        special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(pw),
-                        length: pw.length >= 8 && pw.length <= 20,
-                        noCommon: !['password', 'password123', '12345678', '123456789', 'qwerty', 'admin', 'welcome'].includes(pw.toLowerCase())
-                    };
-                    let score = 0;
-                    if (this.passwordChecks.lowercase) score += 15;
-                    if (this.passwordChecks.uppercase) score += 15;
-                    if (this.passwordChecks.number) score += 15;
-                    if (this.passwordChecks.special) score += 20;
-                    if (this.passwordChecks.length) score += 20;
-                    if (this.passwordChecks.noCommon) score += 15;
-                    if (pw.length >= 12) score += 5;
-                    if (pw.length >= 16) score += 5;
 
-                    if (score < 30) {
-                        this.passwordStrengthText = 'Very Weak';
-                        this.passwordStrengthBarStyle = '20%';
-                        this.passwordStrengthBarColor = '#ef4444';
-                    } else if (score < 50) {
-                        this.passwordStrengthText = 'Weak';
-                        this.passwordStrengthBarStyle = '40%';
-                        this.passwordStrengthBarColor = '#f97316';
-                    } else if (score < 70) {
-                        this.passwordStrengthText = 'Fair';
-                        this.passwordStrengthBarStyle = '60%';
-                        this.passwordStrengthBarColor = '#eab308';
-                    } else if (score < 90) {
-                        this.passwordStrengthText = 'Good';
-                        this.passwordStrengthBarStyle = '80%';
-                        this.passwordStrengthBarColor = '#3b82f6';
-                    } else {
-                        this.passwordStrengthText = 'Strong';
-                        this.passwordStrengthBarStyle = '100%';
-                        this.passwordStrengthBarColor = '#10b981';
-                    }
+                get filteredIndustries() {
+                    if (!this.industrySearch) return this.industries;
+                    return this.industries.filter(i => i.toLowerCase().includes(this.industrySearch.toLowerCase()));
+                },
 
-                    // Build suggestions
-                    this.passwordSuggestions = [];
-                    if (!this.passwordChecks.uppercase) this.passwordSuggestions.push('Add an uppercase letter (e.g. A–Z)');
-                    if (!this.passwordChecks.special) this.passwordSuggestions.push('Add a special character (e.g. @, #, $)');
-                    if (!this.passwordChecks.number) this.passwordSuggestions.push('Include at least one number (0–9)');
-                    if (pw.length < 12) this.passwordSuggestions.push('Use 12+ characters for a stronger password');
+                selectIndustry(industry) {
+                    this.formData.industry = industry;
+                    this.showIndustryDropdown = false;
+                    this.industrySearch = '';
+                },
 
-                    this.passwordValid = Object.values(this.passwordChecks).every(Boolean);
-                    this.passwordError = this.passwordValid || pw.length === 0 ? '' : 'Password does not meet all requirements';
-                    this.validatePasswordMatch();
-                },
-                validatePasswordMatch() {
-                    if (!this.formData.password_confirm) {
-                        this.passwordMatch = false;
-                        this.passwordMatchError = '';
-                        return;
-                    }
-                    if (this.formData.password === this.formData.password_confirm) {
-                        this.passwordMatch = true;
-                        this.passwordMatchError = '';
-                    } else {
-                        this.passwordMatch = false;
-                        this.passwordMatchError = 'Passwords do not match';
-                    }
-                },
-                startOtpCooldown() {
-                    clearInterval(this.otpTimer);
-                    this.otpCooldown = 30;
-                    this.otpTimer = setInterval(() => {
-                        if (this.otpCooldown > 0) {
-                            this.otpCooldown--;
-                        } else {
-                            clearInterval(this.otpTimer);
-                        }
-                    }, 1000);
-                },
-                async sendOtp() {
-                    if (!this.otpForm.phone || this.isSendingOtp || this.otpCooldown > 0) return;
+                validateForm() {
                     this.error = '';
-                    this.success = '';
-                    this.otpPreview = '';
-                    this.isSendingOtp = true;
+                    if (!this.formData.company_name) return this.setError('Company Name is required');
+                    if (!this.formData.email) return this.setError('Official Email is required');
+                    if (!this.validateEmailFormat(this.formData.email)) return this.setError('Please enter a valid official email');
+                    if (!this.formData.phone) return this.setError('Mobile Number is required');
+                    if (!this.validateMobile()) return this.setError(this.mobileError);
+                    if (!this.formData.full_name) return this.setError('Contact Person Name is required');
+                    if (!this.formData.pincode) return this.setError('Pin Code is required');
+                    if (!this.validatePincode()) return this.setError(this.pincodeError);
+                    if (!this.validateGstin()) return this.setError(this.gstinError);
+                    const duplicate = Object.values(this.uniqueErrors).find(Boolean);
+                    if (duplicate) return this.setError(duplicate);
+                    if (!this.formData.password) return this.setError('Password is required');
+                    if (this.formData.password.length < 8) return this.setError('Password must be at least 8 characters');
+                    if (this.formData.password !== this.formData.password_confirm) return this.setError('Passwords do not match');
+
+                    if (this.registerAs === 'company') {
+                        if (!this.formData.industry) return this.setError('Industry Type is required');
+                        if (!this.formData.company_type) return this.setError('Company Type is required');
+                        if (!this.formData.company_size) return this.setError('Company Size is required');
+                    } else {
+                        if (!this.formData.profession_type) return this.setError('Profession Type is required');
+                        if (!this.formData.service_category) return this.setError('Service Category is required');
+                    }
+
+                    return true;
+                },
+
+                setError(msg) {
+                    this.error = msg;
+                    const container = document.querySelector('.right-panel');
+                    if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                    return false;
+                },
+
+                validateEmailFormat(email) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                },
+
+                validateMobile() {
+                    const phone = (this.formData.phone || '').toString();
+                    const ok = /^[0-9]{10}$/.test(phone);
+                    this.mobileError = ok || !phone ? '' : 'Mobile Number must be 10 digits';
+                    return ok;
+                },
+
+                validatePincode() {
+                    const pin = (this.formData.pincode || '').toString();
+                    const ok = /^[0-9]{6}$/.test(pin);
+                    this.pincodeError = ok || !pin ? '' : 'Pin Code must be exactly 6 digits';
+                    return ok;
+                },
+
+                async checkUnique(field) {
+                    const value = field === 'email' ? this.formData.email : (field === 'mobile' ? this.formData.phone : this.formData.gstin);
+                    this.uniqueErrors[field] = '';
+                    if (!value || (field === 'gstin' && this.formData.no_gst)) return;
                     try {
-                        const response = await fetch('/auth/phone/send-otp', {
+                        const body = new URLSearchParams({ field, value, _token: document.querySelector('meta[name="csrf-token"]')?.content || '' });
+                        const res = await fetch('/apply/check-unique', { method: 'POST', body, headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
+                        const data = await res.json();
+                        if (data && data.available === false) this.uniqueErrors[field] = data.message_hi + ' / ' + data.message_en;
+                    } catch (e) { /* server re-checks on submit */ }
+                },
+
+                validateGstin() {
+                    const gstin = (this.formData.gstin || '').toString().trim().toUpperCase();
+                    this.formData.gstin = gstin;
+                    if (!gstin) {
+                        if (this.formData.no_gst) {
+                            this.gstinError = '';
+                            return true;
+                        }
+                        this.gstinError = 'GST नंबर भरें या “मेरे पास GST नहीं है” चुनें / Enter GSTIN or tick “I don’t have GST”';
+                        return false;
+                    }
+                    const ok = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/.test(gstin);
+                    this.gstinError = ok ? '' : 'Please enter valid GSTIN number.';
+                    return ok;
+                },
+
+                async handleCreateAccount() {
+                    if (!this.validateForm()) return;
+                    
+                    this.isSubmitting = true;
+                    try {
+                        const response = await fetch('/auth/email/send-otp', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1760,135 +2397,119 @@
                                 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
                             body: JSON.stringify({
-                                phone: this.otpForm.phone,
-                                purpose: 'auth',
+                                email: this.formData.email,
+                                phone: this.formData.phone,
+                                gstin: this.formData.no_gst ? '' : this.formData.gstin,
+                                no_gst: this.formData.no_gst ? 1 : 0,
+                                purpose: 'register_employer',
                                 role: 'employer'
                             })
                         });
+                        
                         const data = await response.json();
                         if (response.ok && data.success) {
-                            this.success = data.message || 'OTP sent successfully';
-                            this.otpPreview = data.otp_preview || '';
-                            this.startOtpCooldown();
+                            this.success = 'Verification OTP sent to your email.';
+                            this.openOtpModal();
                         } else {
-                            this.error = data.error || data.message || 'Failed to send OTP';
+                            this.setError(data.error || 'Failed to send verification OTP. Please try again.');
                         }
-                    } catch (err) {
-                        this.error = 'Failed to send OTP';
+                    } catch (e) {
+                        this.setError('An error occurred. Please check your connection.');
                     } finally {
-                        this.isSendingOtp = false;
+                        this.isSubmitting = false;
                     }
                 },
-                async submitRegistration() {
-                    this.error = '';
-                    this.success = '';
-                    if (!this.formData.full_name) {
-                        this.error = 'Please enter your full name as PAN';
-                        return;
-                    }
-                    if (!this.formData.company_name) {
-                        this.error = 'Please enter your company name';
-                        return;
-                    }
 
-                    if (!this.formData.phone) {
-                        this.error = 'Please enter your mobile number';
+                openOtpModal() {
+                    this.showOtpModal = true;
+                    this.startOtpTimer();
+                    this.$nextTick(() => {
+                        document.querySelector('.otp-field')?.focus();
+                    });
+                },
+
+                startOtpTimer() {
+                    this.otpResendTimer = 60;
+                    clearInterval(this.otpResendInterval);
+                    this.otpResendInterval = setInterval(() => {
+                        if (this.otpResendTimer > 0) this.otpResendTimer--;
+                        else clearInterval(this.otpResendInterval);
+                    }, 1000);
+                },
+
+                handleOtpInput(index, event) {
+                    const val = event.target.value;
+                    if (!/^\d*$/.test(val)) {
+                        this.otpValues[index] = '';
                         return;
                     }
-                    this.validateEmail();
-                    this.passwordValid = (this.formData.password || '').length >= 8;
-                    if (!this.emailValid) {
-                        this.error = 'Please enter a valid email address';
-                        return;
+                    
+                    if (val && index < 5) {
+                        this.$nextTick(() => {
+                            const next = event.target.nextElementSibling;
+                            if (next) next.focus();
+                        });
                     }
-                    if (!this.passwordValid) {
-                        this.error = 'Please enter a valid password';
-                        return;
+                },
+
+                handleOtpKeydown(index, event) {
+                    if (event.key === 'Backspace' && !this.otpValues[index] && index > 0) {
+                        this.$nextTick(() => {
+                            const prev = event.target.previousElementSibling;
+                            if (prev) prev.focus();
+                        });
                     }
-                    if (!this.passwordMatch) {
-                        this.error = 'Passwords do not match';
-                        return;
-                    }
+                },
+
+                async verifyOtp() {
+                    const otp = this.otpValues.join('');
+                    if (otp.length < 6) return;
+
                     this.isSubmitting = true;
                     try {
-                        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
                         const fd = new FormData();
-                        fd.append('company_name', this.formData.company_name);
-                        fd.append('full_name', this.formData.full_name);
-                        fd.append('phone', this.formData.phone);
-                        fd.append('email', this.formData.email);
-                        fd.append('password', this.formData.password);
-                        fd.append('confirm_password', this.formData.password_confirm);
+                        Object.keys(this.formData).forEach(key => {
+                            if (key === 'pincode') {
+                                fd.append('postal_code', this.formData[key]);
+                                // Also send as part of address for backend consistency
+                                fd.append('address', JSON.stringify({ postal_code: this.formData[key] }));
+                            } else {
+                                fd.append(key, this.formData[key]);
+                            }
+                        });
+                        fd.append('email_otp', otp);
                         fd.append('role', 'employer');
-                        fd.append('_token', csrf);
+                        fd.append('_token', document.querySelector('meta[name="csrf-token"]')?.content || '');
+
                         const response = await fetch('/register-employer', {
                             method: 'POST',
                             body: fd
                         });
-                        let data;
-                        try {
-                            data = await response.json();
-                        } catch (e) {
-                            this.error = 'Registration failed: Invalid server response.';
-                            return;
-                        }
-
-                        // Handle wrapped response format from Response::json()
-                        const isSuccess = response.ok && (data.success === true || data.status === true || data.data?.success === true);
-                        const successMsg = data.message || data.data?.message || 'Registration successful! Redirecting...';
-                        const redirectUrl = data.data?.redirect || data.redirect || '/employer/profile?setup=1';
+                        
+                        const data = await response.json();
+                        const isSuccess = response.ok && (data.success || data.status || data.data?.success);
 
                         if (isSuccess) {
-                            this.success = successMsg;
+                            this.success = 'Registration successful! Redirecting...';
+                            this.showOtpModal = false;
                             setTimeout(() => {
-                                window.location.href = redirectUrl;
+                                window.location.href = data.data?.redirect || data.redirect || '/employer/dashboard';
                             }, 1500);
                         } else {
-                            const errorData = data.data || data;
-                            let errorMsg = errorData.error || errorData.message || errorData.errors || 'Registration failed';
-                            if (typeof errorMsg === 'object') {
-                                errorMsg = Object.values(errorMsg).flat().join(', ');
-                            }
-                            this.error = errorMsg;
+                            const errorMsg = data.message || data.data?.message || data.error || 'Verification failed';
+                            alert(errorMsg);
                         }
-                    } catch (err) {
-                        this.error = 'An error occurred. Please try again.';
+                    } catch (e) {
+                        alert('An error occurred during verification.');
                     } finally {
                         this.isSubmitting = false;
                     }
                 },
-                async submitOtpRegistration() {
-                    this.error = '';
-                    this.success = '';
-                    if (!this.otpForm.agree_terms) {
-                        this.error = 'Please agree to the Terms and Conditions';
-                        return;
-                    }
-                    this.isSubmitting = true;
-                    try {
-                        const response = await fetch('/auth/phone/register-employer', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                            },
-                            body: JSON.stringify(this.otpForm)
-                        });
-                        const data = await response.json();
-                        if (response.ok && data.success) {
-                            this.success = data.message || 'Registration successful';
-                            setTimeout(() => {
-                                window.location.href = data.redirect || '/employer/dashboard';
-                            }, 1200);
-                        } else {
-                            this.error = data.error || data.message || 'Registration failed';
-                        }
-                    } catch (err) {
-                        this.error = 'Registration failed';
-                    } finally {
-                        this.isSubmitting = false;
-                    }
+
+                async resendOtp() {
+                    if (this.otpResendTimer > 0) return;
+                    await this.handleCreateAccount();
+                    this.startOtpTimer();
                 }
             }
         }
@@ -1932,3 +2553,13 @@
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+

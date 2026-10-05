@@ -37,6 +37,36 @@ $router->post('/admin/reset-password', [App\Controllers\Front\AuthController::cl
 // Admin Dashboard (Protected)
 $router->get('/admin/dashboard', [App\Controllers\Admin\DashboardController::class, 'index'], [$adminMiddleware]);
 
+// Careers Management (Protected)
+$router->get('/admin/careers', [App\Controllers\AdminCareerController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/careers/create', [App\Controllers\AdminCareerController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/careers/create', [App\Controllers\AdminCareerController::class, 'store'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/careers/edit/{id}', [App\Controllers\AdminCareerController::class, 'edit'], [$adminMiddleware]);
+$router->post('/admin/careers/edit/{id}', [App\Controllers\AdminCareerController::class, 'update'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/careers/delete/{id}', [App\Controllers\AdminCareerController::class, 'delete'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/careers/toggle/{id}', [App\Controllers\AdminCareerController::class, 'toggle'], [$adminMiddleware, $csrfMiddleware]);
+
+// Jobsence ₹155 Registrations – skill, internship, jobs, mentors (Protected)
+// Jobs in India (external Govt / PSU / company notifications)
+$router->get('/admin/india-jobs', [App\Controllers\Admin\IndiaJobsController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/india-jobs/new', [App\Controllers\Admin\IndiaJobsController::class, 'form'], [$adminMiddleware]);
+$router->post('/admin/india-jobs', [App\Controllers\Admin\IndiaJobsController::class, 'save'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/india-jobs/sources', [App\Controllers\Admin\IndiaJobsController::class, 'sources'], [$adminMiddleware]);
+$router->post('/admin/india-jobs/sources', [App\Controllers\Admin\IndiaJobsController::class, 'saveSource'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/india-jobs/sources/{id}/fetch', [App\Controllers\Admin\IndiaJobsController::class, 'fetchSource'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/india-jobs/sources/{id}', [App\Controllers\Admin\IndiaJobsController::class, 'saveSource'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/india-jobs/{id}/edit', [App\Controllers\Admin\IndiaJobsController::class, 'form'], [$adminMiddleware]);
+$router->post('/admin/india-jobs/{id}/toggle', [App\Controllers\Admin\IndiaJobsController::class, 'toggle'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/india-jobs/{id}/delete', [App\Controllers\Admin\IndiaJobsController::class, 'delete'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/india-jobs/{id}', [App\Controllers\Admin\IndiaJobsController::class, 'save'], [$adminMiddleware, $csrfMiddleware]);
+
+$router->get('/admin/registrations', [App\Controllers\Admin\RegistrationsController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/registrations/export', [App\Controllers\Admin\RegistrationsController::class, 'export'], [$adminMiddleware]);
+$router->get('/admin/registrations/{id}/file/{kind}', [App\Controllers\Admin\RegistrationsController::class, 'file'], [$adminMiddleware]);
+$router->get('/admin/registrations/{id}', [App\Controllers\Admin\RegistrationsController::class, 'show'], [$adminMiddleware]);
+$router->post('/admin/registrations/{id}', [App\Controllers\Admin\RegistrationsController::class, 'update'], [$adminMiddleware, $csrfMiddleware]);
+$router->post('/admin/registrations/{id}/mentor-request', [App\Controllers\Admin\RegistrationsController::class, 'mentorRequest'], [$adminMiddleware, $csrfMiddleware]);
+
 // Candidates Management (Protected)
 $router->get('/admin/candidates/add', [App\Controllers\Admin\CandidatesController::class, 'add'], [$adminMiddleware]);
 $router->post('/admin/candidates/add', [App\Controllers\Admin\CandidatesController::class, 'add'], [$adminMiddleware]);
@@ -46,6 +76,8 @@ $router->get('/admin/candidates/import', [App\Controllers\Admin\CandidatesContro
 $router->post('/admin/candidates/import/upload', [App\Controllers\Admin\CandidatesController::class, 'uploadImport'], [$adminMiddleware]);
 $router->post('/admin/candidates/import/confirm', [App\Controllers\Admin\CandidatesController::class, 'confirmImport'], [$adminMiddleware]);
 $router->get('/admin/candidates', [App\Controllers\Admin\CandidatesController::class, 'index'], [$adminMiddleware]);
+$router->post('/admin/candidates/export-selected', [App\Controllers\Admin\CandidatesController::class, 'exportSelected'], [$adminMiddleware]);
+$router->post('/admin/candidates/bulk-action', [App\Controllers\Admin\CandidatesController::class, 'bulkAction'], [$adminMiddleware]);
 $router->get('/admin/candidates/{id}', [App\Controllers\Admin\CandidatesController::class, 'show'], [$adminMiddleware]);
 $router->post('/admin/candidates/{id}/block', [App\Controllers\Admin\CandidatesController::class, 'block'], [$adminMiddleware]);
 $router->post('/admin/candidates/{id}/unblock', [App\Controllers\Admin\CandidatesController::class, 'unblock'], [$adminMiddleware]);
@@ -70,6 +102,11 @@ $router->post('/admin/employers/{id}/unblock', [App\Controllers\Admin\EmployersC
 
 // Jobs Management (Protected)
 $router->get('/admin/jobs', [App\Controllers\Admin\JobsController::class, 'index'], [$adminMiddleware]);
+$router->get('/admin/jobs/create', [App\Controllers\Admin\JobsController::class, 'create'], [$adminMiddleware]);
+$router->post('/admin/jobs/store', [App\Controllers\Admin\JobsController::class, 'store'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/jobs/edit/{slug}', [App\Controllers\Admin\JobsController::class, 'edit'], [$adminMiddleware]);
+$router->post('/admin/jobs/update/{slug}', [App\Controllers\Admin\JobsController::class, 'update'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/jobs/delete/{slug}', [App\Controllers\Admin\JobsController::class, 'delete'], [$adminMiddleware]);
 $router->get('/admin/jobs/{slug}', [App\Controllers\Admin\JobsController::class, 'show'], [$adminMiddleware]);
 $router->post('/admin/jobs/{slug}/approve', [App\Controllers\Admin\JobsController::class, 'approve'], [$adminMiddleware]);
 $router->post('/admin/jobs/{slug}/reject', [App\Controllers\Admin\JobsController::class, 'reject'], [$adminMiddleware]);
@@ -83,6 +120,7 @@ $router->post('/admin/payments/{id}/refund', [App\Controllers\Admin\PaymentsCont
 // Subscriptions Management (Protected)
 $router->get('/admin/subscriptions', [App\Controllers\Admin\SubscriptionsController::class, 'index'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/plans', [App\Controllers\Admin\SubscriptionsController::class, 'plans'], [$adminMiddleware]);
+$router->get('/admin/subscriptions/plans/{id}', [App\Controllers\Admin\SubscriptionsController::class, 'editPlan'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/plans/{id}/edit', [App\Controllers\Admin\SubscriptionsController::class, 'editPlan'], [$adminMiddleware]);
 $router->get('/admin/subscriptions/payments/{payment_id}/invoice', [App\Controllers\Admin\SubscriptionsController::class, 'downloadInvoice'], [$adminMiddleware]);
 $router->post('/admin/subscriptions/plans/{id}/duplicate', [App\Controllers\Admin\SubscriptionsController::class, 'duplicatePlan'], [$adminMiddleware]);

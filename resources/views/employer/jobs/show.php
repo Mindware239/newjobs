@@ -77,7 +77,7 @@
                 Edit
             </a>
             <a href="/employer/jobs"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200">
+               class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -103,7 +103,7 @@
             <p class="text-sm font-semibold text-gray-600 mb-2">Applications</p>
             <p class="text-3xl font-bold text-gray-900"><?php echo $applicationsCount ?? 0 ?></p>
             <?php if (($newApplicationsCount ?? 0) > 0): ?>
-                <p class="text-sm text-purple-600 font-semibold mt-1">
+                <p class="text-sm text-primary font-semibold mt-1">
                     <span class="inline-flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -113,7 +113,7 @@
                 </p>
             <?php endif; ?>
         </div>
-        <div class="bg-gradient-to-br from-purple-50 to-white rounded-xl shadow-md border border-purple-100 p-4 sm:p-6">
+        <div class="bg-gradient-to-br from-[#f05537]-50 to-white rounded-xl shadow-md border border-primary p-4 sm:p-6">
             <p class="text-sm font-semibold text-gray-600 mb-2">Openings</p>
             <p class="text-3xl font-bold text-gray-900"><?php echo $job['openings'] ?? 1 ?></p>
         </div>
@@ -123,7 +123,7 @@
     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
         <div class="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
             <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Job Details
@@ -174,7 +174,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Required Skills</label>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <?php foreach ($skills as $skill): ?>
-                            <span class="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-semibold shadow-sm">
+                            <span class="px-3 py-1.5 bg-primary-50 text-primary-900 rounded-lg text-sm font-semibold shadow-sm">
                                 <?php echo htmlspecialchars($skill['name'] ?? '') ?>
                             </span>
                         <?php endforeach; ?>
@@ -199,7 +199,7 @@
                     Applications (<?php echo $applicationsCount ?? 0 ?>)
                 </h2>
                 <a href="/employer/applications?job_id=<?php echo $job['id'] ?? '' ?>"
-                   class="inline-flex items-center gap-1 text-purple-600 hover:text-purple-700 text-sm font-semibold transition hover:underline">
+                   class="inline-flex items-center gap-1 text-primary hover:text-primary-600 text-sm font-semibold transition hover:underline">
                     View all
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -219,7 +219,7 @@
             <?php else: ?>
                 <div class="space-y-3">
                     <?php foreach (array_slice($applications, 0, 5) as $application): ?>
-                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-purple-200 transition-all">
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-100 transition-all">
                             <div>
                                 <p class="text-sm font-semibold text-gray-900">Application #<?php echo $application['id'] ?? 'N/A' ?></p>
                                 <p class="text-sm text-gray-600 mt-1">Status:
@@ -229,7 +229,7 @@
                                 </p>
                             </div>
                             <a href="/employer/applications/<?php echo $application['id'] ?? '' ?>"
-                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 text-sm font-semibold transition-colors">
+                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-50 text-primary rounded-lg hover:bg-primary-50 text-sm font-semibold transition-colors">
                                 View
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -242,4 +242,15 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

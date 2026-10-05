@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Candidate Profile | Mindware Infotech</title>
+    <title>Candidate Profile | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
 
@@ -143,11 +143,11 @@
         }
 
         .text-custom-blue {
-            color: #5b6bd5;
+            color: #f05537;
         }
 
         .bg-custom-blue {
-            background-color: #5b6bd5;
+            background-color: #f05537;
         }
 
         .text-custom-red {
@@ -171,7 +171,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-12 py-4 md:py-8 flex items-center justify-between">
         <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?= $base ?>uploads/Mindware-infotech.png" class="h-11">
+                <img src="<?= $base ?>uploads/jobsence.png" class="h-11">
             </a>
         </div>
 
@@ -519,7 +519,7 @@
 
 <footer class="bg-[#232323] py-[50px] text-center">
     <div class="text-[#7a7a7a] text-[13px]">
-        <p>© 2026 Mindware Infotech.</p>
+        <p>© 2026 Jobsence.</p>
     </div>
 </footer>
 
@@ -528,3 +528,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

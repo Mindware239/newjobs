@@ -8,7 +8,7 @@
 ?>
 
 <div class="mb-6">
-    <a href="/employer/applications" class="text-indigo-600 hover:text-indigo-700 flex items-center gap-2 mb-4">
+    <a href="/employer/applications" class="text-primary hover:text-primary-600 flex items-center gap-2 mb-4">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -28,7 +28,7 @@
                     <p class="text-gray-600 text-sm">AI-powered candidate-job matching analysis</p>
                 </div>
                 <button onclick="generateMatchScore()" 
-                        class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer">
+                        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
@@ -50,31 +50,31 @@
                 ?>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                        <div id="overall-score" class="text-3xl font-bold text-indigo-700 mb-1"><?= $matchScore ?>%</div>
+                        <div id="overall-score" class="text-3xl font-bold text-primary-600 mb-1"><?= $matchScore ?>%</div>
                         <div class="text-sm text-gray-600">Overall Match</div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="overall-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $matchScore) ?>%"></div>
+                            <div id="overall-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $matchScore) ?>%"></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                        <div id="skill-score" class="text-2xl font-bold text-indigo-700 mb-1"><?= $skillScore ?>%</div>
+                        <div id="skill-score" class="text-2xl font-bold text-primary-600 mb-1"><?= $skillScore ?>%</div>
                         <div class="text-sm text-gray-600">Skills Match</div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="skill-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $skillScore) ?>%"></div>
+                            <div id="skill-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $skillScore) ?>%"></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                        <div id="exp-score" class="text-2xl font-bold text-indigo-700 mb-1"><?= $expScore ?>%</div>
+                        <div id="exp-score" class="text-2xl font-bold text-primary-600 mb-1"><?= $expScore ?>%</div>
                         <div class="text-sm text-gray-600">Experience</div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="exp-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $expScore) ?>%"></div>
+                            <div id="exp-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $expScore) ?>%"></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                        <div id="edu-score" class="text-2xl font-bold text-indigo-700 mb-1"><?= $eduScore ?>%</div>
+                        <div id="edu-score" class="text-2xl font-bold text-primary-600 mb-1"><?= $eduScore ?>%</div>
                         <div class="text-sm text-gray-600">Education</div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="edu-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $eduScore) ?>%"></div>
+                            <div id="edu-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: <?= min(100, $eduScore) ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Matched Skills -->
                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                        <h3 class="font-bold text-indigo-700 mb-3 flex items-center gap-2">
+                        <h3 class="font-bold text-primary-600 mb-3 flex items-center gap-2">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                             </svg>
@@ -125,10 +125,10 @@
                 
                 <?php if (!empty($extraSkills)): ?>
                 <div id="extra-skills-container" class="mt-4 bg-white rounded-lg p-4 shadow-sm">
-                    <h3 class="font-bold text-indigo-700 mb-3">Bonus Skills (<?= count($extraSkills) ?>)</h3>
+                    <h3 class="font-bold text-primary-600 mb-3">Bonus Skills (<?= count($extraSkills) ?>)</h3>
                     <div id="extra-skills" class="flex flex-wrap gap-2">
                         <?php foreach (array_slice($extraSkills, 0, 10) as $skill): ?>
-                            <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm">
+                            <span class="px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm">
                                 <?= htmlspecialchars($skill) ?>
                             </span>
                         <?php endforeach; ?>
@@ -145,7 +145,7 @@
                 
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span id="match-recommendation" class="px-4 py-2 rounded-full font-bold text-sm bg-indigo-50 text-indigo-700">
+                        <span id="match-recommendation" class="px-4 py-2 rounded-full font-bold text-sm bg-primary-50 text-primary-600">
                             Recommendation: <?= htmlspecialchars($recommendation) ?>
                         </span>
                         <span class="text-xs text-gray-500">Method: <?= ucfirst($matchMethod) ?></span>
@@ -157,10 +157,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">No Match Analysis Yet</h3>
-                    <p class="text-gray-600 mb-4">Click the <strong class="text-indigo-600">"Calculate Match Score"</strong> button above to analyze this candidate's match based on skills, experience, location, and other factors.</p>
+                    <p class="text-gray-600 mb-4">Click the <strong class="text-primary">"Calculate Match Score"</strong> button above to analyze this candidate's match based on skills, experience, location, and other factors.</p>
                     <div class="mt-4">
                         <button onclick="generateMatchScore()" 
-                                class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 mx-auto">
+                                class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 mx-auto">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
@@ -186,7 +186,7 @@
             <!-- Application Actions -->
             <div class="flex flex-wrap gap-3 mt-4">
                 <button onclick="updateStatus('shortlisted')" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center gap-2">
+                        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -201,7 +201,7 @@
                 </button>
                 <?php if (strtolower($application['status'] ?? '') !== 'interview'): ?>
                 <button onclick="openScheduleInterviewModal()" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center gap-2">
+                        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
@@ -210,7 +210,7 @@
                 <?php endif; ?>
                 <?php if (strtolower($application['status'] ?? '') === 'interview' || strtolower($application['status'] ?? '') === 'offer'): ?>
                 <button onclick="updateStatus('hired')" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+                        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                     </svg>
@@ -218,7 +218,7 @@
                 </button>
                 <?php endif; ?>
                 <button onclick="startMessage()" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center gap-2">
+                        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
@@ -299,10 +299,18 @@
                 </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($candidate['notice_period'])): ?>
+                <?php if (isset($candidate['notice_period']) && $candidate['notice_period'] !== null && $candidate['notice_period'] !== ''): ?>
                 <div>
                     <label class="text-sm font-medium text-gray-500">Notice Period</label>
-                    <p class="text-gray-900"><?= htmlspecialchars($candidate['notice_period']) ?></p>
+                    <p class="text-gray-900">
+                        <?php
+                            if ((int)$candidate['notice_period'] === 0) {
+                                echo 'Immediate';
+                            } else {
+                                echo htmlspecialchars((string)$candidate['notice_period']) . ' days';
+                            }
+                        ?>
+                    </p>
                 </div>
                 <?php endif; ?>
             </div>
@@ -322,7 +330,7 @@
                 <div class="flex flex-wrap gap-3">
                     <?php if (!empty($candidate['linkedin_url'])): ?>
                         <a href="<?= htmlspecialchars($candidate['linkedin_url']) ?>" target="_blank" 
-                       class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center gap-2">
+                       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                         </svg>
@@ -340,13 +348,13 @@
                     <?php endif; ?>
                     <?php if (!empty($candidate['portfolio_url'])): ?>
                     <a href="<?= htmlspecialchars($candidate['portfolio_url']) ?>" target="_blank" 
-                       class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                         Portfolio
                     </a>
                     <?php endif; ?>
                     <?php if (!empty($candidate['website_url'])): ?>
                     <a href="<?= htmlspecialchars($candidate['website_url']) ?>" target="_blank" 
-                       class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                         Website
                     </a>
                     <?php endif; ?>
@@ -458,6 +466,72 @@
             </div>
         </div>
         <?php endif; ?>
+
+        <!-- Job Preferences -->
+        <?php if (!empty($candidate['preferences'])): ?>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Job Preferences & Interests</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Preferred Roles</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <?php if (!empty($candidate['preferences']['preferred_job_titles'])): ?>
+                            <?php foreach ($candidate['preferences']['preferred_job_titles'] as $title): ?>
+                                <span class="px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm border border-primary">
+                                    <?= htmlspecialchars($title) ?>
+                                </span>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <span class="text-gray-400 text-sm">Not specified</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Job Type & Mode</h3>
+                    <div class="space-y-2">
+                        <?php if (!empty($candidate['preferences']['preferred_job_types'])): ?>
+                            <p class="text-sm"><span class="text-gray-500">Types:</span> <?= implode(', ', array_map('htmlspecialchars', (array)$candidate['preferences']['preferred_job_types'])) ?></p>
+                        <?php endif; ?>
+                        <?php if (!empty($candidate['preferences']['preferred_work_mode'])): ?>
+                            <p class="text-sm"><span class="text-gray-500">Work Mode:</span>
+                                <?= is_array($candidate['preferences']['preferred_work_mode'])
+                                    ? implode(', ', array_map('htmlspecialchars', $candidate['preferences']['preferred_work_mode']))
+                                    : htmlspecialchars($candidate['preferences']['preferred_work_mode']) ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Preferred Locations</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <?php if (!empty($candidate['preferences']['preferred_locations'])): ?>
+                            <?php foreach ($candidate['preferences']['preferred_locations'] as $loc): ?>
+                                <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm border border-green-100">
+                                    <?= htmlspecialchars($loc) ?>
+                                </span>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <span class="text-gray-400 text-sm">Not specified</span>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($candidate['preferences']['open_to_relocation'])): ?>
+                        <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Open to relocation
+                        </p>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Min. Salary Requirement</h3>
+                    <?php if (!empty($candidate['preferences']['minimum_acceptable_salary'])): ?>
+                        <p class="text-lg font-bold text-gray-900">₹<?= number_format($candidate['preferences']['minimum_acceptable_salary']) ?> <span class="text-xs font-normal text-gray-500">/ year</span></p>
+                    <?php else: ?>
+                        <p class="text-gray-400 text-sm">Not specified</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 
@@ -472,7 +546,7 @@
             if ($resumeUrl):
             ?>
             <a href="<?= htmlspecialchars($resumeUrl) ?>" target="_blank" 
-               class="w-full px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2">
+               class="w-full px-4 py-3 bg-primary text-white rounded-md hover:bg-primary-600 flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -660,7 +734,7 @@ async function generateMatchScore() {
         });
 
         const data = await response.json();
-        const payload = data?.data ?? {};
+        const payload = data?.data ?? data ?? {};
         clearInterval(progressInterval);
         
         if (payload.success && payload.match_data) {
@@ -680,8 +754,8 @@ async function generateMatchScore() {
                     <span>Recalculate Match</span>
                 `;
                 button.disabled = false;
-                button.classList.remove('from-blue-600', 'to-blue-700', 'hover:from-blue-700', 'hover:to-blue-800', 'from-green-600', 'to-green-700', 'hover:from-green-700', 'hover:to-green-800', 'bg-indigo-600', 'hover:bg-indigo-700');
-                button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                button.classList.remove('from-[#f05537]', 'to-[#f05537]-600', 'hover:from-[#f05537]-600', 'hover:to-primary', 'from-green-600', 'to-green-700', 'hover:from-green-700', 'hover:to-green-800', 'bg-primary', 'hover:bg-primary-600');
+                button.classList.add('bg-primary', 'hover:bg-primary-600');
                 
                 // Scroll to match analysis
                 document.getElementById('match-analysis').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -690,7 +764,7 @@ async function generateMatchScore() {
             hideProgressOverlay();
             button.disabled = false;
             button.innerHTML = originalButtonHTML;
-            alert('Failed to calculate match score: ' + (data?.message || data?.error || 'Unknown error'));
+            alert('Failed to calculate match score: ' + (payload?.message || payload?.error || data?.message || data?.error || 'Unknown error'));
         }
     } catch (error) {
         clearInterval(progressInterval);
@@ -709,14 +783,14 @@ function showProgressOverlay(container) {
     overlay.className = 'absolute inset-0 bg-white bg-opacity-95 rounded-lg z-50 flex flex-col items-center justify-center';
     overlay.innerHTML = `
         <div class="text-center mb-6">
-            <svg class="animate-spin mx-auto h-12 w-12 text-indigo-600 mb-4" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin mx-auto h-12 w-12 text-primary mb-4" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <h3 class="text-xl font-bold text-gray-900 mb-2">Calculating Match Score...</h3>
             <p class="text-gray-600 mb-4">Analyzing skills, experience, location, and qualifications</p>
             <div class="w-full max-w-md bg-gray-200 rounded-full h-4 mb-2">
-                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-indigo-600 h-4 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+                <div id="progress-bar" class="bg-gradient-to-r from-[#f05537] to-[#f05537] h-4 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
             </div>
             <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
                 <span id="progress-text">0%</span>
@@ -787,10 +861,10 @@ function updateMatchAnalysisUI(matchData) {
     const eduScore = matchData.education_match_score || 0;
     
     // Animate score updates
-    animateScoreUpdate('overall-score', overallScore, 'text-indigo-700');
-    animateScoreUpdate('skill-score', skillScore, 'text-indigo-700');
-    animateScoreUpdate('exp-score', expScore, 'text-indigo-700');
-    animateScoreUpdate('edu-score', eduScore, 'text-indigo-700');
+    animateScoreUpdate('overall-score', overallScore, 'text-primary-600');
+    animateScoreUpdate('skill-score', skillScore, 'text-primary-600');
+    animateScoreUpdate('exp-score', expScore, 'text-primary-600');
+    animateScoreUpdate('edu-score', eduScore, 'text-primary-600');
     
     // Update progress bars
     animateProgressBar('overall-progress', overallScore);
@@ -815,7 +889,7 @@ function updateMatchAnalysisUI(matchData) {
                 extraDiv.id = 'extra-skills-container';
                 extraDiv.className = 'mt-4 bg-white rounded-lg p-4 shadow-sm';
                 extraDiv.innerHTML = `
-                    <h3 class="font-bold text-blue-700 mb-3">Bonus Skills (${matchData.extra_relevant_skills.length})</h3>
+                    <h3 class="font-bold text-primary-600 mb-3">Bonus Skills (${matchData.extra_relevant_skills.length})</h3>
                     <div id="extra-skills" class="flex flex-wrap gap-2"></div>
                 `;
                 skillsGrid.parentNode.insertBefore(extraDiv, skillsGrid.nextSibling);
@@ -871,37 +945,37 @@ function createMatchResultsSection(container, matchData) {
     const html = `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div id="overall-score" class="text-3xl font-bold text-indigo-700 mb-1">${overallScore}%</div>
+                <div id="overall-score" class="text-3xl font-bold text-primary-600 mb-1">${overallScore}%</div>
                 <div class="text-sm text-gray-600">Overall Match</div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div id="overall-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: ${overallScore}%"></div>
+                    <div id="overall-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${overallScore}%"></div>
                 </div>
             </div>
             <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div id="skill-score" class="text-2xl font-bold text-indigo-700 mb-1">${skillScore}%</div>
+                <div id="skill-score" class="text-2xl font-bold text-primary-600 mb-1">${skillScore}%</div>
                 <div class="text-sm text-gray-600">Skills Match</div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div id="skill-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: ${skillScore}%"></div>
+                    <div id="skill-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${skillScore}%"></div>
                 </div>
             </div>
             <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div id="exp-score" class="text-2xl font-bold text-indigo-700 mb-1">${expScore}%</div>
+                <div id="exp-score" class="text-2xl font-bold text-primary-600 mb-1">${expScore}%</div>
                 <div class="text-sm text-gray-600">Experience</div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div id="exp-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: ${expScore}%"></div>
+                    <div id="exp-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${expScore}%"></div>
                 </div>
             </div>
             <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div id="edu-score" class="text-2xl font-bold text-indigo-700 mb-1">${eduScore}%</div>
+                <div id="edu-score" class="text-2xl font-bold text-primary-600 mb-1">${eduScore}%</div>
                 <div class="text-sm text-gray-600">Education</div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div id="edu-progress" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: ${eduScore}%"></div>
+                    <div id="edu-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${eduScore}%"></div>
                 </div>
             </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white rounded-lg p-4 shadow-sm">
-                <h3 class="font-bold text-indigo-700 mb-3 flex items-center gap-2">
+                <h3 class="font-bold text-primary-600 mb-3 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                     </svg>
@@ -933,10 +1007,10 @@ function createMatchResultsSection(container, matchData) {
     
     // Animate the scores
     setTimeout(() => {
-        animateScoreUpdate('overall-score', overallScore, 'text-indigo-700');
-        animateScoreUpdate('skill-score', skillScore, 'text-indigo-700');
-        animateScoreUpdate('exp-score', expScore, 'text-indigo-700');
-        animateScoreUpdate('edu-score', eduScore, 'text-indigo-700');
+        animateScoreUpdate('overall-score', overallScore, 'text-primary-600');
+        animateScoreUpdate('skill-score', skillScore, 'text-primary-600');
+        animateScoreUpdate('exp-score', expScore, 'text-primary-600');
+        animateScoreUpdate('edu-score', eduScore, 'text-primary-600');
         
         animateProgressBar('overall-progress', overallScore);
         animateProgressBar('skill-progress', skillScore);
@@ -1001,13 +1075,13 @@ function updateSkillsList(containerId, skills, type) {
     container.innerHTML = skills.map(skill => {
     const bgClass = type === 'matched' ? 'bg-gray-100 text-gray-800' : 
                        type === 'missing' ? 'bg-gray-100 text-gray-800' : 
-                       'bg-indigo-50 text-indigo-700';
+                       'bg-primary-50 text-primary-600';
         return `<span class="px-3 py-1 ${bgClass} rounded-full text-sm font-medium animate-fadeIn">${escapeHtml(skill)}</span>`;
     }).join('');
 }
 
 function getRecommendationClass(recommendation) {
-    return 'bg-indigo-50 text-indigo-700';
+    return 'bg-primary-50 text-primary-600';
 }
 
 function escapeHtml(text) {
@@ -1120,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Interview Type -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Interview Type *</label>
-                <select name="interview_type" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <select name="interview_type" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                     <option value="phone">Phone Interview</option>
                     <option value="video">Video Interview</option>
                     <option value="onsite">On-site Interview</option>
@@ -1134,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                        name="scheduled_date" 
                        required
                        min="<?= date('Y-m-d') ?>"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
 
             <!-- Time Range -->
@@ -1145,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                            id="scheduled_time"
                            name="scheduled_time" 
                            required
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">End Time *</label>
@@ -1153,14 +1227,14 @@ document.addEventListener('DOMContentLoaded', function() {
                            id="end_time"
                            name="end_time" 
                            required
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                 </div>
             </div>
 
             <!-- Timezone -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Timezone</label>
-                <select name="timezone" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="timezone" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                     <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
                     <option value="UTC">UTC</option>
                     <option value="America/New_York">America/New_York (EST)</option>
@@ -1175,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" 
                        name="location" 
                        placeholder="Enter interview location"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                 <p class="mt-1 text-xs text-gray-500">Required for on-site interviews</p>
             </div>
 
@@ -1185,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="url" 
                        name="meeting_link" 
                        placeholder="https://meet.example.com/room-id"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                 <p class="mt-1 text-xs text-gray-500">Leave empty to auto-generate a meeting link</p>
             </div>
 
@@ -1197,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Cancel
                 </button>
                 <button type="submit" 
-                        class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200">
+                        class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-600 font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                     Schedule Interview
                 </button>
             </div>
@@ -1231,5 +1305,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+
 
 

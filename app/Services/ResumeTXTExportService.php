@@ -56,7 +56,7 @@ class ResumeTXTExportService
 
         // Add watermark if not premium
         if (!$skipWatermark) {
-            $content[] = "\n\n---\nCreated with Mindware Infotech";
+            $content[] = "\n\n---\nCreated with Jobsence";
         }
 
         // Generate filename and save

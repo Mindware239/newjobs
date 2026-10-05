@@ -31,16 +31,29 @@ class AuthService
 
     public function login(string $email, string $password): ?User
     {
+        $email = trim(strtolower($email));
+        
         /** @var User|null $user */
         $user = User::where('email', '=', $email)->first();
+        
+        // If not found by main email, try social email fields
+        if (!$user) {
+            $db = Database::getInstance();
+            $userRow = $db->fetchOne(
+                "SELECT * FROM users WHERE LOWER(google_email) = :email OR LOWER(apple_email) = :email LIMIT 1",
+                ['email' => $email]
+            );
+            if ($userRow) {
+                $user = new User($userRow);
+            }
+        }
         
         if (!$user || !$user->verifyPassword($password)) {
             return null;
         }
 
-        if ($user->status !== 'active') {
-            return null;
-        }
+        // We return the user even if not active, and let the controller handle the specific error message
+        // This avoids "Invalid email or password" for correct credentials on inactive accounts.
 
         // Update last login
         $user->last_login = date('Y-m-d H:i:s');
@@ -55,15 +68,25 @@ class AuthService
 
     public function registerCandidate(array $data): ?User
     {
-        if (User::where('email', '=', $data['email'])->first()) {
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        $phone = self::normalizePhoneNumber((string)($data['mobile'] ?? ($data['phone'] ?? '')));
+
+        if ($email === '' || $this->findUserByAnyEmail($email)) {
+            return null;
+        }
+
+        if ($phone !== '' && $this->findUserByPhone($phone)) {
             return null;
         }
 
         $user = new User();
         $user->fill([
-            'email' => $data['email'],
+            'name' => $data['full_name'] ?? null,
+            'email' => $email,
             'role' => 'candidate',
-            'status' => 'active'
+            'status' => 'active',
+            'phone' => $phone ?: null,
+            'is_email_verified' => 1
         ]);
         $user->setPassword($data['password']);
 
@@ -71,7 +94,7 @@ class AuthService
             $user->save();
             Candidate::createForUser((int)$user->id, [
                 'full_name' => $data['full_name'],
-                'mobile' => $data['mobile'] ?? null
+                'mobile' => $phone ?: null
             ]);
             return $user;
         } catch (\Throwable $e) {
@@ -82,29 +105,89 @@ class AuthService
 
     public function registerEmployer(array $data): ?User
     {
-        if (User::where('email', '=', $data['email'])->first()) {
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        $phone = self::normalizePhoneNumber((string)($data['phone'] ?? ''));
+
+        if ($email === '' || $this->findUserByAnyEmail($email)) {
+            return null;
+        }
+
+        $companyName = trim((string)($data['company_name'] ?? ''));
+        if ($companyName === '') {
+            return null;
+        }
+
+        if (($data['phone'] ?? '') !== '' && $phone === '') {
+            return null;
+        }
+
+        if ($phone !== '' && $this->findUserByPhone($phone)) {
+            return null;
+        }
+
+        $address = $data['address'] ?? [];
+        if (is_string($address)) {
+            $address = json_decode($address, true) ?: [];
+        }
+        if (!is_array($address)) {
+            $address = [];
+        }
+
+        $postalCode = trim((string)($data['pincode'] ?? $data['postal_code'] ?? ($address['postal_code'] ?? '')));
+        if ($postalCode !== '' && !preg_match('/^[0-9]{6}$/', $postalCode)) {
+            return null;
+        }
+
+        $gstin = strtoupper(trim((string)($data['gstin'] ?? $data['tax_id'] ?? '')));
+        if ($gstin !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $gstin)) {
             return null;
         }
 
         $user = new User();
         $user->fill([
-            'email' => $data['email'],
+            'name' => $data['full_name'] ?? $data['contact_person'] ?? null,
+            'email' => $email,
             'role' => 'employer',
             'status' => 'active',
-            'phone' => $data['phone'] ?? null
+            'phone' => $phone ?: null
         ]);
         $user->setPassword($data['password']);
 
         try {
             $user->save();
+
             $employer = new Employer();
             $employer->fill([
                 'user_id' => $user->id,
-                'company_name' => $data['company_name'],
-                'company_slug' => $employer->generateSlug($data['company_name']),
+                'register_as' => $data['register_as'] ?? 'company',
+                'company_name' => $companyName,
+                'company_slug' => $employer->generateSlug($companyName),
+                'website' => $data['website'] ?? null,
+                'description' => $data['description'] ?? $data['company_description'] ?? null,
+                'industry' => $data['industry'] ?? null,
+                'company_type' => $data['company_type'] ?? null,
+                'profession_type' => $data['profession_type'] ?? null,
+                'service_category' => $data['service_category'] ?? null,
+                'size' => $data['company_size'] ?? $data['size'] ?? null,
+                'address' => !empty($address) ? json_encode($address, JSON_UNESCAPED_UNICODE) : null,
+                'country' => $data['country'] ?? ($address['country'] ?? 'India'),
+                'state' => $data['state'] ?? ($address['state'] ?? null),
+                'city' => $data['city'] ?? ($address['city'] ?? null),
+                'postal_code' => $postalCode ?: null,
+                'tax_id' => $gstin ?: null,
                 'kyc_status' => 'pending'
             ]);
             $employer->save();
+
+            $settings = new EmployerSetting();
+            $settings->fill([
+                'employer_id' => $employer->id,
+                'billing_plan' => 'free',
+                'credits' => 0,
+                'timezone' => (($data['country'] ?? ($address['country'] ?? '')) === 'India') ? 'Asia/Kolkata' : 'UTC',
+            ]);
+            $settings->save();
+
             return $user;
         } catch (\Throwable $e) {
             error_log("AuthService Register Employer Error: " . $e->getMessage());
@@ -146,7 +229,7 @@ class AuthService
         }
 
         $email = $this->resolveRegistrationEmail($data, $phone);
-        $existingEmailUser = User::where('email', '=', $email)->first();
+        $existingEmailUser = $this->findUserByAnyEmail($email);
         if ($existingEmailUser) {
             return ['success' => false, 'error' => 'Email already registered'];
         }
@@ -209,7 +292,7 @@ class AuthService
         }
 
         $email = $this->resolveRegistrationEmail($data, $phone);
-        $existingEmailUser = User::where('email', '=', $email)->first();
+        $existingEmailUser = $this->findUserByAnyEmail($email);
         if ($existingEmailUser) {
             return ['success' => false, 'error' => 'Email already registered'];
         }
@@ -353,29 +436,58 @@ class AuthService
         return null;
     }
 
-    public function findUserByPhone(string $phone): ?User
+    public function findUserByAnyEmail(string $email): ?User
     {
-        $normalized = self::normalizePhoneNumber($phone);
-        if ($normalized === '') {
-            return null;
-        }
-
-        $user = User::where('phone', '=', $normalized)->first();
-        if ($user) {
-            return $user;
-        }
-
-        $digits = preg_replace('/\D+/', '', $normalized);
-        if ($digits === '' || $digits === null) {
+        $email = strtolower(trim($email));
+        if ($email === '') {
             return null;
         }
 
         $db = Database::getInstance();
         $row = $db->fetchOne(
             "SELECT * FROM users
-             WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', '') = :digits
+             WHERE LOWER(email) = :email
+                OR LOWER(COALESCE(google_email, '')) = :google_email
+                OR LOWER(COALESCE(apple_email, '')) = :apple_email
              LIMIT 1",
-            ['digits' => $digits]
+            ['email' => $email, 'google_email' => $email, 'apple_email' => $email]
+        );
+
+        return $row ? new User($row) : null;
+    }
+
+    public function findUserByPhone(string $phone, ?int $excludeUserId = null): ?User
+    {
+        $normalized = self::normalizePhoneNumber($phone);
+        if ($normalized === '') {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', $normalized);
+        if ($digits === '' || $digits === null) {
+            return null;
+        }
+        $lastTen = strlen($digits) >= 10 ? substr($digits, -10) : $digits;
+        if (!preg_match('/^[0-9]{10}$/', $lastTen)) {
+            return null;
+        }
+
+        $db = Database::getInstance();
+        $params = ['digits' => $lastTen];
+        $excludeSql = '';
+        if ($excludeUserId !== null && $excludeUserId > 0) {
+            $excludeSql = ' AND id != :exclude_id';
+            $params['exclude_id'] = $excludeUserId;
+        }
+
+        $row = $db->fetchOne(
+            "SELECT * FROM users
+             WHERE phone IS NOT NULL
+               AND phone != ''
+               AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), 10) = :digits
+               {$excludeSql}
+             LIMIT 1",
+            $params
         );
 
         return $row ? new User($row) : null;

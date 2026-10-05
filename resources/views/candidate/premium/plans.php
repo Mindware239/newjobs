@@ -4,8 +4,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-        <title>Premium Plans - Mindware Infotech</title>
-        <link rel="icon" type="image/png" href="/uploads/Mindware-infotech.png">
+        <title>Premium Plans - Jobsence</title>
+        <link rel="icon" type="image/png" href="/uploads/jobsence.png">
         <link href="/css/output.css" rel="stylesheet">
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
         <script>
@@ -77,7 +77,7 @@
                             key: paymentData.key,
                             amount: paymentData.amount,
                             currency: paymentData.currency || 'INR',
-                            name: 'Mindware Infotech',
+                            name: 'Jobsence',
                             description: 'Candidate Premium',
                             order_id: paymentData.order_id || undefined,
                             prefill: {
@@ -97,6 +97,8 @@
                                         body: JSON.stringify({
                                             purchase_id: purchaseId,
                                             payment_id: resp.razorpay_payment_id || '',
+                                            razorpay_order_id: resp.razorpay_order_id || '',
+                                            razorpay_signature: resp.razorpay_signature || '',
                                             status: 'success'
                                         })
                                     });
@@ -161,25 +163,25 @@
         <?php $base = $base ?? '/'; require __DIR__ . '/../../include/header.php'; ?>
 
         <!-- Hero Section with Gradient Background -->
-        <div class="bg-gradient-to-br from-blue-50 via-blue-50 to-white py-16">
+        <div class="bg-gradient-to-br from-primary-50 via-white to-white py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
                     <div class="flex-1 text-center lg:text-left">
                         <div class="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                            <h1 class="text-5xl sm:text-6xl font-bold text-gray-900">Mindware Pro</h1>
-                            <svg class="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <h1 class="text-5xl sm:text-6xl font-bold text-gray-900">Jobsence Pro</h1>
+                            <svg class="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                             </svg>
                         </div>
                         <p class="text-2xl text-gray-700 mb-8 font-medium">Be seen. Be prepared. Be ahead.</p>
-                        <button @click="scrollToPlans()" class="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                            Get Mindware Pro
+                        <button @click="scrollToPlans()" class="px-8 py-4 bg-primary text-white rounded-xl border border-primary font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-100 active:scale-[0.98]">
+                            Get Jobsence Pro
                         </button>
                     </div>
                     <div class="flex-1 hidden lg:flex items-center justify-center">
                         <!-- Hero Image -->
                         <div class="relative w-full max-w-lg">
-                            <img src="/uploads/mindware-hero.png" alt="Mindware Pro Features" class="w-full h-auto object-contain">
+                            <img src="/uploads/premium-hero.png" alt="Jobsence Pro Features" class="w-full h-auto object-contain">
                         </div>
                     </div>
                 </div>
@@ -189,14 +191,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <!-- Premium Status Banner -->
             <?php if ($candidate->isPremium()): ?>
-            <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-6 mb-8 text-center">
+            <div class="bg-primary-50 border-2 border-primary rounded-xl p-6 mb-8 text-center">
                 <div class="flex items-center justify-center gap-3 mb-2">
-                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </svg>
-                    <h2 class="text-2xl font-bold text-blue-900">You're a Premium Member!</h2>
+                    <h2 class="text-2xl font-bold text-primary">You're a Premium Member!</h2>
                 </div>
-                <p class="text-blue-800 font-medium">
+                <p class="text-primary-900 font-medium">
                     Premium expires: <?= date('M d, Y', strtotime($candidate->attributes['premium_expires_at'] ?? 'now')) ?>
                 </p>
             </div>
@@ -210,19 +212,19 @@
                             <img src="/uploads/cl-bulb.svg" alt="Lightbulb Icon" class="w-24 h-24">
                         </div>
                         <div class="flex-1 pt-1">
-                            <div class="text-6xl font-bold text-blue-600 mb-3">70%</div>
+                            <div class="text-6xl font-bold text-primary mb-3">70%</div>
                             <p class="text-base text-gray-700 leading-relaxed">
                                 <span class="font-medium">of recruiters start hiring with profile searches.</span> 
-                                <span class="text-gray-600">Be seen with Mindware Pro.</span>
+                                <span class="text-gray-600">Be seen with Jobsence Pro.</span>
                             </p>
                         </div>
                     </div>
                     <div class="flex items-start gap-6">
                         <div class="flex-1 pt-1">
-                            <div class="text-6xl font-bold text-blue-600 mb-3">80%</div>
+                            <div class="text-6xl font-bold text-primary mb-3">80%</div>
                             <p class="text-base text-gray-700 leading-relaxed">
                                 <span class="font-medium">of users got more job invitations</span> 
-                                <span class="text-gray-600">in their first month with Mindware Pro.</span>
+                                <span class="text-gray-600">in their first month with Jobsence Pro.</span>
                             </p>
                         </div>
                     </div>
@@ -240,8 +242,8 @@
                                 <th class="text-center py-4 px-4 text-lg font-semibold text-gray-900">Current</th>
                                 <th class="text-center py-4 px-4 text-lg font-semibold text-gray-900">
                                     <div class="flex items-center justify-center gap-2">
-                                        <span>Mindware Pro</span>
-                                        <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <span>Jobsence Pro</span>
+                                        <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                         </svg>
                                     </div>
@@ -267,7 +269,7 @@
                                 <td class="py-4 px-4 text-gray-700 font-medium"><?= htmlspecialchars($feature) ?></td>
                                 <td class="py-4 px-4 text-center text-gray-400 text-2xl">—</td>
                                 <td class="py-4 px-4 text-center">
-                                    <svg class="w-6 h-6 text-blue-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-6 h-6 text-primary mx-auto" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                     </svg>
                                 </td>
@@ -283,20 +285,20 @@
                 <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Become a pro. In every move you make.</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Feature Card 01 -->
-                    <div class="bg-blue-50 rounded-xl p-6 border-2 border-blue-100 relative">
-                        <div class="text-7xl font-bold text-blue-600 mb-4">01</div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-blue-500 pb-2 inline-block">
+                    <div class="bg-primary-50 rounded-xl p-6 border-2 border-primary relative">
+                        <div class="text-7xl font-bold text-primary mb-4">01</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-primary pb-2 inline-block">
                             Get your AI Job Agent
                         </h3>
                         <ul class="space-y-3">
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Real time job alerts for top jobs</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Auto-applies on highly relevant jobs</span>
@@ -305,20 +307,20 @@
                     </div>
 
                     <!-- Feature Card 02 -->
-                    <div class="bg-blue-50 rounded-xl p-6 border-2 border-blue-100 relative">
-                        <div class="text-7xl font-bold text-blue-600 mb-4">02</div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-blue-500 pb-2 inline-block">
+                    <div class="bg-primary-50 rounded-xl p-6 border-2 border-primary relative">
+                        <div class="text-7xl font-bold text-primary mb-4">02</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-primary pb-2 inline-block">
                             Power up your profile with ✨AI
                         </h3>
                         <ul class="space-y-3">
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Enhance your headline, summary, & more</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Get an upgraded professional picture</span>
@@ -327,20 +329,20 @@
                     </div>
 
                     <!-- Feature Card 03 -->
-                    <div class="bg-blue-50 rounded-xl p-6 border-2 border-blue-100 relative">
-                        <div class="text-7xl font-bold text-blue-600 mb-4">03</div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-blue-500 pb-2 inline-block">
+                    <div class="bg-primary-50 rounded-xl p-6 border-2 border-primary relative">
+                        <div class="text-7xl font-bold text-primary mb-4">03</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b-2 border-primary pb-2 inline-block">
                             Get invitations that others miss
                         </h3>
                         <ul class="space-y-3">
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Never miss out on relevant opportunities</span>
                             </li>
                             <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="text-gray-700">Stay ahead with invitations meant for you</span>
@@ -349,7 +351,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Pricing Plans Section -->
             <!-- Pricing Plans Section -->
 <div id="pricing-plans" class="mb-16">
     <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">
@@ -365,15 +366,15 @@
             flex flex-col h-full
             transition-all duration-300
             <?= $isPopular
-                ? 'border-blue-500 ring-2 ring-blue-200 shadow-xl bg-white'
-                : 'border-gray-200 shadow-md bg-white hover:border-blue-300'
+                ? 'border-primary ring-2 ring-primary-100 shadow-xl bg-white'
+                : 'border-gray-200 shadow-md bg-white hover:border-primary'
             ?>
         ">
 
             <!-- Badge (fixed height for alignment) -->
             <div class="h-10">
                 <?php if ($isPopular): ?>
-                <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-center text-sm font-bold flex items-center justify-center">
+                <div class="h-full bg-primary text-white text-center text-sm font-bold flex items-center justify-center">
                     MOST POPULAR
                 </div>
                 <?php endif; ?>
@@ -398,7 +399,7 @@
                         <span class="text-gray-500 line-through text-lg">
                             ₹<?= number_format($plan['price'] * 12) ?>
                         </span>
-                        <span class="ml-2 text-blue-600 font-semibold">
+                        <span class="ml-2 text-primary font-semibold">
                             Save ₹<?= number_format(($plan['price'] * 12) - $plan['price']) ?>
                         </span>
                     </div>
@@ -409,7 +410,7 @@
                 <ul class="space-y-3 mb-8 flex-1">
                     <?php foreach ($plan['features'] as $feature): ?>
                     <li class="flex items-start gap-2">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+                        <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0"
                              fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -427,12 +428,7 @@
                     @click="selectPlan('<?= $plan['id'] ?>')"
                     class="
                         w-full mt-auto
-                        px-4 py-3 rounded-xl
-                        font-semibold text-white
-                        bg-gradient-to-r from-blue-500 to-blue-600
-                        hover:from-blue-600 hover:to-blue-700
-                        shadow-md hover:shadow-lg
-                        transition-all transform hover:scale-[1.02]
+                        px-4 py-3 bg-primary text-white rounded-xl border border-primary font-bold hover:bg-primary-700 transition-all shadow-lg active:scale-[0.98] transform hover:scale-[1.02]
                     ">
                     Choose Plan
                 </button>
@@ -451,15 +447,15 @@
                     <?php 
                     $faqs = [
                         [
-                            'q' => 'What is Mindware Pro?',
-                            'a' => 'Mindware Pro brings together everything you need to enhance your profile, build a strong resume, prepare for interviews, and access hidden job opportunities. All in one place.'
+                            'q' => 'What is Jobsence Pro?',
+                            'a' => 'Jobsence Pro brings together everything you need to enhance your profile, build a strong resume, prepare for interviews, and access hidden job opportunities. All in one place.'
                         ],
                         [
-                            'q' => 'Who can benefit from Mindware Pro?',
-                            'a' => 'Anyone looking for better job opportunities, career growth, or want to stand out to recruiters. Whether you\'re actively job searching or just keeping your options open, Mindware Pro gives you the competitive edge.'
+                            'q' => 'Who can benefit from Jobsence Pro?',
+                            'a' => 'Anyone looking for better job opportunities, career growth, or want to stand out to recruiters. Whether you\'re actively job searching or just keeping your options open, Jobsence Pro gives you the competitive edge.'
                         ],
                         [
-                            'q' => 'How long is Mindware Pro valid?',
+                            'q' => 'How long is Jobsence Pro valid?',
                             'a' => 'You can choose from 7-day, 30-day, or yearly plans. Premium membership plans renew automatically unless cancelled. Profile boost plans are one-time purchases for the selected duration.'
                         ],
                         [
@@ -501,8 +497,8 @@
 
             <!-- Final CTA -->
             <div class="text-center">
-                <button @click="scrollToPlans()" class="px-12 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                    Get Mindware Pro
+                <button @click="scrollToPlans()" class="px-12 py-4 bg-primary text-white rounded-xl border border-primary font-bold hover:bg-primary-700 transition-all shadow-lg active:scale-[0.98]">
+                    Get Jobsence Pro
                 </button>
             </div>
         </div>
@@ -541,7 +537,7 @@
                         </button>
                         <button @click="processPayment()" 
                                 :disabled="isProcessing"
-                                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                                class="flex-1 px-4 py-2 bg-primary text-white rounded-xl border border-primary font-bold hover:bg-primary-700 transition-all shadow-lg disabled:opacity-50">
                             <span x-show="!isProcessing" id="payBtnText" x-text="selectedPlanDetails ? ('Pay ₹' + (selectedPlanDetails.price).toLocaleString('en-IN')) : 'Pay Now'"></span>
                             <span x-show="isProcessing">Processing...</span>
                         </button>

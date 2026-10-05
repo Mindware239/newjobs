@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Models\SubscriptionPayment;
 use App\Models\Employer;
 use App\Models\Job;
+use App\Helpers\AddressHelper;
 
 class PaymentsController extends BaseController
 {
@@ -141,12 +142,14 @@ class PaymentsController extends BaseController
 
         // 3. Better Error Handling with Try-Catch
         try {
-            $addressJson = json_encode([
+            $address = AddressHelper::forStorage([
                 'street' => $street,
                 'city' => $city,
                 'state' => $state,
-                'postal_code' => $postal
-            ], JSON_UNESCAPED_UNICODE);
+                'postal_code' => $postal,
+                'country' => $country
+            ]);
+            $addressJson = json_encode($address, JSON_UNESCAPED_UNICODE);
 
             $employer->attributes['address'] = $addressJson;
             $employer->attributes['city'] = $city;

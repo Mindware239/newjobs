@@ -43,29 +43,29 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
-                        <input type="text" x-model="form.short_name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" x-model="form.short_name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                        <input type="url" x-model="form.website" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="url" x-model="form.website" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Headquarters</label>
-                        <input type="text" x-model="form.headquarters" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" x-model="form.headquarters" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Founded Year</label>
-                        <input type="text" x-model="form.founded_year" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" x-model="form.founded_year" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Company Size</label>
-                        <select x-model="form.company_size" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select x-model="form.company_size" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="">Select size</option>
                             <option value="1-10">1-10 employees</option>
                             <option value="11-50">11-50 employees</option>
@@ -77,23 +77,23 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Revenue</label>
-                        <input type="text" x-model="form.revenue" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" x-model="form.revenue" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">About Company</label>
-                    <textarea x-model="form.description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <textarea x-model="form.description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
 
                 <div class="border rounded-lg p-4 bg-gray-50">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="text-md font-semibold text-gray-900">Why Join Points</h4>
-                        <button type="button" @click="form.why_points.push('')" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">Add Point</button>
+                        <button type="button" @click="form.why_points.push('')" class="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-600">Add Point</button>
                     </div>
                     <template x-for="(p, idx) in form.why_points" :key="idx">
                         <div class="flex items-center gap-2 mb-2">
-                            <input type="text" x-model="form.why_points[idx]" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Great work-life balance">
+                            <input type="text" x-model="form.why_points[idx]" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., Great work-life balance">
                             <button type="button" @click="form.why_points.splice(idx,1)" class="px-2 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">Remove</button>
                         </div>
                     </template>
@@ -102,13 +102,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">CEO Name</label>
-                        <input type="text" x-model="form.ceo_name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" x-model="form.ceo_name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">CEO Photo</label>
-                        <input type="file" name="ceo_photo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <?php if (!empty($company['ceo_photo'])): ?>
-                            <img src="<?= htmlspecialchars($company['ceo_photo']) ?>" alt="CEO Photo" class="mt-2 h-20 w-20 object-cover rounded">
+                        <input type="file" name="ceo_photo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        <?php if (!empty($company['ceo_photo'])): 
+                            $ceoPhoto = fix_url($company['ceo_photo']);
+                        ?>
+                            <img src="<?= htmlspecialchars($ceoPhoto) ?>" alt="CEO Photo" class="mt-2 h-20 w-20 object-cover rounded">
                         <?php endif; ?>
                     </div>
                 </div>
@@ -116,22 +118,51 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
-                        <input type="file" name="logo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <?php if (!empty($company['logo_url'])): ?>
-                            <img src="<?= htmlspecialchars($company['logo_url']) ?>" alt="Logo" class="mt-2 h-20 w-20 object-cover rounded">
+                        <input type="file" name="logo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        <?php if (!empty($company['logo_url'])): 
+                            $logoUrl = fix_url($company['logo_url']);
+                        ?>
+                            <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Logo" class="mt-2 h-20 w-20 object-cover rounded">
                         <?php endif; ?>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Banner</label>
-                        <input type="file" name="banner" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <?php if (!empty($company['banner_url'])): ?>
-                            <img src="<?= htmlspecialchars($company['banner_url']) ?>" alt="Banner" class="mt-2 h-32 w-full object-cover rounded">
+                        <input type="file" name="banner" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        <?php if (!empty($company['banner_url'])): 
+                            $bannerUrl = fix_url($company['banner_url']);
+                        ?>
+                            <div class="mt-2 relative group">
+                                <img src="<?= htmlspecialchars($bannerUrl) ?>" alt="Banner" class="h-32 w-full object-cover rounded shadow-sm border border-gray-200">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
+                                    <span class="text-white text-xs font-bold">Current Banner</span>
+                                </div>
+                            </div>
                         <?php endif; ?>
+                        
+                        <!-- Additional Banners (Dynamic) -->
+                        <div class="mt-6 border-t pt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Promotion Banners</h4>
+                                <button type="button" @click="addBannerInput()" class="px-2 py-1 text-[10px] bg-primary text-white rounded font-bold uppercase hover:bg-primary-hover">+ Add More</button>
+                            </div>
+                            <div class="space-y-3">
+                                <template x-for="(banner, index) in extraBanners" :key="index">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div class="flex-1">
+                                            <input type="file" :name="'extra_banner_' + index" accept="image/*" class="text-xs w-full">
+                                        </div>
+                                        <button type="button" @click="removeBannerInput(index)" class="text-red-500 hover:text-red-700">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end space-x-4">
-                    <button @click="save" :disabled="isSubmitting" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button @click="save" :disabled="isSubmitting" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!isSubmitting">Save Changes</span>
                         <span x-show="isSubmitting">Saving...</span>
                     </button>
@@ -144,7 +175,7 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold text-gray-900">Jobs</h2>
-                <a href="/employer/jobs/create" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">New Job</a>
+                <a href="/employer/jobs/create" class="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-600">New Job</a>
             </div>
             <div class="mt-2">
                 <?php if (empty($jobs)): ?>
@@ -172,7 +203,7 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold text-gray-900">Blogs</h2>
-                <button type="button" @click="showNewBlogForm = !showNewBlogForm" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">New Blog</button>
+                <button type="button" @click="showNewBlogForm = !showNewBlogForm" class="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-600">New Blog</button>
             </div>
 
             <!-- New Blog Form -->
@@ -198,7 +229,7 @@
                     </div>
                     <div class="flex justify-end gap-2">
                         <button type="button" @click="showNewBlogForm = false" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
-                        <button type="submit" :disabled="isCreatingBlog" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                        <button type="submit" :disabled="isCreatingBlog" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 disabled:opacity-50">
                             <span x-show="!isCreatingBlog">Publish Blog</span>
                             <span x-show="isCreatingBlog">Publishing...</span>
                         </button>
@@ -216,7 +247,7 @@
                             <li class="py-3 flex items-center justify-between">
                                 <div class="flex items-center gap-4">
                                     <?php if (!empty($b['image'])): ?>
-                                        <img src="<?= htmlspecialchars($b['image']) ?>" alt="<?= htmlspecialchars($b['title']) ?>" class="w-16 h-16 object-cover rounded">
+                                        <img src="<?= htmlspecialchars(fix_url($b['image'])) ?>" alt="<?= htmlspecialchars($b['title']) ?>" class="w-16 h-16 object-cover rounded">
                                     <?php endif; ?>
                                     <div>
                                         <div class="font-medium text-gray-900"><?= htmlspecialchars($b['title']) ?></div>
@@ -230,7 +261,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <?php if (!empty($b['slug'])): ?>
-                                        <a class="px-3 py-1 text-sm border rounded hover:bg-gray-50" href="/company/<?= htmlspecialchars($company['slug'] ?? '') ?>/blogs" target="_blank">View</a>
+                                        <a class="px-3 py-1 text-sm border rounded hover:bg-gray-50" href="/company/<?= htmlspecialchars($company['slug'] ?? '') ?>/blog/<?= htmlspecialchars($b['slug']) ?>" target="_blank">View</a>
                                     <?php endif; ?>
                                     <button @click="deleteBlog(<?= (int)$b['id'] ?>)" class="px-3 py-1 text-sm border rounded hover:bg-red-50 text-red-600">Delete</button>
                                 </div>
@@ -301,6 +332,13 @@ function companyProfileForm() {
             description: '',
             ceo_name: '<?= htmlspecialchars($company['ceo_name'] ?? '', ENT_QUOTES) ?>',
             why_points: []
+        },
+        extraBanners: [],
+        addBannerInput() {
+            this.extraBanners.push({ file: null });
+        },
+        removeBannerInput(index) {
+            this.extraBanners.splice(index, 1);
         },
         newBlog: {
             title: '',
@@ -418,3 +456,14 @@ function companyProfileForm() {
 <style>
 [x-cloak] { display: none !important; }
 </style>
+
+
+
+
+
+
+
+
+
+
+

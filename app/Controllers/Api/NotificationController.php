@@ -7,9 +7,17 @@ namespace App\Controllers\Api;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Notification;
+use App\Repositories\ApiNotificationRepository;
 
 class NotificationController extends ApiController
 {
+    private ApiNotificationRepository $notificationRepository;
+
+    public function __construct()
+    {
+        $this->notificationRepository = new ApiNotificationRepository();
+    }
+
     /**
      * @OA\Get(
      *     path="/api/v1/notifications",
@@ -84,12 +92,7 @@ class NotificationController extends ApiController
     public function markAllAsRead(Request $request, Response $response): void
     {
         $user = $this->user($request);
-
-        $db = \App\Core\Database::getInstance();
-        $db->query(
-            "UPDATE notifications SET is_read = 1 WHERE user_id = :uid AND is_read = 0",
-            ['uid' => $user->id]
-        );
+        $this->notificationRepository->markAllAsRead((int)$user->id);
 
         $this->success($response, [], 'All notifications marked as read');
     }
@@ -141,6 +144,21 @@ class NotificationController extends ApiController
         }
     }
 
+    public function getPreferences(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $prefs = $user->getNotificationPreferences();
+
+        $this->success($response, [
+            'preferences' => array_merge([
+                'in_app' => true,
+                'email' => true,
+                'push' => false,
+                'whatsapp' => false,
+            ], is_array($prefs) ? $prefs : [])
+        ]);
+    }
+
     /**
      * POST /api/v1/notifications/preferences
      */
@@ -161,5 +179,29 @@ class NotificationController extends ApiController
         } else {
             $this->error($response, 'Failed to update preferences', 500);
         }
+    }
+
+    public function testNotification(Request $request, Response $response): void
+    {
+        $user = $this->user($request);
+        $data = $request->getJsonBody() ?? [];
+
+        $notification = Notification::create(
+            (int)$user->id,
+            'system',
+            (string)($data['title'] ?? 'Test notification'),
+            (string)($data['message'] ?? 'This is a test notification.'),
+            $data['link'] ?? null,
+            ['source' => 'api_test']
+        );
+
+        $this->success($response, [
+            'notification' => $notification->toArray()
+        ], 'Test notification created', 201);
+    }
+
+    public function history(Request $request, Response $response): void
+    {
+        $this->index($request, $response);
     }
 }

@@ -176,10 +176,10 @@ class DashboardController extends BaseController
         $db = Database::getInstance();
         try {
             return $db->fetchAll(
-                "SELECT DATE(created_at) as date, COUNT(*) as count
+                "SELECT DATE(applied_at) as date, COUNT(*) as count
                  FROM applications 
-                 WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-                 GROUP BY DATE(created_at)
+                 WHERE applied_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+                 GROUP BY DATE(applied_at)
                  ORDER BY date ASC",
                 [$days]
             );
@@ -195,7 +195,7 @@ class DashboardController extends BaseController
 
         try {
             // KYC Pending
-            $kycPending = (int)($db->fetchOne("SELECT COUNT(*) as count FROM employer_kyc_documents WHERE status = 'pending'")['count'] ?? 0);
+            $kycPending = (int)($db->fetchOne("SELECT COUNT(*) as count FROM employer_kyc_documents WHERE review_status = 'pending'")['count'] ?? 0);
             if ($kycPending > 0) {
                 $alerts[] = [
                     'type' => 'warning',
@@ -259,7 +259,7 @@ class DashboardController extends BaseController
             return $db->fetchAll(
                 "SELECT al.*, u.email, u.role
                  FROM activity_logs al
-                 LEFT JOIN users u ON u.id = al.user_id
+                 LEFT JOIN users u ON u.id = al.actor_id
                  WHERE al.action LIKE 'admin_%'
                  ORDER BY al.created_at DESC
                  LIMIT ?",

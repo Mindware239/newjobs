@@ -298,7 +298,8 @@ class SeoService
             'part_time' => 'PART_TIME',
             'contract' => 'CONTRACTOR',
             'internship' => 'INTERN',
-            'freelance' => 'FREELANCE'
+            'freelance' => 'FREELANCE',
+            'one_time' => 'TEMPORARY'
         ];
         return $map[$type] ?? 'FULL_TIME';
     }
@@ -306,8 +307,8 @@ class SeoService
    private function setDefaultMeta(): void
 {
     $this->currentMeta = [
-        'title' => 'Jobs & Internships in India | Latest Openings – Mindware Infotech',
-        'description' => 'Search latest jobs and internships across India on Mindware Infotech. Explore IT, banking, healthcare, pharma, fresher and internship opportunities from verified employers.',
+        'title' => 'Jobs & Internships in India | Latest Openings – Jobsence',
+        'description' => 'Search latest jobs and internships across India on Jobsence. Explore IT, banking, healthcare, pharma, fresher and internship opportunities from verified employers.',
         'keywords' => 'jobs in india, internships in india, latest job openings, it jobs, banking jobs, healthcare jobs, pharma jobs, fresher jobs, internship opportunities, private jobs, government jobs',
         'h1' => 'Find Latest Jobs & Internships Across India',
         'canonical' => rtrim($_ENV['APP_URL'] ?? 'http://localhost:8000', '/'),
@@ -379,6 +380,23 @@ class SeoService
         return implode("\n    ", $html);
     }
 
+    /**
+     * Override resolved/default meta with explicit values (keys: title, description, keywords,
+     * h1, canonical, robots, og_type, twitter_card, json_ld).
+     */
+    public function setMeta(array $meta): self
+    {
+        $this->currentMeta = array_merge($this->currentMeta, array_intersect_key($meta, $this->currentMeta));
+        $this->resolved = true;
+        return $this;
+    }
+
+    /** True once a controller resolved or set page-specific SEO (otherwise the site defaults are in use). */
+    public function isResolved(): bool
+    {
+        return $this->resolved;
+    }
+
     public function getH1(): string
     {
         return $this->currentMeta['h1'] ?? '';
@@ -392,7 +410,7 @@ class SeoService
         switch ($pageType) {
             case 'city_jobs':
                 if (isset($data['city'])) {
-                    $this->currentMeta['title'] = "Jobs in {$data['city']} - Mindware Infotech";
+                    $this->currentMeta['title'] = "Jobs in {$data['city']} - Jobsence";
                     $this->currentMeta['description'] = "Find the best jobs in {$data['city']}. " . ($data['job_count'] ?? 'Thousands of') . " job openings available.";
                     $this->currentMeta['h1'] = "Jobs in {$data['city']}";
                 }
@@ -400,7 +418,7 @@ class SeoService
                 
             case 'skill_city_jobs':
                 if (isset($data['skill']) && isset($data['city'])) {
-                    $this->currentMeta['title'] = "{$data['skill']} Jobs in {$data['city']} - Mindware Infotech";
+                    $this->currentMeta['title'] = "{$data['skill']} Jobs in {$data['city']} - Jobsence";
                     $this->currentMeta['description'] = "Apply to top {$data['skill']} jobs in {$data['city']}. Find your next career opportunity today.";
                     $this->currentMeta['h1'] = "{$data['skill']} Jobs in {$data['city']}";
                 }
@@ -410,7 +428,7 @@ class SeoService
                 if (isset($data['location'])) {
                     $top = is_array($data['top_titles'] ?? null) ? $data['top_titles'] : [];
                     $lead = !empty($top) ? (strtolower($top[0]) . " jobs in {$data['location']} | Apply Now") : "Jobs in {$data['location']} | Apply Now";
-                    $this->currentMeta['title'] = $lead . " - Mindware Infotech";
+                    $this->currentMeta['title'] = $lead . " - Jobsence";
                     $this->currentMeta['description'] = "Find the best " . (!empty($top) ? strtolower($top[0]) . " jobs" : "jobs") . " in {$data['location']}. " . ($data['job_count'] ?? 'Thousands of') . " openings available. Apply today.";
                     $this->currentMeta['h1'] = "Jobs in {$data['location']}";
                 }
@@ -418,7 +436,7 @@ class SeoService
                 
             case 'role_location_jobs':
                 if (isset($data['role']) && isset($data['location'])) {
-                    $this->currentMeta['title'] = "{$data['role']} Jobs in {$data['location']} | Apply Now - Mindware Infotech";
+                    $this->currentMeta['title'] = "{$data['role']} Jobs in {$data['location']} | Apply Now - Jobsence";
                     $this->currentMeta['description'] = "Apply to top {$data['role']} jobs in {$data['location']}. Latest openings, verified employers. Submit your application today.";
                     $this->currentMeta['h1'] = "{$data['role']} Jobs in {$data['location']}";
                 }
@@ -427,7 +445,7 @@ class SeoService
             case 'category_jobs':
                 if (isset($data['category'])) {
                     $loc = $data['location'] ?? '';
-                    $this->currentMeta['title'] = "Jobs in {$data['category']}" . ($loc ? " in {$loc}" : "") . " | Apply Now - Mindware Infotech";
+                    $this->currentMeta['title'] = "Jobs in {$data['category']}" . ($loc ? " in {$loc}" : "") . " | Apply Now - Jobsence";
                     $this->currentMeta['description'] = "Explore {$data['category']} jobs" . ($loc ? " in {$loc}" : "") . ". " . ($data['job_count'] ?? 'Many') . " openings across top companies. Apply online now.";
                     $this->currentMeta['h1'] = "Jobs in {$data['category']}" . ($loc ? " in {$loc}" : "");
                 }
@@ -435,7 +453,7 @@ class SeoService
                 
             case 'job_detail':
                 if (isset($data['job_title'])) {
-                    $company = $data['company'] ?? 'Mindware Infotech';
+                    $company = $data['company'] ?? 'Jobsence';
                     $location = !empty($data['city']) ? $data['city'] : '';
                     $this->currentMeta['title'] = "{$data['job_title']} at {$company} in {$location}";
                     $this->currentMeta['description'] = "Apply for {$data['job_title']} at {$company}. Location: {$location}.";

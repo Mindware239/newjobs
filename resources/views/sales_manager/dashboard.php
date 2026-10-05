@@ -37,7 +37,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
         <div class="relative z-10 flex flex-row lg:flex-row lg:items-center lg:justify-between gap-6">
             <!-- Quick Actions -->
             <div class="flex flex-wrap gap-6">
-                <a href="/sales/leads/create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-lg shadow-indigo-500/30 transition text-sm font-bold flex items-center gap-2">
+                <a href="/sales/leads/create" class="px-4 py-2 bg-primary hover:bg-primary text-white rounded-lg shadow-lg shadow-primary/30 transition text-sm font-bold flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus w-6 h-6">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -85,7 +85,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
         </div>
 
         <!-- Decorative background elements -->
-        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-indigo-500/20 blur-3xl"></div>
+        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl"></div>
         <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl"></div>
     </div>
 
@@ -160,7 +160,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600">Revenue Trend</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-primary-50 text-primary">Revenue Trend</span>
                         <div class="mt-2 flex items-end gap-3">
                             <h3 class="text-3xl font-bold text-slate-800">$<?= number_format(array_sum($chartValues)) ?></h3>
                             <span class="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded"><?= isset($summary['revenue_growth_pct']) ? '+' . round($summary['revenue_growth_pct'], 1) . '%' : '+0%' ?></span>
@@ -190,8 +190,8 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                         'website' => '#f59e0b',
                         'form' => '#f59e0b',
                         'referral' => '#14b8a6',
-                        'social_media' => '#8b5cf6',
-                        'cold_call' => '#3b82f6',
+                        'social_media' => '#f05537',
+                        'cold_call' => '#FF6A3D',
                         'events' => '#10b981'
                     ];
                     foreach ($leadSources as $source => $count):
@@ -233,13 +233,13 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Today's Activity
                     <p class="text-xs text-slate-500">Track daily team activities</p>
                 </h3>
-                <span class="text-xs font-medium px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full"><?= count($todaysActivities ?? []) ?> Items</span>
+                <span class="text-xs font-medium px-2.5 py-1 bg-primary-50 text-primary rounded-full"><?= count($todaysActivities ?? []) ?> Items</span>
             </div>
             <div class="divide-y divide-slate-100">
                 <?php if (empty($todaysActivities)): ?>
@@ -272,7 +272,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                                     <?= !empty($act['created_at']) ? date('g:i A', strtotime($act['created_at'])) : '' ?>
                                 </span>
                                 <span class="text-[11px] px-2 py-0.5 rounded-full <?= $statusBadge === 'completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100' ?>"><?= $statusBadge ?></span>
-                                <a href="/sales/leads/<?= (int)($act['lead_id'] ?? 0) ?>" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition opacity-0 group-hover:opacity-100">
+                                <a href="/sales/leads/<?= (int)($act['lead_id'] ?? 0) ?>" class="p-2 text-slate-400 hover:text-primary hover:bg-primary-50 rounded-lg transition opacity-0 group-hover:opacity-100">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -294,7 +294,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-bold text-slate-800">Pipeline Overview</h3>
-                    <a href="/sales/manager/pipeline" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                    <a href="/sales/manager/pipeline" class="text-sm font-medium text-primary hover:text-primary-600 flex items-center gap-1">
                         View Full Pipeline
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -306,7 +306,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                     <!-- Proposal -->
                     <div class="bg-white rounded-xl border border-slate-200 flex flex-col h-full shadow-sm">
                         <div class="p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Proposal</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-primary">Proposal</span>
                             <span class="bg-white border border-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full"><?= count($pipeline['proposal'] ?? []) ?></span>
                         </div>
                         <div class="p-3 space-y-3 flex-1">
@@ -314,8 +314,8 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                                 <div class="h-full flex items-center justify-center text-xs text-slate-400 italic">No deals</div>
                             <?php else: ?>
                                 <?php foreach ($pipeline['proposal'] as $p): ?>
-                                    <a href="/sales/leads/<?= $p['id'] ?>" class="block bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition group">
-                                        <h4 class="font-semibold text-slate-800 text-sm truncate group-hover:text-indigo-600 transition-colors"><?= htmlspecialchars($p['contact_name'] ?? $p['company_name']) ?></h4>
+                                    <a href="/sales/leads/<?= $p['id'] ?>" class="block bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:shadow-md hover:border-primary-100 transition group">
+                                        <h4 class="font-semibold text-slate-800 text-sm truncate group-hover:text-primary transition-colors"><?= htmlspecialchars($p['contact_name'] ?? $p['company_name']) ?></h4>
                                         <p class="text-xs text-slate-500 mt-1 truncate"><?= htmlspecialchars($p['company_name']) ?></p>
                                         <div class="mt-2 flex items-center justify-between text-xs">
                                             <span class="font-bold text-slate-700">$<?= number_format($p['deal_value']) ?></span>
@@ -382,7 +382,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-base font-bold text-slate-800">Team Performance</h3>
-                    <a href="/sales/manager/team" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Add Member</a>
+                    <a href="/sales/manager/team" class="text-sm font-medium text-primary hover:text-primary-600">Add Member</a>
                 </div>
                 <div class="divide-y divide-slate-100">
                     <?php if (empty($teamPerformance)): ?>
@@ -429,7 +429,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                     <h3 class="text-base font-bold text-slate-800">Recent Leads</h3>
                     <div class="flex items-center gap-2">
                         <button class="px-3 py-1.5 text-sm bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600">Filter</button>
-                        <a href="/sales/manager/leads" class="px-3 py-1.5 text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-indigo-700">View All</a>
+                        <a href="/sales/manager/leads" class="px-3 py-1.5 text-sm bg-primary-50 hover:bg-primary-50 border border-primary-100 rounded-lg text-primary-600">View All</a>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -481,7 +481,7 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="relative" x-data="{open:false}">
-                                        <button @click="open=!open" class="text-slate-400 hover:text-indigo-600 transition-colors">
+                                        <button @click="open=!open" class="text-slate-400 hover:text-primary transition-colors">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                                         </button>
                                         <div
@@ -660,8 +660,8 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
                                 website: '#f59e0b',
                                 form: '#f59e0b',
                                 referral: '#14b8a6',
-                                social_media: '#8b5cf6',
-                                cold_call: '#3b82f6',
+                                social_media: '#f05537',
+                                cold_call: '#FF6A3D',
                                 events: '#10b981'
                             };
                             return palette[k] || '#cbd5e1';
@@ -775,3 +775,14 @@ if (!empty($charts['revenue_trend_month']) && !empty($charts['revenue_trend_mont
         }
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+

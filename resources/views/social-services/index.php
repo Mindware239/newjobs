@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Social Services Jobs | Mindware Infotech</title>
+    <title>Social Services Jobs | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,7 @@
         [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #5b6bd5; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f05537; border-radius: 10px; }
     </style>
 </head>
 
@@ -31,18 +31,18 @@
                     <div class="lg:col-span-5">
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input name="keyword" type="search" placeholder="eg. development, program manager" class="w-full h-12 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#5b6bd5] outline-none" aria-label="Keywords">
+                            <input name="keyword" type="search" placeholder="eg. development, program manager" class="w-full h-12 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f05537] outline-none" aria-label="Keywords">
                         </div>
                     </div>
                     <div class="lg:col-span-5 grid grid-cols-12 gap-3">
                         <div class="col-span-8">
                             <div class="relative">
                                 <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <input name="location" type="text" placeholder="Search location" class="w-full h-12 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#5b6bd5] outline-none">
+                                <input name="location" type="text" placeholder="Search location" class="w-full h-12 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f05537] outline-none">
                             </div>
                         </div>
                         <div class="col-span-4">
-                            <select name="radius" class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#5b6bd5] text-sm cursor-pointer outline-none">
+                            <select name="radius" class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f05537] text-sm cursor-pointer outline-none">
                                 <option value="5">5 mi</option>
                                 <option value="25">25 mi</option>
                                 <option value="50">50 mi</option>
@@ -296,7 +296,7 @@
         <div class="p-8 bg-white flex flex-col justify-center">
             <h2 class="text-2xl font-bold text-gray-900 mb-3">Welcome!</h2>
             <p class="text-gray-700 leading-relaxed text-sm">
-                At Mindware Infotech our mission is to help purpose-driven organizations and talented professionals connect, so together you can do the best work possible.
+                At Jobsence our mission is to help purpose-driven organizations and talented professionals connect, so together you can do the best work possible.
                 <a href="aboutus" class="text-[#e15f55] font-bold underline ml-1">Click to learn more.</a>
             </p>
         </div>
@@ -315,8 +315,8 @@
             <div class="text-center">
                 <p class="text-[#333333] text-[18px]">
                     Need help? Email
-                    <a href="mailto:gm@mindwareinfotech.com" class="text-red-500 font-bold hover:underline break-all">
-                        gm@mindwareinfotech.com
+                    <a href="mailto:gm@jobsence.com" class="text-red-500 font-bold hover:underline break-all">
+                        gm@jobsence.com
                     </a>.
                 </p>
             </div>
@@ -327,7 +327,7 @@
         <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
             <div class="flex flex-col items-center">
                 <div class="mb-8">
-                    <img width="127" height="70" src="/uploads/Mindware-infotech.png" class="h-auto w-32 brightness-0 invert" alt="Logo">
+                    <img width="127" height="70" src="/uploads/jobsence.png" class="h-auto w-32 brightness-0 invert" alt="Logo">
                 </div>
 
                 <nav class="mb-8">
@@ -342,18 +342,9 @@
                     </ul>
                 </nav>
 
-                <div class="flex justify-center mb-8">
-                    <a href="https://www.linkedin.com/company/mindwareinfotech/" target="_blank" class="bg-[#444444] hover:bg-[#0077b5] transition-all p-3 rounded-full">
-                        <svg class="w-5 h-5 fill-white" viewBox="0 0 310 310">
-                            <path d="M72.16,99.73H9.927c-2.762,0-5,2.239-5,5v199.928c0,2.762,2.238,5,5,5H72.16c2.762,0,5-2.238,5-5V104.73 C77.16,101.969,74.922,99.73,72.16,99.73z"></path>
-                            <path d="M41.066,0.341C18.422,0.341,0,18.743,0,41.362C0,63.991,18.422,82.4,41.066,82.4 c22.626,0,41.033-18.41,41.033-41.038C82.1,18.743,63.692,0.341,41.066,0.341z"></path>
-                            <path d="M230.454,94.761c-24.995,0-43.472,10.745-54.679,22.954V104.73c0-2.761-2.238-5-5-5h-59.599 c-2.762,0-5,2.239-5,5v199.928c0,2.762,2.238,5,5,5h62.097c2.762,0,5-2.238,5-5v-98.918c0-33.333,9.054-46.319,32.29-46.319 c25.306,0,27.317,20.818,27.317,48.034v97.204c0,2.762,2.238,5,5,5H305c2.762,0,5-2.238,5-5V194.995 C310,145.43,300.549,94.761,230.454,94.761z"></path>
-                        </svg>
-                    </a>
-                </div>
 
                 <div class="text-[#7a7a7a] text-[13px] text-center">
-                    <p>© <?php echo date("Y"); ?> Mindware Infotech.</p>
+                    <p>© <?php echo date("Y"); ?> Jobsence.</p>
                 </div>
             </div>
         </div>
@@ -362,3 +353,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -22,7 +22,7 @@ class ResumeTextExtractor
      * @return string Extracted plain text (normalized)
      * @throws \RuntimeException If extraction fails
      */
-    public function extractResumeText(string $filePath): string
+    public function extractResumeText(string $filePath, ?string $extension = null): string
     {
         // Security: Validate file path (prevent directory traversal)
         $realPath = realpath($filePath);
@@ -30,7 +30,7 @@ class ResumeTextExtractor
             throw new \RuntimeException("Resume file not found: " . basename($filePath));
         }
 
-        $extension = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
+        $extension = strtolower((string)($extension ?: pathinfo($realPath, PATHINFO_EXTENSION)));
 
         switch ($extension) {
             case 'pdf':
@@ -40,8 +40,8 @@ class ResumeTextExtractor
                 $text = $this->extractTextFromDocx($realPath);
                 break;
             case 'doc':
-                // Old .doc format - try to extract or return error
-                throw new \RuntimeException("DOC format not supported. Please convert to PDF or DOCX.");
+                $text = $this->extractTextFromWord($realPath);
+                break;
             default:
                 throw new \RuntimeException("Unsupported file format: {$extension}");
         }
@@ -58,6 +58,19 @@ class ResumeTextExtractor
      */
     public function extractTextFromPdf(string $filePath): string
     {
+        if (class_exists('\Smalot\PdfParser\Parser')) {
+            try {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf = $parser->parseFile($filePath);
+                $text = trim((string)$pdf->getText());
+                if ($text !== '') {
+                    return $text;
+                }
+            } catch (\Throwable $e) {
+                error_log("PDF parser fallback failed: " . $e->getMessage());
+            }
+        }
+
         // Check if pdftotext is available
         $pdftotextPath = $this->findPdftotext();
         if ($pdftotextPath === null) {
@@ -140,6 +153,13 @@ class ResumeTextExtractor
      */
     public function extractTextFromDocx(string $filePath): string
     {
+        if (class_exists('\PhpOffice\PhpWord\IOFactory')) {
+            $text = $this->extractTextFromWord($filePath);
+            if (trim($text) !== '') {
+                return $text;
+            }
+        }
+
         if (!class_exists('ZipArchive')) {
             throw new \RuntimeException("ZipArchive class not available. Please install php-zip extension.");
         }
@@ -180,6 +200,55 @@ class ResumeTextExtractor
         return $text;
     }
 
+    private function extractTextFromWord(string $filePath): string
+    {
+        if (!class_exists('\PhpOffice\PhpWord\IOFactory')) {
+            throw new \RuntimeException("PhpWord is not available for Word document extraction.");
+        }
+
+        try {
+            $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
+            $texts = [];
+            foreach ($phpWord->getSections() as $section) {
+                foreach ($section->getElements() as $element) {
+                    $this->collectPhpWordText($element, $texts);
+                }
+            }
+            $text = trim(implode("\n", $texts));
+            if ($text === '') {
+                throw new \RuntimeException("No text extracted from Word document");
+            }
+            return $text;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException("Word extraction failed: " . $e->getMessage());
+        }
+    }
+
+    private function collectPhpWordText(object $element, array &$texts): void
+    {
+        if (method_exists($element, 'getText')) {
+            $value = $element->getText();
+            if (is_string($value) || is_numeric($value)) {
+                $texts[] = (string)$value;
+            }
+        }
+
+        foreach (['getElements', 'getRows', 'getCells'] as $method) {
+            if (!method_exists($element, $method)) {
+                continue;
+            }
+            $children = $element->{$method}();
+            if (!is_iterable($children)) {
+                continue;
+            }
+            foreach ($children as $child) {
+                if (is_object($child)) {
+                    $this->collectPhpWordText($child, $texts);
+                }
+            }
+        }
+    }
+
     /**
      * Normalize extracted text
      * 
@@ -217,6 +286,8 @@ class ResumeTextExtractor
             '/usr/bin/pdftotext',
             '/usr/local/bin/pdftotext',
             'pdftotext', // In PATH
+            'C:\\xampp\\poppler\\bin\\pdftotext.exe',
+            'C:\\Program Files\\poppler\\Library\\bin\\pdftotext.exe',
             'C:\\Program Files\\xpdf-tools-win-4.04\\bin64\\pdftotext.exe', // Windows
         ];
 
@@ -226,6 +297,11 @@ class ResumeTextExtractor
                 $output = [];
                 $returnVar = 0;
                 @exec('which pdftotext 2>&1', $output, $returnVar);
+                if ($returnVar === 0 && !empty($output)) {
+                    return trim($output[0]);
+                }
+                $output = [];
+                @exec('where pdftotext 2>NUL', $output, $returnVar);
                 if ($returnVar === 0 && !empty($output)) {
                     return trim($output[0]);
                 }

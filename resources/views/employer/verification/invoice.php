@@ -1,6 +1,6 @@
 <div class="max-w-3xl mx-auto">
   <div class="mb-6">
-    <a href="/employer/verification" class="text-sm text-blue-600">&larr; Back</a>
+    <a href="/employer/verification" class="text-sm text-primary">&larr; Back</a>
   </div>
   <div class="bg-white shadow rounded-lg p-6">
     <h1 class="text-xl font-semibold text-gray-900">Invoice</h1>
@@ -19,7 +19,18 @@
       </div>
     </div>
     <div class="mt-6">
-      <a href="/employer/verification/report/<?= (int)($unlock['id'] ?? 0) ?>" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Download Verification Report</a>
+      <a href="/employer/verification/report/<?= (int)($unlock['id'] ?? 0) ?>" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Download Verification Report</a>
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

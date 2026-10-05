@@ -9,7 +9,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // Load environment
 if (file_exists(__DIR__ . '/../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv = Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/..');
     try {
         $dotenv->load();
     } catch (Exception $e) {

@@ -139,8 +139,6 @@ class CookieController extends BaseController
             if ($userId) {
                 $params['uid'] = (int)$userId;
                 $params['email'] = $userEmail !== '' ? $userEmail : null;
-                $params['anon'] = null;
-                $params['linked_at'] = 1;
                 $db->execute("
                     UPDATE user_cookie_consents 
                     SET user_id = :uid, email = :email, anonymous_id = NULL, consent_linked_at = NOW(),
@@ -150,9 +148,6 @@ class CookieController extends BaseController
                     WHERE id = :id
                 ", $params);
             } else {
-                $params['uid'] = null;
-                $params['email'] = null;
-                $params['anon'] = $existing['anonymous_id'] ?? $anonId;
                 $db->execute("
                     UPDATE user_cookie_consents 
                     SET user_id = NULL, email = NULL,

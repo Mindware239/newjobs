@@ -63,20 +63,20 @@ class MailService
 
             // SMTP SETTINGS
             $mail->isSMTP();
-            $mail->Timeout = 5; // Connection timeout in seconds
-            $mail->Host       = $_ENV['MAIL_HOST'] ?? 'localhost';
-            $mail->Port       = (int)($_ENV['MAIL_PORT'] ?? 587);
+            $mail->Timeout = 10; // Connection timeout in seconds
+            $mail->Host       = getenv('MAIL_HOST') ?: 'localhost';
+            $mail->Port       = (int)(getenv('MAIL_PORT') ?: 587);
             // Optional EHLO/Hostname override
-            $mail->Hostname   = $_ENV['MAIL_EHLO_DOMAIN'] ?? 'localhost';
+            $mail->Hostname   = getenv('MAIL_EHLO_DOMAIN') ?: 'localhost';
             if (!empty($mail->Hostname)) {
                 $mail->Helo = $mail->Hostname;
             }
             $mail->CharSet    = 'UTF-8';
             
             // Configure authentication (only if credentials are provided)
-            $mailUsername = $_ENV['MAIL_USERNAME'] ?? '';
-            $mailPassword = $_ENV['MAIL_PASSWORD'] ?? '';
-            if (!empty($mailUsername) && !empty($mailPassword)) {
+            $mailUsername = getenv('MAIL_USERNAME') ?: '';
+            $mailPassword = getenv('MAIL_PASSWORD') ?: '';
+            if ($mailUsername !== '' && $mailPassword !== '') {
                 $mail->SMTPAuth = true;
                 $mail->Username = $mailUsername;
                 $mail->Password = $mailPassword;
@@ -85,9 +85,9 @@ class MailService
             }
             
             // Configure encryption based on env or port and openssl availability
-            $mailPort = (int)($_ENV['MAIL_PORT'] ?? 587);
+            $mailPort = (int)(getenv('MAIL_PORT') ?: 587);
             $hasOpenssl = extension_loaded('openssl');
-            $enc = strtolower((string)($_ENV['MAIL_ENCRYPTION'] ?? ''));
+            $enc = strtolower((string)(getenv('MAIL_ENCRYPTION') ?: ''));
             if ($enc === 'ssl' || $enc === 'smtps') {
                 if ($hasOpenssl) {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
@@ -106,35 +106,10 @@ class MailService
                 }
             } else {
                 // Fallback to port-based defaults
-                $enc = '';
-            }
-            
-            if ($enc === '' && $mailPort == 465) {
-                // Port 465 requires SSL/TLS
-                if ($hasOpenssl) {
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-                } else {
-                    error_log("Mail Error: Port 465 requires SSL/TLS but openssl extension is missing");
-                    throw new Exception("Port 465 requires openssl extension");
-                }
-            } elseif ($enc === '' && $mailPort == 587) {
-                // Port 587 typically uses STARTTLS
-                if ($hasOpenssl) {
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                } else {
-                    // Try without encryption for local development
-                    $mail->SMTPAutoTLS = false;
-                    $mail->SMTPSecure = false;
-                    error_log("Mail Warning: openssl extension not available, attempting to send without encryption on port 587");
-                }
-            } elseif ($enc === '' && $mailPort == 25) {
-                // Port 25 is typically unencrypted
-                $mail->SMTPAutoTLS = false;
-                $mail->SMTPSecure = false;
-            } elseif ($enc === '') {
-                // For other ports, try STARTTLS if openssl is available
-                if ($hasOpenssl) {
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                if ($mailPort == 465 && $hasOpenssl) {
+                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                } elseif ($mailPort == 587 && $hasOpenssl) {
+                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 } else {
                     $mail->SMTPAutoTLS = false;
                     $mail->SMTPSecure = false;
@@ -142,8 +117,8 @@ class MailService
             }
 
             // FROM DETAILS
-            $fromEmail = $fromEmail ?: ($_ENV['MAIL_FROM_ADDRESS'] ?? 'no-reply@example.com');
-            $fromName  = $fromName  ?: ($_ENV['MAIL_FROM_NAME'] ?? 'Job Portal');
+            $fromEmail = $fromEmail ?: (getenv('MAIL_FROM_ADDRESS') ?: 'no-reply@example.com');
+            $fromName  = $fromName  ?: (getenv('MAIL_FROM_NAME') ?: 'Job Portal');
 
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($to);
@@ -156,8 +131,8 @@ class MailService
             $mail->AltBody = strip_tags($htmlBody);
 
             // Optional debug output to PHP error log
-            $mailDebug = true;
-            if (!$mailDebug && strtolower((string)($_ENV['APP_ENV'] ?? 'local')) === 'local') {
+            $mailDebug = getenv('MAIL_DEBUG') === 'true';
+            if (!$mailDebug && strtolower((string)(getenv('APP_ENV') ?: 'local')) === 'local') {
                 $mailDebug = true;
             }
             if ($mailDebug) {
@@ -187,7 +162,7 @@ class MailService
                             $ctx = stream_context_create([
                                 'http' => [
                                     'timeout' => $timeout,
-                                    'user_agent' => 'MindwareMailer/1.0',
+                                    'user_agent' => 'JobsenceMailer/1.0',
                                 ],
                                 'ssl' => [
                                     'verify_peer' => false,
@@ -235,7 +210,7 @@ class MailService
         $subject = "Admin Login OTP";
 
         $body = "
-            <h2>Mindware InfoTech Admin Login</h2>
+            <h2>Jobsence Admin Login</h2>
             <p>Your OTP code is:</p>
             <h1 style='color:#2563eb;'>$otp</h1>
             <p>This OTP is valid for 10 minutes.</p>

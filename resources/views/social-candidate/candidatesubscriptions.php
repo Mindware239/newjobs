@@ -21,9 +21,9 @@ x-data="{ showForm:false, payTerm:'' }">
 
     <!-- LOGO (YOUR IMAGE) -->
     <a href="<?= $base ?>" class="flex items-center gap-3 shrink-0">
-      <img src="<?= $base ?>uploads/Mindware-infotech.png"
+      <img src="<?= $base ?>uploads/jobsence.png"
            class="h-10 sm:h-12 w-auto"
-           alt="Mindware Infotech">
+           alt="Jobsence">
     </a>
 
     <!-- TOP NAV -->
@@ -73,7 +73,7 @@ class="bg-[#e15f55] hover:bg-red-600 text-white px-6 py-2.5 rounded-md text-sm f
 
 <div class="flex justify-between border-t pt-4 text-sm text-gray-500">
 <span>0 results of 0 total</span>
-<a class="text-blue-600 hover:underline">Refresh ↻</a>
+<a class="text-primary hover:underline">Refresh ↻</a>
 </div>
 
 <div class="flex justify-center items-center min-h-[300px] text-gray-500 text-sm">
@@ -226,3 +226,14 @@ Submit
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -105,7 +105,7 @@
         <div class="flex items-center gap-2">
           <input id="trace-rid" type="text" class="px-2 py-1 border rounded text-sm" placeholder="Request ID">
           <input id="trace-path" type="text" class="px-2 py-1 border rounded text-sm" placeholder="Endpoint path">
-          <button id="trace-search" class="px-3 py-1 bg-indigo-600 text-white rounded text-sm">Search</button>
+          <button id="trace-search" class="px-3 py-1 bg-primary text-white rounded text-sm">Search</button>
         </div>
       </div>
       <div class="mt-3 max-h-64 overflow-y-auto">
@@ -139,7 +139,7 @@
         var scale = function(v){ if (max === min) return h/2; return h - pad - ((v - min) / (max - min)) * (h - pad*2); };
         var d = '';
         for (var i=0;i<arr.length;i++){ var x = pad + i*dx; var y = scale(arr[i]); d += (i===0 ? 'M ' : ' L ') + Math.round(x) + ' ' + Math.round(y); }
-        el.innerHTML = '<svg width="100%" height="'+h+'"><path d="'+d+'" stroke="#4f46e5" stroke-width="2" fill="none"/></svg>';
+        el.innerHTML = '<svg width="100%" height="'+h+'"><path d="'+d+'" stroke="#f05537" stroke-width="2" fill="none"/></svg>';
       };
       var donut = function(el, val){
         if (!el) return;
@@ -280,3 +280,14 @@
     })();
   </script>
 </div>
+
+
+
+
+
+
+
+
+
+
+

@@ -16,7 +16,7 @@
                 <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
                 <option value="failed" <?= ($filters['status'] ?? '') === 'failed' ? 'selected' : '' ?>>Failed</option>
             </select>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Filter</button>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Filter</button>
         </form>
     </div>
 
@@ -60,7 +60,7 @@
                         <?= date('M d, Y', strtotime($payment['created_at'] ?? 'now')) ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="/admin/payments/<?= $payment['id'] ?>" class="text-blue-600 hover:text-blue-900">View</a>
+                        <a href="/admin/payments/<?= $payment['id'] ?>" class="text-primary hover:text-primary">View</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -68,4 +68,15 @@
         </table>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

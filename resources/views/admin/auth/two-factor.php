@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Two-Factor Authentication' ?> - Mindware InfoTech</title>
+    <title><?= $title ?? 'Two-Factor Authentication' ?> - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #edf2fb;
+            background: #fff5f2;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,7 +21,7 @@
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image: radial-gradient(circle, rgba(37,99,235,0.07) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(240,85,55,0.07) 1px, transparent 1px);
             background-size: 32px 32px;
             pointer-events: none;
         }
@@ -31,7 +31,7 @@
             position: fixed;
             top: -160px; left: -160px;
             width: 480px; height: 480px;
-            background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(240,85,55,0.1) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -71,9 +71,9 @@
         }
         .brand-logo {
             width: 38px; height: 38px; border-radius: 10px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, #f05537, #FF6A3D);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 3px 10px rgba(37,99,235,0.3);
+            box-shadow: 0 3px 10px rgba(240,85,55,0.3);
             flex-shrink: 0;
         }
         .brand-logo span {
@@ -93,8 +93,8 @@
         }
         .shield-circle {
             width: 72px; height: 72px; border-radius: 20px;
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border: 1.5px solid #bfdbfe;
+            background: linear-gradient(135deg, #fff1ed, #fff1ed);
+            border: 1.5px solid #fff1ed;
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 20px;
             position: relative;
@@ -103,7 +103,7 @@
             content: '';
             position: absolute; inset: -6px;
             border-radius: 26px;
-            border: 1px dashed rgba(37,99,235,0.2);
+            border: 1px dashed rgba(240,85,55,0.2);
             animation: rotateSlow 12s linear infinite;
         }
         @keyframes rotateSlow { to { transform: rotate(360deg); } }
@@ -118,7 +118,7 @@
             background: #e2e8f0;
             transition: background 0.2s, transform 0.2s;
         }
-        .otp-dot.active { background: #2563eb; transform: scale(1.2); }
+        .otp-dot.active { background: #f05537; transform: scale(1.2); }
 
         /* Heading */
         .card-title {
@@ -134,7 +134,7 @@
             margin-bottom: 28px;
             animation: up 0.5s 0.2s both;
         }
-        .card-desc strong { color: #1e40af; font-weight: 600; }
+        .card-desc strong { color: #0f172a; font-weight: 600; }
 
         /* Error */
         .error-box {
@@ -174,26 +174,26 @@
         }
         .otp-input:hover:not(:focus) { border-color: #cbd5e1; }
         .otp-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+            border-color: #f05537;
+            box-shadow: 0 0 0 4px rgba(240,85,55,0.1);
             background: #fff;
         }
 
         /* Submit */
         .submit-btn {
             width: 100%; padding: 14px 20px;
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #f05537 0%, #FF6A3D 100%);
             color: #fff; border: none; border-radius: 13px;
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 15px; font-weight: 600;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.22), 0 8px 24px rgba(37,99,235,0.16);
+            box-shadow: 0 2px 8px rgba(240,85,55,0.22), 0 8px 24px rgba(240,85,55,0.16);
             transition: transform 0.12s, box-shadow 0.18s, opacity 0.15s;
             margin-bottom: 14px;
         }
         .submit-btn:hover {
-            box-shadow: 0 4px 12px rgba(37,99,235,0.3), 0 12px 32px rgba(37,99,235,0.2);
+            box-shadow: 0 4px 12px rgba(240,85,55,0.3), 0 12px 32px rgba(240,85,55,0.2);
             transform: translateY(-1px);
         }
         .submit-btn:active { transform: translateY(0); }
@@ -206,7 +206,7 @@
             margin-bottom: 20px;
         }
         .timer-strip span { font-size: 12.5px; color: #64748b; font-weight: 500; }
-        .timer-value { color: #2563eb !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; }
+        .timer-value { color: #f05537 !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; }
 
         /* Divider */
         .divider {
@@ -223,11 +223,11 @@
         }
         .resend-btn {
             background: none; border: none; cursor: pointer;
-            font-size: 13px; font-weight: 600; color: #2563eb;
+            font-size: 13px; font-weight: 600; color: #f05537;
             font-family: 'Plus Jakarta Sans', sans-serif;
             padding: 0; transition: color 0.15s;
         }
-        .resend-btn:hover { color: #1d4ed8; }
+        .resend-btn:hover { color: #FF6A3D; }
 
         /* SSL */
         .ssl-row {
@@ -245,7 +245,7 @@
             font-size: 13px; color: #94a3b8; text-decoration: none;
             transition: color 0.15s;
         }
-        .back-link:hover { color: #2563eb; }
+        .back-link:hover { color: #f05537; }
 
         @keyframes up {
             from { opacity: 0; transform: translateY(14px); }
@@ -260,8 +260,8 @@
 
         <!-- Brand -->
         <div class="brand-top">
-            <div class="brand-logo"><span>M</span></div>
-            <span class="brand-name">Mindware InfoTech</span>
+            <div class="brand-logo"><span>JS</span></div>
+            <span class="brand-name">Jobsence</span>
         </div>
 
         <!-- Shield icon -->
@@ -270,8 +270,8 @@
                 <svg width="34" height="34" fill="none" viewBox="0 0 24 24">
                     <defs>
                         <linearGradient id="sg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="#3b82f6"/>
-                            <stop offset="100%" stop-color="#1d4ed8"/>
+                            <stop offset="0%" stop-color="#FF6A3D"/>
+                            <stop offset="100%" stop-color="#FF6A3D"/>
                         </linearGradient>
                     </defs>
                     <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z" fill="url(#sg)"/>
@@ -412,3 +412,13 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

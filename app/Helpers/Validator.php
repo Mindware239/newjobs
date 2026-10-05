@@ -141,4 +141,57 @@ class Validator
         }
         return true;
     }
+
+    private function validatePasswordStrong(string $field, $value): bool
+    {
+        if (empty($value)) return true;
+
+        $password = (string)$value;
+        if (strlen($password) < 8) {
+            $this->addError($field, "Password must be at least 8 characters long");
+            return false;
+        }
+        if (strlen($password) > 20) {
+            $this->addError($field, "Password must not exceed 20 characters");
+            return false;
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            $this->addError($field, "Password must contain at least one lowercase letter");
+            return false;
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            $this->addError($field, "Password must contain at least one uppercase letter");
+            return false;
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            $this->addError($field, "Password must contain at least one number");
+            return false;
+        }
+        if (!preg_match('/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/', $password)) {
+            $this->addError($field, "Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)");
+            return false;
+        }
+
+        $commonPasswords = [
+            'password', 'password123', '12345678', '123456789', '1234567890',
+            'qwerty123', 'admin123', 'letmein', 'welcome123', 'monkey123',
+            'dragon', 'master', 'sunshine', 'princess', 'football',
+            '123456', '1234567', 'qwerty', 'abc123', '111111',
+            'admin', 'root', 'pass', 'test', 'guest'
+        ];
+        if (in_array(strtolower($password), $commonPasswords, true)) {
+            $this->addError($field, "Password is too common. Please choose a more unique password");
+            return false;
+        }
+        if (preg_match('/(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i', $password)) {
+            $this->addError($field, "Password should not contain sequential characters");
+            return false;
+        }
+        if (preg_match('/(.)\1{3,}/', $password)) {
+            $this->addError($field, "Password should not contain repeated characters");
+            return false;
+        }
+
+        return true;
+    }
 }

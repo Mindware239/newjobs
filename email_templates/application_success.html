@@ -1,0 +1,15 @@
+<h1 style="color: #111827; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Application Received</h1>
+<p>Hello {{user_name}},</p>
+<p>Congratulations! Your application for the position of <strong>{{job_title}}</strong> at <strong>{{company_name}}</strong> has been successfully submitted.</p>
+<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #e5e7eb;">
+    <p style="margin: 5px 0;"><strong>Job Title:</strong> {{job_title}}</p>
+    <p style="margin: 5px 0;"><strong>Company:</strong> {{company_name}}</p>
+    <p style="margin: 5px 0;"><strong>Applied On:</strong> {{applied_date}}</p>
+    <p style="margin: 5px 0;"><strong>Application ID:</strong> #{{application_id}}</p>
+</div>
+<p>The recruitment team will review your profile. You can track the status of your application anytime through your dashboard.</p>
+<div style="text-align: center; margin: 35px 0;">
+    <a href="{{app_url}}/candidate/applications" class="btn" style="display: inline-block; background-color: #ff5a36; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">Track Application Status</a>
+</div>
+<p>Good luck with your application!</p>
+<p>Best Regards,<br />Team Jobsence</p>

@@ -28,13 +28,13 @@
         <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300" />
       </div>
       <div class="sm:col-span-2 flex items-center gap-3">
-        <input id="consent" type="checkbox" name="consent" value="1" required class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+        <input id="consent" type="checkbox" name="consent" value="1" required class="h-4 w-4 text-primary border-gray-300 rounded" />
         <label for="consent" class="text-sm text-gray-700">
           I authorize the portal to contact previous employer for verification.
         </label>
       </div>
       <div class="sm:col-span-2">
-        <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save & Continue</button>
+        <button class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Save & Continue</button>
       </div>
     </form>
   </div>
@@ -61,7 +61,7 @@
             </div>
           </div>
           <div>
-            <a href="/candidate/verification/<?= (int)$r['id'] ?>" class="text-blue-600 hover:text-blue-800 text-sm">Open</a>
+            <a href="/candidate/verification/<?= (int)$r['id'] ?>" class="text-primary hover:text-primary-900 text-sm">Open</a>
           </div>
         </div>
       <?php endforeach; ?>
@@ -71,3 +71,14 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

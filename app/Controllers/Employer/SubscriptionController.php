@@ -14,6 +14,7 @@ use App\Models\SubscriptionPayment;
 use App\Models\DiscountCode;
 use App\Models\SubscriptionUsageLog;
 use App\Core\Database;
+use App\Services\EmployerBillingDataService;
 use Razorpay\Api\Api;
 
 class SubscriptionController extends BaseController
@@ -33,38 +34,16 @@ class SubscriptionController extends BaseController
             return;
         }
 
-        $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
-        $plan = $subscription ? $subscription->plan() : null;
-        $payments = SubscriptionPayment::where('employer_id', '=', $employer->id)
-            ->orderBy('created_at', 'DESC')
-            ->limit(10)
-            ->get();
-
-        $usage = [
-            'job_posts' => [
-                'used' => $subscription ? ($subscription->job_posts_used ?? 0) : 0,
-                'limit' => $plan ? $plan->max_job_posts : 0
-            ],
-            'resume_views' => [
-                'used' => $subscription ? ($subscription->resume_downloads_used_this_month ?? 0) : 0,
-                'limit' => $plan ? $plan->max_resume_downloads : 0
-            ],
-            'contacts_views' => [
-                'used' => $subscription ? ($subscription->contacts_used_this_month ?? 0) : 0,
-                'limit' => $plan ? $plan->max_contacts_per_month : 0
-            ]
-        ];
-
-        // Format for view
-        $paymentsData = array_map(fn($p) => $p->attributes, $payments);
+        $billing = (new EmployerBillingDataService())->subscriptionDashboard($employer);
 
         $response->view('employer/subscription/dashboard', [
             'title' => 'Subscription Dashboard',
             'employer' => $employer,
-            'subscription' => $subscription ? $subscription->attributes : null,
-            'plan' => $plan ? $plan->attributes : null,
-            'usage' => $usage,
-            'payments' => $paymentsData
+            'subscription' => $billing['subscription'] ?? null,
+            'plan' => $billing['current_plan'] ?? null,
+            'usage' => $billing['usage'] ?? [],
+            'payments' => $billing['payments'] ?? [],
+            'alerts' => $billing['alerts'] ?? []
         ], 200, 'employer/layout');
     }
 

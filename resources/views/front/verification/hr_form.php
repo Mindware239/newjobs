@@ -13,7 +13,7 @@
         </select>
       </div>
       <div class="flex items-center gap-2">
-        <input type="checkbox" name="confirmed_working" value="1" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+        <input type="checkbox" name="confirmed_working" value="1" class="h-4 w-4 text-primary border-gray-300 rounded" />
         <label class="text-sm text-gray-700">Was the candidate working at this company?</label>
       </div>
       <div>
@@ -40,7 +40,18 @@
         <label class="block text-sm font-medium text-gray-700">Remarks</label>
         <textarea name="remarks" rows="3" class="mt-1 block w-full rounded-md border-gray-300"></textarea>
       </div>
-      <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Submit</button>
+      <button class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Submit</button>
     </form>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

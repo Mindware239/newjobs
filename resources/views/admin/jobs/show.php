@@ -14,7 +14,7 @@ $skills = $skills ?? [];
                 Status: <span class="font-semibold"><?= htmlspecialchars($job['status'] ?? 'draft') ?></span>
             </p>
         </div>
-        <a href="/admin/jobs" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+        <a href="/admin/jobs" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 text-sm font-medium">
             Back to Jobs
         </a>
     </div>
@@ -35,11 +35,17 @@ $skills = $skills ?? [];
                         </dd>
                     </div>
                     <div>
+                        <dt class="font-medium text-gray-500">Experience</dt>
+                        <dd class="mt-1 text-gray-900">
+                            <?= ($job['min_experience'] ?? 0) ?> - <?= ($job['max_experience'] ?? 0) ?> Years
+                        </dd>
+                    </div>
+                    <div>
                         <dt class="font-medium text-gray-500">Salary Range</dt>
                         <dd class="mt-1 text-gray-900">
-                            <?= ($job['salary_min'] ?? 0) > 0 ? number_format($job['salary_min']) : 'N/A' ?>
+                            <?= ($job['salary_min'] ?? 0) > 0 ? number_format((float)$job['salary_min']) : 'N/A' ?>
                             -
-                            <?= ($job['salary_max'] ?? 0) > 0 ? number_format($job['salary_max']) : 'N/A' ?>
+                            <?= ($job['salary_max'] ?? 0) > 0 ? number_format((float)$job['salary_max']) : 'N/A' ?>
                             <span class="text-gray-500"><?= $job['currency'] ?? $job['salary_currency'] ?? 'INR' ?></span>
                         </dd>
                     </div>
@@ -52,7 +58,14 @@ $skills = $skills ?? [];
                 <div class="mt-6">
                     <h3 class="text-sm font-medium text-gray-500 mb-2">Description</h3>
                     <div class="prose prose-sm max-w-none text-gray-700">
-                        <?= $job['description'] ?? '<p>No description.</p>' ?>
+                        <?php 
+                        $desc = $job['description'] ?? 'No description.';
+                        if ($desc !== '' && strip_tags($desc) !== $desc) {
+                            echo $desc; 
+                        } else {
+                            echo nl2br(htmlspecialchars($desc));
+                        }
+                        ?>
                     </div>
                 </div>
 
@@ -61,7 +74,7 @@ $skills = $skills ?? [];
                         <h3 class="text-sm font-medium text-gray-500 mb-2">Skills</h3>
                         <div class="flex flex-wrap gap-2">
                             <?php foreach ($skills as $skill): ?>
-                                <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
+                                <span class="px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-xs font-semibold">
                                     <?= htmlspecialchars($skill['name'] ?? '') ?>
                                 </span>
                             <?php endforeach; ?>
@@ -108,7 +121,7 @@ $skills = $skills ?? [];
                                         <td class="px-4 py-2 whitespace-nowrap space-x-2">
                                             <?php if (!empty($application['candidate_id'])): ?>
                                                 <a href="/admin/candidates/<?= (int)$application['candidate_id'] ?>"
-                                                   class="text-blue-600 hover:text-blue-900">View candidate</a>
+                                                   class="text-primary hover:text-primary">View candidate</a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -149,5 +162,7 @@ $skills = $skills ?? [];
         </div>
     </div>
 </div>
+
+
 
 

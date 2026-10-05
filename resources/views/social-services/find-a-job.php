@@ -40,7 +40,7 @@ try {
             $url = preg_match('~^https?://~i', $website) ? $website : ('http://' . $website);
             $host = parse_url($url, PHP_URL_HOST) ?: '';
         }
-        $logo = !empty($row['logo_url']) ? (string)$row['logo_url'] : ($host ? ('https://www.google.com/s2/favicons?domain=' . $host . '&sz=64') : '/uploads/mindware-infotechlogo.png');
+        $logo = !empty($row['logo_url']) ? (string)$row['logo_url'] : ($host ? ('https://www.google.com/s2/favicons?domain=' . $host . '&sz=64') : '/uploads/jobsence.png');
         $jobs[] = [
             'id'          => (int)($row['id'] ?? 0),
             'title'       => (string)($row['role_name'] ?? ''),
@@ -77,7 +77,7 @@ $navItems = [
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Find a Job | Mindware Infotech</title>
+    <title>Find a Job | Jobsence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -94,7 +94,7 @@ $navItems = [
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 md:h-24 flex items-center justify-between">
         <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
 
@@ -169,7 +169,7 @@ $class = $isActive
             </li>
             <?php endforeach; ?>
             <li class="pt-6 pb-4 space-y-3">
-                <a href="candidate" class="block w-full py-4 bg-[#5b6bd5] text-white text-center font-bold rounded shadow-md">JOBSEEKERS</a>
+                <a href="candidate" class="block w-full py-4 bg-[#f05537] text-white text-center font-bold rounded shadow-md">JOBSEEKERS</a>
                 <div class="text-center text-[14px] py-2 text-[#54595f]">
                     Employers: <a href="employers" class="text-[#e15f55] font-bold">Login</a>
                 </div>
@@ -251,43 +251,43 @@ $class = $isActive
                         <label class="text-[16px] font-bold tracking-wider text-black block mb-3">Education Level</label>
                             <div class="relative border border-black bg-white p-4 text-sm space-y-3 max-h-[320px] overflow-y-auto custom-scrollbar">
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="Associate's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="Associate's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">Associate's Degree</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="Bachelor's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="Bachelor's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">Bachelor's Degree</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="Doctorate" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="Doctorate" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">Doctorate</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="High-school Diploma / GED" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="High-school Diploma / GED" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">High-school Diploma / GED</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="JD" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="JD" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">JD</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="Master's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="Master's Degree" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">Master's Degree</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="MBA" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="MBA" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">MBA</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="MD / DDS" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="MD / DDS" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">MD / DDS</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="PhD" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="PhD" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">PhD</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="education[]" value="Some College" class="w-4 h-4 border-gray-400 rounded-sm accent-[#5b6bd5] cursor-pointer">
+                                    <input type="checkbox" name="education[]" value="Some College" class="w-4 h-4 border-gray-400 rounded-sm accent-[#f05537] cursor-pointer">
                                         <span class="text-black group-hover:text-gray-600 transition-colors">Some College</span>
                                 </label>
                             </div>
@@ -560,16 +560,16 @@ $class = $isActive
 
     <div x-show="filteredJobs.length === 0" class="text-center py-20 bg-white border-2 border-dashed rounded-xl">
         <p class="text-slate-400 font-medium text-lg">No jobs found matching your current filters.</p>
-        <button  @click="resetFilters()" class="text-[#5b6bd5] font-bold mt-2 hover:underline">Reset all filters</button>
+        <button  @click="resetFilters()" class="text-[#f05537] font-bold mt-2 hover:underline">Reset all filters</button>
     </div>
 
     <div class="pt-8 flex items-center justify-center gap-2" x-show="totalPages > 1">
         <button @click="currentPage--" :disabled="currentPage === 1" 
-                class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-[#5b6bd5] disabled:opacity-30">
+                class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-[#f05537] disabled:opacity-30">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
         
-        <div class="px-4 py-2 bg-[#5b6bd5] text-white font-bold rounded-xl" x-text="currentPage"></div>
+        <div class="px-4 py-2 bg-[#f05537] text-white font-bold rounded-xl" x-text="currentPage"></div>
         
         <button @click="currentPage++" :disabled="currentPage === totalPages" 
                 class="px-4 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 font-bold disabled:opacity-30">
@@ -585,8 +585,8 @@ $class = $isActive
             <div class="text-center">
                 <p class="text-[#333333] text-[15px]">
                     Need help? Email 
-                    <a href="mailto:gm@mindwareinfotech.com" class="text-red-500 font-bold hover:underline break-all">
-                        gm@mindwareinfotech.com
+                    <a href="mailto:gm@jobsence.com" class="text-red-500 font-bold hover:underline break-all">
+                        gm@jobsence.com
                     </a>.
                 </p>
             </div>
@@ -597,7 +597,7 @@ $class = $isActive
         <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12">
             <div class="flex flex-col items-center">
                 <div class="mb-8">
-                    <img width="127" height="70" src="/uploads/Mindware-infotech.png" class="h-auto w-32 brightness-0 invert" alt="Logo">
+                    <img width="127" height="70" src="/uploads/jobsence.png" class="h-auto w-32 brightness-0 invert" alt="Logo">
                 </div>
 
                 <nav class="mb-8">
@@ -612,18 +612,9 @@ $class = $isActive
                     </ul>
                 </nav>
 
-                <div class="flex justify-center mb-8">
-                    <a href="https://www.linkedin.com/company/mindwareinfotech/" target="_blank" class="bg-[#444444] hover:bg-[#0077b5] transition-all p-3 rounded-full">
-                        <svg class="w-5 h-5 fill-white" viewBox="0 0 310 310">
-                            <path d="M72.16,99.73H9.927c-2.762,0-5,2.239-5,5v199.928c0,2.762,2.238,5,5,5H72.16c2.762,0,5-2.238,5-5V104.73 C77.16,101.969,74.922,99.73,72.16,99.73z"></path>
-                            <path d="M41.066,0.341C18.422,0.341,0,18.743,0,41.362C0,63.991,18.422,82.4,41.066,82.4 c22.626,0,41.033-18.41,41.033-41.038C82.1,18.743,63.692,0.341,41.066,0.341z"></path>
-                            <path d="M230.454,94.761c-24.995,0-43.472,10.745-54.679,22.954V104.73c0-2.761-2.238-5-5-5h-59.599 c-2.762,0-5,2.239-5,5v199.928c0,2.762,2.238,5,5,5h62.097c2.762,0,5-2.238,5-5v-98.918c0-33.333,9.054-46.319,32.29-46.319 c25.306,0,27.317,20.818,27.317,48.034v97.204c0,2.762,2.238,5,5,5H305c2.762,0,5-2.238,5-5V194.995 C310,145.43,300.549,94.761,230.454,94.761z"></path>
-                        </svg>
-                    </a>
-                </div>
 
                 <div class="text-[#7a7a7a] text-[13px] text-center">
-                    <p>© <?php echo date("Y"); ?> Mindware Infotech. Powered by Decent.</p>
+                    <p>© <?php echo date("Y"); ?> Jobsence. Powered by Decent.</p>
                 </div>
             </div>
         </div>
@@ -801,3 +792,14 @@ function jobSearch() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -24,7 +24,7 @@
   <div class="container-wf mx-auto px-6 py-4 flex justify-between items-center">
     <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
     <nav class="flex gap-6 text-sm text-gray-700">
@@ -64,52 +64,52 @@
 <!-- STEP 1 -->
 <div class="flex flex-col items-center">
 <div class="w-7 h-7 rounded-full flex items-center justify-center"
-     :class="step>=1 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+     :class="step>=1 ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'">
 1
 </div>
 <span class="mt-2">Organization</span>
 </div>
 
 <div class="w-20 h-[2px]"
-     :class="step>1 ? 'bg-blue-600' : 'bg-gray-300'"></div>
+     :class="step>1 ? 'bg-primary' : 'bg-gray-300'"></div>
 
 <!-- STEP 2 -->
 <div class="flex flex-col items-center">
 <div class="w-7 h-7 rounded-full flex items-center justify-center"
-     :class="step>=2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+     :class="step>=2 ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'">
 2
 </div>
 <span class="mt-2">Role</span>
 </div>
 
-<div class="w-20 h-[2px]" :class="step>2 ? 'bg-blue-600' : 'bg-gray-300'"></div>
+<div class="w-20 h-[2px]" :class="step>2 ? 'bg-primary' : 'bg-gray-300'"></div>
 
 <!-- STEP 3 -->
 <div class="flex flex-col items-center">
 <div class="w-7 h-7 rounded-full flex items-center justify-center"
-     :class="step>=3 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+     :class="step>=3 ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'">
 3
 </div>
 <span class="mt-2">Location</span>
 </div>
 
-<div class="w-20 h-[2px]" :class="step>3 ? 'bg-blue-600' : 'bg-gray-300'"></div>
+<div class="w-20 h-[2px]" :class="step>3 ? 'bg-primary' : 'bg-gray-300'"></div>
 
 <!-- STEP 4 -->
 <div class="flex flex-col items-center">
 <div class="w-7 h-7 rounded-full flex items-center justify-center"
-     :class="step>=4 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+     :class="step>=4 ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'">
 4
 </div>
 <span class="mt-2">options</span>
 </div>
 
-<div class="w-20 h-[2px]" :class="step>4 ? 'bg-blue-600' : 'bg-gray-300'"></div>
+<div class="w-20 h-[2px]" :class="step>4 ? 'bg-primary' : 'bg-gray-300'"></div>
 
 <!-- STEP 5 -->
 <div class="flex flex-col items-center">
 <div class="w-7 h-7 rounded-full flex items-center justify-center"
-     :class="step>=5 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+     :class="step>=5 ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600'">
 5
 </div>
 <span class="mt-2">Confirmation</span>
@@ -260,7 +260,7 @@ Create new organization
     </div>
 
     <div>
-      <label class="font-medium block mb-1">Primary mission focus areas</label>
+      <label class="font-medium block mb-1">#f05537 mission focus areas</label>
       <select name="mission_focus" class="w-full border rounded px-3 py-2">
         <option value="">Select any that apply</option>
     <option value="Aging/Seniors" <?= ($job['org_mission_focus'] ?? '') == 'Aging/Seniors' ? 'selected' : '' ?>>Aging/Seniors</option>
@@ -805,3 +805,14 @@ Remove
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -49,7 +49,7 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
     <nav class="flex mb-8" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="/finance/payments" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <a href="/finance/payments" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                     Payments
                 </a>
@@ -163,7 +163,7 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
                                 <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
                                 <div class="relative flex space-x-3">
                                     <div>
-                                        <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                                        <span class="h-8 w-8 rounded-full bg-primary flex items-center justify-center ring-8 ring-white">
                                             <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
@@ -210,7 +210,7 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Payer Information</h3>
                 
                 <div class="flex items-center mb-6">
-                    <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg mr-4">
+                    <div class="h-12 w-12 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-lg mr-4">
                         <?= $initials ?>
                     </div>
                     <div>
@@ -265,10 +265,10 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
             </div>
 
             <!-- Support/Help Card -->
-            <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                <h4 class="text-sm font-semibold text-blue-900 mb-2">Need to contact the employer?</h4>
-                <p class="text-sm text-blue-700 mb-4">Use the contact details above to resolve any payment discrepancies.</p>
-                <a href="mailto:<?= htmlspecialchars($payment['employer_email'] ?? '') ?>" class="text-sm font-medium text-blue-600 hover:text-blue-500">Send Email &rarr;</a>
+            <div class="bg-primary-50 rounded-xl p-6 border border-primary">
+                <h4 class="text-sm font-semibold text-primary mb-2">Need to contact the employer?</h4>
+                <p class="text-sm text-primary-600 mb-4">Use the contact details above to resolve any payment discrepancies.</p>
+                <a href="mailto:<?= htmlspecialchars($payment['employer_email'] ?? '') ?>" class="text-sm font-medium text-primary hover:text-primary">Send Email &rarr;</a>
             </div>
         </div>
     </div>
@@ -289,13 +289,13 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-500 sm:text-sm">₹</span>
                         </div>
-                        <input type="number" step="0.01" name="amount" max="<?= $payment['amount'] ?>" value="<?= htmlspecialchars((string)$payment['amount']) ?>" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 sm:text-sm border-gray-300 rounded-md">
+                        <input type="number" step="0.01" name="amount" max="<?= $payment['amount'] ?>" value="<?= htmlspecialchars((string)$payment['amount']) ?>" class="focus:ring-primary focus:border-primary block w-full pl-7 sm:text-sm border-gray-300 rounded-md">
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                    <input type="text" name="reason" required class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="e.g. Requested by customer">
+                    <input type="text" name="reason" required class="focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md" placeholder="e.g. Requested by customer">
                 </div>
 
                 <div class="flex justify-end gap-3 mt-4">
@@ -306,3 +306,14 @@ $address = implode(', ', array_filter($addressParts, fn($part) => !empty($part) 
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

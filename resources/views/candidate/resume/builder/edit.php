@@ -69,20 +69,20 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                     <div class="flex items-center gap-3">
                         <button @click="saveResume()" 
                                 :disabled="saving"
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                                class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600 disabled:opacity-50">
                             <span x-show="!saving">💾 Save</span>
                             <span x-show="saving">Saving...</span>
                         </button>
                         <?php if (!empty($resume->attributes['pdf_url'] ?? '')): ?>
                         <a href="<?= htmlspecialchars($resume->attributes['pdf_url']) ?>" 
                            target="_blank"
-                           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-2">
+                           class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600 inline-flex items-center gap-2">
                             📥 Download PDF
                         </a>
                         <?php endif; ?>
                         <button @click="exportPDF()" 
                                 :disabled="exporting"
-                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                                class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600 disabled:opacity-50">
                             <span x-show="!exporting">📄 Generate PDF</span>
                             <span x-show="exporting">Generating...</span>
                         </button>
@@ -135,27 +135,27 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                             <input type="text" 
                                                    x-model="getSectionByType('header').section_data.content.full_name"
                                                    placeholder="Full Name"
-                                                   class="text-3xl font-bold mb-2 border-0 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none w-full">
+                                                   class="text-3xl font-bold mb-2 border-0 border-b-2 border-gray-300 focus:border-primary focus:outline-none w-full">
                                             <input type="text" 
                                                    x-model="getSectionByType('header').section_data.content.email"
                                                    placeholder="Email"
-                                                   class="text-sm text-gray-600 mb-1 border-0 border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full">
+                                                   class="text-sm text-gray-600 mb-1 border-0 border-b border-gray-300 focus:border-primary focus:outline-none w-full">
                                             <input type="text" 
                                                    x-model="getSectionByType('header').section_data.content.phone"
                                                    placeholder="Phone"
-                                                   class="text-sm text-gray-600 mb-1 border-0 border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full">
+                                                   class="text-sm text-gray-600 mb-1 border-0 border-b border-gray-300 focus:border-primary focus:outline-none w-full">
                                             <input type="text" 
                                                    x-model="getSectionByType('header').section_data.content.location"
                                                    placeholder="Location"
-                                                   class="text-sm text-gray-600 border-0 border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full">
+                                                   class="text-sm text-gray-600 border-0 border-b border-gray-300 focus:border-primary focus:outline-none w-full">
                                         </div>
                                     </template>
                                     <template x-if="editingSection !== 'header'">
                                         <div>
-                                            <h1 class="text-3xl font-bold mb-2 cursor-pointer hover:text-blue-600" 
+                                            <h1 class="text-3xl font-bold mb-2 cursor-pointer hover:text-primary" 
                                                 @click="editingSection = 'header'"
                                                 x-text="getSectionByType('header').section_data.content.full_name || 'Your Name'"></h1>
-                                            <p class="text-sm text-gray-600 cursor-pointer hover:text-blue-600" 
+                                            <p class="text-sm text-gray-600 cursor-pointer hover:text-primary" 
                                                @click="editingSection = 'header'">
                                                 <span x-text="getSectionByType('header').section_data.content.email || 'email@example.com'"></span> | 
                                                 <span x-text="getSectionByType('header').section_data.content.phone || 'Phone'"></span> | 
@@ -173,11 +173,11 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                     <template x-if="editingSection === 'summary'">
                                         <textarea x-model="getSectionByType('summary').section_data.content.text"
                                                   placeholder="Write your professional summary..."
-                                                  class="w-full border border-gray-300 rounded p-2 focus:ring-blue-500 focus:border-blue-500"
+                                                  class="w-full border border-gray-300 rounded p-2 focus:ring-primary focus:border-primary"
                                                   rows="4"></textarea>
                                     </template>
                                     <template x-if="editingSection !== 'summary'">
-                                        <p class="text-gray-700 cursor-pointer hover:text-blue-600" 
+                                        <p class="text-gray-700 cursor-pointer hover:text-primary" 
                                            @click="editingSection = 'summary'"
                                            x-text="getSectionByType('summary').section_data.content.text || 'Click to add your professional summary...'"></p>
                                     </template>
@@ -187,7 +187,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                             <!-- Experience Section -->
                             <template x-if="getSectionByType('experience')">
                                 <div class="mb-6">
-                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-blue-600" 
+                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-primary" 
                                         @click="editingSection = editingSection === 'experience' ? null : 'experience'">
                                         Work Experience
                                     </h2>
@@ -199,28 +199,28 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Job Title</label>
                                                             <input type="text" x-model="item.job_title" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Company</label>
                                                             <input type="text" x-model="item.company_name" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
                                                             <input type="text" x-model="item.location" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
                                                             <input type="date" x-model="item.start_date" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">End Date</label>
                                                             <input type="date" x-model="item.end_date" 
                                                                    :disabled="item.is_current"
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div class="flex items-end">
                                                             <label class="flex items-center">
@@ -232,7 +232,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                     <div>
                                                         <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                                         <textarea x-model="item.description" rows="3"
-                                                                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                                                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary"></textarea>
                                                     </div>
                                                     <button @click="getSectionByType('experience').section_data.content.items.splice(idx, 1)" 
                                                             class="mt-2 text-xs text-red-600 hover:text-red-700">
@@ -241,7 +241,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                 </div>
                                             </template>
                                             <button @click="addExperience()" 
-                                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                                    class="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary-600">
                                                 + Add Experience
                                             </button>
                                             <button @click="editingSection = null" 
@@ -269,7 +269,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                 </div>
                                             </template>
                                             <button @click="editingSection = 'experience'" 
-                                                    class="mt-2 text-sm text-blue-600 hover:text-blue-700">
+                                                    class="mt-2 text-sm text-primary hover:text-primary-600">
                                                 + Add Experience
                                             </button>
                                         </div>
@@ -280,7 +280,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                             <!-- Education Section -->
                             <template x-if="getSectionByType('education')">
                                 <div class="mb-6">
-                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-blue-600" 
+                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-primary" 
                                         @click="editingSection = editingSection === 'education' ? null : 'education'">
                                         Education
                                     </h2>
@@ -292,28 +292,28 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Degree</label>
                                                             <input type="text" x-model="item.degree" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Field of Study</label>
                                                             <input type="text" x-model="item.field_of_study" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Institution</label>
                                                             <input type="text" x-model="item.institution" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
                                                             <input type="date" x-model="item.start_date" 
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div>
                                                             <label class="block text-xs font-medium text-gray-700 mb-1">End Date</label>
                                                             <input type="date" x-model="item.end_date" 
                                                                    :disabled="item.is_current"
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                         </div>
                                                         <div class="flex items-end">
                                                             <label class="flex items-center">
@@ -329,7 +329,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                 </div>
                                             </template>
                                             <button @click="addEducation()" 
-                                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                                    class="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary-600">
                                                 + Add Education
                                             </button>
                                             <button @click="editingSection = null" 
@@ -351,7 +351,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                 </div>
                                             </template>
                                             <button @click="editingSection = 'education'" 
-                                                    class="mt-2 text-sm text-blue-600 hover:text-blue-700">
+                                                    class="mt-2 text-sm text-primary hover:text-primary-600">
                                                 + Add Education
                                             </button>
                                         </div>
@@ -362,7 +362,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                             <!-- Skills Section -->
                             <template x-if="getSectionByType('skills')">
                                 <div class="mb-6">
-                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-blue-600" 
+                                    <h2 class="text-xl font-bold mb-3 border-b-2 pb-2 cursor-pointer hover:text-primary" 
                                         @click="editingSection = editingSection === 'skills' ? null : 'skills'">
                                         Skills
                                     </h2>
@@ -370,7 +370,7 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                         <div>
                                             <div class="flex flex-wrap gap-2 mb-4">
                                                 <template x-for="(item, idx) in getSectionByType('skills').section_data.content.items" :key="idx">
-                                                    <div class="bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center gap-2">
+                                                    <div class="bg-primary text-white px-3 py-1 rounded text-sm flex items-center gap-2">
                                                         <span x-text="item.name || item"></span>
                                                         <button @click="getSectionByType('skills').section_data.content.items.splice(idx, 1)" 
                                                                 class="text-white hover:text-red-200">×</button>
@@ -382,9 +382,9 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                                        x-model="newSkill" 
                                                        @keyup.enter="addSkill()"
                                                        placeholder="Enter skill name"
-                                                       class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                       class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-primary focus:border-primary">
                                                 <button @click="addSkill()" 
-                                                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                                        class="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary-600">
                                                     Add
                                                 </button>
                                             </div>
@@ -398,12 +398,12 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
                                         <div>
                                             <div class="flex flex-wrap gap-2">
                                                 <template x-for="(item, idx) in getSectionByType('skills').section_data.content.items" :key="idx">
-                                                    <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm cursor-pointer hover:bg-blue-700"
+                                                    <span class="bg-primary text-white px-3 py-1 rounded text-sm cursor-pointer hover:bg-primary-600"
                                                           @click="editingSection = 'skills'"
                                                           x-text="item.name || item"></span>
                                                 </template>
                                                 <button @click="editingSection = 'skills'" 
-                                                        class="text-blue-600 hover:text-blue-700 text-sm border border-blue-600 px-3 py-1 rounded">
+                                                        class="text-primary hover:text-primary-600 text-sm border border-primary px-3 py-1 rounded">
                                                     + Add Skill
                                                 </button>
                                             </div>
@@ -659,4 +659,15 @@ $editorJsonSafe = json_encode($editorData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_H
         }
     </script>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

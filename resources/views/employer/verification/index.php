@@ -36,14 +36,14 @@
           </div>
           <div class="text-right">
             <?php if (!empty($unlocked ?? 0)): ?>
-              <a href="/employer/verification/details/<?= (int)($unlocked ?? 0) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+              <a href="/employer/verification/details/<?= (int)($unlocked ?? 0) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
                 </svg>
                 View details
               </a>
             <?php else: ?>
-            <a href="/employer/verification/unlock/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <a href="/employer/verification/unlock/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a2 2 0 01-2-2v-3a2 2 0 114 0v3a2 2 0 01-2 2z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10V7a5 5 0 0110 0v3"></path>
@@ -62,3 +62,14 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

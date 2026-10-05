@@ -27,6 +27,7 @@ $router->get('/candidate/profile', [CandidateController::class, 'viewProfile'], 
 $router->post('/candidate/profile/save', [CandidateController::class, 'saveProfile'], [$candidateAuth]);
 $router->post('/candidate/profile/upload', [CandidateController::class, 'uploadFile'], [$candidateAuth]);
 $router->post('/candidate/profile/delete-video', [CandidateController::class, 'deleteVideo'], [$candidateAuth]);
+$router->post('/candidate/profile/delete-resume', [CandidateController::class, 'deleteResume'], [$candidateAuth]);
 $router->get('/candidate/change-password', [CandidateController::class, 'changePassword'], [$candidateAuth]);
 $router->post('/candidate/update-password', [CandidateController::class, 'updatePassword'], [$candidateAuth]);
 
@@ -40,14 +41,12 @@ $router->post('/candidate/jobs/{slug}/bookmark', [JobController::class, 'bookmar
 
 // Candidate Chat Routes
 use App\Controllers\Candidate\ChatController;
-use App\Middlewares\CandidateSubscriptionMiddleware;
-$candPremium = new CandidateSubscriptionMiddleware();
-$router->get('/candidate/chat', [ChatController::class, 'index'], [$candidateAuth, $candPremium]);
-$router->get('/candidate/chat/{id}', [ChatController::class, 'show'], [$candidateAuth, $candPremium]);
-$router->post('/candidate/chat/send', [ChatController::class, 'sendMessage'], [$candidateAuth, $candPremium]);
-$router->get('/candidate/chat/messages', [ChatController::class, 'getMessages'], [$candidateAuth, $candPremium]);
-$router->post('/candidate/chat/start', [ChatController::class, 'startConversation'], [$candidateAuth, $candPremium]);
-$router->get('/candidate/chat/unread-count', [ChatController::class, 'getUnreadCount'], [$candidateAuth, $candPremium]);
+$router->get('/candidate/chat', [ChatController::class, 'index'], [$candidateAuth]);
+$router->get('/candidate/chat/{id}', [ChatController::class, 'show'], [$candidateAuth]);
+$router->post('/candidate/chat/send', [ChatController::class, 'sendMessage'], [$candidateAuth]);
+$router->get('/candidate/chat/messages', [ChatController::class, 'getMessages'], [$candidateAuth]);
+$router->post('/candidate/chat/start', [ChatController::class, 'startConversation'], [$candidateAuth]);
+$router->get('/candidate/chat/unread-count', [ChatController::class, 'getUnreadCount'], [$candidateAuth]);
 
 // Candidate Resume Builder Routes
 $router->get('/candidate/resume/builder/onboarding', [ResumeBuilderController::class, 'onboarding'], [$candidateAuth]);

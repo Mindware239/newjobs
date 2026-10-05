@@ -6,13 +6,13 @@
     --surface: #F4F6FB;
     --card: #FFFFFF;
     --border: #E4E8F0;
-    --border-focus: #2563EB;
+    --border-focus: #f05537;
     --text-1: #0D1117;
     --text-2: #4A5568;
     --text-3: #8896AA;
-    --blue: #2563EB;
-    --blue-light: #EFF6FF;
-    --blue-mid: #BFDBFE;
+    --blue: #f05537;
+    --blue-light: #fff1ed;
+    --blue-mid: #fff1ed;
     --green: #059669;
     --green-light: #ECFDF5;
     --green-mid: #A7F3D0;
@@ -20,8 +20,8 @@
     --red-light: #FEF2F2;
     --amber: #D97706;
     --amber-light: #FFFBEB;
-    --violet: #7C3AED;
-    --violet-light: #F5F3FF;
+    --violet: #f05537;
+    --violet-light: #fff5f2;
     --shadow-sm: 0 1px 2px rgba(13,17,23,0.05);
     --shadow: 0 2px 8px rgba(13,17,23,0.07), 0 0 1px rgba(13,17,23,0.06);
     --shadow-md: 0 6px 20px rgba(13,17,23,0.10), 0 0 1px rgba(13,17,23,0.06);
@@ -89,7 +89,7 @@
     justify-content: center;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(37,99,235,0.3);
+    box-shadow: 0 3px 10px rgba(240,85,55,0.3);
 }
 .buc-form-head-title { font-size: 18px; font-weight: 800; color: var(--text-1); letter-spacing: -0.4px; }
 .buc-form-head-sub { font-size: 13px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
@@ -157,7 +157,7 @@
 .buc-input::placeholder { color: var(--text-3); }
 .buc-input:focus, .buc-select:focus {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    box-shadow: 0 0 0 3px rgba(240,85,55,0.1);
 }
 .buc-input.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
 
@@ -255,9 +255,9 @@
     font-family: 'Sora', sans-serif;
     cursor: pointer;
     transition: all 0.15s;
-    box-shadow: 0 3px 10px rgba(37,99,235,0.3);
+    box-shadow: 0 3px 10px rgba(240,85,55,0.3);
 }
-.buc-submit-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(37,99,235,0.4); }
+.buc-submit-btn:hover { background: #FF6A3D; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(240,85,55,0.4); }
 .buc-cancel-link {
     font-size: 13px;
     font-weight: 600;
@@ -385,7 +385,7 @@
                             <span class="buc-input-icon">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             </span>
-                            <input type="text" name="name" class="buc-input" placeholder="e.g. Mindware HR Solutions" required>
+                            <input type="text" name="name" class="buc-input" placeholder="e.g. Jobsence HR Solutions" required>
                         </div>
                     </div>
 
@@ -396,7 +396,7 @@
                                 <span class="buc-input-icon">
                                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
                                 </span>
-                                <input type="text" name="username" class="buc-input mono" placeholder="e.g. mindware_hr" required>
+                                <input type="text" name="username" class="buc-input mono" placeholder="e.g. jobsence_hr" required>
                             </div>
                             <div class="buc-field-hint">
                                 <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -521,7 +521,7 @@
             <!-- What is this? -->
             <div class="buc-info-card">
                 <div class="buc-info-card-head">
-                    <div class="buc-info-card-head-icon" style="background:#EFF6FF; color:#2563EB;">
+                    <div class="buc-info-card-head-icon" style="background:#fff1ed; color:#f05537;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div class="buc-info-card-title">What is a Bulk Uploader?</div>
@@ -529,7 +529,7 @@
                 <div class="buc-info-card-body">
                     <ul class="buc-what-list">
                         <li class="buc-what-item">
-                            <div class="buc-what-dot" style="background:#EFF6FF; color:#2563EB;">
+                            <div class="buc-what-dot" style="background:#fff1ed; color:#f05537;">
                                 <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                             </div>
                             A <strong>Bulk Uploader</strong> is a trusted third-party (college, HR firm, or consultancy) given a dedicated login to upload candidate resumes directly into your platform.
@@ -553,7 +553,7 @@
             <!-- Account Types -->
             <div class="buc-info-card">
                 <div class="buc-info-card-head">
-                    <div class="buc-info-card-head-icon" style="background:#F5F3FF; color:#7C3AED;">
+                    <div class="buc-info-card-head-icon" style="background:#fff5f2; color:#f05537;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                     </div>
                     <div class="buc-info-card-title">Account Types Explained</div>
@@ -561,7 +561,7 @@
                 <div class="buc-info-card-body">
                     <div class="buc-type-list">
                         <div class="buc-type-item">
-                            <span class="buc-type-pill" style="background:#EFF6FF; color:#2563EB; border:1px solid #bfdbfe;">College</span>
+                            <span class="buc-type-pill" style="background:#fff1ed; color:#f05537; border:1px solid #fff1ed;">College</span>
                             <div class="buc-type-item-desc">Universities & institutions uploading fresh graduate CVs in batch placements.</div>
                         </div>
                         <div class="buc-type-item">
@@ -569,7 +569,7 @@
                             <div class="buc-type-item-desc">In-house HR teams sourcing pre-screened candidates from offline databases.</div>
                         </div>
                         <div class="buc-type-item">
-                            <span class="buc-type-pill" style="background:#F5F3FF; color:#7C3AED; border:1px solid #ddd6fe;">Consultancy</span>
+                            <span class="buc-type-pill" style="background:#fff5f2; color:#f05537; border:1px solid #ddd6fe;">Consultancy</span>
                             <div class="buc-type-item-desc">Recruitment firms submitting curated candidate pools on behalf of employers.</div>
                         </div>
                         <div class="buc-type-item">
@@ -645,3 +645,13 @@ function selectStatus(val) {
     document.querySelector('input[name="status"][value="' + val + '"]').checked = true;
 }
 </script>
+
+
+
+
+
+
+
+
+
+

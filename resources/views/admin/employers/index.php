@@ -53,7 +53,7 @@ function __fmt_phone($number, $country) {
                 <option value="approved" <?= ($filters['kyc_status'] ?? '') === 'approved' ? 'selected' : '' ?>>Approved</option>
                 <option value="rejected" <?= ($filters['kyc_status'] ?? '') === 'rejected' ? 'selected' : '' ?>>Rejected</option>
             </select>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Filter</button>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Filter</button>
         </form>
     </div>
 
@@ -89,7 +89,7 @@ function __fmt_phone($number, $country) {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <?php $iso = __iso($employer['country'] ?? ''); ?>
-                        <span class="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span class="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-primary-50 text-primary-900">
                             <?php if ($iso): ?>
                                 <img src="https://flagcdn.com/24x18/<?= $iso ?>.png" width="24" height="18" alt="<?= htmlspecialchars($employer['country'] ?? '') ?>">
                             <?php endif; ?>
@@ -124,7 +124,7 @@ function __fmt_phone($number, $country) {
                         </form>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="/admin/employers/<?= $employer['id'] ?>" class="text-blue-600 hover:text-blue-900">View</a>
+                        <a href="/admin/employers/<?= $employer['id'] ?>" class="text-primary hover:text-primary">View</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -151,4 +151,15 @@ function __fmt_phone($number, $country) {
     </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

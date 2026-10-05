@@ -31,8 +31,10 @@ class PaymentsController extends BaseController
         $params = [];
 
         if ($search) {
-            $where[] = "(ep.txn_id LIKE :search OR e.company_name LIKE :search OR u.email LIKE :search)";
-            $params['search'] = "%{$search}%";
+            $where[] = "(ep.txn_id LIKE :s1 OR e.company_name LIKE :s2 OR u.email LIKE :s3)";
+            $params['s1'] = "%{$search}%";
+            $params['s2'] = "%{$search}%";
+            $params['s3'] = "%{$search}%";
         }
 
         if ($status !== 'all') {

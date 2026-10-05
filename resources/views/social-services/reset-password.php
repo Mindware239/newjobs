@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Reset Password - Mindware Infotech</title>
+    <title>Reset Password - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -17,7 +17,7 @@
         <nav class="bg-white shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
-                    <a href="/" class="text-2xl font-bold text-blue-600">Mindware Infotech</a>
+                    <a href="/" class="text-2xl font-bold text-primary">Jobsence</a>
                     <?php $isAdminPath = (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/') === 0); ?>
                     <a href="<?= $isAdminPath ? '/admin/login' : '/social-services/login' ?>" class="text-gray-600 hover:text-gray-900">Back to Login</a>
                 </div>
@@ -35,7 +35,7 @@
                     <div x-show="success" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
                         <p class="text-sm text-green-800" x-text="successMessage"></p>
                         <div class="mt-3">
-                            <a href="<?= $isAdminPath ? '/admin/login' : '/social-services/login' ?>" class="text-sm text-blue-600 hover:underline">Go to Login</a>
+                            <a href="<?= $isAdminPath ? '/admin/login' : '/social-services/login' ?>" class="text-sm text-primary hover:underline">Go to Login</a>
                         </div>
                     </div>
 
@@ -55,7 +55,7 @@
                                    required
                                    minlength="8"
                                    placeholder="Enter new password (min 8 characters)"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary">
                             <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
                         </div>
 
@@ -68,18 +68,18 @@
                                    required
                                    minlength="8"
                                    placeholder="Confirm new password"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary">
                         </div>
 
                         <button type="submit" 
                                 :disabled="isSubmitting"
-                                class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                                class="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 disabled:opacity-50">
                             <span x-show="!isSubmitting">Reset Password</span>
                             <span x-show="isSubmitting">Resetting...</span>
                         </button>
 
                         <div class="text-center">
-                            <a href="<?= $isAdminPath ? '/admin/login' : '/social-services/login' ?>" class="text-sm text-blue-600 hover:underline">Back to Login</a>
+                            <a href="<?= $isAdminPath ? '/admin/login' : '/social-services/login' ?>" class="text-sm text-primary hover:underline">Back to Login</a>
                         </div>
                     </form>
                 </div>
@@ -166,4 +166,15 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 

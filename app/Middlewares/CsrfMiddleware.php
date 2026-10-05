@@ -23,7 +23,8 @@ class CsrfMiddleware implements MiddlewareInterface
     public function handle(Request $request, Response $response, ?callable $next = null): void
     {
         $method = $request->getMethod();
-        $path = $request->getPath();
+        $rawPath = (string)$request->getPath();
+        $path = '/' . ltrim((string)(parse_url($rawPath, PHP_URL_PATH) ?: $rawPath), '/');
         
         if (in_array($method, $this->excludedMethods)) {
             if (is_callable($next)) {
@@ -34,7 +35,12 @@ class CsrfMiddleware implements MiddlewareInterface
 
         // Skip CSRF for whitelisted routes
         foreach ($this->whitelist as $pattern) {
-            if ($path === $pattern || strpos($path, $pattern) === 0) {
+            $normalizedPattern = '/' . ltrim((string)(parse_url((string)$pattern, PHP_URL_PATH) ?: (string)$pattern), '/');
+            if (
+                $path === $normalizedPattern ||
+                strpos($path, $normalizedPattern) === 0 ||
+                substr($path, -strlen($normalizedPattern)) === $normalizedPattern
+            ) {
                 if (is_callable($next)) {
                     $next($request, $response);
                 }

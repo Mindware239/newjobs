@@ -10,6 +10,8 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Models\CompanyBlog;
 use App\Models\JobView;
+use App\Repositories\BlogRepository;
+use App\Repositories\JobRepository;
 use App\Services\JobService;
 
 class JobController
@@ -38,7 +40,8 @@ class JobController
         $data = $this->jobService->getJobsByLocation($slug, $page);
         
         if (!$data) {
-            $response->redirect('/jobs');
+            // Not in the jobs DB: all-India landing page (any state / district / town), else /jobs.
+            (new LocationPagesController())->render('jobs', (string)$slug, $response);
             return;
         }
 
@@ -88,26 +91,55 @@ class JobController
             return;
         }
         
-        $db = \App\Core\Database::getInstance();
+        $jobRepository = new JobRepository();
         
-        // Get job with company information
-        $sql = "SELECT j.*, 
-                       e.company_name, e.description as company_description, 
-                       e.logo_url as company_logo, e.website as company_website, 
-                       e.company_slug, e.id as employer_id,
-                       c.id as company_id, c.name as company_full_name, c.slug as company_slug_from_companies,
-                       c.banner_url, c.logo_url as company_logo_from_companies,
-                       c.description as company_about, c.ceo_name, c.ceo_photo,
-                       c.headquarters, c.founded_year, c.company_size, c.revenue
-                FROM jobs j
-                LEFT JOIN employers e ON j.employer_id = e.id
-                LEFT JOIN companies c ON c.employer_id = e.id
-                WHERE j.slug = :slug AND j.status = 'published'";
+        $row = $jobRepository->getJobDetailRowBySlug($slug);
         
-        $row = $db->fetchOne($sql, ['slug' => $slug]);
-        
-        if (!$row || empty($row['id'])) {
-            $response->redirect('/');
+        if (!$row) {
+            $response->redirect('/jobs');
+            return;
+        }
+
+        // Only live jobs are public. The posting employer and admins may preview other statuses.
+        $jobStatus = (string)($row['status'] ?? '');
+        $isPreview = false;
+        if ($jobStatus !== 'published') {
+            $viewerId = (int)($_SESSION['user_id'] ?? 0);
+            $viewerRole = (string)($_SESSION['user_role'] ?? '');
+            $isOwner = false;
+            if ($viewerId > 0 && $viewerRole === 'employer') {
+                $owner = \App\Core\Database::getInstance()->fetchOne(
+                    'SELECT e.id FROM employers e WHERE e.id = :eid AND e.user_id = :uid LIMIT 1',
+                    ['eid' => (int)($row['employer_id'] ?? 0), 'uid' => $viewerId]
+                );
+                $isOwner = $owner !== null;
+            }
+            if (!$isOwner && !in_array($viewerRole, ['admin', 'super_admin', 'master_admin'], true)) {
+                $response->redirect('/jobs');
+                return;
+            }
+            $isPreview = true;
+        }
+        $row['is_preview'] = $isPreview;
+
+        // Prepare location display if location_names is empty
+        $locationDisplay = $row['location_names'] ?? '';
+        if (empty($locationDisplay) && !empty($row['locations'])) {
+            $locs = json_decode($row['locations'], true);
+            if (is_array($locs) && !empty($locs)) {
+                $parts = array_filter([
+                    $locs[0]['city'] ?? '',
+                    $locs[0]['state'] ?? '',
+                    $locs[0]['country'] ?? ''
+                ]);
+                $locationDisplay = implode(', ', $parts);
+            }
+        }
+        $row['location_display'] = $locationDisplay ?: 'Location not specified';
+
+        // Check global hide external jobs setting
+        if ($jobRepository->isHideExternalJobsEnabled() && ($row['job_type'] ?? 'internal') === 'external') {
+            $response->redirect('/jobs');
             return;
         }
         
@@ -119,22 +151,7 @@ class JobController
         $locationStrings = [];
         $locationRows = [];
         try {
-            $locationRows = $db->fetchAll(
-                "SELECT 
-                    COALESCE(c.name, jl.city) as city, 
-                    c.slug as city_slug,
-                    COALESCE(s.name, jl.state) as state, 
-                    s.slug as state_slug,
-                    COALESCE(cnt.name, jl.country) as country, 
-                    cnt.slug as country_slug,
-                    jl.latitude, jl.longitude 
-                 FROM job_locations jl 
-                 LEFT JOIN cities c ON jl.city_id = c.id
-                 LEFT JOIN states s ON jl.state_id = s.id
-                 LEFT JOIN countries cnt ON jl.country_id = cnt.id
-                 WHERE jl.job_id = :job_id",
-                ['job_id' => $jobId]
-            );
+            $locationRows = $jobRepository->getJobLocations($jobId);
             
             foreach ($locationRows as $locRow) {
                 $locParts = array_filter([
@@ -153,16 +170,10 @@ class JobController
         // Get job skills
         $skills = [];
         try {
-            $skills = $db->fetchAll(
-                "SELECT s.name FROM job_skills js 
-                 INNER JOIN skills s ON js.skill_id = s.id 
-                 WHERE js.job_id = :job_id",
-                ['job_id' => $jobId]
-            );
+            $skills = $jobRepository->getJobSkillNames($jobId);
         } catch (\Exception $e) {
             error_log("Error getting job skills: " . $e->getMessage());
-        }
-        
+        }        
         // Get company information (from companies table if available, else from employers)
         $company = [];
         if ($companyId > 0) {
@@ -172,7 +183,7 @@ class JobController
                 if ($companyObj) {
                     $company = is_array($companyObj) ? $companyObj : ($companyObj->attributes ?? []);
                 } elseif ($companyId > 0) {
-                    $company = $db->fetchOne("SELECT * FROM companies WHERE id = :id", ['id' => $companyId]);
+                    $company = $jobRepository->getCompanyById($companyId);
                     if (!$company) {
                         $company = [];
                     }
@@ -201,6 +212,29 @@ class JobController
                 'website' => $row['company_website'] ?? null
             ];
         }
+
+        // External jobs posted by admin should display the job's own company branding,
+        // not the admin employer/company profile identity.
+        $isExternalJob = (($row['job_type'] ?? 'internal') === 'external');
+        $jobCompanyName = trim((string)($row['company_name'] ?? ''));
+        $jobCompanyLogo = trim((string)($row['company_logo'] ?? ''));
+        if ($isExternalJob) {
+            if ($jobCompanyName !== '') {
+                $company['name'] = $jobCompanyName;
+            }
+            if ($jobCompanyLogo !== '') {
+                $company['logo_url'] = $jobCompanyLogo;
+            }
+            // External listings may not map to an internal public company profile.
+            $company['id'] = 0;
+            $company['slug'] = '';
+            $companyStats = [
+                'rating' => 0,
+                'reviews_count' => 0,
+                'followers_count' => 0
+            ];
+            $companyBlogs = [];
+        }
         
         // Get company stats (rating, reviews, followers)
         $companyStats = [
@@ -208,7 +242,7 @@ class JobController
             'reviews_count' => 0,
             'followers_count' => 0
         ];
-        if ($companyId > 0) {
+        if (!$isExternalJob && $companyId > 0) {
             try {
                 $companyModel = new Company();
                 $stats = $companyModel->getStats($companyId);
@@ -222,7 +256,7 @@ class JobController
         
         // Get company blogs (published only)
         $companyBlogs = [];
-        if ($companyId > 0) {
+        if (!$isExternalJob && $companyId > 0) {
             try {
                 $blogModel = new CompanyBlog();
                 $blogs = $blogModel->getByCompanyId($companyId);
@@ -236,27 +270,40 @@ class JobController
                 error_log("Error fetching company blogs: " . $e->getMessage());
             }
         }
+
+        // Sidebar interview blogs from repository (shared source with blog pages).
+        $interviewBlogs = [];
+        try {
+            $interviewBlogs = (new BlogRepository())->getInterviewSidebarBlogs(10);
+        } catch (\Throwable $e) {
+            error_log("Error fetching interview blogs for job sidebar: " . $e->getMessage());
+        }
         
         // Get other jobs from same company
         $otherJobs = [];
-        if ($employerId > 0) {
+        if (!$isExternalJob && $employerId > 0) {
             try {
-                $otherJobs = $db->fetchAll(
-                    "SELECT j.*, 
-                     GROUP_CONCAT(DISTINCT CONCAT_WS(', ', NULLIF(TRIM(c.name), ''), NULLIF(TRIM(s.name), ''), NULLIF(TRIM(cnt.name), '')) SEPARATOR ' | ') as location_display
-                     FROM jobs j
-                     LEFT JOIN job_locations jl ON jl.job_id = j.id
-                     LEFT JOIN cities c ON jl.city_id = c.id
-                     LEFT JOIN states s ON jl.state_id = s.id
-                     LEFT JOIN countries cnt ON jl.country_id = cnt.id
-                     WHERE j.employer_id = :employer_id 
-                     AND j.status = 'published'
-                     AND j.id != :current_job_id
-                     GROUP BY j.id
-                     ORDER BY j.created_at DESC
-                     LIMIT 5",
-                    ['employer_id' => $employerId, 'current_job_id' => $jobId]
-                );
+                $otherJobs = $jobRepository->getOtherPublishedJobsByEmployer($employerId, $jobId, 5);
+                
+                // Enrichment loop to handle fallback and formatting
+                foreach ($otherJobs as &$oj) {
+                    if (empty($oj['location_display'])) {
+                        $locData = json_decode($oj['locations'] ?? '', true);
+                        if (is_array($locData)) {
+                            $locStrings = [];
+                            foreach ($locData as $loc) {
+                                if (is_string($loc)) {
+                                    $locStrings[] = $loc;
+                                } elseif (is_array($loc)) {
+                                    $locStrings[] = implode(', ', array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']));
+                                }
+                            }
+                            $oj['location_display'] = !empty($locStrings) ? implode(' | ', $locStrings) : 'Location not specified';
+                        } else {
+                            $oj['location_display'] = !empty($oj['locations']) ? $oj['locations'] : 'Location not specified';
+                        }
+                    }
+                }
             } catch (\Exception $e) {
                 error_log("Error fetching other jobs: " . $e->getMessage());
             }
@@ -285,6 +332,7 @@ class JobController
                     // Check application
                     $hasApplied = \App\Models\Application::where('candidate_user_id', '=', (int)$userId)
                         ->where('job_id', '=', $jobId)
+                        ->where('status', '!=', 'withdrawn')
                         ->first() !== null;
                     
                     // Check if following company
@@ -317,13 +365,55 @@ class JobController
                 $view->save();
             }
         }
+
+        // Track public job views (guest + logged-in) once per session/day
+        try {
+            $sessionKey = 'job_view_logged_' . $jobId . '_' . date('Ymd');
+            if (empty($_SESSION[$sessionKey])) {
+                $jobRepository->logPublicJobView(
+                    $jobId,
+                    isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
+                    $_SERVER['REMOTE_ADDR'] ?? null,
+                    (string)($_SERVER['HTTP_USER_AGENT'] ?? '')
+                );
+                $_SESSION[$sessionKey] = 1;
+            }
+        } catch (\Throwable $e) {
+            // Graceful fallback if analytics table is missing
+            error_log("Job view log insert skipped: " . $e->getMessage());
+        }
+
+        // Dynamic sidebar metrics
+        $viewsCount = 0;
+        $applicationsCount = 0;
+        $shortlistedCount = 0;
+        try {
+            $counts = $jobRepository->getApplicationMetrics($jobId);
+            $applicationsCount = (int)($counts['applications_count'] ?? 0);
+            $shortlistedCount = (int)($counts['shortlisted_count'] ?? 0);
+        } catch (\Throwable $e) {
+            error_log("Applications metrics fetch failed: " . $e->getMessage());
+        }
+        try {
+            $viewsCount = $jobRepository->getJobViewsLogCount($jobId);
+        } catch (\Throwable $e) {
+            // Fallback to legacy table
+            try {
+                $viewsCount = (int) JobView::where('job_id', '=', $jobId)->count();
+            } catch (\Throwable $ignored) {
+                $viewsCount = 0;
+            }
+        }
         
         // Format job data
         $jobData = $row;
-        $jobData['location_display'] = !empty($locationStrings) ? implode(' | ', $locationStrings) : 'Location not specified';
+        $jobData['location_display'] = !empty($locationStrings) ? implode(' | ', $locationStrings) : (!empty($row['locations']) ? $row['locations'] : 'Location not specified');
         $jobData['skills'] = $skills;
         $jobData['is_bookmarked'] = $isBookmarked;
         $jobData['has_applied'] = $hasApplied;
+        $jobData['views_count'] = $viewsCount;
+        $jobData['applications_count'] = $applicationsCount;
+        $jobData['shortlisted_count'] = $shortlistedCount;
         
         // Format employment type
         $employmentType = $jobData['employment_type'] ?? 'full_time';
@@ -333,6 +423,7 @@ class JobController
             'contract' => 'Contract',
             'internship' => 'Internship',
             'freelance' => 'Freelance',
+            'one_time' => 'One-time Job',
             'temporary' => 'Temporary'
         ];
         $jobData['employment_type_display'] = $employmentTypeMap[$employmentType] ?? ucfirst(str_replace('_', ' ', $employmentType));
@@ -367,11 +458,14 @@ class JobController
             'company' => $company,
             'companyStats' => $companyStats,
             'companyBlogs' => $companyBlogs,
+            'interviewBlogs' => $interviewBlogs,
             'otherJobs' => $otherJobs,
             'isLoggedIn' => $userId !== null,
             'isFollowing' => $isFollowing,
             'userId' => $userId,
-            'candidateId' => $candidateId
+            'candidateId' => $candidateId,
+            'isPreview' => $isPreview,
+            'previewStatus' => $jobStatus,
         ]);
     }
 }

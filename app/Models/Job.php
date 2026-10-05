@@ -18,8 +18,109 @@ class Job extends Model
         'is_remote', 'locations', 'qualifications', 'status', 'visibility', 'publish_at',
         'expires_at', 'vacancies', 'views', 'job_timings', 'interview_timings', 'job_address',
         'experience_type', 'min_experience', 'max_experience', 'offers_bonus', 'call_availability',
-        'company_name', 'contact_person', 'phone', 'email', 'contact_profile', 'company_size', 'hiring_urgency'
+        'company_name', 'contact_person', 'phone', 'email', 'contact_profile', 'company_size', 'hiring_urgency',
+        'job_type', 'apply_link', 'company_logo'
     ];
+
+    public static function getAllBenefits(): array
+    {
+        try {
+            $instance = new self();
+            return $instance->getDb()->fetchAll("SELECT * FROM benefits ORDER BY name ASC");
+        } catch (\Exception $e) {
+            error_log("Job::getAllBenefits - Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public static function getAllCategories(): array
+    {
+        try {
+            $instance = new self();
+            return $instance->getDb()->fetchAll("SELECT name as label, name as value FROM job_categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        } catch (\Exception $e) {
+            error_log("Job::getAllCategories - Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function syncSkills(array $skillNames): void
+    {
+        $jobId = (int)($this->attributes['id'] ?? $this->id ?? 0);
+        if (!$jobId) return;
+
+        $db = $this->getDb();
+        $db->query("DELETE FROM job_skills WHERE job_id = :job_id", ['job_id' => $jobId]);
+
+        foreach ($skillNames as $name) {
+            $name = trim($name);
+            if ($name === '') continue;
+
+            $skill = Skill::where('name', '=', $name)->first();
+            if (!$skill) {
+                $skill = new Skill();
+                $skill->fill(['name' => $name, 'slug' => $skill->generateSlug($name)]);
+                if (!$skill->save()) continue;
+            }
+
+            $db->query(
+                "INSERT INTO job_skills (job_id, skill_id, importance) VALUES (:job_id, :skill_id, :importance) 
+                 ON DUPLICATE KEY UPDATE importance = VALUES(importance)",
+                ['job_id' => $jobId, 'skill_id' => $skill->id, 'importance' => 5]
+            );
+        }
+    }
+
+    public function syncBenefits(array $benefitIds): void
+    {
+        $jobId = (int)($this->attributes['id'] ?? $this->id ?? 0);
+        if (!$jobId) return;
+
+        $db = $this->getDb();
+        $db->query("DELETE FROM job_benefits WHERE job_id = :job_id", ['job_id' => $jobId]);
+
+        foreach ($benefitIds as $id) {
+            $id = (int)$id;
+            if ($id <= 0) continue;
+
+            $db->query(
+                "INSERT INTO job_benefits (job_id, benefit_id) VALUES (:job_id, :benefit_id)
+                 ON DUPLICATE KEY UPDATE job_id = VALUES(job_id), benefit_id = VALUES(benefit_id)",
+                ['job_id' => $jobId, 'benefit_id' => $id]
+            );
+        }
+    }
+
+    public function syncLocations(array $locations): void
+    {
+        $jobId = (int)($this->attributes['id'] ?? $this->id ?? 0);
+        if (!$jobId) return;
+
+        $db = $this->getDb();
+        $db->query("DELETE FROM job_locations WHERE job_id = :job_id", ['job_id' => $jobId]);
+
+        foreach ($locations as $locData) {
+            if (!empty($locData['city']) || !empty($locData['state']) || !empty($locData['country'])) {
+                try {
+                    $location = new JobLocation();
+                    $location->fill([
+                        'job_id' => $jobId,
+                        'city' => $locData['city'] ?? null,
+                        'state' => $locData['state'] ?? null,
+                        'country' => $locData['country'] ?? 'India',
+                        'city_id' => null,
+                        'state_id' => null,
+                        'country_id' => null,
+                        'latitude' => $locData['latitude'] ?? null,
+                        'longitude' => $locData['longitude'] ?? null,
+                    ]);
+                    $location->save();
+                } catch (\Exception $e) {
+                    error_log("Job::syncLocations - Failed to save location: " . $e->getMessage());
+                }
+            }
+        }
+    }
 
     public function employer()
     {
@@ -130,13 +231,15 @@ class Job extends Model
         );
     }
 
-    public function generateSlug(string $title): string
+    /** URL slug from the title, unique among jobs (pass $excludeId when renaming an existing job). */
+    public function generateSlug(string $title, ?int $excludeId = null): string
     {
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
+        $slug = strtolower(trim((string)preg_replace('/[^A-Za-z0-9]+/', '-', $title), '-'));
+        $slug = mb_substr($slug, 0, 180) ?: 'job';
         $baseSlug = $slug;
         $counter = 1;
 
-        while ($this->slugExists($slug)) {
+        while ($this->slugExists($slug, $excludeId)) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
         }
@@ -144,11 +247,11 @@ class Job extends Model
         return $slug;
     }
 
-    private function slugExists(string $slug): bool
+    private function slugExists(string $slug, ?int $excludeId = null): bool
     {
         $result = $this->getDb()->fetchOne(
-            "SELECT id FROM {$this->table} WHERE slug = :slug",
-            ['slug' => $slug]
+            "SELECT id FROM {$this->table} WHERE slug = :slug AND id <> :id LIMIT 1",
+            ['slug' => $slug, 'id' => (int)$excludeId]
         );
         return $result !== null;
     }

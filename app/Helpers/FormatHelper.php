@@ -44,7 +44,8 @@ class FormatHelper
             'part_time' => 'Part-time',
             'contract' => 'Contract',
             'internship' => 'Internship',
-            'freelance' => 'Freelance'
+            'freelance' => 'Freelance',
+            'one_time' => 'One-time Job'
         ];
         return $map[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }

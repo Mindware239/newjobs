@@ -1,7 +1,10 @@
 <div>
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Manage Jobs</h1>
-        <p class="mt-2 text-sm text-gray-600">View and moderate all job postings</p>
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Manage Jobs</h1>
+            <p class="mt-2 text-sm text-gray-600">View and moderate all job postings</p>
+        </div>
+        <a href="/admin/jobs/create" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium">Create New Job</a>
     </div>
 
     <!-- Filters -->
@@ -13,14 +16,19 @@
             <select name="status" class="px-4 py-2 border border-gray-300 rounded-md">
                 <option value="all" <?= ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' ?>>All Status</option>
                 <option value="published" <?= ($filters['status'] ?? '') === 'published' ? 'selected' : '' ?>>Published</option>
+                <option value="pending_review" <?= ($filters['status'] ?? '') === 'pending_review' ? 'selected' : '' ?>>Pending Review</option>
                 <option value="draft" <?= ($filters['status'] ?? '') === 'draft' ? 'selected' : '' ?>>Draft</option>
+                <option value="paused" <?= ($filters['status'] ?? '') === 'paused' ? 'selected' : '' ?>>Paused</option>
+                <option value="closed" <?= ($filters['status'] ?? '') === 'closed' ? 'selected' : '' ?>>Closed</option>
+                <option value="rejected" <?= ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                <option value="taken_down" <?= ($filters['status'] ?? '') === 'taken_down' ? 'selected' : '' ?>>Taken Down</option>
                 <option value="expired" <?= ($filters['status'] ?? '') === 'expired' ? 'selected' : '' ?>>Expired</option>
             </select>
             <select name="sort" class="px-4 py-2 border border-gray-300 rounded-md">
                 <option value="created_at" <?= ($filters['sort'] ?? 'created_at') === 'created_at' ? 'selected' : '' ?>>Newest First</option>
                 <option value="views" <?= ($filters['sort'] ?? '') === 'views' ? 'selected' : '' ?>>Most Views</option>
             </select>
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Filter</button>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Filter</button>
         </form>
     </div>
 
@@ -52,13 +60,19 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            <?= ($job['status'] ?? '') === 'published' ? 'bg-green-100 text-green-800' : 
-                                (($job['status'] ?? '') === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800') ?>">
-                            <?= ucfirst($job['status'] ?? 'unknown') ?>
+                            <?= [
+                                'published' => 'bg-green-100 text-green-800',
+                                'pending_review' => 'bg-yellow-100 text-yellow-800',
+                                'draft' => 'bg-gray-100 text-gray-800',
+                                'paused' => 'bg-blue-100 text-blue-800',
+                                'closed' => 'bg-gray-200 text-gray-700',
+                            ][$job['status'] ?? ''] ?? 'bg-red-100 text-red-800' ?>">
+                            <?= htmlspecialchars(ucwords(str_replace('_', ' ', (string)($job['status'] ?: 'unknown')))) ?>
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="/admin/jobs/<?= urlencode($job['slug'] ?? $job['id']) ?>" class="text-blue-600 hover:text-blue-900">View</a>
+                        <a href="/admin/jobs/<?= urlencode($job['slug'] ?? $job['id']) ?>" class="text-primary hover:text-primary mr-3">View</a>
+                        <a href="/admin/jobs/edit/<?= urlencode($job['slug'] ?? $job['id']) ?>" class="text-primary hover:text-primary-900">Edit</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -85,4 +99,15 @@
     </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

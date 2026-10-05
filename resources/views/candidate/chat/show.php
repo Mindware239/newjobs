@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Chat with <?= htmlspecialchars($employer['company_name'] ?? 'Employer') ?> - Mindware Infotech</title>
+    <title>Chat with <?= htmlspecialchars($employer['company_name'] ?? 'Employer') ?> - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -33,13 +33,13 @@
                                          alt="<?= htmlspecialchars($employer['company_name'] ?? 'Employer') ?>"
                                          class="w-12 h-12 rounded-full object-cover border-2 border-gray-100">
                                 <?php else: ?>
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center border-2 border-gray-100">
-                                        <span class="text-blue-600 font-bold text-lg">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-[#ffe3db] flex items-center justify-center border-2 border-gray-100">
+                                        <span class="text-primary font-bold text-lg">
                                             <?= strtoupper(substr($employer['company_name'] ?? 'E', 0, 1)) ?>
                                         </span>
                                     </div>
                                 <?php endif; ?>
-                                <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-blue-400"></span>
+                                <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-primary"></span>
                             </div>
                             <div>
                                 <h2 class="text-lg font-bold text-gray-900">
@@ -49,17 +49,17 @@
                                     <p class="text-sm text-gray-500 flex items-center gap-1">
                                         <span>Re:</span>
                                         <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" 
-                                           class="text-blue-600 hover:text-blue-700 font-medium hover:underline truncate max-w-[200px]">
+                                           class="text-primary hover:text-primary-600 font-medium hover:underline truncate max-w-[200px]">
                                             <?= htmlspecialchars($job['title'] ?? 'Job') ?>
                                         </a>
                                     </p>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                        <div class="flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-600 rounded-full border border-primary">
                             <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                             </span>
                             <span class="text-xs font-semibold uppercase tracking-wide">Online</span>
                         </div>
@@ -86,7 +86,7 @@
                                         <!-- Avatar (Optional for own messages) -->
                                         <div class="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden shadow-sm" :class="msg.is_own ? 'hidden md:block' : ''">
                                             <template x-if="msg.is_own">
-                                                <div class="w-full h-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold">
+                                                <div class="w-full h-full bg-primary-50 flex items-center justify-center text-primary-600 text-xs font-bold">
                                                     <?= strtoupper(substr($candidate->attributes['full_name'] ?? 'U', 0, 1)) ?>
                                                 </div>
                                             </template>
@@ -94,7 +94,7 @@
                                                 <?php if (!empty($employer['logo_url'])): ?>
                                                     <img src="<?= htmlspecialchars($employer['logo_url']) ?>" class="w-full h-full object-cover">
                                                 <?php else: ?>
-                                                    <div class="w-full h-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                                                    <div class="w-full h-full bg-primary-50 flex items-center justify-center text-primary text-xs font-bold">
                                                         <?= strtoupper(substr($employer['company_name'] ?? 'E', 0, 1)) ?>
                                                     </div>
                                                 <?php endif; ?>
@@ -103,7 +103,7 @@
 
                                         <!-- Message Bubble -->
                                         <div class="rounded-2xl px-5 py-3 shadow-sm relative group transition-all duration-200"
-                                             :class="msg.is_own ? 'bg-blue-100 text-blue-700 rounded-br-none' : 'bg-white text-gray-900 border border-gray-100 rounded-bl-none'">
+                                             :class="msg.is_own ? 'bg-primary-50 text-primary-600 rounded-br-none' : 'bg-white text-gray-900 border border-gray-100 rounded-bl-none'">
                                             <p class="text-sm whitespace-pre-wrap leading-relaxed" x-text="msg.body"></p>
                                             
                                             <!-- Attachments (Placeholder logic if needed dynamically) -->
@@ -148,22 +148,27 @@
                                       @keydown.enter.shift.exact="messageBody += '\n'"
                                       placeholder="Type your message..."
                                       rows="1"
-                                      class="w-full pl-5 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white resize-none transition-all duration-200 min-h-[48px] max-h-32"
+                                      class="w-full pl-5 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary focus:border-primary focus:bg-white resize-none transition-all duration-200 min-h-[48px] max-h-32"
                                       style="scrollbar-width: none;"></textarea>
                             
                             <!-- Attachment Input -->
                             <input type="file" x-ref="fileInput" class="hidden" @change="handleFileSelect">
                             <button type="button" 
                                     @click="$refs.fileInput.click()"
-                                    class="absolute right-3 bottom-3 text-gray-400 hover:text-gray-600 transition-colors">
+                                    class="absolute right-3 bottom-3 text-gray-400 hover:text-gray-600 transition-colors group/attach">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                 </svg>
+                                <?php if (!$candidate->isPremium()): ?>
+                                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover/attach:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        Premium: Send Files
+                                    </span>
+                                <?php endif; ?>
                             </button>
                         </div>
                         <button type="submit" 
                                 :disabled="!messageBody.trim() && !attachment && !isSending"
-                                class="h-12 w-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 group">
+                                class="h-12 w-12 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary-600 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 group">
                             <svg x-show="!isSending" class="w-5 h-5 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
@@ -306,7 +311,18 @@
         }
     </script>
        <?php
-require __DIR__ . '/../../../include/footer.php';
+require __DIR__ . '/../../include/footer.php';
 ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

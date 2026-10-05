@@ -1,5 +1,5 @@
 <div class="max-w-5xl mx-auto px-4 py-8">
-    <a href="/admin/bulk-uploaders/<?= (int)($file['bulk_account_id'] ?? 0) ?>/batches" class="text-sm text-blue-600">&larr; Back</a>
+    <a href="/admin/bulk-uploaders/<?= (int)($file['bulk_account_id'] ?? 0) ?>/batches" class="text-sm text-primary">&larr; Back</a>
     <div class="mt-4 bg-white rounded-xl shadow p-6">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -74,3 +74,14 @@
         <?php endif; ?>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

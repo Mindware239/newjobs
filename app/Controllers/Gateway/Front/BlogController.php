@@ -45,12 +45,20 @@ class BlogController
             $blogs = $db->fetchAll(
                 "SELECT * FROM blogs 
                  WHERE published_at IS NOT NULL 
-                   AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)
+                   AND (title LIKE :q1 OR excerpt LIKE :q2 OR content LIKE :q3)
                  ORDER BY published_at DESC 
                  LIMIT " . (int)$perPage . " OFFSET " . (int)$offset,
-                ['q' => '%' . $search . '%']
+                [
+                    'q1' => '%' . $search . '%',
+                    'q2' => '%' . $search . '%',
+                    'q3' => '%' . $search . '%',
+                ]
             );
-            $countRow = $db->fetchOne("SELECT COUNT(*) as c FROM blogs WHERE published_at IS NOT NULL AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)", ['q' => '%' . $search . '%']);
+            $countRow = $db->fetchOne("SELECT COUNT(*) as c FROM blogs WHERE published_at IS NOT NULL AND (title LIKE :q1 OR excerpt LIKE :q2 OR content LIKE :q3)", [
+                'q1' => '%' . $search . '%',
+                'q2' => '%' . $search . '%',
+                'q3' => '%' . $search . '%',
+            ]);
         } else {
             $blogs = $db->fetchAll(
                 "SELECT * FROM blogs 
@@ -278,7 +286,7 @@ class BlogController
 
     public function category(Request $request, Response $response, array $params): void
     {
-        $slug = $params['slug'] ?? '';
+        $slug = trim((string)($params['slug'] ?? ''));
         $cache = \App\Core\RedisClient::getInstance();
         $cacheKey = "blog:category:$slug:" . ($request->get('page') ?? 1);
         $cached = $cache->get($cacheKey);
@@ -287,13 +295,24 @@ class BlogController
             return;
         }
         $category = Category::findBySlug($slug);
+        if (!$category && $slug !== '') {
+            $altSlug = str_replace('_', '-', $slug);
+            if ($altSlug !== $slug) {
+                $category = Category::findBySlug($altSlug);
+            }
+        }
         if (!$category) {
             $response->setStatusCode(404);
             $response->view('blog/category', [
                 'title' => 'Category',
                 'category' => null,
-                'blogs' => []
-            ]);
+                'blogs' => [],
+                'pagination' => [
+                    'page' => 1,
+                    'per_page' => 12,
+                    'total' => 0
+                ]
+            ], 404, 'layout');
             return;
         }
 

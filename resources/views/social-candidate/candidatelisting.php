@@ -1,5 +1,5 @@
 <?php
-$companyName = "Mindware Infotech";
+$companyName = "Jobsence";
 $base = $base ?? '/';
 ?>
 
@@ -19,7 +19,7 @@ $base = $base ?? '/';
 <header class="bg-white border-b">
 <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
 
-<img src="<?= rtrim($base, '/') ?>/uploads/Mindware-infotech.png" class="h-11">
+<img src="<?= rtrim($base, '/') ?>/uploads/jobsence.png" class="h-11">
 
  <nav class="hidden min-[900px]:flex items-center gap-4 lg:gap-8 text-base font-medium">
         <a href="/candidatelisting" class="hover:text-custom-red transition-colors pb-1">Applications & saved listings</a>
@@ -34,12 +34,12 @@ $base = $base ?? '/';
 <!-- BLACK NAV -->
 <div class="bg-black text-white text-sm">
 <div class="max-w-7xl mx-auto px-6 py-3 flex gap-8">
-<a href="<?= rtrim($base,'/') ?>/social-services" class="hover:text-[#5b6bd5]">Back to Home</a>
-<a href="<?= rtrim($base,'/') ?>/find-a-job" class="hover:text-[#5b6bd5]">Find a job</a>
-<a href="<?= rtrim($base,'/') ?>/searchemployers" class="hover:text-[#5b6bd5]">Search employers</a>
-<a href="<?= rtrim($base,'/') ?>/career-insights" class="hover:text-[#5b6bd5]">Career insights</a>
-<a href="<?= rtrim($base,'/') ?>/about" class="hover:text-[#5b6bd5]">About us</a>
-<a href="<?= rtrim($base,'/') ?>/help" class="hover:text-[#5b6bd5]">Get Help</a>
+<a href="<?= rtrim($base,'/') ?>/social-services" class="hover:text-[#f05537]">Back to Home</a>
+<a href="<?= rtrim($base,'/') ?>/find-a-job" class="hover:text-[#f05537]">Find a job</a>
+<a href="<?= rtrim($base,'/') ?>/searchemployers" class="hover:text-[#f05537]">Search employers</a>
+<a href="<?= rtrim($base,'/') ?>/career-insights" class="hover:text-[#f05537]">Career insights</a>
+<a href="<?= rtrim($base,'/') ?>/about" class="hover:text-[#f05537]">About us</a>
+<a href="<?= rtrim($base,'/') ?>/help" class="hover:text-[#f05537]">Get Help</a>
 </div>
 </div>
 
@@ -67,7 +67,7 @@ class="w-full px-4 py-2 border rounded">
 <!-- TABS -->
 <div class="flex gap-6 mt-8 border-b pb-2 text-sm items-center">
 
-<button class="px-4 py-1 bg-blue-900 text-white rounded">All</button>
+<button class="px-4 py-1 bg-primary-900 text-white rounded">All</button>
 <button class="text-gray-400">Applied To</button>
 <button class="text-gray-400">Not Yet Applied To</button>
 
@@ -145,3 +145,14 @@ Open listing
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

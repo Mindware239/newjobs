@@ -136,22 +136,22 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                 $tabStatus = $filters['status'] ?? 'all';
                 ?>
                 <a href="?job_id=<?= $currentJob->id ?>&status=all"
-                    class="<?= ($tabStatus == 'all' && ($filters['source'] ?? '') !== 'database') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
+                    class="<?= ($tabStatus == 'all' && ($filters['source'] ?? '') !== 'database') ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
                     Responses (<?= $statusCounts['total'] ?? 0 ?>)
                 </a>
 
                 <a href="?job_id=<?= $currentJob->id ?>&status=shortlist"
-                    class="<?= ($tabStatus == 'shortlist') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
+                    class="<?= ($tabStatus == 'shortlist') ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
                     Hot Leads (<?= $statusCounts['shortlisted_count'] ?? 0 ?>)
                 </a>
 
                 <a href="?job_id=<?= $currentJob->id ?>&source=database"
-                    class="<?= (($filters['source'] ?? '') === 'database') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
+                    class="<?= (($filters['source'] ?? '') === 'database') ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
                     Database (<?= $databaseCount ?? 0 ?>)
                 </a>
 
                 <a href="?job_id=<?= $currentJob->id ?>&status=new"
-                    class="<?= ($tabStatus == 'new') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
+                    class="<?= ($tabStatus == 'new') ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg">
                     Total Leads (<?= $statusCounts['new_count'] ?? 0 ?>)
                 </a>
             </nav>
@@ -236,7 +236,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                 <div class="flex flex-wrap gap-3 items-center">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-medium text-muted-foreground">Job:</span>
-                        <select onchange="updateJob(this.value)" class="flex h-10 items-center justify-between border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-48 rounded-xl border-border">
+                        <select onchange="updateJob(this.value)" class="flex h-10 items-center justify-between border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-48 rounded-xl border-border">
                             <option value="">All Jobs</option>
                             <?php foreach ($jobs as $job): ?>
                                 <?php $jid = $job->attributes['id'] ?? $job->id ?? null; ?>
@@ -246,20 +246,20 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
                         <span class="text-sm font-medium text-muted-foreground">Sort by:</span>
-                        <select onchange="updateSort(this.value)" class="flex h-10 items-center justify-between border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-52 rounded-xl border-border">
+                        <select onchange="updateSort(this.value)" class="flex h-10 items-center justify-between border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-52 rounded-xl border-border">
                             <option value="date" <?= ($currentSort ?? 'date') === 'date' ? 'selected' : '' ?>>Application date (newest first)</option>
                             <option value="location" <?= ($currentSort ?? 'date') === 'location' ? 'selected' : '' ?>>Closest to location</option>
                             <option value="interest" <?= ($currentSort ?? 'date') === 'interest' ? 'selected' : '' ?>>Most interested</option>
                         </select>
                     </div>
-                    <div class="relative">
+                    <div class="relative w-full sm:w-64">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </svg>
-                        <input value="<?= htmlspecialchars($filters['search'] ?? '') ?>" onkeydown="if(event.key==='Enter'){updateSearch(this.value)}" onchange="updateSearch(this.value)" class="flex h-10 border bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 w-64 rounded-xl border-border" placeholder="Search name, email, skills...">
+                        <input value="<?= htmlspecialchars($filters['search'] ?? '') ?>" onkeydown="if(event.key==='Enter'){updateSearch(this.value)}" onchange="updateSearch(this.value)" class="flex h-10 border bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 w-full rounded-xl border-border" placeholder="Search name, email, skills...">
                     </div>
 
                 </div>
@@ -587,7 +587,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                                                     </span>
                                                     <?php if (empty($app['verification_unlocked'])): ?>
                                                         <a href="/employer/verification?candidate_id=<?= (int)($app['candidate_id'] ?? 0) ?>"
-                                                           class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700">
+                                                           class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary text-white text-xs hover:bg-primary-600">
                                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a2 2 0 01-2-2v-3a2 2 0 114 0v3a2 2 0 01-2 2z"></path>
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10V7a5 5 0 0110 0v3"></path>
@@ -652,13 +652,13 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                                     <div class="mt-4 flex flex-wrap items-center gap-3">
                                         <?php
                                         $statusColors = [
-                                            'applied' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                            'applied' => 'bg-primary-50 text-primary-600 border-primary-100',
                                             'shortlisted' => 'bg-green-100 text-green-700 border-green-200',
                                             'rejected' => 'bg-red-100 text-red-700 border-red-200',
-                                            'interview' => 'bg-purple-100 text-purple-700 border-purple-200',
+                                            'interview' => 'bg-primary-50 text-primary-600 border-primary-100',
                                             'hired' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                             'screening' => 'bg-orange-100 text-orange-700 border-orange-200',
-                                            'matched' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                                            'matched' => 'bg-primary-50 text-primary-600 border-primary-100',
                                         ];
                                         $statusKey = $app['status'] ?? (($filters['source'] ?? '') === 'database' ? 'matched' : 'applied');
                                         if (($app['status'] ?? '') === 'suggested') $statusKey = 'matched';
@@ -818,7 +818,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                             </svg>
                                         </button>
-                                        <button <?= $aid ? 'onclick="openInterviewModal(' . $aid . ')"' : 'disabled' ?> class="p-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Schedule Interview">
+                                        <button <?= $aid ? 'onclick="openInterviewModal(' . $aid . ')"' : 'disabled' ?> class="p-2 text-muted-foreground hover:text-primary hover:bg-primary-50 rounded-full transition-colors" title="Schedule Interview">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
@@ -932,7 +932,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                         </select>
                     </div>
                     <div class="flex items-center justify-between">
-                        <button type="button" onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Apply</button>
+                        <button type="button" onclick="applyFilters()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Apply</button>
                         <a href="/employer/applications" class="text-sm text-gray-700 hover:text-gray-900">Clear all</a>
                     </div>
                 </div>
@@ -1468,7 +1468,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                 <div class="flex items-center gap-2">
                     <button onclick="bulkAction('shortlist')" class="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-700">Shortlist</button>
                     <button onclick="bulkAction('reject')" class="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-md hover:bg-red-700">Reject</button>
-                    <button onclick="bulkAction('interview')" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-md hover:bg-indigo-700">Move to Interview</button>
+                    <button onclick="bulkAction('interview')" class="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-md hover:bg-primary-600">Move to Interview</button>
                     <button onclick="const ids=Array.from(selected); if(ids.length){alert('Opening message composer for '+ids.length+' candidates');}" class="px-3 py-1.5 border border-gray-300 text-gray-800 text-xs font-semibold rounded-md hover:bg-gray-50">Message</button>
                 </div>
             </div>
@@ -1550,7 +1550,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                         const email = esc(data.candidate_email || '');
                         contactHtml = `
                 ${phone ? `<div class="flex items-center gap-2 text-sm text-gray-700"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg><span>${phone}</span></div>` : ''}
-                ${email ? `<div class="flex items-center gap-2 text-sm text-gray-700 mt-2"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg><a href="mailto:${email}" class="text-blue-600 hover:underline">${email}</a></div>` : ''}`;
+                ${email ? `<div class="flex items-center gap-2 text-sm text-gray-700 mt-2"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg><a href="mailto:${email}" class="text-primary hover:underline">${email}</a></div>` : ''}`;
                     } else {
                         contactHtml = `
                 <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-800">
@@ -1573,7 +1573,7 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                     <h4 class="text-xl font-bold text-gray-900">${esc(data.full_name || 'Unknown Candidate')}</h4>
                     <p class="text-sm text-gray-500">${esc(data.job_title || 'Applicant')}</p>
                     <div class="flex items-center gap-2 mt-2">
-                        <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 capitalize">${esc(data.status || (data.application_id ? 'Applied' : 'Matched'))}</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-medium bg-primary-50 text-primary-900 capitalize">${esc(data.status || (data.application_id ? 'Applied' : 'Matched'))}</span>
                         ${data.overall_match_score ? `<span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">${esc(data.overall_match_score)}% Match</span>` : ''}
                     </div>
                 </div>
@@ -1688,3 +1688,14 @@ $canMessage = $isSubscribed; // Messaging typically requires subscription
                     }
                 }
             </script>
+
+
+
+
+
+
+
+
+
+
+

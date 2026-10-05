@@ -36,7 +36,7 @@
     <!-- ══════════════ PAGE HEADER ══════════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f05537] to-[#f05537]-600 flex items-center justify-center shadow-md flex-shrink-0">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
             <div>
@@ -96,16 +96,16 @@
             <div class="text-xs text-orange-300 mt-1">Last 7 days</div>
         </div>
 
-        <div class="bg-white border border-indigo-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-2">Avg Duration</div>
-            <div class="text-2xl font-extrabold text-indigo-700 font-mono"><?= (int)($kpis['avg_duration'] ?? 0) ?>m</div>
-            <div class="text-xs text-indigo-300 mt-1">avg per interview</div>
+        <div class="bg-white border border-primary rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="text-xs font-bold text-primary uppercase tracking-wide mb-2">Avg Duration</div>
+            <div class="text-2xl font-extrabold text-primary-600 font-mono"><?= (int)($kpis['avg_duration'] ?? 0) ?>m</div>
+            <div class="text-xs text-primary mt-1">avg per interview</div>
         </div>
 
-        <div class="bg-white border border-blue-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-2">Upcoming</div>
-            <div class="text-2xl font-extrabold text-blue-700 font-mono"><?= number_format((int)($statusData['upcoming'] ?? 0)) ?></div>
-            <div class="text-xs text-blue-300 mt-1">Scheduled ahead</div>
+        <div class="bg-white border border-primary rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="text-xs font-bold text-primary uppercase tracking-wide mb-2">Upcoming</div>
+            <div class="text-2xl font-extrabold text-primary-600 font-mono"><?= number_format((int)($statusData['upcoming'] ?? 0)) ?></div>
+            <div class="text-xs text-primary mt-1">Scheduled ahead</div>
         </div>
 
     </div>
@@ -115,9 +115,9 @@
         <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Types:</span>
         <?php
         $typeConfig = [
-            'Video'      => ['key'=>'video',      'cls'=>'bg-blue-50 text-blue-700 border-blue-200'],
+            'Video'      => ['key'=>'video',      'cls'=>'bg-primary-50 text-primary-600 border-primary-100'],
             'Phone'      => ['key'=>'phone',      'cls'=>'bg-green-50 text-green-700 border-green-200'],
-            'On-site'    => ['key'=>'onsite',     'cls'=>'bg-violet-50 text-violet-700 border-violet-200'],
+            'On-site'    => ['key'=>'onsite',     'cls'=>'bg-primary text-primary border-primary'],
             'Telephonic' => ['key'=>'telephonic', 'cls'=>'bg-amber-50 text-amber-700 border-amber-200'],
             'Other'      => ['key'=>'other',      'cls'=>'bg-gray-100 text-gray-600 border-gray-200'],
         ];
@@ -210,8 +210,8 @@
                     <div class="text-xs text-gray-400 truncate"><?= htmlspecialchars($li['company_name'] ?? '') ?> · <?= htmlspecialchars($li['candidate_name'] ?? '') ?></div>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <button onclick="adminJoinInterview(<?= (int)$li['id'] ?>, false)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all">Join</button>
-                    <button onclick="adminJoinInterview(<?= (int)$li['id'] ?>, true)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition-all">Silent</button>
+                    <button onclick="adminJoinInterview(<?= (int)$li['id'] ?>, false)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-primary text-white hover:bg-primary-600 transition-all">Join</button>
+                    <button onclick="adminJoinInterview(<?= (int)$li['id'] ?>, true)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-primary-50 text-primary-600 border border-primary hover:bg-primary-50 transition-all">Silent</button>
                     <button onclick="openAdminForceEndModal(<?= (int)$li['id'] ?>)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white transition-all">End</button>
                 </div>
             </div>
@@ -232,11 +232,11 @@
                     </span>
                     <input type="text" name="search" value="<?= htmlspecialchars($currentSearch) ?>"
                            placeholder="Search by job, employer, candidate, email"
-                           class="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                           class="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                 </div>
                 <!-- Status -->
                 <div class="relative">
-                    <select name="status" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                    <select name="status" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                         <option value="all"         <?= $currentStatus === 'all'         ? 'selected' : '' ?>>All Status</option>
                         <option value="scheduled"   <?= $currentStatus === 'scheduled'   ? 'selected' : '' ?>>Scheduled</option>
                         <option value="rescheduled" <?= $currentStatus === 'rescheduled' ? 'selected' : '' ?>>Rescheduled</option>
@@ -248,7 +248,7 @@
                 </div>
                 <!-- Type -->
                 <div class="relative">
-                    <select name="type" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                    <select name="type" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                         <option value="all"        <?= $currentType === 'all'        ? 'selected' : '' ?>>All Types</option>
                         <option value="video"      <?= $currentType === 'video'      ? 'selected' : '' ?>>Video</option>
                         <option value="phone"      <?= $currentType === 'phone'      ? 'selected' : '' ?>>Phone</option>
@@ -259,7 +259,7 @@
                 </div>
                 <!-- Platform -->
                 <div class="relative">
-                    <select name="platform" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                    <select name="platform" class="w-full appearance-none px-3 py-2.5 pr-8 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                         <option value="all"            <?= $currentPlatform === 'all'            ? 'selected' : '' ?>>All Platforms</option>
                         <option value="Jitsi"          <?= $currentPlatform === 'Jitsi'          ? 'selected' : '' ?>>Jitsi</option>
                         <option value="Jitsi (auto)"   <?= $currentPlatform === 'Jitsi (auto)'   ? 'selected' : '' ?>>Jitsi (auto)</option>
@@ -276,11 +276,11 @@
             <!-- Date row -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <input type="date" name="date_from" value="<?= htmlspecialchars($currentDateFrom) ?>"
-                       class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                       class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                 <input type="date" name="date_to" value="<?= htmlspecialchars($currentDateTo) ?>"
-                       class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                       class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                 <button type="submit"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm">
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-600 transition-all shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
                     Filter
                 </button>
@@ -327,8 +327,8 @@
                     <?php
                     $statusCls = [
                         'live'        => 'bg-red-50 text-red-700 border-red-100',
-                        'scheduled'   => 'bg-blue-50 text-blue-700 border-blue-100',
-                        'rescheduled' => 'bg-violet-50 text-violet-700 border-violet-100',
+                        'scheduled'   => 'bg-primary-50 text-primary-600 border-primary',
+                        'rescheduled' => 'bg-primary text-primary border-primary',
                         'completed'   => 'bg-green-50 text-green-700 border-green-100',
                         'cancelled'   => 'bg-gray-100 text-gray-600 border-gray-200',
                     ];
@@ -336,7 +336,7 @@
                         $ivs = strtolower((string)($iv['status'] ?? ''));
                         $sc  = $statusCls[$ivs] ?? 'bg-gray-100 text-gray-500 border-gray-200';
                     ?>
-                    <tr class="hover:bg-blue-50/20 transition-colors">
+                    <tr class="hover:bg-primary-50/20 transition-colors">
                         <td class="px-5 py-3.5">
                             <span class="font-mono text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">#<?= (int)($iv['id'] ?? 0) ?></span>
                         </td>
@@ -344,7 +344,7 @@
                         <td class="px-5 py-3.5 text-sm text-gray-600"><?= htmlspecialchars($iv['company_name'] ?? '—') ?></td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-2">
-                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                     <?= strtoupper(mb_substr($iv['candidate_name'] ?? '?', 0, 1)) ?>
                                 </div>
                                 <span class="text-sm text-gray-700"><?= htmlspecialchars($iv['candidate_name'] ?? '—') ?></span>
@@ -368,7 +368,7 @@
                                 <span class="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 border border-gray-200 font-semibold">
                                     <?= htmlspecialchars($iv['interview_type'] ?? '—') ?>
                                 </span>
-                                <span class="px-2 py-0.5 text-xs rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 font-semibold">
+                                <span class="px-2 py-0.5 text-xs rounded-full bg-primary-50 text-primary-600 border border-primary font-semibold">
                                     <?= htmlspecialchars($iv['platform_label'] ?? '—') ?>
                                 </span>
                             </div>
@@ -376,16 +376,16 @@
                         <td class="px-5 py-3.5 text-right">
                             <div class="flex items-center justify-end gap-1.5">
                                 <a href="/admin/interviews/<?= (int)$iv['id'] ?>"
-                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 text-xs font-bold transition-all">
+                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-600 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-100 text-xs font-bold transition-all">
                                     View
                                 </a>
                                 <?php if ($ivs === 'live'): ?>
                                 <button type="button" onclick="adminJoinInterview(<?= (int)$iv['id'] ?>, false)"
-                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all">
+                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-600 transition-all">
                                     <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>Join
                                 </button>
                                 <button type="button" onclick="adminJoinInterview(<?= (int)$iv['id'] ?>, true)"
-                                        class="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-bold hover:bg-indigo-100 transition-all">
+                                        class="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-primary-50 text-primary-600 border border-primary text-xs font-bold hover:bg-primary-50 transition-all">
                                     Silent
                                 </button>
                                 <button type="button" onclick="openAdminForceEndModal(<?= (int)$iv['id'] ?>)"
@@ -419,7 +419,7 @@
                     Previous
                 </a>
                 <a href="<?= $buildLink(min($totalPages, $page + 1)) ?>"
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm <?= $page >= $totalPages ? 'pointer-events-none opacity-40' : '' ?>">
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-600 transition-all shadow-sm <?= $page >= $totalPages ? 'pointer-events-none opacity-40' : '' ?>">
                     Next
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                 </a>
@@ -498,14 +498,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const tsCtx = document.getElementById('chartTimeseries');
     if (tsCtx && ts.length) {
         const c = tsCtx.getContext('2d');
-        const blueG = c.createLinearGradient(0,0,0,190); blueG.addColorStop(0,'rgba(59,130,246,0.2)'); blueG.addColorStop(1,'rgba(59,130,246,0)');
+        const blueG = c.createLinearGradient(0,0,0,190); blueG.addColorStop(0,'rgba(240,85,55,0.2)'); blueG.addColorStop(1,'rgba(240,85,55,0)');
         const greenG = c.createLinearGradient(0,0,0,190); greenG.addColorStop(0,'rgba(16,185,129,0.15)'); greenG.addColorStop(1,'rgba(16,185,129,0)');
         new Chart(tsCtx, {
             type: 'line',
             data: {
                 labels: ts.map(t => fmtDate(t.date)),
                 datasets: [
-                    { label:'Scheduled', data: ts.map(t=>(t.scheduled||0)+(t.rescheduled||0)), borderColor:'#3B82F6', backgroundColor:blueG, borderWidth:2, tension:0.4, fill:true, pointRadius:2, pointHoverRadius:5 },
+                    { label:'Scheduled', data: ts.map(t=>(t.scheduled||0)+(t.rescheduled||0)), borderColor:'#FF6A3D', backgroundColor:blueG, borderWidth:2, tension:0.4, fill:true, pointRadius:2, pointHoverRadius:5 },
                     { label:'Live',      data: ts.map(t=>t.live||0),                            borderColor:'#EF4444', backgroundColor:'transparent', borderWidth:2, tension:0.4, pointRadius:2, pointHoverRadius:5 },
                     { label:'Completed', data: ts.map(t=>t.completed||0),                       borderColor:'#10B981', backgroundColor:greenG, borderWidth:2, tension:0.4, fill:true, pointRadius:2, pointHoverRadius:5 },
                     { label:'Cancelled', data: ts.map(t=>t.cancelled||0),                       borderColor:'#F59E0B', borderDash:[5,3], backgroundColor:'transparent', borderWidth:1.5, tension:0.4, pointRadius:2 },
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: ['Scheduled','Live','Completed','Cancelled'],
                 datasets: [{ data: [totals.scheduled, totals.live, totals.completed, totals.cancelled],
-                    backgroundColor: ['#3B82F6','#EF4444','#10B981','#9CA3AF'],
+                    backgroundColor: ['#FF6A3D','#EF4444','#10B981','#9CA3AF'],
                     borderColor: '#fff', borderWidth: 3, hoverOffset: 6 }]
             },
             options: {
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const platEntries   = Object.entries(platformStats).sort((a,b)=>b[1]-a[1]).slice(0,5);
         const allLabels     = [...typeLabels, ...platEntries.map(([k])=>k)];
         const allVals       = [...typeVals, ...platEntries.map(([,v])=>v)];
-        const colors        = ['#3B82F6','#10B981','#8B5CF6','#F59E0B','#9CA3AF','#6366F1','#14B8A6','#F97316'];
+        const colors        = ['#FF6A3D','#10B981','#f05537','#F59E0B','#9CA3AF','#f05537','#14B8A6','#F97316'];
         new Chart(tpCtx, {
             type: 'bar',
             data: {
@@ -653,3 +653,13 @@ document.getElementById('adminForceEndForm').addEventListener('submit', async fu
     } catch(e) { alert('Failed to force end interview.'); }
 });
 </script>
+
+
+
+
+
+
+
+
+
+

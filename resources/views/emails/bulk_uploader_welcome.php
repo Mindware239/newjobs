@@ -22,3 +22,14 @@ $loginLink = rtrim($appUrl, '/') . '/bulk/login';
     <p>The <?= htmlspecialchars($appName) ?> Team</p>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

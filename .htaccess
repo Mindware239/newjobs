@@ -1,6 +1,21 @@
 Options -Indexes
 RewriteEngine On
 
+# ---- Security: never serve secrets or source code ----
+# Dotfiles and dot-folders (.env, .env.local, .git/, .user.ini …), except /.well-known/ (SSL validation).
+RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+# Application source, config and tooling folders (only css/, js/, assets/, uploads/, public/ are public).
+RewriteRule ^(app|config|database|docker|email_templates|node_modules|resources|routes|scripts|supervisor|vendor)(/|$) - [F,L]
+# Project/config files in the web root.
+RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|collections\.json|phpunit\.xml|postcss\.config\.js|tailwind\.config\.js|Dockerfile|docker-compose\.yml|README\.md|start_server\.bat)$ - [F,L,NC]
+RewriteRule \.(sql|log|md|bak|ini|env|lock|sh|bat)$ - [F,L,NC]
+
+# Local XAMPP only: the app must run at a root URL, so send http://localhost/jobsencecomplete/... to the
+# project's own Apache site on port 8081 (see C:/xampp/apache/conf/extra/httpd-vhosts.conf). No effect in production.
+RewriteCond %{HTTP_HOST} ^localhost$ [NC]
+RewriteCond %{REQUEST_URI} ^/jobsencecomplete(/.*)?$
+RewriteRule ^ http://localhost:8081%1 [R=302,L]
+
 # Force HTTPS (Skip for local IP and OPTIONS preflight)
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP_HOST} !^192\.168\.

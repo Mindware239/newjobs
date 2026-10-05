@@ -59,7 +59,7 @@
                 <div class="flex space-x-4">
                     <button onclick="setActiveTab('inbox')" 
                             id="tab-inbox"
-                            class="py-3 px-2 border-b-2 border-indigo-600 text-indigo-600 font-medium text-sm">
+                            class="py-3 px-2 border-b-2 border-primary text-primary font-medium text-sm">
                         Inbox (<span id="inbox-count"><?= count($conversations) ?></span>)
                     </button>
                     <button onclick="setActiveTab('unread')" 
@@ -217,7 +217,7 @@
                             <!-- Send Button -->
                             <button type="submit" 
                                     id="send-button"
-                                    class="flex-shrink-0 p-2.5 bg-[#eef2ff] text-gray-900 rounded-full hover:bg-[#e0e7ff] focus:outline-none focus:ring-2 focus:ring-[#eef2ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                    class="flex-shrink-0 p-2.5 bg-[#eef2ff] text-gray-900 rounded-full hover:bg-[#fff1ed] focus:outline-none focus:ring-2 focus:ring-[#eef2ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                 </svg>
@@ -275,7 +275,7 @@ async function loadConversation(conversationId) {
     
     // Highlight selected conversation
     document.querySelectorAll('.conversation-item').forEach(item => {
-        item.classList.remove('bg-purple-100');
+        item.classList.remove('bg-primary-50');
         item.classList.remove('bg-[#eef2ff]');
     });
     document.querySelector(`[data-conversation-id="${conversationId}"]`)?.classList.add('bg-[#eef2ff]');
@@ -1006,3 +1006,14 @@ setInterval(async () => {
     }
 }, 10000); // Every 10 seconds
 </script>
+
+
+
+
+
+
+
+
+
+
+

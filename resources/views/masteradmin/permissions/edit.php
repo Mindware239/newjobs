@@ -48,27 +48,27 @@
                     <div class="grid grid-cols-6 gap-6">
                         <div class="col-span-6 sm:col-span-4">
                             <label for="name" class="block text-sm font-medium text-gray-700">Permission Name</label>
-                            <input type="text" name="name" id="name" value="<?= htmlspecialchars($permission['name'] ?? '') ?>" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <input type="text" name="name" id="name" value="<?= htmlspecialchars($permission['name'] ?? '') ?>" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                         </div>
 
                         <div class="col-span-6 sm:col-span-4">
                             <label for="slug" class="block text-sm font-medium text-gray-700">Slug (Code)</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
-                                <input type="text" name="slug" id="slug" value="<?= htmlspecialchars($permission['slug'] ?? '') ?>" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300">
+                                <input type="text" name="slug" id="slug" value="<?= htmlspecialchars($permission['slug'] ?? '') ?>" class="focus:ring-primary focus:border-primary flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300">
                             </div>
                         </div>
 
                         <div class="col-span-6 sm:col-span-4">
                             <label for="module" class="block text-sm font-medium text-gray-700">Module</label>
-                            <input type="text" name="module" id="module" value="<?= htmlspecialchars($permission['module'] ?? '') ?>" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <input type="text" name="module" id="module" value="<?= htmlspecialchars($permission['module'] ?? '') ?>" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                         </div>
                     </div>
                 </div>
                 <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                    <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                    <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-3">
                         Cancel
                     </a>
-                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                         Save Changes
                     </button>
                 </div>
@@ -76,3 +76,14 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

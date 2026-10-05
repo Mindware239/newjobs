@@ -11,7 +11,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // Load environment variables
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = \Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
 // Get task from argument
@@ -24,6 +24,8 @@ if (!$task) {
     echo " - expire_premium_candidates\n";
     echo " - reindex_jobs\n";
     echo " - notify_expiring_subscriptions\n";
+    echo " - registration_payment_reminders (run every 15 minutes)\n";
+    echo " - india_jobs_fetch (run every hour – imports enabled Jobs in India feeds)\n";
     exit(1);
 }
 

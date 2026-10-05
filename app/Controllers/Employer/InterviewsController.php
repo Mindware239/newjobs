@@ -90,8 +90,10 @@ class InterviewsController extends BaseController
 
         // Search filter
         if (!empty($search)) {
-            $whereConditions[] = "(c.full_name LIKE :search OR j.title LIKE :search OR u.email LIKE :search)";
-            $params['search'] = '%' . $search . '%';
+            $whereConditions[] = "(c.full_name LIKE :s1 OR j.title LIKE :s2 OR u.email LIKE :s3)";
+            $params['s1'] = '%' . $search . '%';
+            $params['s2'] = '%' . $search . '%';
+            $params['s3'] = '%' . $search . '%';
         }
 
         // Exclude interviews where application status is 'hired' (unless filtering for completed)
@@ -293,6 +295,10 @@ class InterviewsController extends BaseController
                          location = :location,
                          meeting_link = :meeting_link,
                          status = 'rescheduled',
+                         room_name = NULL,
+                         room_password_enc = NULL,
+                         started_at = NULL,
+                         ended_at = NULL,
                          updated_at = NOW()
                      WHERE id = :id AND employer_id = :employer_id",
                     [
@@ -417,7 +423,7 @@ class InterviewsController extends BaseController
             try {
                 $candidateUser = \App\Models\User::find((int)($info['candidate_user_id'] ?? 0));
                 $candidatePhone = (string)($candidateUser->attributes['phone'] ?? '');
-                $empUser = \App\Models\User::find((int)$employer->attributes['user_id'] ?? (int)$employer->id);
+                $empUser = \App\Models\User::find((int)($employer->attributes['user_id'] ?? $employer->id));
                 $employerPhone = (string)($empUser->attributes['phone'] ?? '');
 
                 $base = rtrim((string)($_ENV['APP_URL'] ?? ''), '/');
@@ -520,6 +526,10 @@ class InterviewsController extends BaseController
                              location = :location,
                              meeting_link = :meeting_link,
                              status = 'rescheduled',
+                             room_name = NULL,
+                             room_password_enc = NULL,
+                             started_at = NULL,
+                             ended_at = NULL,
                              updated_at = NOW()
                          WHERE id = :id AND employer_id = :employer_id";
 
@@ -533,11 +543,19 @@ class InterviewsController extends BaseController
                 'meeting_link' => $meetingLink !== '' ? $meetingLink : ($interview['meeting_link'] ?? null)
             ]);
             
-            $infoSql = "SELECT j.title as job_title, u.id as candidate_user_id, u.email as candidate_email 
+            $infoSql = "SELECT j.title as job_title,
+                               u.id as candidate_user_id,
+                               u.email as candidate_email,
+                               COALESCE(c.full_name, u.google_name, u.apple_name, u.email) as candidate_name,
+                               e.company_name,
+                               e.logo_url as company_logo,
+                               e.website as company_website
                         FROM interviews i
                         INNER JOIN applications a ON i.application_id = a.id
                         INNER JOIN jobs j ON a.job_id = j.id 
                         INNER JOIN users u ON a.candidate_user_id = u.id
+                        INNER JOIN employers e ON i.employer_id = e.id
+                        LEFT JOIN candidates c ON c.user_id = u.id
                         WHERE i.id = :id";
             $info = $db->fetchOne($infoSql, ['id' => $interviewId]);
             if ($info && !empty($info['candidate_email'])) {
@@ -557,7 +575,7 @@ class InterviewsController extends BaseController
             try {
                 $candidateUser = \App\Models\User::find((int)($info['candidate_user_id'] ?? 0));
                 $candidatePhone = (string)($candidateUser->attributes['phone'] ?? '');
-                $empUser = \App\Models\User::find((int)$employer->attributes['user_id'] ?? (int)$employer->id);
+                $empUser = \App\Models\User::find((int)($employer->attributes['user_id'] ?? $employer->id));
                 $employerPhone = (string)($empUser->attributes['phone'] ?? '');
                 $base = rtrim((string)($_ENV['APP_URL'] ?? ''), '/');
                 $candToken = \App\Services\NotificationService::generateJoinToken((int)$interviewId, 'candidate', (int)($info['candidate_user_id'] ?? 0), 7200);
@@ -570,7 +588,7 @@ class InterviewsController extends BaseController
                     'scheduled_start' => date('Y-m-d H:i:s', $startTime),
                     'scheduled_end' => date('Y-m-d H:i:s', $endTime),
                     'timezone' => (string)$timezone,
-                    'interview_type' => (string)$interviewType,
+                    'interview_type' => (string)($interview['interview_type'] ?? ''),
                     'candidate_name' => (string)($info['candidate_name'] ?? 'Candidate'),
                     'candidate_phone' => $candidatePhone,
                     'employer_id' => (int)$employer->id,
@@ -625,7 +643,7 @@ class InterviewsController extends BaseController
 
         try {
             $updateSql = "UPDATE interviews 
-                         SET status = 'cancelled', updated_at = NOW()
+                         SET status = 'cancelled', ended_at = COALESCE(ended_at, NOW()), updated_at = NOW()
                          WHERE id = :id AND employer_id = :employer_id";
 
             $db->query($updateSql, [
@@ -633,11 +651,19 @@ class InterviewsController extends BaseController
                 'employer_id' => $employer->id
             ]);
             
-            $infoSql = "SELECT j.title as job_title, u.id as candidate_user_id, u.email as candidate_email 
+            $infoSql = "SELECT j.title as job_title,
+                               u.id as candidate_user_id,
+                               u.email as candidate_email,
+                               COALESCE(c.full_name, u.google_name, u.apple_name, u.email) as candidate_name,
+                               e.company_name,
+                               e.logo_url as company_logo,
+                               e.website as company_website
                         FROM interviews i
                         INNER JOIN applications a ON i.application_id = a.id
                         INNER JOIN jobs j ON a.job_id = j.id 
                         INNER JOIN users u ON a.candidate_user_id = u.id
+                        INNER JOIN employers e ON i.employer_id = e.id
+                        LEFT JOIN candidates c ON c.user_id = u.id
                         WHERE i.id = :id";
             $info = $db->fetchOne($infoSql, ['id' => $interviewId]);
             if ($info && !empty($info['candidate_email'])) {
@@ -656,7 +682,7 @@ class InterviewsController extends BaseController
             try {
                 $candidateUser = \App\Models\User::find((int)($info['candidate_user_id'] ?? 0));
                 $candidatePhone = (string)($candidateUser->attributes['phone'] ?? '');
-                $empUser = \App\Models\User::find((int)$employer->attributes['user_id'] ?? (int)$employer->id);
+                $empUser = \App\Models\User::find((int)($employer->attributes['user_id'] ?? $employer->id));
                 $employerPhone = (string)($empUser->attributes['phone'] ?? '');
                 $common = [
                     'company_name' => (string)($info['company_name'] ?? ''),

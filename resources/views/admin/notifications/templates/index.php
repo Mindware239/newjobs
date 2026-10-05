@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-bold text-gray-900">Notification Templates</h1>
             <p class="mt-2 text-sm text-gray-600">Manage email and system notification templates</p>
         </div>
-        <a href="/admin/notification-templates/create" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <a href="/admin/notification-templates/create" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
             Create Template
         </a>
     </div>
@@ -27,7 +27,7 @@
                         <?= htmlspecialchars($tpl['event_key']) ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-50 text-primary-900">
                             <?= htmlspecialchars($tpl['channel']) ?>
                         </span>
                     </td>
@@ -42,7 +42,7 @@
                         <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="/admin/notification-templates/<?= $tpl['id'] ?>/edit" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                        <a href="/admin/notification-templates/<?= $tpl['id'] ?>/edit" class="text-primary hover:text-primary-900 mr-3">Edit</a>
                         <form action="/admin/notification-templates/<?= $tpl['id'] ?>/delete" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
                             <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                             <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
@@ -59,3 +59,14 @@
         </table>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

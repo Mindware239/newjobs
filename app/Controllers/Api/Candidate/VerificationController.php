@@ -7,12 +7,19 @@ namespace App\Controllers\Api\Candidate;
 use App\Controllers\Api\ApiController;
 use App\Core\Request;
 use App\Core\Response;
-use App\Core\Database;
 use App\Models\Candidate;
+use App\Repositories\CandidateVerificationRepository;
 use App\Services\EmploymentVerificationService;
 
 class VerificationController extends ApiController
 {
+    private CandidateVerificationRepository $verificationRepository;
+
+    public function __construct()
+    {
+        $this->verificationRepository = new CandidateVerificationRepository();
+    }
+
     public function create(Request $request, Response $response): void
     {
         $user = $this->user($request);
@@ -55,9 +62,7 @@ class VerificationController extends ApiController
         $candidate = Candidate::findByUserId((int)$user->id);
         $employmentId = (int)$id;
         
-        $db = Database::getInstance();
-        $own = $db->fetchOne("SELECT id FROM employment_records WHERE id = :id AND candidate_id = :cid", ['id' => $employmentId, 'cid' => (int)$candidate->id]);
-        if (!$own) {
+        if (!$this->verificationRepository->candidateOwnsEmploymentRecord($employmentId, (int)$candidate->id)) {
             $this->error($response, 'Unauthorized or record not found', 403);
             return;
         }
@@ -70,7 +75,7 @@ class VerificationController extends ApiController
 
         try {
             $fileId = EmploymentVerificationService::uploadDocument($employmentId, $docType, $_FILES['file']);
-            $doc = $db->fetchOne("SELECT * FROM employment_documents WHERE id = :id", ['id' => $fileId]);
+            $doc = $this->verificationRepository->getEmploymentDocumentById((int)$fileId);
             $this->success($response, ['document' => $doc], 'Document uploaded successfully');
         } catch (\Exception $e) {
             $this->error($response, $e->getMessage(), 500);
@@ -88,9 +93,7 @@ class VerificationController extends ApiController
         $candidate = Candidate::findByUserId((int)$user->id);
         $employmentId = (int)$id;
 
-        $db = Database::getInstance();
-        $own = $db->fetchOne("SELECT id FROM employment_records WHERE id = :id AND candidate_id = :cid", ['id' => $employmentId, 'cid' => (int)$candidate->id]);
-        if (!$own) {
+        if (!$this->verificationRepository->candidateOwnsEmploymentRecord($employmentId, (int)$candidate->id)) {
             $this->error($response, 'Unauthorized or record not found', 403);
             return;
         }
@@ -127,18 +130,17 @@ class VerificationController extends ApiController
         $candidate = Candidate::findByUserId((int)$user->id);
         $employmentId = (int)$id;
 
-        $db = Database::getInstance();
-        $row = $db->fetchOne("SELECT status FROM employment_records WHERE id = :id AND candidate_id = :cid", ['id' => $employmentId, 'cid' => (int)$candidate->id]);
+        $status = $this->verificationRepository->getEmploymentStatus($employmentId, (int)$candidate->id);
         
-        if (!$row) {
+        if ($status === null) {
             $this->error($response, 'Record not found', 404);
             return;
         }
 
-        $docs = $db->fetchAll("SELECT doc_type, status, file_url FROM employment_documents WHERE employment_id = :id", ['id' => $employmentId]);
+        $docs = $this->verificationRepository->getEmploymentDocuments($employmentId);
 
         $this->success($response, [
-            'status' => $row['status'],
+            'status' => $status,
             'documents' => $docs
         ], 'Status retrieved');
     }

@@ -176,7 +176,11 @@ class ScoreCalculatorService
             $preferredLocations = array_map(fn($v) => strtolower(trim((string)$v)), $prefs['preferred_locations']);
             $preferredLocations = array_filter($preferredLocations);
         }
-        $preferredWorkMode = strtolower(trim((string)($prefs['preferred_work_mode'] ?? '')));
+        $preferredWorkModeVal = $prefs['preferred_work_mode'] ?? '';
+        if (is_array($preferredWorkModeVal)) {
+            $preferredWorkModeVal = !empty($preferredWorkModeVal) ? (string)reset($preferredWorkModeVal) : '';
+        }
+        $preferredWorkMode = strtolower(trim((string)$preferredWorkModeVal));
 
         $jobLocations = $job->locations();
         $jobLocationStrings = [];
@@ -187,6 +191,16 @@ class ScoreCalculatorService
                     strtolower(trim($loc->attributes['city'] ?? '')),
                     strtolower(trim($loc->attributes['state'] ?? '')),
                     strtolower(trim($loc->attributes['country'] ?? ''))
+                ]);
+                if (!empty($locParts)) {
+                    $jobLocationStrings[] = implode(', ', $locParts);
+                }
+            } elseif (is_array($loc)) {
+                $locParts = array_filter([
+                    strtolower(trim((string)($loc['city'] ?? ''))),
+                    strtolower(trim((string)($loc['state'] ?? ''))),
+                    strtolower(trim((string)($loc['country'] ?? ''))),
+                    strtolower(trim((string)($loc['display'] ?? '')))
                 ]);
                 if (!empty($locParts)) {
                     $jobLocationStrings[] = implode(', ', $locParts);
@@ -268,7 +282,11 @@ class ScoreCalculatorService
             $prefs = json_decode($candidate->attributes['preferences_data'], true) ?? [];
         }
         $score = 0;
-        $workMode = strtolower(trim((string)($prefs['preferred_work_mode'] ?? '')));
+        $workModeVal = $prefs['preferred_work_mode'] ?? '';
+        if (is_array($workModeVal)) {
+            $workModeVal = !empty($workModeVal) ? (string)reset($workModeVal) : '';
+        }
+        $workMode = strtolower(trim((string)$workModeVal));
         $jobTypePref = $prefs['preferred_job_types'] ?? [];
         $relocate = (int)($prefs['open_to_relocation'] ?? 0);
         $jobType = strtolower(trim((string)($job->attributes['employment_type'] ?? '')));

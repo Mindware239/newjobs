@@ -1,143 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Jobs - Mindware Infotech</title>
-    <link href="/css/output.css" rel="stylesheet">
-    <meta name="description" content="Find your dream job with Mindware Infotech. Browse our latest job listings and apply today!">
-    <meta name="keywords" content="jobs, job listings, job search, Mindware Infotech">
-    <meta name="author" content="Mindware Infotech">
-    <link rel="canonical" href="<?= htmlspecialchars($job['url'] ?? '') ?>">
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        .job-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .job-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        :root{
-            --color-primary:#5B6BD5;
-            --color-primary-hover:#4F5FCC;
-        }
-        .bg-blue-600{background-color:var(--color-primary) !important}
-        .hover\:bg-blue-700:hover{background-color:var(--color-primary-hover) !important}
-        .text-blue-700{color:var(--color-primary) !important}
-        .btn-primary {
-            background: var(--color-primary);
-            border: none;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(91, 107, 213, 0.25);
-        }
-        .btn-primary:hover {
-            background: var(--color-primary-hover);
-            box-shadow: 0 6px 12px rgba(79, 95, 204, 0.32);
-            transform: translateY(-1px);
-        }
-        .search-input {
-            background-color: #F9FAFB;
-            border-color: #E5E7EB;
-            transition: all 0.2s ease;
-        }
-        .search-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-            background-color: #fff;
-        }
-        
-        /* Premium Badges */
-        .badge-premium {
-            background: linear-gradient(135deg, #2563eb 0%, #93c5fd 100%);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 antialiased text-gray-800 min-h-screen" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 800)">
-    <!-- Skeleton Loader -->
-    <div x-show="!loaded" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden">
-        <!-- Header Skeleton -->
-        <div class="h-20 border-b border-gray-100 flex items-center px-6 lg:px-[7.5rem] justify-between bg-white shrink-0">
-            <div class="w-40 h-10 bg-gray-200 rounded animate-pulse"></div>
-            <div class="hidden md:flex gap-8">
-                <div class="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div class="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div class="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-            <div class="flex gap-4">
-                <div class="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
-                <div class="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-        </div>
-        
-        <!-- Content Skeleton -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex gap-8 h-full overflow-hidden">
-            <!-- Sidebar Skeleton -->
-            <div class="hidden lg:block w-64 flex-shrink-0 space-y-6">
-                <div class="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-                <div class="h-40 bg-gray-100 rounded-lg animate-pulse"></div>
-                <div class="h-40 bg-gray-100 rounded-lg animate-pulse"></div>
-                <div class="h-40 bg-gray-100 rounded-lg animate-pulse"></div>
-            </div>
-            
-            <!-- Main List Skeleton -->
-            <div class="flex-1 space-y-6">
-                <div class="h-14 bg-gray-100 rounded-lg animate-pulse"></div>
-                <div class="space-y-4">
-                    <div class="h-48 bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
-                        <div class="flex justify-between mb-4">
-                            <div class="w-1/2 h-6 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-10 h-10 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                        <div class="w-1/4 h-4 bg-gray-200 rounded animate-pulse mb-6"></div>
-                        <div class="flex gap-3">
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                    </div>
-                    <div class="h-48 bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
-                        <div class="flex justify-between mb-4">
-                            <div class="w-1/2 h-6 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-10 h-10 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                        <div class="w-1/4 h-4 bg-gray-200 rounded animate-pulse mb-6"></div>
-                        <div class="flex gap-3">
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                    </div>
-                    <div class="h-48 bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
-                        <div class="flex justify-between mb-4">
-                            <div class="w-1/2 h-6 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-10 h-10 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                        <div class="w-1/4 h-4 bg-gray-200 rounded animate-pulse mb-6"></div>
-                        <div class="flex gap-3">
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                            <div class="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php 
-    $base = $base ?? '/'; 
-    require __DIR__ . '/../../include/header.php'; 
-    ?>
+<?php
+$base = $base ?? '/';
+?>
     
     <!-- Breadcrumbs -->
     <div class="bg-white border-b border-gray-200">
@@ -208,6 +71,11 @@
                 <?php if (!empty($jobCount)): ?>
                 <p class="text-sm text-gray-500 mt-1">Showing <?= $jobCount ?> jobs</p>
                 <?php endif; ?>
+                <?php if (!empty($searchNotice)): ?>
+                <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <?= htmlspecialchars($searchNotice) ?>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Top Search Bar -->
@@ -275,7 +143,7 @@
                     </div>
                     <div class="flex items-end">
                     <button type="submit" 
-                                class="btn-primary px-5 py-2.5 text-white font-semibold rounded-lg text-sm w-full sm:w-auto flex items-center justify-center gap-2">
+                                class="btn-primary-solid px-5 py-2.5 text-white font-semibold rounded-lg text-sm w-full sm:w-auto flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
@@ -290,7 +158,7 @@
                 <!-- Mobile Filter Toggle Button -->
                 <div class="lg:hidden">
                     <button @click="showFilters = !showFilters" 
-                            class="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-lg border border-blue-600 flex items-center justify-between hover:bg-blue-700 hover:border-blue-700 transition">
+                            class="w-full px-4 py-2.5 bg-primary text-white font-medium rounded-lg border border-primary flex items-center justify-between hover:bg-primary-600 hover:border-primary-600 transition">
                         <span class="flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -314,7 +182,7 @@
                                 </svg>
                                 All Filters
                             </h3>
-                            <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-medium" x-show="appliedFiltersCount > 0" x-text="appliedFiltersCount"></span>
+                            <span class="bg-primary text-white px-2 py-0.5 rounded text-xs font-medium" x-show="appliedFiltersCount > 0" x-text="appliedFiltersCount"></span>
                         </div>
                         
                         <!-- Work Mode Filter -->
@@ -332,15 +200,15 @@
                             </div>
                             <div x-show="workModeExpanded" class="space-y-2 mt-2">
                                 <label class="flex items-center cursor-pointer hover:text-gray-900">
-                                    <input type="checkbox" x-model="filters.work_mode" value="office" @change="applyFilters()" class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <input type="checkbox" x-model="filters.work_mode" value="office" @change="applyFilters()" class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                     <span class="text-sm text-gray-700">Work from office</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer hover:text-gray-900">
-                                    <input type="checkbox" x-model="filters.work_mode" value="hybrid" @change="applyFilters()" class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <input type="checkbox" x-model="filters.work_mode" value="hybrid" @change="applyFilters()" class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                     <span class="text-sm text-gray-700">Hybrid</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer hover:text-gray-900">
-                                    <input type="checkbox" x-model="filters.work_mode" value="remote" @change="applyFilters()" class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <input type="checkbox" x-model="filters.work_mode" value="remote" @change="applyFilters()" class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                     <span class="text-sm text-gray-700">Remote</span>
                                 </label>
                             </div>
@@ -360,7 +228,7 @@
                                 </svg>
                             </div>
                             <div x-show="experienceExpanded" class="mt-2">
-                                <select x-model="filters.experience" @change="applyFilters()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+                                <select x-model="filters.experience" @change="applyFilters()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary bg-white">
                                     <option value="">Any</option>
                                     <option value="0">0 Yrs</option>
                                     <option value="0-1">0-1 Yrs</option>
@@ -490,7 +358,7 @@
                                        x-model="industrySearch" 
                                        @input.debounce.300ms="searchIndustriesFilter()"
                                        placeholder="Search industry..."
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 mb-2">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary mb-2">
                                 
                                 <!-- Popular Industries (Top 5) - Always visible when not searching -->
                                 <div class="space-y-1 max-h-48 overflow-y-auto" x-show="!industrySearch || industrySearch.length === 0">
@@ -500,7 +368,7 @@
                                                    :value="ind.value" 
                                                    x-model="filters.industry_filter" 
                                                    @change="applyFilters()" 
-                                                   class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                   class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                             <span class="text-sm text-gray-700 flex-1" x-text="ind.label"></span>
                                             <span class="text-xs text-gray-500" x-text="'(' + ind.count + ')'"></span>
                                 </label>
@@ -515,7 +383,7 @@
                                                    :value="ind.value" 
                                                    x-model="filters.industry_filter" 
                                                    @change="applyFilters()" 
-                                                   class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                   class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                             <span class="text-sm text-gray-700 flex-1" x-text="ind.label"></span>
                                             <span class="text-xs text-gray-500" x-text="'(' + ind.count + ')'"></span>
                                 </label>
@@ -530,7 +398,7 @@
                                                    :value="ind.value" 
                                                    x-model="filters.industry_filter" 
                                                    @change="applyFilters()" 
-                                                   class="mr-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                   class="mr-2 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
                                             <span class="text-sm text-gray-700 flex-1" x-text="ind.label"></span>
                                             <span class="text-xs text-gray-500" x-text="'(' + ind.count + ')'"></span>
                                 </label>
@@ -715,16 +583,16 @@
                             </div>
                         </div>
                         <!-- Hiring Banner -->
-                        <div class="mb-4 bg-blue-600 rounded-lg p-4 text-white text-center">
+                        <div class="mb-4 bg-primary rounded-lg p-4 text-white text-center">
                             <h3 class="text-lg font-semibold mb-1">WE ARE HIRING</h3>
-                            <p class="text-sm mb-3 text-blue-100">Apply Today!</p>
+                            <p class="text-sm mb-3 text-primary-50">Apply Today!</p>
                             <a href="/candidate/jobs"
-                               class="inline-block px-4 py-2 bg-white text-blue-600 font-medium rounded-lg border border-white hover:bg-blue-50 transition text-sm">
+                               class="inline-block px-4 py-2 bg-white text-primary font-medium rounded-lg border border-white hover:bg-primary-50 transition text-sm">
                                 View Open Positions
                             </a>
                         </div>
 
-                        <button @click="clearFilters()" class="w-full py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition flex items-center justify-center gap-2">
+                        <button @click="clearFilters()" class="w-full py-2 text-sm font-medium text-white bg-primary hover:bg-primary-600 rounded-lg transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -773,7 +641,7 @@
                             </div>
                             <h3 class="text-xl font-semibold text-gray-800 mb-2">No jobs found</h3>
                             <p class="text-gray-600 mb-6">Try adjusting your search filters or check back later for new opportunities.</p>
-                            <a href="/candidate/jobs" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg border border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition">
+                            <a href="/candidate/jobs" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold rounded-lg border border-primary hover:bg-primary-600 hover:border-primary-600 transition">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
@@ -796,9 +664,9 @@
                                                     <!-- Company Logo with Fallback -->
                                                     <div class="w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
                                                         <img x-show="job.company_logo" 
-                                                             :src="job.company_logo" 
+                                                             :src="fix_url(job.company_logo)" 
                                                              :alt="job.company_name || 'Company'"
-                                                             class="w-full h-full object-cover"
+                                                             class="w-full h-full object-contain p-1"
                                                              @error="$el.style.display='none'; $el.nextElementSibling.style.display='flex';">
                                                         <div x-show="!job.company_logo" class="w-full h-full flex items-center justify-center text-gray-600 font-semibold text-base">
                                                             <span x-text="(job.company_name || 'C')[0].toUpperCase()"></span>
@@ -808,8 +676,8 @@
                                                 </div>
                                             </div>
                                             <button @click.stop="bookmarkJob(job.slug || job.id || 0)" 
-                                                    x-show="isLoggedIn"
-                                                    class="p-2 hover:bg-gray-100 rounded transition">
+                                                    class="p-2 hover:bg-gray-100 rounded transition"
+                                                    :title="!isLoggedIn ? 'Login to save job' : (job.is_bookmarked ? 'Remove from saved' : 'Save job')">
                                                 <svg x-show="!job.is_bookmarked" class="w-5 h-5 text-gray-400 hover:text-gray-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                                                 </svg>
@@ -889,8 +757,16 @@
                                                 <span x-text="(job.employment_type_display || job.employment_type || 'Full-time').replace('_', ' ')"></span>
                                             </span>
                                             <span x-show="job.is_remote == 1 || job.is_remote === '1'" 
-                                                  class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded whitespace-nowrap">
+                                                  class="px-2.5 py-1 bg-primary-50 text-primary-600 text-xs font-medium rounded whitespace-nowrap">
                                                 Remote
+                                            </span>
+                                            <span x-show="job.job_type === 'external'" 
+                                                  class="px-2.5 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded whitespace-nowrap">
+                                                External Job
+                                            </span>
+                                            <span x-show="job.job_type === 'internal' || !job.job_type" 
+                                                  class="px-2.5 py-1 bg-green-50 text-green-700 text-xs font-medium rounded whitespace-nowrap">
+                                                Direct Apply
                                             </span>
                                         </div>
 
@@ -902,7 +778,7 @@
                                                 </svg>
                                                 <span x-text="getTimeAgo(job.created_at)"></span>
                                             </span>
-                                            <button class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg border border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition">
+                                            <button class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg border border-primary hover:bg-primary-600 hover:border-primary-600 transition">
                                                 Job Details
                                             </button>
                                         </div>
@@ -922,7 +798,7 @@
                             </svg>
                             Previous
                         </button>
-                        <div class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                        <div class="px-4 py-2 bg-primary text-white rounded-lg font-medium">
                             Page <span x-text="pagination.page"></span> of <span x-text="pagination.total_pages"></span>
                         </div>
                         <button @click="changePage(pagination.page + 1)" 
@@ -990,12 +866,12 @@
             <section id="top-companies" class="mt-12 py-8 bg-gray-50">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="text-center mb-8">
-                        <h2 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Top Companies</h2>
-                        <p class="text-gray-600 text-sm">Connect with leading companies offering exciting career opportunities.</p>
+                        <h2 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Top Companies &amp; Organisations Hiring Now</h2>
+                        <p class="text-gray-600 text-sm">Railways, police, universities, hospitals, PSUs and companies with open jobs right now.</p>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        <?php foreach (array_slice($topCompanies, 0, 8) as $company): ?>
-                        <a href="/candidate/jobs?company=<?= urlencode($company['company_name'] ?? '') ?>" 
+                        <?php foreach (array_slice($topCompanies, 0, 16) as $company): ?>
+                        <a href="<?= htmlspecialchars($company['url'] ?? ('/candidate/jobs?company=' . urlencode($company['company_name'] ?? ''))) ?>" 
                            class="group bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition">
                             <div class="flex flex-col items-center text-center">
                                 <!-- Company Logo -->
@@ -1018,6 +894,9 @@
                                 <h3 class="text-sm font-semibold text-gray-900 mb-1 group-hover:text-gray-700 transition">
                                     <?= htmlspecialchars($company['company_name'] ?? 'Company') ?>
                                 </h3>
+                                <?php if (!empty($company['org_label'])): ?>
+                                    <p class="text-xs text-gray-500 mb-1"><?= htmlspecialchars($company['org_label']) ?></p>
+                                <?php endif; ?>
                                 <!-- Job Count -->
                                 <p class="text-xs text-gray-600 font-medium">
                                     <?= (int)($company['job_count'] ?? 0) ?> open jobs
@@ -1596,8 +1475,15 @@
             }
         }
     </script>
-    <?php
-require __DIR__ . '/../../include/footer.php';
-?>
-</body>
-</html>
+
+
+
+
+
+
+
+
+
+
+
+

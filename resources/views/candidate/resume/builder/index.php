@@ -22,10 +22,10 @@ error_reporting(E_ALL);
         <header class="mb-12 px-8">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center gap-3 mb-8">
-                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <span class="text-3xl font-bold text-gray-900">Mindware Infotech.</span>
+                    <span class="text-3xl font-bold text-gray-900">Jobsence.</span>
                 </div>
                 
                 <!-- Main Title -->
@@ -41,16 +41,16 @@ error_reporting(E_ALL);
         <!-- Filters Bar -->
         <div class="mb-8 px-8 flex items-center gap-4 flex-wrap">
             <span class="text-gray-700 font-medium">Filter by</span>
-            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-primary focus:border-primary">
                 <option>Headshot</option>
                 <option>Without Headshot</option>
             </select>
-            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-primary focus:border-primary">
                 <option>Graphics</option>
                 <option>Minimal</option>
                 <option>Modern</option>
             </select>
-            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-primary focus:border-primary">
                 <option>Columns</option>
                 <option>Single Column</option>
                 <option>Two Column</option>
@@ -60,7 +60,7 @@ error_reporting(E_ALL);
                 <div class="flex gap-2">
                     <button @click="setColor('#111827')" class="w-8 h-8 rounded-full bg-[#111827] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#111827'}"></button>
                     <button @click="setColor('#4b5563')" class="w-8 h-8 rounded-full bg-[#4b5563] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#4b5563'}"></button>
-                    <button @click="setColor('#2563eb')" class="w-8 h-8 rounded-full bg-[#2563eb] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#2563eb'}"></button>
+                    <button @click="setColor('#f05537')" class="w-8 h-8 rounded-full bg-[#f05537] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#f05537'}"></button>
                     <button @click="setColor('#60a5fa')" class="w-8 h-8 rounded-full bg-[#60a5fa] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#60a5fa'}"></button>
                     <button @click="setColor('#14b8a6')" class="w-8 h-8 rounded-full bg-[#14b8a6] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#14b8a6'}"></button>
                     <button @click="setColor('#f97316')" class="w-8 h-8 rounded-full bg-[#f97316] border-2 border-transparent hover:border-gray-400 transition" :class="{'ring-2 ring-offset-2 ring-gray-400': selectedColor === '#f97316'}"></button>
@@ -130,7 +130,7 @@ error_reporting(E_ALL);
                         
                         <!-- Recommended Badge -->
                         <?php if (($template->attributes['category'] ?? '') === 'Professional'): ?>
-                        <div class="absolute top-4 right-4 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        <div class="absolute top-4 right-4 bg-primary-50 text-primary-600 px-3 py-1 rounded-full text-xs font-semibold">
                             Recommended
                         </div>
                         <?php endif; ?>
@@ -143,7 +143,7 @@ error_reporting(E_ALL);
                     <div class="p-5 bg-white border-t border-gray-200">
                         <button 
                             @click.stop="selectTemplate(<?= (int)($template->attributes['id'] ?? 0) ?>, false)"
-                            class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            class="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-600 transition shadow-sm">
                             Choose template
                         </button>
                     </div>
@@ -164,10 +164,10 @@ error_reporting(E_ALL);
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php foreach ($premiumTemplates as $template): ?>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-200 hover:shadow-xl transition-all duration-300 group <?= !$isPremium ? 'opacity-75' : 'cursor-pointer' ?>"
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-primary-100 hover:shadow-xl transition-all duration-300 group <?= !$isPremium ? 'opacity-75' : 'cursor-pointer' ?>"
                      @click="<?= $isPremium ? 'selectTemplate(' . (int)($template->attributes['id'] ?? 0) . ', true)' : '' ?>">
                     <!-- Template Preview -->
-                    <div class="relative h-96 bg-blue-50 p-6 overflow-hidden">
+                    <div class="relative h-96 bg-primary-50 p-6 overflow-hidden">
                         <!-- Resume Preview Card -->
                         <div class="bg-white border border-gray-300 rounded shadow-sm h-full p-4 transform scale-75 origin-top-left" style="width: 133.33%; height: 133.33%; font-family: Georgia, serif;">
                             <!-- Header -->
@@ -185,13 +185,13 @@ error_reporting(E_ALL);
                         </div>
                         
                         <!-- Premium Badge -->
-                        <div class="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold">
                             Premium
                         </div>
                         
                         <?php if (!$isPremium): ?>
                         <!-- Lock Overlay -->
-                        <div class="absolute inset-0 bg-blue-900 bg-opacity-50 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-primary-900 bg-opacity-50 flex items-center justify-center">
                             <div class="text-center">
                                 <svg class="w-12 h-12 text-white mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -203,16 +203,16 @@ error_reporting(E_ALL);
                     </div>
                     
                     <!-- Template Info -->
-                    <div class="p-5 bg-white border-t border-blue-200">
+                    <div class="p-5 bg-white border-t border-primary-100">
                         <?php if ($isPremium): ?>
                         <button 
                             @click.stop="selectTemplate(<?= (int)($template->attributes['id'] ?? 0) ?>, true)"
-                            class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            class="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-600 transition shadow-sm">
                             Choose template
                         </button>
                         <?php else: ?>
                         <a href="/candidate/premium/plans" 
-                           class="block w-full text-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                           class="block w-full text-center px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-600 transition shadow-sm">
                             Upgrade to Unlock
                         </a>
                         <?php endif; ?>
@@ -235,7 +235,7 @@ error_reporting(E_ALL);
                     <input 
                         type="text" 
                         x-model="newResumeTitle"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                         placeholder="My Resume">
                 </div>
                 <div class="flex gap-3">
@@ -247,7 +247,7 @@ error_reporting(E_ALL);
                     <button 
                         @click="createResume()"
                         :disabled="creating"
-                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 disabled:opacity-50">
                         <span x-show="!creating">Create</span>
                         <span x-show="creating">Creating...</span>
                     </button>
@@ -263,7 +263,7 @@ error_reporting(E_ALL);
                     selectedIsPremium: false,
                     newResumeTitle: 'My Resume',
                     creating: false,
-                    selectedColor: '#2563eb',
+                    selectedColor: '#f05537',
                     setColor(hex) {
                         this.selectedColor = hex;
                     },
@@ -312,3 +312,14 @@ error_reporting(E_ALL);
 </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

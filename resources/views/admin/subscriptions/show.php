@@ -1,6 +1,6 @@
 <div>
     <div class="mb-8">
-        <a href="/admin/subscriptions" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Back to Subscriptions</a>
+        <a href="/admin/subscriptions" class="text-primary hover:text-primary-900 mb-4 inline-block">← Back to Subscriptions</a>
         <h1 class="text-3xl font-bold text-gray-900">Subscription Details</h1>
         <p class="mt-2 text-sm text-gray-600">Review subscription info and payment history</p>
     </div>
@@ -117,7 +117,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= !empty($p['created_at']) ? date('M d, Y H:i', strtotime($p['created_at'])) : '—' ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <a href="/admin/subscriptions/payments/<?= (int)($p['id'] ?? 0) ?>/invoice" class="text-blue-600 hover:text-blue-800">Download</a>
+                                        <a href="/admin/subscriptions/payments/<?= (int)($p['id'] ?? 0) ?>/invoice" class="text-primary hover:text-primary-900">Download</a>
                                         <form method="POST" action="/admin/subscriptions/payments/<?= (int)($p['id'] ?? 0) ?>/regenerate-invoice" class="inline-block ml-2">
                                             <button type="submit" class="text-gray-700 hover:text-gray-900">Regenerate</button>
                                         </form>
@@ -186,7 +186,7 @@
                                 <option value="cancelled" <?= $cur === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
                             </select>
                             <input type="text" name="reason" placeholder="Reason (optional)" class="px-3 py-2 border border-gray-300 rounded-md w-60">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Save</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Save</button>
                         </div>
                     </form>
 
@@ -205,7 +205,7 @@
                                 <option value="quarterly" <?= $bc === 'quarterly' ? 'selected' : '' ?>>Quarterly</option>
                                 <option value="annual" <?= $bc === 'annual' ? 'selected' : '' ?>>Annual</option>
                             </select>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Update</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Update</button>
                         </div>
                     </form>
 
@@ -214,7 +214,7 @@
                         <div class="font-medium">Extend Expiry</div>
                         <div class="flex items-center space-x-2">
                             <input type="number" name="days" min="1" value="30" class="px-3 py-2 border border-gray-300 rounded-md w-24">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Extend</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Extend</button>
                         </div>
                     </form>
 
@@ -223,7 +223,7 @@
                         <div class="font-medium">Set Grace Period</div>
                         <div class="flex items-center space-x-2">
                             <input type="number" name="grace_days" min="0" value="<?= (int)(!empty($subscription['grace_period_ends_at']) ? ceil((strtotime($subscription['grace_period_ends_at']) - time())/86400) : 3) ?>" class="px-3 py-2 border border-gray-300 rounded-md w-24">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Apply</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Apply</button>
                         </div>
                     </form>
 
@@ -232,7 +232,7 @@
                         <div class="font-medium">Auto Renew</div>
                         <div class="flex items-center space-x-2">
                             <input type="hidden" name="auto_renew" value="<?= ((int)($subscription['auto_renew'] ?? 0)) === 1 ? 0 : 1 ?>">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">
                                 <?= ((int)($subscription['auto_renew'] ?? 0)) === 1 ? 'Disable' : 'Enable' ?>
                             </button>
                         </div>
@@ -258,10 +258,21 @@
                             <input type="number" name="amount" min="1" value="5" class="px-3 py-2 border border-gray-300 rounded-md">
                             <input type="text" name="note" placeholder="Reason" class="px-3 py-2 border border-gray-300 rounded-md">
                         </div>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Add</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md">Add</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

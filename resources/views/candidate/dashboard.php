@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Candidate Dashboard - Mindware Infotech</title>
+    <title>Candidate Dashboard - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script>
         // Define dashboard function before Alpine.js loads
@@ -19,10 +19,10 @@
                     shortlisted: <?= $stats['shortlisted'] ?? count(array_filter($applications ?? [], fn($a) => strtolower($a['status'] ?? '') === 'shortlisted')) ?>,
                     interviews: <?= $stats['interviews'] ?? count(array_filter($applications ?? [], fn($a) => strtolower($a['status'] ?? '') === 'interview')) ?>,
                     hired: <?= $stats['hired'] ?? count(array_filter($applications ?? [], fn($a) => strtolower($a['status'] ?? '') === 'hired')) ?>,
-                    profile_views: <?= $stats['profile_views'] ?? (int)($candidate->attributes['profile_views'] ?? 0) ?>,
+                    profile_views: <?= $stats['profile_views'] ?? (int)(isset($candidate) ? ($candidate->attributes['profile_views'] ?? 0) : 0) ?>,
                     saved: <?= count($bookmarkedJobs ?? []) ?>
                 },
-                autoApplyEnabled: <?= ((int)($candidate->attributes['auto_apply_enabled'] ?? 0)) === 1 ? 'true' : 'false' ?>,
+                autoApplyEnabled: <?= (isset($candidate) && ((int)($candidate->attributes['auto_apply_enabled'] ?? 0)) === 1) ? 'true' : 'false' ?>,
                 async bookmarkJob(jobId) {
                     try {
                         const response = await fetch(`/candidate/jobs/${jobId}/bookmark`, {
@@ -76,6 +76,23 @@
                 },
                 getCsrfToken() {
                     return document.querySelector('meta[name="csrf-token"]')?.content || '';
+                },
+                formatDate(dateString) {
+                    if (!dateString) return 'Just now';
+                    const date = new Date(dateString);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - date);
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays === 0) {
+                        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                        if (diffHours === 0) return 'Just now';
+                        return diffHours + ' ' + (diffHours === 1 ? 'hour' : 'hours') + ' ago';
+                    }
+                    if (diffDays === 1) return 'Yesterday';
+                    if (diffDays < 7) return diffDays + ' days ago';
+                    if (diffDays < 30) return Math.floor(diffDays / 7) + ' weeks ago';
+                    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
                 }
             }
         }
@@ -98,16 +115,16 @@
         .job-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1);
-            border-color: #bfdbfe;
+            border-color: #fff1ed;
         }
-        .btn-primary {
-            background: #2563eb;
+        .btn-primary-solid {
+            background: #f05537;
             border: none;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
         }
-        .btn-primary:hover {
-            background: #1d4ed8;
+        .btn-primary-solid:hover {
+            background: #FF6A3D;
             box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
             transform: translateY(-2px);
         }
@@ -116,9 +133,9 @@
             border: 1.5px solid #e5e7eb;
         }
         .btn-secondary:hover {
-            border-color: #2563eb;
-            background: #eff6ff;
-            color: #2563eb;
+            border-color: #f05537;
+            background: #fff1ed;
+            color: #f05537;
             transform: translateY(-1px);
         }
     </style>
@@ -130,14 +147,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Welcome Message -->
             <?php 
-            $candidateName = $candidate->attributes['full_name'] ?? null;
-            $user = $candidate->user();
-            if (empty($candidateName) && $user) {
-                // Try to get name from user's Google/Apple data
-                $candidateName = $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? null;
-            }
-            $displayName = $candidateName ?: 'User';
-            $userEmail = $user->attributes['email'] ?? '';
+            $candidate = $candidate ?? null;
+            if ($candidate):
+                $candidateName = $candidate->attributes['full_name'] ?? null;
+                $user = $candidate->user();
+                if (empty($candidateName) && $user) {
+                    // Try to get name from user's Google/Apple data
+                    $candidateName = $user->attributes['google_name'] ?? $user->attributes['apple_name'] ?? null;
+                }
+                $displayName = $candidateName ?: 'User';
+                $userEmail = $user->attributes['email'] ?? '';
             ?>
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8 text-gray-900">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -149,7 +168,7 @@
                             <?= !empty($userEmail) ? htmlspecialchars($userEmail) : 'Here’s what’s happening with your job search' ?>
                         </p>
                     </div>
-                    <a href="/candidate/jobs" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <a href="/candidate/jobs" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -176,7 +195,7 @@
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                 <a href="/candidate/applications" class="block rounded-xl border border-gray-200 bg-white p-4 md:p-5 stat-card">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center flex-shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
@@ -189,7 +208,7 @@
                 </a>
                 <a href="/candidate/interviews" class="block rounded-xl border border-gray-200 bg-white p-4 md:p-5 stat-card">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center flex-shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
@@ -202,7 +221,7 @@
                 </a>
                 <div class="rounded-xl border border-gray-200 bg-white p-4 md:p-5 stat-card">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center flex-shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -216,7 +235,7 @@
                 </div>
                 <a href="/candidate/jobs/saved" class="block rounded-xl border border-gray-200 bg-white p-4 md:p-5 stat-card">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center flex-shrink-0">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                             </svg>
@@ -236,7 +255,7 @@
                     <div class="bg-white rounded-xl shadow-md p-6">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-2xl font-bold text-gray-900">Recommended Jobs for You</h2>
-                            <a href="/candidate/jobs" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition">
+                            <a href="/candidate/jobs" class="text-primary hover:text-primary-900 font-medium flex items-center gap-1 transition">
                                 View All
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -248,24 +267,62 @@
                                 <div class="border border-gray-200 rounded-xl p-5 job-card bg-white">
                                     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                                                <a :href="'/candidate/jobs/' + (job.slug || job.id)" class="hover:text-gray-700 transition" x-text="job.title"></a>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded" x-text="job.category || 'General'"></span>
+                                                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                <span class="text-xs text-gray-500" x-text="formatDate(job.created_at)"></span>
+                                            </div>
+                                            <h3 class="text-lg font-bold text-gray-900 mb-1">
+                                                <a :href="'/candidate/jobs/' + (job.slug || job.id)" class="hover:text-primary transition" x-text="job.title"></a>
                                             </h3>
-                                            <p class="text-sm text-gray-600 font-medium mb-3" x-text="job.company_name"></p>
-                                            <div class="flex flex-wrap gap-2 mb-3">
-                                                <span class="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium" x-text="job.location"></span>
-                                                <span class="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-medium" 
-      x-text="'Match: ' + job.match_score + '%'"></span>
+                                            <p class="text-sm text-gray-600 font-semibold mb-3 flex items-center gap-1">
+                                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                                </svg>
+                                                <span x-text="job.company_name"></span>
+                                            </p>
+                                            
+                                            <div class="flex flex-wrap gap-2 mb-4">
+                                                <!-- Location -->
+                                                <span class="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium">
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    </svg>
+                                                    <span x-text="job.location_display || 'Location N/A'"></span>
+                                                </span>
+                                                <!-- Employment Type -->
+                                                <span class="inline-flex items-center text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full font-medium">
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    <span x-text="job.employment_type || 'Full-time'"></span>
+                                                </span>
+                                                <!-- Match Score -->
+                                                <span class="inline-flex items-center text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full font-bold">
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.321-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                                    </svg>
+                                                    <span x-text="'Match: ' + (job.match_score || '0') + '%'"></span>
+                                                </span>
                                             </div>
 
-                                            <div class="flex items-center gap-1 text-sm font-semibold text-gray-800">
-                                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                <span x-text="'₹' + job.salary_min + ' - ₹' + job.salary_max"></span>
+                                            <div class="flex items-center gap-4">
+                                                <div class="flex items-center gap-1 text-sm font-extrabold text-gray-900">
+                                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <span x-text="'₹' + (job.salary_min || '0') + ' - ₹' + (job.salary_max || '0')"></span>
+                                                </div>
+                                                <div x-show="!job.apply_link" class="flex items-center gap-1 text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100 uppercase tracking-tighter">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                    Direct Apply
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto sm:min-w-[120px]">
+                                        <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto sm:min-w-[140px]">
                                             <button @click="bookmarkJob(job.id)" 
                                                     class="flex-1 sm:flex-none px-4 py-2.5 text-sm font-medium border-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                                                     :class="job.is_bookmarked ? 'border-gray-800 bg-gray-100 text-gray-800 hover:bg-gray-200' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-800 hover:bg-gray-50'">
@@ -275,14 +332,13 @@
                                                 <svg x-show="job.is_bookmarked" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                                     <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                                                 </svg>
-                                                <span x-show="!job.is_bookmarked">Save</span>
-                                                <span x-show="job.is_bookmarked">Saved</span>
+                                                <span x-text="job.is_bookmarked ? 'Saved' : 'Save'"></span>
                                             </button>
                                             <a :href="'/candidate/jobs/' + (job.slug || job.id)" 
-                                               class="flex-1 sm:flex-none px-4 py-2.5 text-sm font-semibold text-white rounded-lg btn-primary text-center flex items-center justify-center gap-2">
-                                                View
+                                               class="flex-1 sm:flex-none px-4 py-2.5 text-sm font-bold text-white rounded-lg btn-primary-solid text-center flex items-center justify-center gap-2">
+                                                Job Details
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                                                 </svg>
                                             </a>
                                         </div>
@@ -308,12 +364,12 @@
                                             <div class="flex items-center gap-3 flex-wrap">
                                                 <span class="inline-flex items-center text-xs px-3 py-1.5 rounded-full font-medium" 
                                                       :class="{
-                                                          'bg-blue-100 text-blue-700': app.status === 'applied',
-                                                          'bg-blue-50 text-blue-600': app.status === 'screening',
-                                                          'bg-blue-200 text-blue-800': app.status === 'shortlisted',
-                                                          'bg-blue-600 text-white': app.status === 'interview',
-                                                          'bg-blue-900 text-white': app.status === 'hired',
-                                                          'bg-blue-800 text-white': app.status === 'offer',
+                                                          'bg-primary-50 text-primary-600': app.status === 'applied',
+                                                          'bg-primary-50 text-primary': app.status === 'screening',
+                                                          'bg-primary text-primary-900': app.status === 'shortlisted',
+                                                          'bg-primary text-white': app.status === 'interview',
+                                                          'bg-primary-900 text-white': app.status === 'hired',
+                                                          'bg-primary-900 text-white': app.status === 'offer',
                                                           'bg-gray-100 text-gray-700': app.status === 'rejected'
                                                       }"
                                                       x-text="app.status_label"></span>
@@ -358,7 +414,7 @@
                                                         <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                                         </svg>
-                                                        <a :href="app.interview?.meeting_link" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                                        <a :href="app.interview?.meeting_link" target="_blank" class="text-primary hover:text-primary-900 hover:underline">
                                                             <strong>Join Meeting:</strong> Click here
                                                         </a>
                                                     </div>
@@ -411,38 +467,38 @@
                         </h3>
                         <div class="space-y-3">
                             <a href="/candidate/jobs" 
-                               class="group block w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-700 text-center font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                               class="group block w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 text-center font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                                 Search Jobs
                             </a>
                             <a href="/candidate/chat" 
-                               class="group relative block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
-                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="group relative block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                 </svg>
                                 Messages
                                 <?php if (isset($unreadMessages) && $unreadMessages > 0): ?>
-                                <span class="absolute top-1 right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"><?= $unreadMessages ?></span>
+                                <span class="absolute top-1 right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"><?= $unreadMessages ?></span>
                                 <?php endif; ?>
                             </a>
                             <a href="/candidate/profile" 
-                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-gray-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
+                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-gray-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                                 View Profile
                             </a>
                             <a href="/candidate/profile/complete?edit=1" 
-                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">    
+                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">    
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-6m-1.414-5.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                                 Edit Profile
                             </a>
                             <a href="/candidate/applications" 
-                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-gray-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
+                               class="group block w-full px-4 py-3 border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-gray-50 text-center font-medium transition-all duration-200 flex items-center justify-center gap-2 text-gray-700">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -451,10 +507,10 @@
                         </div>
                     </div>
 
-                    <?php if ($candidate->isPremium()): ?>
+                    <?php if (isset($candidate) && $candidate->isPremium()): ?>
                     <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100 mt-6">
                         <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                             Auto-Apply Settings
@@ -462,9 +518,9 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <label class="text-sm text-gray-700">Enable Auto-Apply</label>
-                                <input type="checkbox" x-model="autoApplyEnabled" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                <input type="checkbox" x-model="autoApplyEnabled" class="w-5 h-5 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary">
                             </div>
-                            <button @click="saveAutoApply" class="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                            <button @click="saveAutoApply" class="w-full px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-600 transition">
                                 Save Opt-in
                             </button>
                         </div>
@@ -472,7 +528,7 @@
                     <?php else: ?>
                     <div class="bg-gray-50 rounded-xl border border-gray-200 p-6 mt-6">
                         <div class="text-sm text-gray-700 mb-3">Auto-apply is a premium feature.</div>
-                        <a href="/candidate/premium/plans" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
+                        <a href="/candidate/premium/plans" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 font-semibold">
                             Upgrade to Premium
                         </a>
                     </div>
@@ -494,8 +550,8 @@
                         <div class="space-y-3" x-show="bookmarkedJobs.length > 0">
                             <template x-for="job in bookmarkedJobs" :key="job.id">
                                     <a :href="'/candidate/jobs/' + (job.slug || job.id)" 
-                                   class="block border border-gray-200 rounded-lg p-3 hover:border-blue-500 hover:shadow-md transition-all duration-200 bg-white">
-                                    <div class="font-semibold text-sm text-gray-900 hover:text-blue-600 transition" x-text="job.title"></div>
+                                   class="block border border-gray-200 rounded-lg p-3 hover:border-primary hover:shadow-md transition-all duration-200 bg-white">
+                                    <div class="font-semibold text-sm text-gray-900 hover:text-primary transition" x-text="job.title"></div>
                                     <p class="text-xs text-gray-500 mt-1" x-text="job.company_name"></p>
                                 </a>
                             </template>
@@ -538,6 +594,18 @@
             </div>
         </div>
     </div>
+    <?php endif; ?>
 <?php include __DIR__ . '/../include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

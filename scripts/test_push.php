@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+    $dotenv = Dotenv\Dotenv::createUnsafeMutable(dirname(__DIR__));
     $dotenv->safeLoad();
 } catch (\Throwable $e) {}
 

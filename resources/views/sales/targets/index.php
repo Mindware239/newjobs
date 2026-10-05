@@ -12,10 +12,10 @@ $title = 'Sales Targets';
         <div class="flex items-center gap-3">
             <form method="GET" action="/sales/manager/targets" class="flex items-center gap-3">
                 <input type="month" name="month" value="<?= $month ?>" 
-                       class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                        onchange="this.form.submit()">
             </form>
-            <button @click="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+            <button @click="openModal()" class="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -33,18 +33,18 @@ $title = 'Sales Targets';
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Revenue Goal</p>
                     <h3 class="text-2xl font-bold text-slate-800 dark:text-white mt-1">₹<?= number_format($summary['revenue_goal']) ?></h3>
                 </div>
-                <div class="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+                <div class="p-2 bg-primary-50 dark:bg-primary/20 rounded-lg text-primary dark:text-primary">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                 </div>
             </div>
             <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 mb-2">
-                <div class="bg-indigo-600 h-2 rounded-full" style="width: <?= min(100, $summary['revenue_percent']) ?>%"></div>
+                <div class="bg-primary h-2 rounded-full" style="width: <?= min(100, $summary['revenue_percent']) ?>%"></div>
             </div>
             <div class="flex justify-between text-xs">
                 <span class="text-slate-600 dark:text-slate-400">Achieved: ₹<?= number_format($summary['revenue_achieved']) ?></span>
-                <span class="text-indigo-600 font-medium"><?= $summary['revenue_percent'] ?>%</span>
+                <span class="text-primary font-medium"><?= $summary['revenue_percent'] ?>%</span>
             </div>
         </div>
 
@@ -77,7 +77,7 @@ $title = 'Sales Targets';
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Team Participation</p>
                     <h3 class="text-2xl font-bold text-slate-800 dark:text-white mt-1"><?= $summary['participation'] ?>/<?= $summary['total_members'] ?></h3>
                 </div>
-                <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400">
+                <div class="p-2 bg-primary-50 dark:bg-primary/20 rounded-lg text-primary dark:text-primary">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
@@ -87,11 +87,11 @@ $title = 'Sales Targets';
                 <?php 
                 $partPercent = $summary['total_members'] > 0 ? round(($summary['participation'] / $summary['total_members']) * 100) : 0;
                 ?>
-                <div class="bg-purple-500 h-2 rounded-full" style="width: <?= $partPercent ?>%"></div>
+                <div class="bg-primary h-2 rounded-full" style="width: <?= $partPercent ?>%"></div>
             </div>
             <div class="flex justify-between text-xs">
                 <span class="text-slate-600 dark:text-slate-400">Active Members</span>
-                <span class="text-purple-600 font-medium"><?= $partPercent ?>%</span>
+                <span class="text-primary font-medium"><?= $partPercent ?>%</span>
             </div>
         </div>
     </div>
@@ -101,7 +101,7 @@ $title = 'Sales Targets';
         <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="text-lg font-bold text-slate-800 dark:text-white">Individual Performance</h2>
             <div class="relative">
-                <input type="text" x-model="search" placeholder="Search member..." class="pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white w-full md:w-64">
+                <input type="text" x-model="search" placeholder="Search member..." class="pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white w-full md:w-64">
                 <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -124,7 +124,7 @@ $title = 'Sales Targets';
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xs" x-text="member.initials"></div>
+                                    <div class="w-8 h-8 rounded-full bg-primary-50 dark:bg-primary/50 flex items-center justify-center text-primary dark:text-primary font-bold text-xs" x-text="member.initials"></div>
                                     <div>
                                         <p class="text-sm font-medium text-slate-800 dark:text-white" x-text="member.name"></p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400" x-text="member.role"></p>
@@ -145,7 +145,7 @@ $title = 'Sales Targets';
                                 </div>
                             </td>
                             <td class="p-4 text-right">
-                                <button @click="openModal(member)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">Edit</button>
+                                <button @click="openModal(member)" class="text-primary hover:text-primary dark:text-primary dark:hover:text-primary text-sm font-medium">Edit</button>
                             </td>
                         </tr>
                     </template>
@@ -182,7 +182,7 @@ $title = 'Sales Targets';
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sales Executive</label>
-                        <select name="user_id_select" x-model="editingMember.id" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" :disabled="isEditing">
+                        <select name="user_id_select" x-model="editingMember.id" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" :disabled="isEditing">
                              <template x-for="m in members" :key="m.id">
                                  <option :value="m.id" x-text="m.name"></option>
                              </template>
@@ -191,18 +191,18 @@ $title = 'Sales Targets';
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Revenue Target (₹)</label>
-                        <input type="number" step="0.01" name="revenue_target" x-model="editingMember.target_revenue" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" step="0.01" name="revenue_target" x-model="editingMember.target_revenue" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deals Target</label>
-                        <input type="number" name="deals_target" x-model="editingMember.target_deals" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" name="deals_target" x-model="editingMember.target_deals" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" @click="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">Cancel</button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Save Target</button>
+                    <button type="submit" class="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Save Target</button>
                 </div>
             </form>
         </div>
@@ -239,13 +239,13 @@ function targetsApp(membersData, currentMonth) {
 
         getProgressColor(percentage) {
             if (percentage >= 80) return 'bg-emerald-500';
-            if (percentage >= 50) return 'bg-indigo-500';
+            if (percentage >= 50) return 'bg-primary';
             return 'bg-amber-500';
         },
 
         getProgressTextColor(percentage) {
             if (percentage >= 80) return 'text-emerald-600 dark:text-emerald-400';
-            if (percentage >= 50) return 'text-indigo-600 dark:text-indigo-400';
+            if (percentage >= 50) return 'text-primary dark:text-primary';
             return 'text-amber-600 dark:text-amber-400';
         },
 
@@ -273,3 +273,14 @@ function targetsApp(membersData, currentMonth) {
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

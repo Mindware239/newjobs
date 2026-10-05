@@ -10,7 +10,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Contact Us | Mindware Infotech</title>
+    <title>Contact Us | Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -29,7 +29,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image: radial-gradient(circle, rgba(37,99,235,0.045) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(240,85,55,0.045) 1px, transparent 1px);
             background-size: 36px 36px;
             pointer-events: none; z-index: 0;
         }
@@ -60,7 +60,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
 
         /* ── HERO ── */
         .hero-band {
-            background: linear-gradient(145deg, #1a337a 0%, #1e4fd8 48%, #2563eb 75%, #1d4ed8 100%);
+            background: linear-gradient(145deg, #1a337a 0%, #f05537 48%, #f05537 75%, #FF6A3D 100%);
             position: relative; overflow: hidden;
             padding: 80px 0 88px;
         }
@@ -73,54 +73,60 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         .hero-band::after {
             content: '';
             position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse at 88% 5%,  rgba(56,189,248,0.22) 0%, transparent 52%),
-                radial-gradient(ellipse at 5%  92%, rgba(99,102,241,0.16) 0%, transparent 48%);
+            background: linear-gradient(180deg, #fff1ed 0%, #fff8f5 100%);
         }
         .hero-z { position: relative; z-index: 2; }
 
         .hero-tag {
             display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,0.11);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(240, 85, 55, 0.08);
+            border: 1px solid rgba(240, 85, 55, 0.15);
             border-radius: 100px; padding: 6px 16px;
-            font-size: 11.5px; font-weight: 600;
-            color: rgba(255,255,255,0.82);
+            font-size: 11.5px; font-weight: 700;
+            color: #f05537;
             letter-spacing: 0.6px; text-transform: uppercase;
             margin-bottom: 22px;
         }
         .hero-tag-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #38bdf8; flex-shrink: 0;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #f05537; flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(240, 85, 55, 0.3);
             animation: blink 2.2s ease-in-out infinite;
         }
-        @keyframes blink { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(0.7);} }
+        @keyframes blink { 0%,100%{opacity:1;transform:scale(1.1);} 50%{opacity:0.4;transform:scale(0.9);} }
 
         .hero-title {
             font-family: 'Outfit', sans-serif;
             font-size: clamp(38px, 5.5vw, 58px);
-            font-weight: 800; color: #fff;
+            font-weight: 800; color: #0f172a;
             line-height: 1.14; letter-spacing: -1.2px;
             margin-bottom: 18px;
         }
-        .hero-title .hi { color: #38bdf8; }
+        .hero-title .hi { color: #f05537; }
 
         .hero-desc {
-            font-size: 16px; color: rgba(255,255,255,0.62);
-            max-width: 540px; line-height: 1.78;
+            font-size: 17px; color: #64748b;
+            max-width: 600px; line-height: 1.78;
             margin: 0 auto 40px;
+            font-weight: 500;
         }
 
         .qc-pill {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.18);
-            border-radius: 100px; padding: 9px 18px;
-            font-size: 13px; color: rgba(255,255,255,0.82);
-            font-weight: 500; text-decoration: none;
-            transition: background 0.18s;
+            background: #ffffff;
+            border: 1.5px solid #f1f5f9;
+            border-radius: 100px; padding: 10px 20px;
+            font-size: 14px; color: #1e293b;
+            font-weight: 600; text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .qc-pill:hover { background: rgba(255,255,255,0.18); }
+        .qc-pill:hover { 
+            border-color: #f05537;
+            color: #f05537;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(240, 85, 55, 0.08);
+        }
 
         /* ── STATS BAR ── */
         .stats-bar {
@@ -133,7 +139,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         .stat-num {
             font-family: 'Outfit', sans-serif;
             font-size: 30px; font-weight: 800;
-            color: #2563eb; letter-spacing: -0.5px;
+            color: #f05537; letter-spacing: -0.5px;
             line-height: 1.1;
         }
         .stat-lbl { font-size: 12.5px; color: #64748b; font-weight: 500; margin-top: 4px; }
@@ -168,10 +174,10 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         .info-val { font-size: 13.5px; font-weight: 500; color: #1e293b; line-height: 1.5; }
         .info-link {
             font-size: 13.5px; font-weight: 500;
-            color: #2563eb; text-decoration: none;
+            color: #f05537; text-decoration: none;
             transition: color 0.15s;
         }
-        .info-link:hover { color: #1d4ed8; text-decoration: underline; }
+        .info-link:hover { color: #FF6A3D; text-decoration: underline; }
 
         /* ── SOCIAL BUTTONS ── */
         .soc-btn {
@@ -181,7 +187,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
             color: #64748b; text-decoration: none;
             transition: all 0.15s;
         }
-        .soc-btn:hover { background: #dbeafe; color: #2563eb; border-color: #bfdbfe; transform: translateY(-2px); }
+        .soc-btn:hover { background: #fff1ed; color: #f05537; border-color: #fff1ed; transform: translateY(-2px); }
 
         /* ── WHY CHOOSE US ── */
         .why-item {
@@ -238,8 +244,8 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         .f-input::placeholder, .f-textarea::placeholder { color: #94a3b8; }
         .f-input:hover, .f-select:hover, .f-textarea:hover { border-color: #cbd5e1; }
         .f-input:focus, .f-select:focus, .f-textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.09);
+            border-color: #f05537;
+            box-shadow: 0 0 0 4px rgba(240,85,55,0.09);
             background: #fff;
         }
         .f-select {
@@ -254,18 +260,18 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         /* ── SUBMIT BUTTON ── */
         .submit-btn {
             width: 100%; padding: 14px 20px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, #f05537, #FF6A3D);
             color: #fff; border: none; border-radius: 12px;
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 15px; font-weight: 600;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.22), 0 8px 24px rgba(37,99,235,0.14);
+            box-shadow: 0 2px 8px rgba(240,85,55,0.22), 0 8px 24px rgba(240,85,55,0.14);
             transition: transform 0.12s, box-shadow 0.18s;
         }
         .submit-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(37,99,235,0.3), 0 12px 32px rgba(37,99,235,0.18);
+            box-shadow: 0 4px 14px rgba(240,85,55,0.3), 0 12px 32px rgba(240,85,55,0.18);
         }
         .submit-btn:active { transform: translateY(0); }
 
@@ -285,7 +291,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
             box-shadow: 0 1px 3px rgba(15,23,42,0.04);
             transition: box-shadow 0.2s, border-color 0.2s;
         }
-        .faq-item:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.08); border-color: #bfdbfe; }
+        .faq-item:hover { box-shadow: 0 4px 16px rgba(240,85,55,0.08); border-color: #fff1ed; }
 
         .faq-btn {
             width: 100%; display: flex; align-items: center;
@@ -307,9 +313,9 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
             transition: background 0.18s, transform 0.25s;
             flex-shrink: 0;
         }
-        .faq-chevron.open { background: #dbeafe; transform: rotate(180deg); }
+        .faq-chevron.open { background: #fff1ed; transform: rotate(180deg); }
         .faq-chevron svg { width: 12px; height: 12px; color: #64748b; }
-        .faq-chevron.open svg { color: #2563eb; }
+        .faq-chevron.open svg { color: #f05537; }
 
         .faq-body {
             padding: 0 22px 18px;
@@ -380,9 +386,9 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
             <h1 class="hero-title afu d2">Let's <span class="hi">Build</span> Together</h1>
             <p class="hero-desc afu d3">Have a question, proposal, or just want to say hello? We're ready to help you find the best talent or your next career move.</p>
             <div class="flex flex-wrap items-center justify-center gap-3 afu d4">
-                <a href="mailto:gm@mindwareinfotech.com" class="qc-pill">
+                <a href="mailto:gm@jobsence.com" class="qc-pill">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    gm@mindwareinfotech.com
+                    gm@jobsence.com
                 </a>
                 <a href="tel:+918800122315" class="qc-pill">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
@@ -432,8 +438,8 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                     <div class="card p-6 afu d1">
                         <!-- Card header -->
                         <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #f1f5f9;">
-                            <div style="width:40px;height:40px;min-width:40px;border-radius:11px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;">
-                                <svg width="18" height="18" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            <div style="width:40px;height:40px;min-width:40px;border-radius:11px;background:linear-gradient(135deg,#fff1ed,#fff1ed);border:1px solid #fff1ed;display:flex;align-items:center;justify-content:center;">
+                                <svg width="18" height="18" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                             </div>
                             <div>
                                 <div style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#0f172a;">Our Details</div>
@@ -443,12 +449,12 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
 
                         <!-- Email -->
                         <div class="info-row">
-                            <div class="info-icon" style="background:#eff6ff;">
-                                <svg width="17" height="17" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <div class="info-icon" style="background:#fff1ed;">
+                                <svg width="17" height="17" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             </div>
                             <div>
                                 <div class="info-lbl">Email Address</div>
-                                <a href="mailto:gm@mindwareinfotech.com" class="info-link">gm@mindwareinfotech.com</a>
+                                <a href="mailto:gm@jobsence.com" class="info-link">gm@jobsence.com</a>
                             </div>
                         </div>
 
@@ -477,7 +483,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                         <!-- Hours -->
                         <div class="info-row">
                             <div class="info-icon" style="background:#faf5ff;">
-                                <svg width="17" height="17" fill="none" stroke="#8b5cf6" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg>
+                                <svg width="17" height="17" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg>
                             </div>
                             <div>
                                 <div class="info-lbl">Business Hours</div>
@@ -492,6 +498,11 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                                 <a href="#" aria-label="LinkedIn" class="soc-btn"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.483v-5.467c0-1.312-.469-2.213-1.644-2.213-1.229 0-1.967.842-1.967 2.22v5.459h-3.483s.047-9.426 0-10.435h3.483v1.488c.516-.723 1.34-1.745 3.128-1.745 2.288 0 3.998 1.496 3.998 4.706v5.986zM5.312 8.761c-1.218 0-1.986-.777-1.986-1.854 0-1.096.786-1.855 1.986-1.855 1.2 0 1.95.759 1.95 1.855 0 1.077-.759 1.854-1.95 1.854zm1.743 11.691H3.568V10.017h3.487v10.435z"/></svg></a>
                                 <a href="#" aria-label="Twitter" class="soc-btn"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M18.901 1.996h3.693l-8.086 9.247 9.387 11.23h-7.615l-6.075-7.142-7.394 7.142H.912l8.32-9.52-8.634-10.704h7.828l5.584 6.945 4.881-5.696zm-1.868 18.005h1.5l-6.52-7.46-5.187 7.46H9.19l7.466-10.704-5.35-6.14h1.76l4.42 5.074 5.76-5.074z"/></svg></a>
                                 <a href="#" aria-label="Instagram" class="soc-btn"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+                                <a href="#" aria-label="Facebook" class="soc-btn">
+  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+    <path d="M15 3h3V0h-3a5 5 0 00-5 5v3H7v4h3v12h4V12h3l1-4h-4V5a1 1 0 011-1z"/>
+  </svg>
+</a>
                             </div>
                         </div>
                     </div>
@@ -500,8 +511,8 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                     <div class="card p-6 afu d2">
                         <div style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f1f5f9;">Why Choose Us?</div>
                         <div class="why-item">
-                            <div class="why-icon" style="background:#eff6ff;">
-                                <svg width="17" height="17" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <div class="why-icon" style="background:#fff1ed;">
+                                <svg width="17" height="17" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                             </div>
                             <div>
                                 <div class="why-title">Fast Response</div>
@@ -536,8 +547,8 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
 
                         <!-- Form header -->
                         <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid #f1f5f9;">
-                            <div style="width:48px;height:48px;min-width:48px;border-radius:13px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center;">
-                                <svg width="22" height="22" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <div style="width:48px;height:48px;min-width:48px;border-radius:13px;background:linear-gradient(135deg,#fff1ed,#fff1ed);border:1.5px solid #fff1ed;display:flex;align-items:center;justify-content:center;">
+                                <svg width="22" height="22" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                             </div>
                             <div>
                                 <div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">Send us an Inquiry</div>
@@ -607,6 +618,20 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                                 <textarea id="message" name="message" rows="5" required class="f-textarea" placeholder="Tell us how we can help you in detail..."></textarea>
                             </div>
 
+                            <!-- Captcha -->
+                            <div>
+                                <label for="captcha" class="f-label">Security Question <span class="req">*</span></label>
+                                <div class="f-wrap">
+                                    <span class="f-icon">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    </span>
+                                    <input type="number" id="captcha" name="captcha" required class="f-input" placeholder="<?= $captcha_question ?? 'Security Answer' ?>">
+                                </div>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 5px; margin-left: 4px;">
+                                    Verify you are human: <strong><?= $captcha_question ?? 'Please solve the math' ?></strong>
+                                </div>
+                            </div>
+
                             <!-- Submit -->
                             <div>
                                 <button type="submit" class="submit-btn">
@@ -638,9 +663,9 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                         <div style="font-size:12.5px;color:#64748b;margin-top:1px;">S4, Pankaj Plaza, Sector-12, Dwarka, New Delhi – 110078</div>
                     </div>
                 </div>
-                <a href="https://maps.google.com/?q=Mindware+Infotech+Dwarka+Delhi" target="_blank" rel="noopener"
-                   style="display:inline-flex;align-items:center;gap:7px;background:#2563eb;color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none;transition:background 0.15s;"
-                   onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                <a href="https://maps.google.com/?q=Pankaj+Plaza+Dwarka+Sector+12+Delhi" target="_blank" rel="noopener"
+                   style="display:inline-flex;align-items:center;gap:7px;background:#f05537;color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none;transition:background 0.15s;"
+                   onmouseover="this.style.background='#FF6A3D'" onmouseout="this.style.background='#f05537'">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     Open in Google Maps
                 </a>
@@ -649,9 +674,9 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
         <!-- Map -->
         <iframe
             class="map-frame"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.830026217462!2d77.040846!3d28.590775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d10664e42a98f%3A0x6b72a6b47c0a68d!2sMindware%20Infotech!5e0!3m2!1sen!2sin!4v1672531200000!5m2!1sen!2sin"
+            src="https://www.google.com/maps?q=S-4+Pankaj+Plaza+Dwarka+Sector+12+New+Delhi+110078&output=embed"
             allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-            title="Mindware Infotech Office Location">
+            title="Jobsence Office Location">
         </iframe>
     </div>
 
@@ -661,7 +686,7 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
 
             <!-- Section header -->
             <div style="text-align:center;margin-bottom:40px;" class="afu d1">
-                <div style="display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;color:#2563eb;border-radius:100px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;margin-bottom:14px;">
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#fff1ed;border:1px solid #fff1ed;color:#f05537;border-radius:100px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;margin-bottom:14px;">
                     <svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
                     FAQ
                 </div>
@@ -678,9 +703,9 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
                      "Our team responds to all inquiries within 24 business hours, Monday through Saturday, 9 AM–6 PM IST. For urgent matters, please call us directly."],
                     ["Can employers post jobs directly through the contact form?",
                      "Yes! Select 'Employer Inquiry (Hiring)' and describe your requirements. Our dedicated recruitment team will reach out and guide you through the process."],
-                    ["I'm a job seeker. How can Mindware help me?",
+                    ["I'm a job seeker. How can Jonsence help me?",
                      "Select 'Candidate Support' in the form. Our team will review your profile and connect you with suitable job openings and career guidance tailored to your background."],
-                    ["Is there a fee for contacting Mindware Infotech?",
+                    ["Is there a fee for contacting Jobsence?",
                      "Absolutely not. Reaching out to us is completely free for both employers and job seekers. We only charge for premium placement services."],
                 ];
                 foreach ($faqs as $i => $faq):
@@ -744,3 +769,13 @@ $csrf_token = $_SESSION['csrf_token'] ?? '';
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,3 @@
-<?php
-$content = ob_start();
-?>
-
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-lg shadow-sm p-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
@@ -13,7 +9,7 @@ $content = ob_start();
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Introduction</h2>
                     <p class="text-gray-600">
-                        Mindware Infotech ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our job portal platform.
+                        Jobsence ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our job portal platform.
                     </p>
                 </section>
 
@@ -108,8 +104,8 @@ $content = ob_start();
                         If you have any questions about this Privacy Policy, please contact us at:
                     </p>
                     <div class="bg-gray-50 rounded-lg p-4 mt-4">
-                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:gm@mindwareinfotech.com" class="text-green-600 hover:text-green-700">gm@mindwareinfotech.com</a></p>
-                        <p class="text-gray-700 mt-2"><strong>Address:</strong> Mindware Infotech, India</p>
+                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:gm@jobsence.com" class="text-green-600 hover:text-green-700">gm@jobsence.com</a></p>
+                        <p class="text-gray-700 mt-2"><strong>Address:</strong> Jobsence, India</p>
                     </div>
                 </section>
             </div>
@@ -117,8 +113,16 @@ $content = ob_start();
     </div>
 </div>
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/layout.php';
-?>
+
+
+
+
+
+
+
+
+
+
+
+
 

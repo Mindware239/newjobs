@@ -12,19 +12,19 @@
 <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm overflow-hidden">
         <!-- Preview Banner -->
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+        <div class="bg-primary-50 border-l-4 border-primary p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <svg class="h-5 w-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="h-5 w-5 text-primary mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                     </svg>
                     <div>
-                        <p class="text-sm font-medium text-blue-800">Preview Mode</p>
-                        <p class="text-xs text-blue-600">This is how your job will appear to candidates on the website</p>
+                        <p class="text-sm font-medium text-primary-900">Preview Mode</p>
+                        <p class="text-xs text-primary">This is how your job will appear to candidates on the website</p>
                     </div>
                 </div>
                 <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>/edit"
-                   class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm transition duration-150">
+                   class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 font-medium text-sm transition duration-150">
                     Edit Job
                 </a>
             </div>
@@ -38,7 +38,7 @@
                     <div class="flex items-center space-x-2 mb-4">
                         <span class="text-lg font-semibold text-gray-800"><?= htmlspecialchars($jobEmployer->company_name ?? ($employer->company_name ?? 'Company Name')) ?></span>
                         <?php if ($jobEmployer->website ?? $employer->website ?? null): ?>
-                            <a href="<?= htmlspecialchars($jobEmployer->website ?? $employer->website) ?>" target="_blank" class="text-blue-500 hover:text-blue-700">
+                            <a href="<?= htmlspecialchars($jobEmployer->website ?? $employer->website) ?>" target="_blank" class="text-primary hover:text-primary-600">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                 </svg>
@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <div class="flex space-x-3">
-                    <button class="px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition duration-150">
+                    <button class="px-5 py-2.5 bg-primary text-white rounded-md hover:bg-primary-600 font-medium transition duration-150">
                         Apply now
                     </button>
                     <button class="p-2.5 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-150">
@@ -95,7 +95,7 @@
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                         <?= ucfirst(str_replace('_', ' ', $job['employment_type'] ?? 'Full-time')) ?>
                     </span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-50 text-primary-900">
                         <?= ($job['is_remote'] ?? 0) ? 'Remote' : 'On-Site' ?>
                     </span>
                 </div>
@@ -115,7 +115,7 @@
                         <?php foreach ($skills as $skill): ?>
                             <?php $name = is_array($skill) ? ($skill['name'] ?? '') : (string)$skill; ?>
                             <?php if ($name): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-700 border border-blue-200">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-50 text-primary-600 border border-primary-100">
                                     <?= htmlspecialchars($name) ?>
                                 </span>
                             <?php endif; ?>
@@ -148,8 +148,15 @@
             <!-- Full Job Description -->
             <div class="border-b border-gray-200 pb-6">
                 <h2 class="text-xl font-bold text-gray-900 mb-4">Job Description</h2>
-                <div class="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                    <?= $job['description'] ?? '<p class="text-gray-500 italic">No description provided.</p>' ?>
+                <div class="prose max-w-none text-gray-700">
+                    <?php 
+                    $desc = $job['description'] ?? 'No description provided.';
+                    if ($desc !== '' && strip_tags($desc) !== $desc) {
+                        echo $desc; 
+                    } else {
+                        echo nl2br(htmlspecialchars($desc));
+                    }
+                    ?>
                 </div>
             </div>
 
@@ -159,7 +166,7 @@
                 <div class="space-y-2 text-gray-700">
                     <p><strong>Company:</strong> <?= htmlspecialchars($jobEmployer->company_name ?? 'N/A') ?></p>
                     <?php if ($jobEmployer->website ?? null): ?>
-                        <p><strong>Website:</strong> <a href="<?= htmlspecialchars($jobEmployer->website) ?>" target="_blank" class="text-blue-600 hover:underline"><?= htmlspecialchars($jobEmployer->website) ?></a></p>
+                        <p><strong>Website:</strong> <a href="<?= htmlspecialchars($jobEmployer->website) ?>" target="_blank" class="text-primary hover:underline"><?= htmlspecialchars($jobEmployer->website) ?></a></p>
                     <?php endif; ?>
                     <?php if ($jobEmployer->city ?? null): ?>
                         <p><strong>Location:</strong> <?= htmlspecialchars($jobEmployer->city) ?><?= $jobEmployer->state ? ', ' . htmlspecialchars($jobEmployer->state) : '' ?></p>
@@ -182,10 +189,21 @@
                     Edit Job
                 </a>
                 <a href="/employer/jobs"
-                   class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150">
+                   class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition duration-150">
                     Back to Jobs
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

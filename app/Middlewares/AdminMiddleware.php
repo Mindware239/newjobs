@@ -125,8 +125,8 @@ class AdminMiddleware implements MiddlewareInterface
         try {
             $db = \App\Core\Database::getInstance();
             $db->query(
-                "INSERT INTO activity_logs (user_id, action, ip_address, user_agent, created_at)
-                 VALUES (:user_id, :action, :ip_address, :user_agent, NOW())",
+                "INSERT INTO activity_logs (actor_id, actor_type, action, ip_address, user_agent, created_at)
+                 VALUES (:user_id, 'admin', :action, :ip_address, :user_agent, NOW())",
                 [
                     'user_id' => $user->id,
                     'action' => 'admin_access:' . $request->getPath(),

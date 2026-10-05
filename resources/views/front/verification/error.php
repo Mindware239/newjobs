@@ -4,3 +4,14 @@
     <p class="text-sm text-gray-600 mt-2">This verification link is invalid or has expired.</p>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

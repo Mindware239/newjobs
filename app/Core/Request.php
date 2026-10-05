@@ -94,7 +94,16 @@ class Request
 
     public function getMethod(): string
     {
-        return $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        
+        if ($method === 'POST' && isset($this->body['_method'])) {
+            $overriddenMethod = strtoupper((string)$this->body['_method']);
+            if (in_array($overriddenMethod, ['PUT', 'PATCH', 'DELETE'])) {
+                return $overriddenMethod;
+            }
+        }
+        
+        return $method;
     }
 
     public function isMethod(string $method): bool

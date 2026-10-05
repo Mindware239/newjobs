@@ -23,7 +23,7 @@
             <td class="p-3"><?= htmlspecialchars($c['slug'] ?? '') ?></td>
             <td class="p-3 text-center"><?= (int)($c['is_active'] ?? 0) ?></td>
             <td class="p-3 text-center space-x-2">
-              <a class="text-blue-600" href="/admin/blog-categories/<?= (int)$c['id'] ?>/edit">Edit</a>
+              <a class="text-primary" href="/admin/blog-categories/<?= (int)$c['id'] ?>/edit">Edit</a>
               <form class="inline" method="post" action="/admin/blog-categories/<?= (int)$c['id'] ?>/delete">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                 <button class="text-red-600" onclick="return confirm('Delete this category?')">Delete</button>
@@ -35,3 +35,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

@@ -18,8 +18,8 @@
           <label class="block text-gray-700 font-medium mb-2">Email Footer Text</label>
           <p class="text-sm text-gray-500 mb-2">This text will appear at the bottom of all system emails. HTML is allowed.</p>
           <textarea name="settings[email_footer]" rows="4" 
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="&copy; 2024 Mindware Infotech..."><?= htmlspecialchars($settings['email_footer'] ?? '') ?></textarea>
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="&copy; 2024 Jobsence..."><?= htmlspecialchars($settings['email_footer'] ?? '') ?></textarea>
         </div>
       </div>
       
@@ -30,22 +30,33 @@
             <label class="block text-gray-700 font-medium mb-2">Support Email</label>
             <input type="email" name="settings[support_email]" 
                    value="<?= htmlspecialchars($settings['support_email'] ?? '') ?>"
-                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
         </div>
 
         <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-2">Support Phone</label>
             <input type="text" name="settings[support_phone]" 
                    value="<?= htmlspecialchars($settings['support_phone'] ?? '') ?>"
-                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
         </div>
       </div>
 
       <div class="flex justify-end">
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition">
+        <button type="submit" class="px-6 py-2 bg-primary text-white font-bold rounded hover:bg-primary-600 transition">
           Save Settings
         </button>
       </div>
     </form>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

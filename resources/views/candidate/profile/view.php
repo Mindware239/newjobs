@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>My Profile - Mindware Infotech</title>
+    <title>My Profile - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <style>
         header .container { max-width: 1200px; padding-left: 24px; padding-right: 24px; }
@@ -56,8 +56,8 @@
                         </h1>
                         <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-gray-600 mb-4">
                             <?php if (!empty($candidate->attributes['city'])): ?>
-                            <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
-                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full border border-primary">
+                                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
@@ -65,8 +65,8 @@
                             </div>
                             <?php endif; ?>
                             <?php if (!empty($candidate->attributes['mobile'])): ?>
-                            <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-100">
-                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full border border-primary">
+                                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                 </svg>
                                 <span class="text-sm font-medium"><?= htmlspecialchars($candidate->attributes['mobile']) ?></span>
@@ -77,17 +77,17 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-gray-600">Profile Strength:</span>
                                 <div class="w-24 sm:w-32 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full" 
+                                    <div class="bg-primary h-2 rounded-full" 
                                          style="width: <?= $candidate->attributes['profile_strength'] ?? 0 ?>%"></div>
                                 </div>
-                                <span class="text-sm font-semibold text-blue-700">
+                                <span class="text-sm font-semibold text-primary-600">
                                     <?= $candidate->attributes['profile_strength'] ?? 0 ?>%
                                 </span>
                             </div>
                             <div class="flex flex-wrap justify-center gap-2">
                                 <?php if ($candidate->isPremium()): ?>
                                 <span class="px-3 py-1 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-full text-xs sm:text-sm font-bold shadow-sm border border-orange-200 flex items-center gap-1">
-                                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
                                     Premium Member
@@ -107,7 +107,7 @@
                     </div>
                     <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0">
                         <a href="/candidate/profile/complete?edit=1" 
-                           class="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-md hover:from-blue-700 hover:to-blue-800 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 duration-200">
+                           class="flex-1 sm:flex-none px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2 font-medium shadow-sm hover:shadow transition transform hover:-translate-y-0.5 duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
@@ -131,7 +131,7 @@
             <!-- Basic Information -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     Basic Information
@@ -139,7 +139,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
@@ -152,7 +152,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
@@ -165,7 +165,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -179,7 +179,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                 </svg>
@@ -194,7 +194,7 @@
                 <?php if (!empty($candidate->attributes['self_introduction'])): ?>
                 <div class="mt-6 pt-6 border-t">
                     <div class="flex items-center gap-2 mb-2">
-                        <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
@@ -210,7 +210,7 @@
             <!-- Resume & Video -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Resume & Video
@@ -218,7 +218,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -229,7 +229,7 @@
                         <div class="pl-10">
                             <a href="<?= htmlspecialchars($candidate->attributes['resume_url']) ?>" 
                                target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium">
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition font-medium">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -251,7 +251,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
@@ -263,7 +263,7 @@
                             <?php if ($candidate->attributes['video_intro_type'] === 'youtube'): ?>
                             <a href="<?= htmlspecialchars($candidate->attributes['video_intro_url']) ?>" 
                                target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium">
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition font-medium">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                                 </svg>
@@ -285,7 +285,7 @@
                             <?php else: ?>
                             <a href="<?= htmlspecialchars($candidate->attributes['video_intro_url']) ?>" 
                                target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition font-medium">
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition font-medium">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -320,13 +320,97 @@
             </div>
             </div>
 
+            <!-- Job Preferences & Interests -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Job Preferences & Interests
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Preferred Roles</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php if (!empty($preferences['preferred_job_titles'])): ?>
+                                <?php foreach ($preferences['preferred_job_titles'] as $title): ?>
+                                    <span class="px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-medium border border-primary">
+                                        <?= htmlspecialchars($title) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="text-gray-500 text-sm">Not specified</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Job Types & Work Mode</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-xs text-gray-500">Types:</span>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <?php if (!empty($preferences['preferred_job_types'])): ?>
+                                        <?php foreach ($preferences['preferred_job_types'] as $type): ?>
+                                            <span class="px-2 py-0.5 bg-primary-50 text-primary-600 rounded text-xs font-medium border border-primary"><?= htmlspecialchars($type) ?></span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 text-xs">Not specified</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500">Work Mode:</span>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <?php if (!empty($preferences['preferred_work_mode'])): ?>
+                                        <?php foreach ($preferences['preferred_work_mode'] as $mode): ?>
+                                            <span class="px-2 py-0.5 bg-primary-50 text-primary-600 rounded text-xs font-medium border border-primary"><?= htmlspecialchars($mode) ?></span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-gray-400 text-xs">Not specified</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Preferred Locations</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <?php if (!empty($preferences['preferred_locations'])): ?>
+                                <?php foreach ($preferences['preferred_locations'] as $loc): ?>
+                                    <span class="px-3 py-1 bg-gray-50 text-gray-700 rounded-full text-sm font-medium border border-gray-200 flex items-center gap-1">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                        <?= htmlspecialchars($loc) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="text-gray-500 text-sm">Not specified</span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($preferences['open_to_relocation'])): ?>
+                            <div class="mt-2 text-xs text-green-600 font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                Open to relocation
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Min. Salary Req.</h3>
+                        <?php if (!empty($preferences['minimum_acceptable_salary'])): ?>
+                            <p class="text-xl font-bold text-gray-900">₹<?= number_format($preferences['minimum_acceptable_salary']) ?> <span class="text-sm font-normal text-gray-500">/ yr</span></p>
+                        <?php else: ?>
+                            <p class="text-gray-500 text-sm">Not specified</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
             <!-- Middle Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Education -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
                             <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
@@ -334,7 +418,7 @@
                         Education
                     </h2>
                     <?php if (empty($education)): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -346,13 +430,13 @@
                 <?php if (!empty($education)): ?>
                 <div class="space-y-6">
                     <?php foreach ($education as $edu): ?>
-                    <div class="relative pl-8 border-l-2 border-indigo-200 hover:border-indigo-500 transition-colors duration-300">
-                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-100 border-2 border-indigo-500"></div>
-                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-indigo-50 transition-colors duration-300 group">
+                    <div class="relative pl-8 border-l-2 border-primary-100 hover:border-primary transition-colors duration-300">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-50 border-2 border-primary"></div>
+                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-primary-50 transition-colors duration-300 group">
                             <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
                                 <div>
-                                    <h3 class="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors"><?= htmlspecialchars($edu['degree'] ?? '') ?></h3>
-                                    <p class="text-indigo-600 font-medium"><?= htmlspecialchars($edu['institution'] ?? '') ?></p>
+                                    <h3 class="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition-colors"><?= htmlspecialchars($edu['degree'] ?? '') ?></h3>
+                                    <p class="text-primary font-medium"><?= htmlspecialchars($edu['institution'] ?? '') ?></p>
                                 </div>
                                 <div class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full border shadow-sm flex items-center gap-1.5 whitespace-nowrap">
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -363,7 +447,7 @@
                                     <?php endif; ?>
                                     <span>-</span>
                                     <?php if ($edu['is_current'] ?? 0): ?>
-                                    <span class="text-indigo-700 font-semibold">Present</span>
+                                    <span class="text-primary-600 font-semibold">Present</span>
                                     <?php elseif (!empty($edu['end_date'])): ?>
                                     <span><?= date('Y', strtotime($edu['end_date'])) ?></span>
                                     <?php endif; ?>
@@ -408,13 +492,13 @@
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                         Work Experience
                     </h2>
                     <?php if (empty($experience)): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -426,13 +510,13 @@
                 <?php if (!empty($experience)): ?>
                 <div class="space-y-6">
                     <?php foreach ($experience as $exp): ?>
-                    <div class="relative pl-8 border-l-2 border-indigo-200 hover:border-indigo-500 transition-colors duration-300">
-                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-100 border-2 border-indigo-500"></div>
-                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-indigo-50 transition-colors duration-300 group">
+                    <div class="relative pl-8 border-l-2 border-primary-100 hover:border-primary transition-colors duration-300">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-50 border-2 border-primary"></div>
+                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-primary-50 transition-colors duration-300 group">
                             <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
                                 <div>
-                                    <h3 class="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors"><?= htmlspecialchars($exp['job_title'] ?? '') ?></h3>
-                                    <p class="text-indigo-600 font-medium text-base"><?= htmlspecialchars($exp['company_name'] ?? '') ?></p>
+                                    <h3 class="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition-colors"><?= htmlspecialchars($exp['job_title'] ?? '') ?></h3>
+                                    <p class="text-primary font-medium text-base"><?= htmlspecialchars($exp['company_name'] ?? '') ?></p>
                                 </div>
                                 <div class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full border shadow-sm flex items-center gap-1.5 whitespace-nowrap">
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -443,7 +527,7 @@
                                     <?php endif; ?>
                                     <span>-</span>
                                     <?php if ($exp['is_current'] ?? 0): ?>
-                                    <span class="text-indigo-700 font-semibold">Present</span>
+                                    <span class="text-primary-600 font-semibold">Present</span>
                                     <?php elseif (!empty($exp['end_date'])): ?>
                                     <span><?= date('M Y', strtotime($exp['end_date'])) ?></span>
                                     <?php endif; ?>
@@ -489,13 +573,13 @@
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"></path>
                         </svg>
                         Certificates
                     </h2>
                     <?php if (empty($certificates)): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -507,15 +591,15 @@
                 <?php if (!empty($certificates)): ?>
                 <div class="space-y-6">
                     <?php foreach ($certificates as $cert): ?>
-                    <div class="relative pl-8 border-l-2 border-indigo-200 hover:border-indigo-500 transition-colors duration-300">
-                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-100 border-2 border-indigo-500"></div>
-                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-indigo-50 transition-colors duration-300 group">
-                            <h3 class="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors"><?= htmlspecialchars($cert['name'] ?? '') ?></h3>
-                            <p class="text-indigo-600 font-medium"><?= htmlspecialchars($cert['issuing_organization'] ?? '') ?></p>
+                    <div class="relative pl-8 border-l-2 border-primary-100 hover:border-primary transition-colors duration-300">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-50 border-2 border-primary"></div>
+                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-primary-50 transition-colors duration-300 group">
+                            <h3 class="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition-colors"><?= htmlspecialchars($cert['name'] ?? '') ?></h3>
+                            <p class="text-primary font-medium"><?= htmlspecialchars($cert['issuing_organization'] ?? '') ?></p>
                             
                             <?php if (!empty($cert['credential_url'])): ?>
                             <div class="mt-2">
-                                <a href="<?= htmlspecialchars($cert['credential_url']) ?>" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
+                                <a href="<?= htmlspecialchars($cert['credential_url']) ?>" target="_blank" class="text-sm text-primary hover:text-primary-900 underline flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                     View Credential
                                 </a>
@@ -565,13 +649,13 @@
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         Employer Verification
                     </h2>
                     <?php if (empty($verification) || empty($verification['need_verification'])): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -581,17 +665,17 @@
                 </div>
 
                 <?php if (!empty($verification) && !empty($verification['need_verification'])): ?>
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                <div class="bg-primary-50 border border-primary rounded-xl p-4 mb-6">
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="flex items-center gap-2 text-blue-800 font-semibold mb-1">
+                            <div class="flex items-center gap-2 text-primary-900 font-semibold mb-1">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Verification Requested
                             </div>
-                            <p class="text-sm text-blue-600">Total Verified Experience: <strong><?= $verifiedExperience ?></strong></p>
+                            <p class="text-sm text-primary">Total Verified Experience: <strong><?= $verifiedExperience ?></strong></p>
                         </div>
                         <div class="hidden sm:block">
-                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-50 text-primary-900">
                                 Pending Review
                              </span>
                         </div>
@@ -601,11 +685,11 @@
                 <?php if (!empty($verification['employments'])): ?>
                     <div class="space-y-6">
                         <?php foreach ($verification['employments'] as $emp): ?>
-                        <div class="border border-gray-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                        <div class="border border-gray-200 rounded-xl p-5 hover:border-primary transition-colors">
                             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
                                 <div>
                                     <h3 class="font-bold text-lg text-gray-900"><?= htmlspecialchars($emp['role'] ?? '') ?></h3>
-                                    <div class="text-indigo-600 font-medium"><?= htmlspecialchars($emp['company'] ?? '') ?></div>
+                                    <div class="text-primary font-medium"><?= htmlspecialchars($emp['company'] ?? '') ?></div>
                                     <div class="text-sm text-gray-500 mt-1 flex items-center gap-2">
                                         <span class="bg-gray-100 px-2 py-0.5 rounded text-xs"><?= htmlspecialchars($emp['type'] ?? 'Full-time') ?></span>
                                     </div>
@@ -616,7 +700,7 @@
                                     <?php endif; ?>
                                     <span> - </span>
                                     <?php if (!empty($emp['is_current'])): ?>
-                                    <span class="text-indigo-600 font-semibold">Present</span>
+                                    <span class="text-primary font-semibold">Present</span>
                                     <?php elseif (!empty($emp['end_date'])): ?>
                                     <span><?= date('M Y', strtotime($emp['end_date'])) ?></span>
                                     <?php else: ?>
@@ -644,10 +728,10 @@
                                 <div class="flex flex-wrap gap-3">
                                     <?php foreach ($emp['documents'] as $type => $url): ?>
                                         <?php if (!empty($url)): ?>
-                                        <a href="<?= htmlspecialchars($url) ?>" target="_blank" class="group flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-indigo-500 hover:shadow-sm transition-all text-sm">
+                                        <a href="<?= htmlspecialchars($url) ?>" target="_blank" class="group flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-primary hover:shadow-sm transition-all text-sm">
                                             <svg class="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                            <span class="text-gray-700 group-hover:text-indigo-700 capitalize"><?= str_replace('_', ' ', $type) ?></span>
-                                            <svg class="w-3 h-3 text-gray-400 group-hover:text-indigo-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                            <span class="text-gray-700 group-hover:text-primary-600 capitalize"><?= str_replace('_', ' ', $type) ?></span>
+                                            <svg class="w-3 h-3 text-gray-400 group-hover:text-primary ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                         </a>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
@@ -678,13 +762,13 @@
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
                         Skills
                     </h2>
                     <?php if (empty($skills)): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -696,8 +780,8 @@
                 <?php if (!empty($skills)): ?>
                 <div class="flex flex-wrap gap-2">
                     <?php foreach ($skills as $skill): ?>
-                    <div class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
-                        <svg class="w-4 h-4 text-indigo-500 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-all hover:border-primary group">
+                        <svg class="w-4 h-4 text-primary group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
                         <span class="font-semibold text-gray-800"><?= htmlspecialchars($skill['name'] ?? $skill['skill_name'] ?? '') ?></span>
@@ -726,13 +810,13 @@
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
                         </svg>
                         Languages
                     </h2>
                     <?php if (empty($languages)): ?>
-                    <a href="/candidate/profile/complete" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1">
+                    <a href="/candidate/profile/complete" class="text-primary hover:text-primary-600 text-sm font-medium flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -744,7 +828,7 @@
                 <?php if (!empty($languages)): ?>
                 <div class="flex flex-wrap gap-2">
                     <?php foreach ($languages as $lang): ?>
-                    <span class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
+                    <span class="bg-white border border-gray-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-all hover:border-primary group">
                         <svg class="w-4 h-4 text-emerald-500 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
                         </svg>
@@ -770,7 +854,7 @@
             <!-- Additional Information -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Additional Information
@@ -778,7 +862,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -796,7 +880,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
@@ -809,7 +893,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -817,12 +901,21 @@
                             <label class="text-sm text-gray-600">Notice Period</label>
                         </div>
                         <p class="font-semibold pl-10">
-                            <?= !empty($candidate->attributes['notice_period']) ? $candidate->attributes['notice_period'] . ' days' : 'Not specified' ?>
+                            <?php 
+                                $np = $candidate->attributes['notice_period'] ?? null;
+                                if ($np === null || $np === '') {
+                                    echo 'Not specified';
+                                } elseif ((int)$np === 0) {
+                                    echo 'Immediate';
+                                } else {
+                                    echo htmlspecialchars((string)$np) . ' days';
+                                }
+                            ?>
                         </p>
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -848,7 +941,7 @@
                         <?php if (!empty($candidate->attributes['linkedin_url'])): ?>
                         <a href="<?= htmlspecialchars($candidate->attributes['linkedin_url']) ?>" 
                            target="_blank"
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition transform hover:-translate-y-0.5 duration-200 font-medium">
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition transform hover:-translate-y-0.5 duration-200 font-medium">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                             </svg>
@@ -874,7 +967,7 @@
                         <?php if (!empty($candidate->attributes['portfolio_url'])): ?>
                         <a href="<?= htmlspecialchars($candidate->attributes['portfolio_url']) ?>" 
                            target="_blank"
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition transform hover:-translate-y-0.5 duration-200 font-medium">
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition transform hover:-translate-y-0.5 duration-200 font-medium">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
                             </svg>
@@ -887,7 +980,7 @@
                         <?php if (!empty($candidate->attributes['website_url'])): ?>
                         <a href="<?= htmlspecialchars($candidate->attributes['website_url']) ?>" 
                            target="_blank"
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition transform hover:-translate-y-0.5 duration-200 font-medium">
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition transform hover:-translate-y-0.5 duration-200 font-medium">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
                             </svg>
@@ -933,3 +1026,14 @@ async function deleteCandidateVideo(btn) {
 <?php include __DIR__ . '/../../include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -14,14 +14,14 @@
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
     <a href="<?= $base ?>">
-      <img src="<?= $base ?>uploads/Mindware-infotech.png" class="h-12">
+      <img src="<?= $base ?>uploads/jobsence.png" class="h-12">
     </a>
 
     <div class="hidden md:flex items-center gap-8 text-sm">
       <a href="<?= $base ?>candidate/listings" class="text-gray-600 hover:text-black">
         Applications & saved listings
       </a>
-      <span class="text-blue-600 font-medium">
+      <span class="text-primary font-medium">
         Job alerts
       </span>
       <a href="<?= $base ?>candidate/account" class="text-gray-600 hover:text-black">
@@ -58,7 +58,7 @@
       </p>
 
       <a href="<?= $base ?>candidate/subscriptions/new"
-         class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-6 py-2.5 rounded-md">
+         class="bg-primary hover:bg-primary-600 text-white text-sm px-6 py-2.5 rounded-md">
         + New subscription
       </a>
     </div>
@@ -66,7 +66,7 @@
     <!-- DIVIDER + META -->
     <div class="flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-500">
       <span>0 results of 0 total</span>
-      <a href="#" class="text-blue-600 hover:underline">Refresh ↻</a>
+      <a href="#" class="text-primary hover:underline">Refresh ↻</a>
     </div>
 
     <!-- EMPTY STATE (CENTER, SIMPLE) -->
@@ -81,3 +81,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

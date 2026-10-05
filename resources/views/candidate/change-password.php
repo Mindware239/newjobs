@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Change Password - Mindware Infotech</title>
+    <title>Change Password - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -35,7 +35,7 @@
                     <input type="password" 
                            x-model="passwordData.current_password"
                            required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                 </div>
 
                 <div>
@@ -44,7 +44,7 @@
                            x-model="passwordData.new_password"
                            required
                            minlength="8"
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                     <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
                 </div>
 
@@ -53,13 +53,13 @@
                     <input type="password" 
                            x-model="passwordData.confirm_password"
                            required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                 </div>
 
                 <div class="pt-4">
                     <button type="submit" 
                             :disabled="isSubmitting"
-                            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="px-6 py-3 bg-primary text-white font-semibold rounded-lg border border-primary hover:bg-primary-700 hover:border-primary-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!isSubmitting">Update Password</span>
                         <span x-show="isSubmitting" class="flex items-center gap-2">
                             <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -133,3 +133,13 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KYC Pending - Mindware Infotech</title>
+    <title>KYC Pending - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
@@ -23,7 +23,7 @@
                     Status: <span class="font-semibold text-yellow-600"><?= $employer->kyc_status ?? 'pending' ?></span>
                 </p>
                 <div class="space-y-3">
-                    <a href="/employer/kyc" class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <a href="/employer/kyc" class="block w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                         View KYC Status
                     </a>
                     <a href="/employer/dashboard" class="block w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
@@ -35,4 +35,15 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 

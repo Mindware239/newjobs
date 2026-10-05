@@ -22,14 +22,14 @@
                     </span>
                     <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" 
                            placeholder="Search by Company, Transaction ID..." 
-                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm">
+                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-colors text-sm">
                 </div>
             </div>
             
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">Status</label>
                 <?php $s = $status ?? 'all'; ?>
-                <select name="status" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm appearance-none">
+                <select name="status" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-colors text-sm appearance-none">
                     <option value="all" <?= $s==='all'?'selected':'' ?>>All Status</option>
                     <option value="completed" <?= $s==='completed'?'selected':'' ?>>Completed</option>
                     <option value="pending" <?= $s==='pending'?'selected':'' ?>>Pending</option>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="flex items-end">
-                <button class="w-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
+                <button class="w-full px-6 py-2 bg-primary hover:bg-primary-600 text-white font-medium rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                     Filter Results
                 </button>
@@ -70,7 +70,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs mr-3">
+                                    <div class="h-8 w-8 rounded-full bg-primary-50 flex items-center justify-center text-primary font-bold text-xs mr-3">
                                         <?= strtoupper(substr($p['company_name'] ?? 'U', 0, 1)) ?>
                                     </div>
                                     <div>
@@ -90,7 +90,7 @@
                                         'completed', 'success' => 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20',
                                         'pending' => 'bg-amber-100 text-amber-700 ring-1 ring-amber-600/20',
                                         'failed' => 'bg-red-100 text-red-700 ring-1 ring-red-600/20',
-                                        'refunded' => 'bg-purple-100 text-purple-700 ring-1 ring-purple-600/20',
+                                        'refunded' => 'bg-primary-50 text-primary-600 ring-1 ring-primary/20',
                                         default => 'bg-gray-100 text-gray-700 ring-1 ring-gray-600/20'
                                     };
                                     $icon = match($st) {
@@ -111,7 +111,7 @@
                                 <div class="text-xs text-gray-400"><?= date('h:i A', strtotime($p['created_at'] ?? 'now')) ?></div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/finance/payments/<?= (int)$p['id'] ?>" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors text-xs uppercase tracking-wide">View</a>
+                                <a href="/finance/payments/<?= (int)$p['id'] ?>" class="text-primary hover:text-primary bg-primary-50 hover:bg-primary-50 px-3 py-1.5 rounded-md transition-colors text-xs uppercase tracking-wide">View</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -160,3 +160,13 @@
         <?php endif; ?>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+

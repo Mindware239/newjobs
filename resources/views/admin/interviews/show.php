@@ -20,8 +20,8 @@ $csrf        = htmlspecialchars($_SESSION['csrf_token'] ?? '');
 $statusColor = match($ivStatus) {
     'live'        => 'bg-red-50 text-red-700 border-red-200',
     'completed'   => 'bg-green-50 text-green-700 border-green-200',
-    'scheduled'   => 'bg-blue-50 text-blue-700 border-blue-200',
-    'rescheduled' => 'bg-violet-50 text-violet-700 border-violet-200',
+    'scheduled'   => 'bg-primary-50 text-primary-600 border-primary-100',
+    'rescheduled' => 'bg-primary text-primary border-primary',
     'cancelled'   => 'bg-gray-100 text-gray-600 border-gray-200',
     default       => 'bg-gray-100 text-gray-500 border-gray-200',
 };
@@ -34,17 +34,17 @@ $isLive = $ivStatus === 'live';
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
             <a href="/admin/interviews"
-               class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-blue-600 mb-3 transition-colors">
+               class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-primary mb-3 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                 Back to Interviews
             </a>
             <div class="flex items-center gap-3 flex-wrap">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md flex-shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f05537] to-[#f05537]-600 flex items-center justify-center shadow-md flex-shrink-0">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">Interview <span class="font-mono text-blue-600">#<?= $ivId ?></span></h1>
+                        <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">Interview <span class="font-mono text-primary">#<?= $ivId ?></span></h1>
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border <?= $statusColor ?>">
                             <?php if ($isLive): ?><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span><?php endif; ?>
                             <?= strtoupper($ivStatus) ?>
@@ -67,12 +67,12 @@ $isLive = $ivStatus === 'live';
                 Audit Logs
             </a>
             <button onclick="adminJoinInterview(<?= $ivId ?>, false)"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-600 transition-all shadow-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 Join
             </button>
             <button onclick="adminJoinInterview(<?= $ivId ?>, true)"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-primary-50 text-primary-600 border border-primary-100 rounded-lg text-xs font-bold hover:bg-primary-50 transition-all">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                 Join Silently
             </button>
@@ -111,15 +111,15 @@ $isLive = $ivStatus === 'live';
                         </div>
 
                         <!-- Elapsed -->
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-                            <div class="text-xs font-bold text-indigo-400 uppercase tracking-wide mb-2">Elapsed</div>
-                            <div id="m_elapsed" class="text-lg font-extrabold text-indigo-700 font-mono">—</div>
+                        <div class="bg-primary-50 border border-primary rounded-xl p-4">
+                            <div class="text-xs font-bold text-primary uppercase tracking-wide mb-2">Elapsed</div>
+                            <div id="m_elapsed" class="text-lg font-extrabold text-primary-600 font-mono">—</div>
                         </div>
 
                         <!-- Participants -->
-                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                            <div class="text-xs font-bold text-blue-400 uppercase tracking-wide mb-2">Participants</div>
-                            <div id="m_participants" class="text-lg font-extrabold text-blue-700 font-mono">—</div>
+                        <div class="bg-primary-50 border border-primary rounded-xl p-4">
+                            <div class="text-xs font-bold text-primary uppercase tracking-wide mb-2">Participants</div>
+                            <div id="m_participants" class="text-lg font-extrabold text-primary-600 font-mono">—</div>
                         </div>
 
                         <!-- Screen Sharing -->
@@ -165,10 +165,10 @@ $isLive = $ivStatus === 'live';
                         $eventColors = [
                             'join'        => 'bg-green-50  border-green-100  text-green-700',
                             'leave'       => 'bg-red-50    border-red-100    text-red-700',
-                            'start'       => 'bg-blue-50   border-blue-100   text-blue-700',
+                            'start'       => 'bg-primary-50   border-primary   text-primary-600',
                             'end'         => 'bg-gray-100  border-gray-200   text-gray-700',
-                            'screen'      => 'bg-indigo-50 border-indigo-100 text-indigo-700',
-                            'record'      => 'bg-violet-50 border-violet-100 text-violet-700',
+                            'screen'      => 'bg-primary-50 border-primary text-primary-600',
+                            'record'      => 'bg-primary border-primary text-primary',
                             'force_end'   => 'bg-red-50    border-red-100    text-red-700',
                             'reschedule'  => 'bg-amber-50  border-amber-100  text-amber-700',
                         ];
@@ -211,11 +211,11 @@ $isLive = $ivStatus === 'live';
                     $timelineIconMap = [
                         'join'       => ['bg'=>'bg-green-100', 'ic'=>'text-green-600', 'path'=>'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z'],
                         'leave'      => ['bg'=>'bg-red-100',   'ic'=>'text-red-600',   'path'=>'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'],
-                        'start'      => ['bg'=>'bg-blue-100',  'ic'=>'text-blue-600',  'path'=>'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        'start'      => ['bg'=>'bg-primary-50',  'ic'=>'text-primary',  'path'=>'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
                         'end'        => ['bg'=>'bg-gray-100',  'ic'=>'text-gray-600',  'path'=>'M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z'],
                         'force_end'  => ['bg'=>'bg-red-100',   'ic'=>'text-red-700',   'path'=>'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'],
-                        'screen'     => ['bg'=>'bg-indigo-100','ic'=>'text-indigo-600','path'=>'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
-                        'record'     => ['bg'=>'bg-violet-100','ic'=>'text-violet-600','path'=>'M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'],
+                        'screen'     => ['bg'=>'bg-primary-50','ic'=>'text-primary','path'=>'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                        'record'     => ['bg'=>'bg-primary','ic'=>'text-primary','path'=>'M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'],
                     ];
                     foreach ($timeline as $idx => $t):
                         $tType = strtolower((string)$t['event_type']);
@@ -223,7 +223,7 @@ $isLive = $ivStatus === 'live';
                         foreach ($timelineIconMap as $key => $ic) {
                             if (str_contains($tType, $key)) { $icon = $ic; break; }
                         }
-                        $actorColors = ['employer'=>'bg-blue-50 text-blue-700','candidate'=>'bg-green-50 text-green-700','admin'=>'bg-red-50 text-red-700'];
+                        $actorColors = ['employer'=>'bg-primary-50 text-primary-600','candidate'=>'bg-green-50 text-green-700','admin'=>'bg-red-50 text-red-700'];
                         $actor = strtolower((string)$t['actor_role']);
                         $actorCls = $actorColors[$actor] ?? 'bg-gray-100 text-gray-600';
                     ?>
@@ -303,12 +303,12 @@ $isLive = $ivStatus === 'live';
                 </div>
                 <div class="p-4 space-y-2">
                     <button onclick="adminJoinInterview(<?= $ivId ?>, false)"
-                            class="w-full inline-flex items-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm">
+                            class="w-full inline-flex items-center gap-2 px-4 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-600 transition-all shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         Join as Observer
                     </button>
                     <button onclick="adminJoinInterview(<?= $ivId ?>, true)"
-                            class="w-full inline-flex items-center gap-2 px-4 py-3 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all">
+                            class="w-full inline-flex items-center gap-2 px-4 py-3 bg-primary-50 border border-primary text-primary-600 rounded-xl text-sm font-bold hover:bg-primary-50 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                         Join Silently
                     </button>
@@ -406,11 +406,11 @@ async function fetchMetrics() {
 
         const screenEl = document.getElementById('m_screen');
         screenEl.textContent = data.screen_sharing ? 'ON' : 'OFF';
-        screenEl.className   = 'text-lg font-extrabold font-mono ' + (data.screen_sharing ? 'text-indigo-600' : 'text-gray-400');
+        screenEl.className   = 'text-lg font-extrabold font-mono ' + (data.screen_sharing ? 'text-primary' : 'text-gray-400');
 
         const recEl = document.getElementById('m_recording');
         recEl.textContent = data.recording ? 'ON' : 'OFF';
-        recEl.className   = 'text-lg font-extrabold font-mono ' + (data.recording ? 'text-violet-600' : 'text-gray-400');
+        recEl.className   = 'text-lg font-extrabold font-mono ' + (data.recording ? 'text-primary' : 'text-gray-400');
 
         const risk = Math.min(100, Math.max(0, parseInt(data.risk_score ?? 0, 10)));
         document.getElementById('m_risk').textContent = risk + '%';
@@ -486,3 +486,13 @@ document.getElementById('adminForceEndForm').addEventListener('submit', async fu
     } catch(e) { alert('Failed to force end interview.'); }
 });
 </script>
+
+
+
+
+
+
+
+
+
+

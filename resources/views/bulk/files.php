@@ -23,7 +23,7 @@
                 <?php foreach (($files ?? []) as $f): ?>
                     <tr class="border-t">
                         <td class="px-3 py-2">
-                            <a class="text-blue-700 hover:underline" href="/bulk/files/<?= (int)($f['id'] ?? 0) ?>/download">
+                            <a class="text-primary-600 hover:underline" href="/bulk/files/<?= (int)($f['id'] ?? 0) ?>/download">
                                 <?= htmlspecialchars($f['filename'] ?? '') ?>
                             </a>
                         </td>
@@ -44,3 +44,14 @@
         <?php endif; ?>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

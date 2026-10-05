@@ -194,8 +194,8 @@ class CashfreeController extends BaseController
                 $payments = json_decode((string)$paymentsRes->getBody(), true);
                 $latestPayment = $payments[0] ?? null;
 
-                if ($latestPayment && $latestPayment['payment_status'] === 'SUCCESS') {
-                    $this->processSuccessfulPayment($orderId, $latestPayment);
+                if ($latestPayment && ($latestPayment['payment_status'] ?? '') === 'SUCCESS') {
+                    $this->processSuccessfulPayment($orderId, $latestPayment, $body);
                     if ($isApi) {
                         $this->apiSuccess($response, 'Payment verified successfully', ['payment_status' => 'success', 'order_id' => $orderId]);
                         return;
@@ -252,7 +252,7 @@ class CashfreeController extends BaseController
             $orderId = $data['data']['order']['order_id'] ?? '';
             $paymentData = $data['data']['payment'] ?? null;
             if ($orderId && $paymentData) {
-                $this->processSuccessfulPayment($orderId, $paymentData);
+                $this->processSuccessfulPayment($orderId, $paymentData, $data['data']['order'] ?? []);
             }
         }
 
@@ -266,20 +266,30 @@ class CashfreeController extends BaseController
         return hash_equals($expected, $signature);
     }
 
-    private function processSuccessfulPayment(string $gatewayOrderId, array $paymentData): void
+    private function processSuccessfulPayment(string $gatewayOrderId, array $paymentData, array $orderData = []): void
     {
         $db = Database::getInstance();
-        $paymentRow = $db->fetchOne('SELECT * FROM subscription_payments WHERE gateway_order_id = :goid', ['goid' => $gatewayOrderId]);
-        
-        if (!$paymentRow || $paymentRow['status'] === 'completed') {
-            return;
-        }
-
-        $payment = new SubscriptionPayment($paymentRow);
         $db->beginTransaction();
 
         try {
-            // Reusing verification logic similar to SubscriptionController
+            $paymentRow = $db->fetchOne('SELECT * FROM subscription_payments WHERE gateway_order_id = :goid FOR UPDATE', ['goid' => $gatewayOrderId]);
+            if (!$paymentRow || ($paymentRow['status'] ?? '') === 'completed') {
+                $db->commit();
+                return;
+            }
+
+            $payment = new SubscriptionPayment($paymentRow);
+            $paidAmount = (float)($paymentData['payment_amount'] ?? $orderData['order_amount'] ?? 0);
+            $expectedAmount = (float)($payment->attributes['amount'] ?? 0);
+            if ($paidAmount > 0 && abs($paidAmount - $expectedAmount) > 0.01) {
+                throw new \RuntimeException('Cashfree amount mismatch');
+            }
+
+            $paidCurrency = strtoupper((string)($paymentData['payment_currency'] ?? $orderData['order_currency'] ?? 'INR'));
+            if ($paidCurrency !== 'INR') {
+                throw new \RuntimeException('Cashfree currency mismatch');
+            }
+
             $payment->setAttribute('status', 'completed');
             $payment->setAttribute('paid_at', date('Y-m-d H:i:s'));
             $payment->setAttribute('gateway_payment_id', (string)$paymentData['cf_payment_id']);
@@ -294,26 +304,45 @@ class CashfreeController extends BaseController
             $payment->save();
 
             // Update EmployerPayment (Ledger)
-            $db->query(
-                'INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) 
-                 VALUES (:eid, :sid, :amt, :curr, "cashfree", :meth, "success", :txn, :meta, NOW())',
-                [
-                    'eid' => $payment->attributes['employer_id'],
-                    'sid' => $payment->id,
-                    'amt' => $payment->attributes['amount'],
-                    'curr' => $payment->attributes['currency'],
-                    'meth' => (string)($paymentData['payment_method'] ?? 'checkout'),
-                    'txn' => (string)$paymentData['cf_payment_id'],
-                    'meta' => json_encode(['cashfree' => $paymentData])
-                ]
+            $existingEmployerPayment = $db->fetchOne(
+                'SELECT id FROM employer_payments WHERE subscription_payment_id = :sid LIMIT 1 FOR UPDATE',
+                ['sid' => (int)$payment->id]
             );
+            if ($existingEmployerPayment) {
+                $db->query(
+                    'UPDATE employer_payments
+                     SET status = "success", txn_id = :txn, gateway = "cashfree", payment_method = :meth, meta = :meta
+                     WHERE id = :id',
+                    [
+                        'txn' => (string)$paymentData['cf_payment_id'],
+                        'meth' => (string)($paymentData['payment_method'] ?? 'checkout'),
+                        'meta' => json_encode(['cashfree' => $paymentData]),
+                        'id' => (int)$existingEmployerPayment['id']
+                    ]
+                );
+            } else {
+                $db->query(
+                    'INSERT INTO employer_payments (employer_id, subscription_payment_id, amount, currency, gateway, payment_method, status, txn_id, meta, created_at) 
+                     VALUES (:eid, :sid, :amt, :curr, "cashfree", :meth, "success", :txn, :meta, NOW())',
+                    [
+                        'eid' => $payment->attributes['employer_id'],
+                        'sid' => $payment->id,
+                        'amt' => $payment->attributes['amount'],
+                        'curr' => $payment->attributes['currency'],
+                        'meth' => (string)($paymentData['payment_method'] ?? 'checkout'),
+                        'txn' => (string)$paymentData['cf_payment_id'],
+                        'meta' => json_encode(['cashfree' => $paymentData])
+                    ]
+                );
+            }
 
             // Activate subscription
             $subscription = \App\Models\EmployerSubscription::find((int)$payment->attributes['subscription_id']);
             if ($subscription) {
                 $cycle = strtolower((string)($subscription->attributes['billing_cycle'] ?? 'monthly'));
+                $isRenewal = in_array(strtolower((string)($subscription->attributes['status'] ?? '')), ['active', 'trial', 'grace'], true);
                 $base = $subscription->attributes['expires_at'] ?? null;
-                $baseTs = $base ? max(strtotime((string)$base), time()) : time();
+                $baseTs = ($isRenewal && $base) ? max(strtotime((string)$base), time()) : time();
                 $startDate = date('Y-m-d H:i:s', $baseTs);
                 
                 // Calculate expiry using the helper from SubscriptionController or re-implement here
@@ -333,6 +362,11 @@ class CashfreeController extends BaseController
                 $subscription->setAttribute('last_usage_reset_at', date('Y-m-d H:i:s'));
                 
                 $subscription->save();
+                $db->query(
+                    'UPDATE employer_subscriptions SET status = "cancelled" 
+                     WHERE employer_id = :eid AND id != :sid AND status IN ("active","trial","grace")',
+                    ['eid' => (int)$payment->attributes['employer_id'], 'sid' => (int)$subscription->id]
+                );
             }
 
             $db->commit();

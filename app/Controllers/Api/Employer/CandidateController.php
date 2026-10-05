@@ -9,8 +9,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Models\User;
 use App\Models\Candidate;
-use App\Models\CandidateProfile;
-use App\Models\ShortlistedCandidate;
+use App\Models\CandidateInterest;
 use App\Services\NotificationService;
 
 class CandidateController extends ApiController
@@ -64,19 +63,33 @@ class CandidateController extends ApiController
             ->limit($limit)
             ->get();
 
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+        $protocol = $isSecure ? 'https://' : 'http://';
+        $baseUrl = $_ENV['APP_URL'] ?? ($protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+        $baseUrl = rtrim($baseUrl, '/');
+
         $data = [];
-        foreach ($candidates as $candidate) {
-            $profile = CandidateProfile::where('candidate_id', '=', $candidate->id)->first();
+        foreach ($candidates as $userModel) {
+            $profile = Candidate::where('user_id', '=', $userModel->id)->first();
+            
             $data[] = [
-                'id' => $candidate->id,
-                'name' => $candidate->full_name ?? $candidate->name,
-                'email' => $candidate->email,
-                'phone' => $candidate->phone,
-                'location' => $profile->location ?? null,
-                'headline' => $profile->headline ?? null,
-                'photo' => $candidate->photo ?? null,
-                'shortlisted' => ShortlistedCandidate::where('employer_id', '=', $user->id)
-                    ->where('candidate_id', '=', $candidate->id)
+                'id' => $userModel->id,
+                'full_name' => $profile->full_name ?? $userModel->name,
+                'email' => $userModel->email,
+                'phone' => $userModel->phone,
+                'profile_image' => $this->formatImageUrl($profile->profile_picture ?? null, $baseUrl),
+                'location' => [
+                    'city' => $profile->city ?? null,
+                    'state' => $profile->state ?? null,
+                    'country' => $profile->country ?? null
+                ],
+                'professional_title' => $profile->professional_title ?? null,
+                'experience' => $this->formatExperience($profile->experience_data ?? null),
+                'skills' => json_decode($profile->skills_data ?? '[]', true),
+                'is_verified' => (bool)($profile->is_verified ?? false),
+                'shortlisted' => CandidateInterest::where('employer_id', '=', $user->id)
+                    ->where('candidate_id', '=', $userModel->id)
+                    ->where('interest_level', '=', 'shortlisted')
                     ->exists()
             ];
         }
@@ -110,34 +123,87 @@ class CandidateController extends ApiController
             return;
         }
 
-        $profile = CandidateProfile::where('candidate_id', '=', $candidate->id)->first();
+        $profile = Candidate::where('user_id', '=', $candidate->id)->first();
+
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+        $protocol = $isSecure ? 'https://' : 'http://';
+        $baseUrl = $_ENV['APP_URL'] ?? ($protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+        $baseUrl = rtrim($baseUrl, '/');
 
         // Track profile view
         $this->logProfileView($user->id, $candidate->id);
 
         $this->success($response, [
             'id' => $candidate->id,
-            'name' => $candidate->full_name ?? $candidate->name,
+            'full_name' => $profile->full_name ?? $candidate->name,
             'email' => $candidate->email,
             'phone' => $candidate->phone,
-            'photo' => $candidate->photo,
+            'profile_image' => $this->formatImageUrl($profile->profile_picture ?? null, $baseUrl),
+            'professional_title' => $profile->professional_title ?? null,
             'profile' => $profile ? [
-                'headline' => $profile->headline,
-                'bio' => $profile->bio,
-                'location' => $profile->location,
-                'experience_years' => $profile->years_of_experience ?? 0,
-                'skills' => json_decode($profile->skills ?? '[]', true),
+                'bio' => $profile->self_introduction,
+                'location' => [
+                    'city' => $profile->city,
+                    'state' => $profile->state,
+                    'country' => $profile->country
+                ],
+                'experience_years' => $this->formatExperience($profile->experience_data),
+                'experience' => json_decode($profile->experience_data ?? '[]', true),
+                'education' => json_decode($profile->education_data ?? '[]', true),
+                'skills' => json_decode($profile->skills_data ?? '[]', true),
+                'languages' => json_decode($profile->languages_data ?? '[]', true),
+                'resume_url' => !empty($profile->resume_url) ? $baseUrl . $profile->resume_url : null,
+                'portfolio_url' => $profile->portfolio_url,
+                'linkedin_url' => $profile->linkedin_url,
+                'github_url' => $profile->github_url,
+                'expected_salary' => [
+                    'min' => $profile->expected_salary_min,
+                    'max' => $profile->expected_salary_max
+                ],
+                'is_verified' => (bool)$profile->is_verified,
+                'is_premium' => (bool)$profile->is_premium
             ] : null,
-            'shortlisted' => ShortlistedCandidate::where('employer_id', '=', $user->id)
+            'shortlisted' => CandidateInterest::where('employer_id', '=', $user->id)
                 ->where('candidate_id', '=', $candidate->id)
+                ->where('interest_level', '=', 'shortlisted')
                 ->exists()
         ]);
     }
 
-    /**
-     * POST /api/v1/employer/candidates/{id}/invite
-     * Invite candidate to apply for a job
-     */
+    private function formatImageUrl(?string $path, string $baseUrl): ?string
+    {
+        if (empty($path)) return null;
+        if (strpos($path, 'http') === 0) return $path;
+        return $baseUrl . '/' . ltrim($path, '/');
+    }
+
+    private function formatExperience(?string $data): string
+    {
+        $exp = json_decode($data ?? '[]', true);
+        if (empty($exp)) return 'Fresher';
+        
+        $totalMonths = 0;
+        foreach ($exp as $e) {
+            $start = isset($e['start_date']) ? strtotime($e['start_date']) : null;
+            $end = isset($e['end_date']) && $e['end_date'] !== 'Present' ? strtotime($e['end_date']) : time();
+            
+            if ($start && $end) {
+                $totalMonths += (int)(($end - $start) / (30 * 24 * 3600));
+            }
+        }
+
+        if ($totalMonths === 0) return count($exp) . " role(s)";
+        
+        $years = (int)floor($totalMonths / 12);
+        $months = (int)($totalMonths % 12);
+        
+        $result = [];
+        if ($years > 0) $result[] = $years . " Year" . ($years > 1 ? "s" : "");
+        if ($months > 0) $result[] = $months . " Month" . ($months > 1 ? "s" : "");
+        
+        return !empty($result) ? implode(" ", $result) : "Fresher";
+    }
+
     public function invite(Request $request, Response $response, array $params): void
     {
         $user = $this->user($request);
@@ -162,9 +228,6 @@ class CandidateController extends ApiController
             return;
         }
 
-        // Create job invitation record
-        // Implementation depends on your job invitation model
-
         // Send notification
         $this->notificationService->notify(
             $candidate->id,
@@ -176,10 +239,6 @@ class CandidateController extends ApiController
         $this->success($response, null, 'Invitation sent');
     }
 
-    /**
-     * POST /api/v1/employer/candidates/{id}/shortlist
-     * Shortlist a candidate
-     */
     public function shortlist(Request $request, Response $response, array $params): void
     {
         $user = $this->user($request);
@@ -195,8 +254,9 @@ class CandidateController extends ApiController
         }
 
         // Check if already shortlisted
-        $existing = ShortlistedCandidate::where('employer_id', '=', $user->id)
+        $existing = CandidateInterest::where('employer_id', '=', $user->id)
             ->where('candidate_id', '=', $candidate->id)
+            ->where('interest_level', '=', 'shortlisted')
             ->first();
 
         if ($existing) {
@@ -204,28 +264,23 @@ class CandidateController extends ApiController
             return;
         }
 
-        $shortlist = new ShortlistedCandidate();
-        $shortlist->fill([
-            'employer_id' => $user->id,
-            'candidate_id' => $candidate->id
-        ]);
-        $shortlist->save();
+        CandidateInterest::recordInterest(
+            (int)$candidate->id,
+            (int)$user->id,
+            'shortlisted'
+        );
 
         // Send notification
         $this->notificationService->notify(
             $candidate->id,
             'Shortlisted',
             'You have been shortlisted by ' . ($user->full_name ?? 'an employer'),
-            'shortlisted'
+            'candidate_shortlisted'
         );
 
         $this->success($response, null, 'Candidate shortlisted');
     }
 
-    /**
-     * GET /api/v1/employer/shortlists
-     * Get shortlisted candidates
-     */
     public function shortlists(Request $request, Response $response): void
     {
         $user = $this->user($request);
@@ -238,29 +293,44 @@ class CandidateController extends ApiController
         $limit = (int)$request->input('limit', 20);
         $offset = ($page - 1) * $limit;
 
-        $shortlists = ShortlistedCandidate::where('employer_id', '=', $user->id)
+        $shortlists = CandidateInterest::where('employer_id', '=', $user->id)
+            ->where('interest_level', '=', 'shortlisted')
             ->orderBy('created_at', 'DESC')
             ->offset($offset)
             ->limit($limit)
             ->get();
 
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+        $protocol = $isSecure ? 'https://' : 'http://';
+        $baseUrl = $_ENV['APP_URL'] ?? ($protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+        $baseUrl = rtrim($baseUrl, '/');
+
         $data = [];
         foreach ($shortlists as $shortlist) {
-            $candidate = User::find($shortlist->candidate_id);
-            if ($candidate) {
-                $profile = CandidateProfile::where('candidate_id', '=', $candidate->id)->first();
+            $candidateUser = User::find((int)$shortlist->candidate_id);
+            if ($candidateUser) {
+                $profile = Candidate::where('user_id', '=', $candidateUser->id)->first();
                 $data[] = [
-                    'id' => $shortlist->id,
-                    'candidate_id' => $candidate->id,
-                    'name' => $candidate->full_name ?? $candidate->name,
-                    'email' => $candidate->email,
-                    'location' => $profile->location ?? null,
+                    'id' => $candidateUser->id,
+                    'full_name' => $profile->full_name ?? $candidateUser->name,
+                    'email' => $candidateUser->email,
+                    'phone' => $candidateUser->phone,
+                    'profile_image' => $this->formatImageUrl($profile->profile_picture ?? null, $baseUrl),
+                    'professional_title' => $profile->professional_title ?? null,
+                    'location' => [
+                        'city' => $profile->city,
+                        'state' => $profile->state,
+                        'country' => $profile->country
+                    ],
                     'shortlisted_at' => $shortlist->created_at
                 ];
             }
         }
 
-        $total = ShortlistedCandidate::where('employer_id', '=', $user->id)->count();
+        $total = CandidateInterest::where('employer_id', '=', $user->id)
+            ->where('interest_level', '=', 'shortlisted')
+            ->count();
+
         $this->success($response, [
             'shortlists' => $data,
             'pagination' => [
@@ -272,12 +342,8 @@ class CandidateController extends ApiController
         ]);
     }
 
-    /**
-     * Log profile view for analytics
-     */
-    private function logProfileView(int $employer_id, int $candidate_id): void
+    private function logProfileView(int $employerId, int $candidateId): void
     {
-        // Log profile view in analytics
-        // Implementation depends on your analytics model
+        // Implementation for logging view
     }
 }

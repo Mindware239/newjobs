@@ -4,8 +4,8 @@
             <div class="text-center">
                 <p class="text-[#333333] font-sans text-[15px] m-0">
                     Need help? Email
-                    <a href="mailto:gm@mindwareinfotech.com" class="text-red-500 font-bold hover:underline break-all">
-                        gm@mindwareinfotech.com
+                    <a href="mailto:gm@jobsence.com" class="text-red-500 font-bold hover:underline break-all">
+                        gm@jobsence.com
                     </a>.
                 </p>
             </div>
@@ -16,9 +16,9 @@
             <div class="flex flex-col items-center">
                 <div class="mb-[30px]">
                     <img width="127" height="70"
-                         src="/uploads/Mindware-infotech.png"
+                         src="/uploads/jobsence.png"
                          class="h-auto w-[127px] brightness-0 invert"
-                         alt="Mindware Infotech Logo">
+                         alt="Jobsence Logo">
                 </div>
                 <nav class="mb-[30px]">
                     <ul class="flex flex-wrap justify-center gap-x-[25px] gap-y-4">
@@ -32,9 +32,20 @@
                     </ul>
                 </nav>
                 <div class="text-[#7a7a7a] text-[13px] font-sans">
-                    <p>© <?php echo date("Y"); ?> Mindware Infotech. Powered by Decent.</p>
+                    <p>© <?php echo date("Y"); ?> Jobsence. Powered by Decent.</p>
                 </div>
             </div>
         </div>
     </section>
 </footer>
+
+
+
+
+
+
+
+
+
+
+

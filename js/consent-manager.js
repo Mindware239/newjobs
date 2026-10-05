@@ -86,7 +86,7 @@
           <div class="mw-summary-left"><div class="mw-icon">-</div><div class="mw-label">Strictly Necessary Cookies</div></div>\
           <small>Always Active</small>\
         </div>\
-        <div class="mw-body" style="display:block">These cookies are essential for the operation of the Mindware Infotech Job Portal. They enable secure login, session management, form submissions, and fraud prevention. They cannot be disabled as the website will not function properly without them. These cookies do not store personally identifiable information beyond secure operation.</div>\
+        <div class="mw-body" style="display:block">These cookies are essential for the operation of the Jobsence Job Portal. They enable secure login, session management, form submissions, and fraud prevention. They cannot be disabled as the website will not function properly without them. These cookies do not store personally identifiable information beyond secure operation.</div>\
       </div>\
       <div class="mw-section" data-key="functional">\
         <div class="mw-summary">\

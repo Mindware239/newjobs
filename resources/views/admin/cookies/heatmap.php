@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold text-gray-900">Heatmap Dashboard</h1>
     <form method="GET" class="flex gap-2">
       <input name="page" value="<?= htmlspecialchars($page ?? '') ?>" placeholder="/candidate/jobs/slug" class="border rounded px-3 py-2 w-80">
-      <button class="px-3 py-2 bg-indigo-600 text-white rounded">Filter</button>
+      <button class="px-3 py-2 bg-primary text-white rounded">Filter</button>
     </form>
   </div>
   <div class="bg-white rounded-lg shadow p-6 overflow-auto">
@@ -28,3 +28,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

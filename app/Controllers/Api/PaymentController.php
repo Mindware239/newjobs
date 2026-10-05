@@ -30,21 +30,28 @@ class PaymentController extends ApiController
      */
     public function listPlans(Request $request, Response $response): void
     {
-        $plans = SubscriptionPlan::where('active', '=', true)
-            ->orderBy('price', 'ASC')
-            ->get();
+        $planFor = strtolower(trim((string)($request->input('plan_for') ?? $request->input('for') ?? 'employer')));
+        if (!in_array($planFor, ['employer', 'candidate'], true)) {
+            $planFor = 'employer';
+        }
+
+        $plans = SubscriptionPlan::getActivePlansFor($planFor);
 
         $data = [];
         foreach ($plans as $plan) {
             $data[] = [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'slug' => $plan->slug,
+                'plan_for' => $plan->plan_for,
                 'description' => $plan->description,
-                'price' => (float)$plan->price,
-                'billing_cycle' => $plan->billing_cycle,
-                'duration_days' => $plan->duration_days,
+                'price' => (float)$plan->getPrice((string)($plan->default_billing_cycle ?? 'monthly')),
+                'price_monthly' => (float)$plan->price_monthly,
+                'price_quarterly' => (float)$plan->price_quarterly,
+                'price_annual' => (float)$plan->price_annual,
+                'billing_cycle' => $plan->default_billing_cycle ?? 'monthly',
                 'features' => json_decode($plan->features ?? '[]', true),
-                'is_popular' => $plan->is_popular ?? false
+                'is_popular' => (bool)($plan->is_featured ?? false)
             ];
         }
 
@@ -63,24 +70,50 @@ class PaymentController extends ApiController
             return;
         }
 
-        $errors = $this->validate($request->getJsonBody(), [
+        $body = $request->getJsonBody();
+        $errors = $this->validate($body, [
             'plan_id' => 'required|numeric',
-            'payment_method' => 'required|in:razorpay,cashfree,stripe',
             'coupon_code' => 'sometimes|string'
         ]);
+
+        $gateway = strtolower((string)($body['gateway'] ?? $body['payment_gateway'] ?? ''));
+        $paymentMethod = strtolower((string)($body['payment_method'] ?? 'checkout'));
+        if ($gateway === '' && in_array($paymentMethod, ['razorpay', 'cashfree', 'stripe'], true)) {
+            $gateway = $paymentMethod;
+            $paymentMethod = 'checkout';
+        }
+        if ($gateway === '') {
+            $gateway = 'razorpay';
+        }
+        if (!in_array($gateway, ['razorpay', 'cashfree', 'stripe'], true)) {
+            $errors['gateway'] = 'The selected gateway is invalid.';
+        }
+        if ($paymentMethod !== '' && !in_array($paymentMethod, ['checkout', 'card', 'upi', 'netbanking', 'wallet', 'emi', 'paylater'], true)) {
+            $errors['payment_method'] = 'The selected payment_method is invalid.';
+        }
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
             return;
         }
 
-        $plan = SubscriptionPlan::find((int)$request->input('plan_id'));
-        if (!$plan) {
-            $this->error($response, 'Plan not found', 404);
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
-        $amount = (float)$plan->price;
+        $plan = SubscriptionPlan::findFor((int)$request->input('plan_id'), 'employer');
+        if (!$plan) {
+            $this->error($response, 'Employer plan not found', 404);
+            return;
+        }
+
+        $billingCycle = strtolower((string)($body['billing_cycle'] ?? $plan->default_billing_cycle ?? 'monthly'));
+        if (!in_array($billingCycle, ['monthly', 'quarterly', 'annual'], true)) {
+            $billingCycle = 'monthly';
+        }
+        $amount = (float)$plan->getPrice($billingCycle);
 
         // Apply coupon if provided
         if ($request->input('coupon_code')) {
@@ -91,20 +124,32 @@ class PaymentController extends ApiController
             }
         }
 
-        $paymentMethod = $request->input('payment_method');
-
-        // Create payment record
+        // Create pending subscription and payment record.
+        $subscription = new EmployerSubscription();
         $payment = new SubscriptionPayment();
         try {
-            $payment->fill([
-                'employer_id' => $user->id,
+            $subscription->fill([
+                'employer_id' => $employer->id,
                 'plan_id' => $plan->id,
+                'billing_cycle' => $billingCycle,
+                'status' => 'pending',
+                'started_at' => date('Y-m-d H:i:s'),
+                'expires_at' => date('Y-m-d H:i:s'),
+                'auto_renew' => 0
+            ])->save();
+
+            $payment->fill([
+                'subscription_id' => $subscription->id,
+                'employer_id' => $employer->id,
                 'amount' => $amount,
                 'currency' => 'INR',
-                'payment_method' => $paymentMethod,
+                'billing_cycle' => $billingCycle,
+                'gateway' => $gateway,
                 'status' => 'pending',
                 'metadata' => json_encode([
-                    'coupon_code' => $request->input('coupon_code')
+                    'coupon_code' => $request->input('coupon_code'),
+                    'payment_method' => $paymentMethod,
+                    'plan_id' => (int)$plan->id
                 ])
             ])->save();
         } catch (\Throwable $e) {
@@ -114,7 +159,7 @@ class PaymentController extends ApiController
         }
 
         // Generate payment link based on method
-        $paymentData = match($paymentMethod) {
+        $paymentData = match($gateway) {
             'razorpay' => $this->paymentService->initiateRazorpay($payment),
             'cashfree' => $this->paymentService->initiateCashfree($payment),
             'stripe' => $this->paymentService->initiateStripe($payment),
@@ -128,11 +173,17 @@ class PaymentController extends ApiController
 
         $this->success($response, [
             'payment_id' => $payment->id,
+            'subscription_id' => $subscription->id,
             'amount' => $amount,
             'currency' => 'INR',
+            'gateway' => $gateway,
             'payment_method' => $paymentMethod,
             'payment_url' => $paymentData['payment_url'] ?? null,
-            'order_id' => $paymentData['order_id'] ?? null
+            'order_id' => $paymentData['order_id'] ?? null,
+            'gateway_order_id' => $paymentData['order_id'] ?? null,
+            'key' => $paymentData['key'] ?? null,
+            'payment_session_id' => $paymentData['payment_session_id'] ?? null,
+            'environment' => $paymentData['environment'] ?? null
         ], 'Payment initiated', 201);
     }
 
@@ -148,7 +199,11 @@ class PaymentController extends ApiController
             return;
         }
 
-        $errors = $this->validate($request->getJsonBody(), [
+        $body = $request->getJsonBody();
+        if (!isset($body['payment_id']) && isset($body['subscription_payment_id'])) {
+            $body['payment_id'] = $body['subscription_payment_id'];
+        }
+        $errors = $this->validate($body, [
             'payment_id' => 'required|numeric',
             'razorpay_payment_id' => 'sometimes|string',
             'razorpay_order_id' => 'sometimes|string',
@@ -160,14 +215,20 @@ class PaymentController extends ApiController
             return;
         }
 
-        $payment = SubscriptionPayment::find((int)$request->input('payment_id'));
-        if (!$payment || $payment->employer_id !== $user->id) {
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $payment = SubscriptionPayment::find((int)$body['payment_id']);
+        if (!$payment || (int)$payment->employer_id !== (int)$employer->id) {
             $this->error($response, 'Payment not found', 404);
             return;
         }
 
         // Verify payment with gateway
-        $isValid = $this->paymentService->verify($payment, $request->getJsonBody());
+        $isValid = $this->paymentService->verify($payment, $body);
 
         if (!$isValid) {
             $payment->status = 'failed';
@@ -181,7 +242,7 @@ class PaymentController extends ApiController
         }
 
         $payment->status = 'completed';
-        $payment->completed_at = date('Y-m-d H:i:s');
+        $payment->paid_at = date('Y-m-d H:i:s');
         try {
             $payment->save();
         } catch (\Throwable $e) {
@@ -190,18 +251,30 @@ class PaymentController extends ApiController
             return;
         }
 
-        // Create subscription
-        $plan = $payment->plan;
-        $subscription = new EmployerSubscription();
+        $subscription = EmployerSubscription::find((int)$payment->subscription_id);
+        if (!$subscription) {
+            $this->error($response, 'Subscription not found', 404);
+            return;
+        }
+
+        $plan = $subscription->plan();
+        $cycle = strtolower((string)($subscription->billing_cycle ?? 'monthly'));
+        $expiresAt = match ($cycle) {
+            'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months')),
+            'annual' => date('Y-m-d H:i:s', strtotime('+1 year')),
+            default => date('Y-m-d H:i:s', strtotime('+1 month')),
+        };
         try {
             $subscription->fill([
-                'employer_id' => $user->id,
-                'plan_id' => $plan->id,
-                'payment_id' => $payment->id,
-                'starts_at' => date('Y-m-d H:i:s'),
-                'expires_at' => date('Y-m-d H:i:s', strtotime('+' . $plan->duration_days . ' days')),
+                'started_at' => date('Y-m-d H:i:s'),
+                'expires_at' => $expiresAt,
                 'status' => 'active',
-                'auto_renewal' => true
+                'auto_renew' => 0,
+                'contacts_used_this_month' => 0,
+                'resume_downloads_used_this_month' => 0,
+                'chat_messages_used_this_month' => 0,
+                'job_posts_used' => 0,
+                'last_usage_reset_at' => date('Y-m-d H:i:s')
             ])->save();
         } catch (\Throwable $e) {
             error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
@@ -212,7 +285,7 @@ class PaymentController extends ApiController
         // Send confirmation email
         $this->mailService->send($user->email, 'subscription_confirmation', [
             'user_name' => $user->email,
-            'plan_name' => $plan->name,
+            'plan_name' => $plan ? $plan->name : 'Subscription',
             'amount' => $payment->amount,
             'expires_at' => $subscription->expires_at
         ]);
@@ -240,7 +313,13 @@ class PaymentController extends ApiController
         $page = (int)$request->query('page', 1);
         $perPage = (int)$request->query('per_page', 10);
 
-        $query = SubscriptionPayment::where('employer_id', '=', $user->id);
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $query = SubscriptionPayment::where('employer_id', '=', $employer->id);
 
         $payments = $query->orderBy('created_at', 'DESC')->paginate($perPage, $page);
 
@@ -272,7 +351,13 @@ class PaymentController extends ApiController
             return;
         }
 
-        $payment = SubscriptionPayment::where('employer_id', '=', $user->id)
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $payment = SubscriptionPayment::where('employer_id', '=', $employer->id)
             ->where(function($q) use ($orderId) {
                 $q->where('gateway_order_id', '=', $orderId)
                   ->orWhere('gateway_payment_id', '=', $orderId);
@@ -310,7 +395,13 @@ class PaymentController extends ApiController
             return;
         }
 
-        $currentSubscription = EmployerSubscription::where('employer_id', '=', $user->id)
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $currentSubscription = EmployerSubscription::where('employer_id', '=', $employer->id)
             ->where('status', '=', 'active')
             ->first();
 
@@ -325,7 +416,8 @@ class PaymentController extends ApiController
             return;
         }
 
-        if ($newPlan->price <= $currentSubscription->plan->price) {
+        $currentPlan = $currentSubscription->plan();
+        if ($currentPlan && $newPlan->getPrice('monthly') <= $currentPlan->getPrice('monthly')) {
             $this->error($response, 'Cannot downgrade to a lower plan', 400);
             return;
         }
@@ -337,7 +429,7 @@ class PaymentController extends ApiController
         );
 
         $this->success($response, [
-            'current_plan' => $currentSubscription->plan->name,
+            'current_plan' => $currentPlan ? $currentPlan->name : null,
             'new_plan' => $newPlan->name,
             'prorated_charge' => $proratedAmount,
             'upgrade_url' => '/payments/initiate?plan_id=' . $newPlan->id
@@ -356,7 +448,13 @@ class PaymentController extends ApiController
             return;
         }
 
-        $subscription = EmployerSubscription::where('employer_id', '=', $user->id)
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $subscription = EmployerSubscription::where('employer_id', '=', $employer->id)
             ->where('status', '=', 'active')
             ->first();
 
@@ -390,9 +488,13 @@ class PaymentController extends ApiController
             return;
         }
 
-        $subscription = EmployerSubscription::where('employer_id', '=', $user->id)
-            ->where('status', '=', 'active')
-            ->first();
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $subscription = EmployerSubscription::getCurrentForEmployer((int)$employer->id);
 
         if (!$subscription) {
             $this->success($response, [
@@ -402,7 +504,11 @@ class PaymentController extends ApiController
             return;
         }
 
-        $plan = $subscription->plan;
+        $plan = $subscription->plan();
+        if (!$plan) {
+            $this->error($response, 'Subscription plan not found', 404);
+            return;
+        }
         $daysRemaining = (strtotime($subscription->expires_at) - time()) / (60 * 60 * 24);
 
         $this->success($response, [
@@ -410,14 +516,14 @@ class PaymentController extends ApiController
             'plan' => [
                 'id' => $plan->id,
                 'name' => $plan->name,
-                'price' => (float)$plan->price,
+                'price' => (float)$plan->getPrice((string)($subscription->billing_cycle ?? 'monthly')),
                 'features' => json_decode($plan->features ?? '[]', true)
             ],
             'status' => $subscription->status,
-            'started_at' => $subscription->starts_at,
+            'started_at' => $subscription->started_at,
             'expires_at' => $subscription->expires_at,
             'days_remaining' => (int)$daysRemaining,
-            'auto_renewal' => $subscription->auto_renewal
+            'auto_renewal' => (bool)$subscription->auto_renew
         ]);
     }
 
@@ -444,7 +550,8 @@ class PaymentController extends ApiController
         }
 
         $payment = SubscriptionPayment::find((int)$request->input('payment_id'));
-        if (!$payment || $payment->employer_id !== $user->id) {
+        $employer = $user->employer();
+        if (!$employer || !$payment || (int)$payment->employer_id !== (int)$employer->id) {
             $this->error($response, 'Payment not found', 404);
             return;
         }
@@ -525,9 +632,15 @@ class PaymentController extends ApiController
         $perPage = (int)$request->query('per_page', 10);
 
         // Fetch invoices from payments
-        $payments = SubscriptionPayment::where('employer_id', '=', $user->id)
+        $employer = $user->employer();
+        if (!$employer) {
+            $this->error($response, 'Employer profile not found', 404);
+            return;
+        }
+
+        $payments = SubscriptionPayment::where('employer_id', '=', $employer->id)
             ->where('status', '=', 'completed')
-            ->orderBy('completed_at', 'DESC')
+            ->orderBy('paid_at', 'DESC')
             ->paginate($perPage, $page);
 
         $invoices = [];
@@ -535,9 +648,9 @@ class PaymentController extends ApiController
             $invoices[] = [
                 'id' => $payment->id,
                 'invoice_number' => 'INV-' . $payment->id,
-                'plan' => $payment->plan->name,
+                'plan' => ($payment->subscription() && $payment->subscription()->plan()) ? $payment->subscription()->plan()->name : null,
                 'amount' => (float)$payment->amount,
-                'date' => $payment->completed_at,
+                'date' => $payment->paid_at,
                 'status' => 'paid'
             ];
         }
@@ -566,7 +679,8 @@ class PaymentController extends ApiController
         }
 
         $payment = SubscriptionPayment::find($id);
-        if (!$payment || $payment->employer_id !== $user->id) {
+        $employer = $user->employer();
+        if (!$employer || !$payment || (int)$payment->employer_id !== (int)$employer->id) {
             $this->error($response, 'Invoice not found', 404);
             return;
         }
@@ -658,12 +772,17 @@ class PaymentController extends ApiController
 
     private function calculateProration($currentSubscription, $newPlan): float
     {
-        $daysUsed = (time() - strtotime($currentSubscription->starts_at)) / (60 * 60 * 24);
-        $totalDays = $currentSubscription->plan->duration_days;
+        $currentPlan = $currentSubscription->plan();
+        $daysUsed = (time() - strtotime((string)$currentSubscription->started_at)) / (60 * 60 * 24);
+        $totalDays = match ((string)($currentSubscription->billing_cycle ?? 'monthly')) {
+            'quarterly' => 90,
+            'annual' => 365,
+            default => 30,
+        };
         $daysRemaining = $totalDays - $daysUsed;
 
-        $oldPlanDailyRate = $currentSubscription->plan->price / $totalDays;
-        $newPlanDailyRate = $newPlan->price / $newPlan->duration_days;
+        $oldPlanDailyRate = $currentPlan ? $currentPlan->getPrice('monthly') / 30 : 0;
+        $newPlanDailyRate = $newPlan->getPrice('monthly') / 30;
 
         return ($newPlanDailyRate - $oldPlanDailyRate) * $daysRemaining;
     }

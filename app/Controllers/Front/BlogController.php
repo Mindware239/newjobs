@@ -12,9 +12,20 @@ use App\Models\Tag;
 use App\Helpers\TocHelper;
 use App\Helpers\Sanitizer;
 use App\Helpers\SeoHelper;
+use App\Repositories\BlogRepository;
+use App\Services\BlogPresentationService;
 
 class BlogController
 {
+    private BlogRepository $blogRepository;
+    private BlogPresentationService $blogPresentationService;
+
+    public function __construct()
+    {
+        $this->blogRepository = new BlogRepository();
+        $this->blogPresentationService = new BlogPresentationService();
+    }
+
     public function index(Request $request, Response $response): void
     {
         $page = max(1, (int)($request->get('page') ?? 1));
@@ -22,7 +33,6 @@ class BlogController
         $perPage = 12;
         $offset = ($page - 1) * $perPage;
 
-        $db = \App\Core\Database::getInstance();
         $cache = \App\Core\RedisClient::getInstance();
         $cacheKey = "blog:index:page:$page:search:" . md5($search);
         $cached = $cache->get($cacheKey);
@@ -33,70 +43,25 @@ class BlogController
 
         $featured = [];
         if ($search === '') {
-            $featured = $db->fetchAll(
-                "SELECT * FROM blogs 
-                 WHERE published_at IS NOT NULL AND is_featured = 1
-                 ORDER BY sort_order DESC, published_at DESC 
-                 LIMIT 6"
-            );
+            $featured = $this->blogRepository->getFeaturedBlogs(6);
         }
 
         if ($search !== '') {
-            $blogs = $db->fetchAll(
-                "SELECT * FROM blogs 
-                 WHERE published_at IS NOT NULL 
-                   AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)
-                 ORDER BY published_at DESC 
-                 LIMIT " . (int)$perPage . " OFFSET " . (int)$offset,
-                ['q' => '%' . $search . '%']
-            );
-            $countRow = $db->fetchOne("SELECT COUNT(*) as c FROM blogs WHERE published_at IS NOT NULL AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)", ['q' => '%' . $search . '%']);
+            $blogs = $this->blogRepository->searchPublishedBlogs($search, $perPage, $offset);
+            $total = $this->blogRepository->countSearchPublishedBlogs($search);
         } else {
-            $blogs = $db->fetchAll(
-                "SELECT * FROM blogs 
-                 WHERE published_at IS NOT NULL 
-                 ORDER BY is_featured DESC, sort_order DESC, published_at DESC 
-                 LIMIT " . (int)$perPage . " OFFSET " . (int)$offset
-            );
-            $countRow = $db->fetchOne("SELECT COUNT(*) as c FROM blogs WHERE published_at IS NOT NULL");
+            $blogs = $this->blogRepository->getPublishedBlogs($perPage, $offset);
+            $total = $this->blogRepository->countPublishedBlogs();
         }
 
-        $total = (int)($countRow['c'] ?? 0);
-
-        $categories = $db->fetchAll(
-            "SELECT bc.*, COUNT(bcm.blog_id) as blog_count
-             FROM blog_categories bc
-             LEFT JOIN blog_category_map bcm ON bcm.category_id = bc.id
-             GROUP BY bc.id
-             ORDER BY bc.name ASC"
-        );
-
-        $tags = $db->fetchAll(
-            "SELECT bt.*, COUNT(btm.blog_id) as blog_count
-             FROM blog_tags bt
-             LEFT JOIN blog_tag_map btm ON btm.tag_id = bt.id
-             GROUP BY bt.id
-             ORDER BY bt.name ASC"
-        );
-
-        $latestArticles = $db->fetchAll(
-            "SELECT * FROM blogs 
-             WHERE published_at IS NOT NULL 
-             ORDER BY published_at DESC 
-             LIMIT 3"
-        );
+        $categories = $this->blogRepository->getBlogCategoriesWithCounts();
+        $tags = $this->blogRepository->getBlogTagsWithCounts();
+        $latestArticles = $this->blogRepository->getLatestPublishedBlogs(3);
 
         $byCategory = [];
         if ($search === '') {
             foreach ($categories as $c) {
-                $posts = $db->fetchAll(
-                    "SELECT b.* FROM blogs b
-                     INNER JOIN blog_category_map bcm ON bcm.blog_id = b.id
-                     WHERE bcm.category_id = :cid AND b.published_at IS NOT NULL
-                     ORDER BY b.published_at DESC
-                     LIMIT 6",
-                    ['cid' => $c['id']]
-                );
+                $posts = $this->blogRepository->getPublishedBlogsByCategoryId((int)($c['id'] ?? 0), 6, 0);
                 $byCategory[$c['slug'] ?? (string)$c['id']] = [
                     'category' => $c,
                     'posts' => $posts
@@ -104,21 +69,18 @@ class BlogController
             }
         }
 
-        $payload = [
-            'title' => 'Blog',
-            'blogs' => $blogs,
-            'featured' => $featured,
-            'categories' => $categories,
-            'tags' => $tags,
-            'latestArticles' => $latestArticles,
-            'byCategory' => $byCategory,
-            'search' => $search,
-            'pagination' => [
-                'page' => $page,
-                'per_page' => $perPage,
-                'total' => $total
-            ]
-        ];
+        $payload = $this->blogPresentationService->buildIndexPayload(
+            $blogs,
+            $featured,
+            $categories,
+            $tags,
+            $latestArticles,
+            $byCategory,
+            $search,
+            $page,
+            $perPage,
+            $total
+        );
         $cache->set($cacheKey, $payload, 300);
         $response->view('blog/index', $payload, 200, 'layout');
     }
@@ -216,49 +178,19 @@ class BlogController
         $schemaJsonLd = [$articleSchema, $breadcrumbsSchema];
 
         $related = [];
-        $db = \App\Core\Database::getInstance();
         $catIds = array_column(array_map(fn($c) => $c->toArray(), $categories), 'id');
         $tagIds = array_column(array_map(fn($t) => $t->toArray(), $tags), 'id');
         if (!empty($catIds)) {
-            $relByCat = $db->fetchAll(
-                "SELECT DISTINCT b.* FROM blogs b
-                 INNER JOIN blog_category_map bcm ON bcm.blog_id = b.id
-                 WHERE bcm.category_id IN (" . implode(',', array_map('intval', $catIds)) . ")
-                   AND b.id != :id
-                   AND b.published_at IS NOT NULL
-                 ORDER BY b.published_at DESC
-                 LIMIT 6",
-                ['id' => $blog->id]
-            );
+            $relByCat = $this->blogRepository->getRelatedBlogsByCategoryIds($catIds, (int)$blog->id, 6);
             $related = array_merge($related, $relByCat);
         }
         if (!empty($tagIds)) {
-            $relByTag = $db->fetchAll(
-                "SELECT DISTINCT b.* FROM blogs b
-                 INNER JOIN blog_tag_map btm ON btm.blog_id = b.id
-                 WHERE btm.tag_id IN (" . implode(',', array_map('intval', $tagIds)) . ")
-                   AND b.id != :id
-                   AND b.published_at IS NOT NULL
-                 ORDER BY b.published_at DESC
-                 LIMIT 6",
-                ['id' => $blog->id]
-            );
+            $relByTag = $this->blogRepository->getRelatedBlogsByTagIds($tagIds, (int)$blog->id, 6);
             $related = array_merge($related, $relByTag);
         }
-        $seen = [];
-        $related = array_values(array_filter($related, function($r) use (&$seen) {
-            if (isset($seen[$r['id']])) return false;
-            $seen[$r['id']] = true;
-            return true;
-        }));
-        $related = array_slice($related, 0, 6);
+        $related = $this->blogPresentationService->uniqueRelatedBlogs($related, 6);
 
-        $latestArticles = $db->fetchAll(
-            "SELECT * FROM blogs 
-             WHERE published_at IS NOT NULL 
-             ORDER BY published_at DESC 
-             LIMIT 3"
-        );
+        $latestArticles = $this->blogRepository->getLatestPublishedBlogs(3);
 
         $payload = [
             'title' => $blog->title ?? '',
@@ -278,7 +210,7 @@ class BlogController
 
     public function category(Request $request, Response $response, array $params): void
     {
-        $slug = $params['slug'] ?? '';
+        $slug = trim((string)($params['slug'] ?? ''));
         $cache = \App\Core\RedisClient::getInstance();
         $cacheKey = "blog:category:$slug:" . ($request->get('page') ?? 1);
         $cached = $cache->get($cacheKey);
@@ -287,13 +219,24 @@ class BlogController
             return;
         }
         $category = Category::findBySlug($slug);
+        if (!$category && $slug !== '') {
+            $altSlug = str_replace('_', '-', $slug);
+            if ($altSlug !== $slug) {
+                $category = Category::findBySlug($altSlug);
+            }
+        }
         if (!$category) {
             $response->setStatusCode(404);
             $response->view('blog/category', [
                 'title' => 'Category',
                 'category' => null,
-                'blogs' => []
-            ]);
+                'blogs' => [],
+                'pagination' => [
+                    'page' => 1,
+                    'per_page' => 12,
+                    'total' => 0
+                ]
+            ], 404, 'layout');
             return;
         }
 
@@ -301,42 +244,20 @@ class BlogController
         $perPage = 12;
         $offset = ($page - 1) * $perPage;
 
-        $db = \App\Core\Database::getInstance();
-        $blogs = $db->fetchAll(
-            "SELECT b.* FROM blogs b
-             INNER JOIN blog_category_map bcm ON bcm.blog_id = b.id
-             WHERE bcm.category_id = :cid AND b.published_at IS NOT NULL
-             ORDER BY b.published_at DESC
-             LIMIT " . (int)$perPage . " OFFSET " . (int)$offset,
-            ['cid' => $category->id]
-        );
+        $blogs = $this->blogRepository->getPublishedBlogsByCategoryId((int)$category->id, $perPage, $offset);
+        $total = $this->blogRepository->countPublishedBlogsByCategoryId((int)$category->id);
+        $latestArticles = $this->blogRepository->getLatestPublishedBlogs(3);
 
-        $countRow = $db->fetchOne(
-            "SELECT COUNT(*) as c FROM blogs b
-             INNER JOIN blog_category_map bcm ON bcm.blog_id = b.id
-             WHERE bcm.category_id = :cid AND b.published_at IS NOT NULL",
-            ['cid' => $category->id]
+        $payload = $this->blogPresentationService->buildPagedPayload(
+            $category->name ?? 'Category',
+            $category->toArray(),
+            'category',
+            $blogs,
+            $latestArticles,
+            $page,
+            $perPage,
+            $total
         );
-        $total = (int)($countRow['c'] ?? 0);
-
-        $latestArticles = $db->fetchAll(
-            "SELECT * FROM blogs 
-             WHERE published_at IS NOT NULL 
-             ORDER BY published_at DESC 
-             LIMIT 3"
-        );
-
-        $payload = [
-            'title' => $category->name ?? 'Category',
-            'category' => $category->toArray(),
-            'blogs' => $blogs,
-            'latestArticles' => $latestArticles,
-            'pagination' => [
-                'page' => $page,
-                'per_page' => $perPage,
-                'total' => $total
-            ]
-        ];
         $cache->set($cacheKey, $payload, 300);
         $response->view('blog/category', $payload, 200, 'layout');
     }
@@ -366,42 +287,20 @@ class BlogController
         $perPage = 12;
         $offset = ($page - 1) * $perPage;
 
-        $db = \App\Core\Database::getInstance();
-        $blogs = $db->fetchAll(
-            "SELECT b.* FROM blogs b
-             INNER JOIN blog_tag_map btm ON btm.blog_id = b.id
-             WHERE btm.tag_id = :tid AND b.published_at IS NOT NULL
-             ORDER BY b.published_at DESC
-             LIMIT " . (int)$perPage . " OFFSET " . (int)$offset,
-            ['tid' => $tag->id]
-        );
+        $blogs = $this->blogRepository->getPublishedBlogsByTagId((int)$tag->id, $perPage, $offset);
+        $total = $this->blogRepository->countPublishedBlogsByTagId((int)$tag->id);
+        $latestArticles = $this->blogRepository->getLatestPublishedBlogs(3);
 
-        $countRow = $db->fetchOne(
-            "SELECT COUNT(*) as c FROM blogs b
-             INNER JOIN blog_tag_map btm ON btm.blog_id = b.id
-             WHERE btm.tag_id = :tid AND b.published_at IS NOT NULL",
-            ['tid' => $tag->id]
+        $payload = $this->blogPresentationService->buildPagedPayload(
+            $tag->name ?? 'Tag',
+            $tag->toArray(),
+            'tag',
+            $blogs,
+            $latestArticles,
+            $page,
+            $perPage,
+            $total
         );
-        $total = (int)($countRow['c'] ?? 0);
-
-        $latestArticles = $db->fetchAll(
-            "SELECT * FROM blogs 
-             WHERE published_at IS NOT NULL 
-             ORDER BY published_at DESC 
-             LIMIT 3"
-        );
-
-        $payload = [
-            'title' => $tag->name ?? 'Tag',
-            'tag' => $tag->toArray(),
-            'blogs' => $blogs,
-            'latestArticles' => $latestArticles,
-            'pagination' => [
-                'page' => $page,
-                'per_page' => $perPage,
-                'total' => $total
-            ]
-        ];
         $cache->set($cacheKey, $payload, 300);
         $response->view('blog/tag', $payload, 200, 'layout');
     }

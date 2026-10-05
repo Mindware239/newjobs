@@ -5,7 +5,7 @@ $base = $base ?? '/';
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Grievance Redressal | Mindware Infotech</title>
+    <title>Grievance Redressal | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CSS -->
@@ -16,9 +16,9 @@ $base = $base ?? '/';
             theme: {
                 extend: {
                     colors: {
-                        primary: '#7e3aecff', // indigo-600
-                        secondary: '#eef2ff', // indigo-50
-                        accent: '#6c6ed8ff', // indigo-500
+                        primary: '#f05537',   // Jobsence brand orange
+                        secondary: '#fff1ed', // brand tint
+                        accent: '#FF6A3D',    // brand hover
                     }
                 }
             }
@@ -75,16 +75,16 @@ $base = $base ?? '/';
 
         <div class="prose max-w-4xl mx-auto text-gray-700 leading-relaxed" data-aos="fade-up" data-aos-delay="100">
             <p class="mb-6">
-                Mindware Infotech is committed to providing a safe and secure platform for all users. If you have any grievances or complaints regarding our services, content, or user behavior, please reach out to our Grievance Officer.
+                Jobsence is committed to providing a safe and secure platform for all users. If you have any grievances or complaints regarding our services, content, or user behavior, please reach out to our Grievance Officer.
             </p>
 
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8">
                 <h3 class="text-xl font-semibold mb-4 text-gray-900">Grievance Officer Details</h3>
                 <div class="space-y-2">
                     <p><span class="font-medium">Name:</span> Grievance Officer</p>
-                    <p><span class="font-medium">Company:</span> Mindware Infotech</p>
-                    <p><span class="font-medium">Email:</span> <a href="mailto:grievance@mindwareinfotech.com" class="text-indigo-600 hover:underline">grievance@mindwareinfotech.com</a></p>
-                    <p><span class="font-medium">Address:</span> Mindware Infotech, India</p>
+                    <!--<p><span class="font-medium">Company:</span> Jobsence</p>-->
+                    <p><span class="font-medium">Email:</span> <a href="mailto:gm@jobsence.com" class="text-primary hover:underline">gm@jobsence.com</a></p>
+                    <p><span class="font-medium">Address:</span> Jobsence, India</p>
                 </div>
             </div>
 
@@ -107,3 +107,14 @@ $base = $base ?? '/';
     <?php require 'include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

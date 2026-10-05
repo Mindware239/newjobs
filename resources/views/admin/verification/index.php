@@ -5,7 +5,7 @@
   </div>
   <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
-      <div class="h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white bg-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-check h-5 w-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m9 15 2 2 4-4"></path></svg></div>
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white bg-primary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-check h-5 w-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m9 15 2 2 4-4"></path></svg></div>
       <div>
         <div class="text-2xl font-semibold text-gray-900"><?= (int)($stats['total'] ?? 0) ?></div>
         <div class="text-xs text-gray-500">Total</div>
@@ -26,9 +26,9 @@
       </div>
     </div>
     <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
-      <div class="h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white bg-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail h-5 w-5"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg></div>
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white bg-primary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail h-5 w-5"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg></div>
       <div>
-        <div class="text-2xl font-semibold text-indigo-700"><?= (int)($stats['pending_hr'] ?? 0) ?></div>
+        <div class="text-2xl font-semibold text-primary-600"><?= (int)($stats['pending_hr'] ?? 0) ?></div>
         <div class="text-xs text-gray-500">Pending HR</div>
       </div>
     </div>
@@ -55,7 +55,7 @@
         <option value="pending_hr" <?= (($filters['status'] ?? '') === 'pending_hr') ? 'selected' : '' ?>>Pending HR</option>
       </select>
     </div>
-    <button class="px-4 py-2 bg-blue-600 text-white rounded-md">Filter</button>
+    <button class="px-4 py-2 bg-primary text-white rounded-md">Filter</button>
   </form>
   <?php if (!empty($warning ?? null)): ?>
     <div class="mb-4 p-3 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded">
@@ -84,7 +84,7 @@
             <td class="px-6 py-4">
               <?php $name = trim((string)($r['full_name'] ?? '')); $parts = preg_split('/\s+/', $name); $initials = strtoupper(substr($parts[0] ?? '',0,1) . substr($parts[count($parts)-1] ?? '',0,1)); ?>
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold"><?= htmlspecialchars($initials ?: 'NA') ?></div>
+                <div class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold"><?= htmlspecialchars($initials ?: 'NA') ?></div>
                 <div>
                   <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($name) ?></div>
                   <div class="text-xs text-gray-500"><?= htmlspecialchars($r['candidate_email'] ?? '') ?></div>
@@ -111,12 +111,12 @@
               <?php elseif ($status === 'under_review'): ?>
                 <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8v5h5"/></svg> Under Review</span>
               <?php else: ?>
-                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v14H4zM4 18l4-4"/></svg> Pending HR</span>
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-600"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v14H4zM4 18l4-4"/></svg> Pending HR</span>
               <?php endif; ?>
             </td>
             <td class="px-6 py-4 text-sm text-gray-900"><?= htmlspecialchars($r['req_hr_email'] ?? '') ?></td>
             <td class="px-6 py-4 text-sm">
-              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-50 text-primary-600">
                 <?= (int)($r['dcnt.doc_count'] ?? $r['doc_count'] ?? 0) ?>
               </span>
             </td>
@@ -130,7 +130,7 @@
               <?= $tok ? htmlspecialchars(substr($tok, 0, 8) . '…') : '—' ?>
             </td>
             <td class="px-6 py-4 text-right">
-              <a href="/admin/verification/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+              <a href="/admin/verification/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-primary text-primary-600 hover:bg-primary-50">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
                 <span>View</span>
               </a>
@@ -151,3 +151,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

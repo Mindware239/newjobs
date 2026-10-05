@@ -62,7 +62,54 @@ class CronService
             case 'notify_low_match_suggestions':
                 $this->notifyLowMatchSuggestions();
                 break;
+            case 'india_jobs_fetch':
+                foreach (\App\Services\IndiaJobs\FeedFetcher::runDue() as $line) {
+                    echo $line . "\n";
+                }
+                break;
+            case 'registration_payment_reminders':
+            case 'skill_payment_reminders':
+                $this->sendRegistrationPaymentReminders();
+                break;
         }
+    }
+
+    /**
+     * Jobsence ₹155 registrations: remind unpaid users ~30 min after submitting, then every 2 days (max 5).
+     * Schedule every 15 minutes.
+     */
+    private function sendRegistrationPaymentReminders(): void
+    {
+        $sent = 0;
+        foreach (\App\Models\PortalRegistration::dueForReminder() as $reg) {
+            // Skip people whose payment went through but was never recorded.
+            if (\App\Services\Registration\RegistrationPayments::reconcile($reg)) {
+                continue;
+            }
+            if (\App\Services\Registration\RegistrationMailer::sendReminder($reg)) {
+                \App\Models\PortalRegistration::markReminded((int)$reg['id']);
+                $sent++;
+            }
+        }
+        echo "Registration payment reminders sent: {$sent}\n";
+
+        // Renewal reminders: 10, 5 and 1 day before a registration / pass ends.
+        $renewals = 0;
+        foreach (\App\Models\PortalRegistration::dueForExpiryReminder() as $reg) {
+            if (\App\Services\Registration\RegistrationMailer::sendExpiryReminder($reg, (int)$reg['days_left'])) {
+                \App\Models\PortalRegistration::markExpiryReminded((int)$reg['id']);
+                $renewals++;
+            }
+        }
+        echo "Renewal reminders sent: {$renewals}\n";
+
+        // Mentor requests without a reply for 3 days expire; the candidate is offered other mentors.
+        $expired = \App\Services\Registration\MentorMatching::expireOverdue();
+        echo "Mentor requests expired: {$expired}\n";
+
+        // Skill registrations are valid for 3 months from payment.
+        $lapsed = \App\Models\PortalRegistration::expireValidity();
+        echo "Skill registrations expired (3-month validity): {$lapsed}\n";
     }
 
     private function notifyLowMatchSuggestions(): void
@@ -73,10 +120,10 @@ class CronService
             
             // Find low match applications
             $apps = $db->fetchAll(
-                "SELECT a.id, a.job_id, a.candidate_id, a.match_score, j.title as job_title, c.user_id
+                "SELECT a.id, a.job_id, a.candidate_user_id, a.match_score, j.title as job_title, c.user_id
                  FROM applications a
                  JOIN jobs j ON a.job_id = j.id
-                 JOIN candidates c ON a.candidate_id = c.id
+                 JOIN candidates c ON a.candidate_user_id = c.user_id
                  WHERE a.created_at >= :start 
                  AND a.match_score < 60
                  AND a.match_score > 0", // Ignore 0 if it means not calculated
@@ -86,11 +133,12 @@ class CronService
             foreach ($apps as $app) {
                 // Check if already notified for this application
                 $exists = $db->fetchOne(
-                    "SELECT id FROM notification_logs 
-                     WHERE candidate_id = :cid 
-                     AND template_key = 'low_match_suggestion' 
-                     AND metadata LIKE :meta",
-                    ['cid' => (int)$app['user_id'], 'meta' => '%"application_id":' . $app['id'] . '%']
+                    "SELECT nl.id FROM notification_logs nl
+                     JOIN candidates c ON nl.candidate_id = c.id
+                     WHERE c.user_id = :uid 
+                     AND nl.template_key = 'low_match_suggestion' 
+                     AND nl.metadata LIKE :meta",
+                    ['uid' => (int)$app['user_id'], 'meta' => '%"application_id":' . $app['id'] . '%']
                 );
 
                 if (!$exists) {
@@ -135,18 +183,19 @@ class CronService
             foreach ($views as $view) {
                 // Check if applied
                 $applied = $db->fetchOne(
-                    "SELECT id FROM applications WHERE job_id = :jid AND candidate_id = :cid",
-                    ['jid' => (int)$view['job_id'], 'cid' => (int)$view['candidate_id']]
+                    "SELECT id FROM applications WHERE job_id = :jid AND candidate_user_id = :cuid",
+                    ['jid' => (int)$view['job_id'], 'cuid' => (int)$view['user_id']]
                 );
 
                 if (!$applied) {
                     // Check if already notified
                     $exists = $db->fetchOne(
-                        "SELECT id FROM notification_logs 
-                         WHERE candidate_id = :cid 
-                         AND template_key = 'abandoned_job_view' 
-                         AND metadata LIKE :meta",
-                        ['cid' => (int)$view['user_id'], 'meta' => '%"job_id":' . $view['job_id'] . '%']
+                        "SELECT nl.id FROM notification_logs nl
+                         JOIN candidates c ON nl.candidate_id = c.id
+                         WHERE c.user_id = :uid 
+                         AND nl.template_key = 'abandoned_job_view' 
+                         AND nl.metadata LIKE :meta",
+                        ['uid' => (int)$view['user_id'], 'meta' => '%"job_id":' . $view['job_id'] . '%']
                     );
 
                     if (!$exists) {
@@ -257,10 +306,11 @@ class CronService
                 }
 
                 $exists = $db->fetchOne(
-                    "SELECT id FROM notification_logs
-                     WHERE candidate_id = :cid AND template_key = 'interview_reminder_24h'
-                       AND metadata LIKE :meta",
-                    ['cid' => (int) $row['candidate_user_id'], 'meta' => '%\"interview_id\":' . (int) $row['interview_id'] . '%']
+                    "SELECT nl.id FROM notification_logs nl
+                     JOIN candidates c ON nl.candidate_id = c.id
+                     WHERE c.user_id = :uid AND nl.template_key = :tpl
+                       AND nl.metadata LIKE :meta",
+                    ['uid' => (int) $row['candidate_user_id'], 'tpl' => 'interview_reminder_24h', 'meta' => '%\"interview_id\":' . (int) $row['interview_id'] . '%']
                 );
                 if (! $exists) {
                     NotificationService::queueEmail(
@@ -292,10 +342,11 @@ class CronService
                 }
 
                 $exists = $db->fetchOne(
-                    "SELECT id FROM notification_logs
-                     WHERE candidate_id = :cid AND template_key = 'interview_reminder_2h'
-                       AND metadata LIKE :meta",
-                    ['cid' => (int) $row['candidate_user_id'], 'meta' => '%\"interview_id\":' . (int) $row['interview_id'] . '%']
+                    "SELECT nl.id FROM notification_logs nl
+                     JOIN candidates c ON nl.candidate_id = c.id
+                     WHERE c.user_id = :uid AND nl.template_key = :tpl
+                       AND nl.metadata LIKE :meta",
+                    ['uid' => (int) $row['candidate_user_id'], 'tpl' => 'interview_reminder_2h', 'meta' => '%\"interview_id\":' . (int) $row['interview_id'] . '%']
                 );
                 if (! $exists) {
                     NotificationService::queueEmail(
@@ -504,94 +555,9 @@ class CronService
     private function notifyIncompleteProfiles(): void
     {
         try {
-            $db = Database::getInstance();
-            // Candidates with incomplete profiles; schedule nudges at 1, 2, 5, 10 days
-            $candidates = $db->fetchAll(
-                "SELECT c.id, c.user_id, c.full_name, c.profile_strength, c.resume_url, c.skills_data, c.education_data, c.experience_data, c.city, c.created_at, u.email
-                 FROM candidates c
-                 JOIN users u ON c.user_id = u.id
-                 WHERE (c.is_profile_complete = 0 OR c.profile_strength < 80)
-                   AND u.status = 'active'
-                 LIMIT 100"
-            );
-
-            foreach ($candidates as $cand) {
-                // Determine how many nudges already sent
-                $sent = (int)($db->fetchOne(
-                    "SELECT COUNT(*) as c FROM notification_logs
-                     WHERE candidate_id = :cid AND template_key = 'profile_nudge'",
-                    ['cid' => (int)$cand['user_id']]
-                )['c'] ?? 0);
-
-                // Days since candidate created
-                $daysSince = 0;
-                if (!empty($cand['created_at'])) {
-                    $daysSince = (int)floor((time() - strtotime($cand['created_at'])) / 86400);
-                }
-
-                // Schedule thresholds based on count
-                $shouldSend = false;
-                if ($sent === 0 && $daysSince >= 1) { // initial after 1 day
-                    $shouldSend = true;
-                } elseif ($sent === 1 && $daysSince >= 2) {
-                    $shouldSend = true;
-                } elseif ($sent === 2 && $daysSince >= 5) {
-                    $shouldSend = true;
-                } elseif ($sent === 3 && $daysSince >= 10) {
-                    $shouldSend = true;
-                }
-                if (!$shouldSend) {
-                    continue;
-                }
-
-                $missing = [];
-                if (empty($cand['resume_url'])) {
-                    $missing[] = 'Resume';
-                }
-
-                $skills = json_decode($cand['skills_data'] ?? '[]', true);
-                if (empty($skills)) {
-                    $missing[] = 'Skills';
-                }
-
-                $edu = json_decode($cand['education_data'] ?? '[]', true);
-                if (empty($edu)) {
-                    $missing[] = 'Education';
-                }
-
-                $exp = json_decode($cand['experience_data'] ?? '[]', true);
-                if (empty($exp)) {
-                    $missing[] = 'Experience';
-                }
-
-                if (empty($cand['city'])) {
-                    $missing[] = 'Address/Location';
-                }
-
-                if (empty($missing) && (int) $cand['profile_strength'] < 80) {
-                    $missing[] = 'Profile Details';
-                }
-
-                if (! empty($missing)) {
-                    $missingStr = implode(', ', $missing);
-                    $message    = "Your profile is missing: {$missingStr}. Complete it now to get 3x more job matches!";
-
-                    NotificationService::send(
-                        (int) $cand['user_id'],
-                        'profile_nudge',
-                        'Complete Your Profile',
-                        $message,
-                        [
-                            'missing_fields'   => $missing,
-                            'profile_strength' => $cand['profile_strength'],
-                            'link'             => '/candidate/profile/edit',
-                            'email_template'   => 'profile_nudge',
-                            'variant'          => $sent, // rotate subject lines
-                        ],
-                        '/candidate/profile/edit'
-                    );
-                }
-            }
+            $service = new \App\Services\ProfileReminderService();
+            $count = $service->processReminders();
+            error_log("Cron: Sent {$count} profile completion reminders.");
         } catch (\Throwable $t) {
             error_log("Cron Error (notify_incomplete_profiles): " . $t->getMessage());
         }
@@ -607,10 +573,11 @@ class CronService
             $db = Database::getInstance();
             // Get candidate users active in the last day (received any notifications)
             $rows = $db->fetchAll(
-                "SELECT DISTINCT nl.user_id
+                "SELECT DISTINCT c.user_id
                  FROM notification_logs nl
-                 JOIN users u ON u.id = nl.user_id
-                 WHERE nl.sent_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                 JOIN candidates c ON nl.candidate_id = c.id
+                 JOIN users u ON u.id = c.user_id
+                 WHERE nl.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
                    AND u.role = 'candidate'
                    AND u.status = 'active'
                  LIMIT 500"
@@ -623,9 +590,10 @@ class CronService
                 // Aggregate counts by event_type
                 $stats = $db->fetchAll(
                     "SELECT event_type, COUNT(*) as c
-                     FROM notification_logs
-                     WHERE user_id = :uid
-                       AND sent_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                     FROM notification_logs nl
+                     JOIN candidates c ON nl.candidate_id = c.id
+                     WHERE c.user_id = :uid
+                       AND nl.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
                      GROUP BY event_type",
                     ['uid' => $uid]
                 );
@@ -681,11 +649,12 @@ class CronService
                     $templateKey = "inactivity_{$days}d";
 
                     $exists = $db->fetchOne(
-                        "SELECT id FROM notification_logs
-                         WHERE candidate_id = :cid
-                           AND template_key = :tpl
-                           AND created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)",
-                        ['cid' => (int) $user['id'], 'tpl' => $templateKey, 'days' => $days]
+                        "SELECT nl.id FROM notification_logs nl
+                         JOIN candidates c ON nl.candidate_id = c.id
+                         WHERE c.user_id = :uid
+                           AND nl.template_key = :tpl
+                           AND nl.created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)",
+                        ['uid' => (int) $user['id'], 'tpl' => $templateKey, 'days' => $days]
                     );
 
                     if ($exists) {
@@ -1027,10 +996,11 @@ class CronService
         $templateKey = "limit_alert_{$type}_{$threshold}";
 
         // Check if already notified for this threshold in the current period
-        $sql = "SELECT id FROM notification_logs
-                WHERE user_id = :uid
-                  AND template_key = :tpl
-                  AND metadata LIKE :meta";
+        $sql = "SELECT nl.id FROM notification_logs nl
+                JOIN employers e ON nl.employer_id = e.id
+                WHERE e.user_id = :uid
+                  AND nl.template_key = :tpl
+                  AND nl.metadata LIKE :meta";
         $params = [
             'uid'  => $userId,
             'tpl'  => $templateKey,
@@ -1038,7 +1008,7 @@ class CronService
         ];
 
         if ($since) {
-            $sql             .= " AND created_at >= :since";
+            $sql             .= " AND nl.created_at >= :since";
             $params['since']  = $since;
         }
 

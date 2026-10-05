@@ -18,17 +18,26 @@ class Response
 
         $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
             || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+        $jitsiDomain = trim((string)($_ENV['JITSI_DOMAIN'] ?? 'meet.jit.si'));
+        $jitsiDomain = rtrim((string)preg_replace('#^https?://#i', '', $jitsiDomain), '/');
+        $jitsiDomain = preg_replace('/[^A-Za-z0-9.-]/', '', $jitsiDomain) ?: 'meet.jit.si';
+        if ($jitsiDomain === '' || strtolower($jitsiDomain) === 'your-jitsi-domain.com') {
+            $jitsiDomain = 'meet.jit.si';
+        }
+        $jitsiHttps = 'https://' . $jitsiDomain;
+        $jitsiWss = 'wss://' . $jitsiDomain;
 
         header('X-Frame-Options: DENY');
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header('Permissions-Policy: geolocation=(self), camera=(), microphone=()');
+        header('Permissions-Policy: geolocation=(self), camera=(self "https://meet.jit.si" "' . $jitsiHttps . '"), microphone=(self "https://meet.jit.si" "' . $jitsiHttps . '"), display-capture=(self "https://meet.jit.si" "' . $jitsiHttps . '"), fullscreen=(self "https://meet.jit.si" "' . $jitsiHttps . '"), autoplay=(self "https://meet.jit.si" "' . $jitsiHttps . '")');
 
         // ✅ FIXED CSP (Razorpay + Cashfree + existing services SAFE)
         $csp = "default-src 'self'; "
 
             // 🔥 SCRIPT (FIXED HERE)
-            . "script-src 'self' 'unsafe-inline' 'unsafe-eval' 
+            . "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:
+            {$jitsiHttps} https://*.jit.si https://meet.jit.si https://*.jitsi.net https://*.jitsi.org
             https://checkout.razorpay.com 
             https://cdn.razorpay.com 
             https://*.razorpay.com 
@@ -39,12 +48,13 @@ class Response
 
             // STYLE
             . "style-src 'self' 'unsafe-inline' 
+            {$jitsiHttps} https://*.jit.si https://meet.jit.si
             https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com 
             https://cdn.jsdelivr.net https://cdn.quilljs.com https://cdn.ckeditor.com; "
 
             // FONT
             . "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com 
-            https://cdn.jsdelivr.net data:; "
+            https://cdn.jsdelivr.net {$jitsiHttps} https://*.jit.si https://meet.jit.si data:; "
 
             // IMAGE
             . "img-src 'self' data: https: 
@@ -54,6 +64,8 @@ class Response
 
             // 🔥 CONNECT (IMPORTANT FIX)
             . "connect-src 'self' 
+            {$jitsiHttps} {$jitsiWss} https://*.jit.si https://meet.jit.si https://*.jitsi.net https://*.jitsi.org
+            wss://*.jit.si wss://meet.jit.si wss://*.jitsi.net wss://*.jitsi.org
             https://*.razorpay.com 
             https://api.razorpay.com 
             https://lumberjack.razorpay.com 
@@ -70,12 +82,15 @@ class Response
 
             // FRAME (PAYMENT POPUP)
             . "frame-src 'self' 
+            {$jitsiHttps} https://*.jit.si https://meet.jit.si https://*.jitsi.net https://*.jitsi.org
             https://checkout.razorpay.com 
             https://*.razorpay.com 
             https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com; "
 
             . "frame-ancestors 'none'; "
             . "base-uri 'self'; "
+            . "media-src 'self' blob: {$jitsiHttps} https://*.jit.si https://meet.jit.si https://*.jitsi.net; "
+            . "worker-src 'self' blob:; "
             . "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com;";
 
         header('Content-Security-Policy: ' . preg_replace('/\s+/', ' ', $csp));
@@ -111,7 +126,7 @@ class Response
             ob_clean();
         }
 
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_PRESERVE_ZERO_FRACTION);
 
         exit;
     }

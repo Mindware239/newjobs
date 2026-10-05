@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>About Us | Mindware Infotech</title>
+    <title>About Us | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -15,7 +15,7 @@
     <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 h-20 md:h-24 flex items-center justify-between">
         <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
             </a>
         </div>
 
@@ -85,9 +85,9 @@ $class = $isActive
             </li>
             <?php endforeach; ?>
             <li class="pt-4 flex flex-col gap-3">
-                <a href="candidate" class="w-full py-3 bg-[#5b6bd5] text-white text-center font-bold rounded">JOBSEEKERS</a>
+                <a href="candidate" class="w-full py-3 bg-[#f05537] text-white text-center font-bold rounded">JOBSEEKERS</a>
                 <div class="text-center text-sm py-2">
-                    Employers: <a href="employers" class="text-[#5b6bd5] font-bold">Login</a>
+                    Employers: <a href="employers" class="text-[#f05537] font-bold">Login</a>
                 </div>
             </li>
         </ul>
@@ -103,7 +103,7 @@ $class = $isActive
 
     <p class="max-w-4xl text-gray-700 leading-relaxed mb-10">
         Since our founding in 1999 as Opportunity Knocks, one of the first job boards
-        focused exclusively on mission-driven careers, our team at Mindware Infotech
+        focused exclusively on mission-driven careers, our team at Jobsence
         has helped more than 30,000 organizations find the talent they need.
     </p>
 
@@ -124,7 +124,7 @@ $class = $isActive
 
     <p class="max-w-4xl text-gray-700 leading-relaxed">
         With over 100,000 visitors viewing hundreds of job postings every month,
-        Mindware Infotech is the trusted platform for professionals looking to start,
+        Jobsence is the trusted platform for professionals looking to start,
         grow, or transition their careers in purpose-driven organizations. We connect
         employers with candidates who truly believe in the work they do.
     </p>
@@ -134,14 +134,25 @@ $class = $isActive
 <!-- ================= FOOTER ================= -->
 <footer class="bg-white border-t border-gray-200">
     <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-600">
-        <p>© 2026 Mindware Infotech. All Rights Reserved.</p>
+        <p>© 2026 Jobsence. All Rights Reserved.</p>
         <div class="flex gap-6 mt-3 md:mt-0">
-            <a href="<?= $base ?>terms" class="hover:text-[#5b6bd5]">Terms</a>
-            <a href="<?= $base ?>privacy" class="hover:text-[#5b6bd5]">Privacy</a>
-            <a href="<?= $base ?>contact" class="hover:text-[#5b6bd5]">Contact</a>
+            <a href="<?= $base ?>terms" class="hover:text-[#f05537]">Terms</a>
+            <a href="<?= $base ?>privacy" class="hover:text-[#f05537]">Privacy</a>
+            <a href="<?= $base ?>contact" class="hover:text-[#f05537]">Contact</a>
         </div>
     </div>
 </footer>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

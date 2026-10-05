@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Complete Your Profile - Mindware Infotech</title>
+    <title>Complete Your Profile - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <style>
         [x-cloak] { display: none !important; }
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        .btn-primary-solid {
+            background: linear-gradient(135deg, #f05537 0%, #f05537 100%);
             border: none;
             color: white;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        .btn-primary-solid:hover {
+            background: linear-gradient(135deg, #f05537 0%, #f05537 100%);
             box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
             transform: translateY(-2px);
         }
         .text-gradient {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #f05537 0%, #f05537 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -33,7 +33,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .segmented-bar{height:14px;border-radius:9999px;background:#eef2ff;position:relative;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.06)}
-        .segmented-bar .fill{height:100%;border-radius:9999px;background:linear-gradient(90deg,#22c55e 0%,#84cc16 20%,#f59e0b 50%,#f97316 70%,#8b5cf6 100%);transition:width 400ms ease}
+        .segmented-bar .fill{height:100%;border-radius:9999px;background:linear-gradient(90deg,#22c55e 0%,#84cc16 20%,#f59e0b 50%,#f97316 70%,#f05537 100%);transition:width 400ms ease}
         .segmented-bar .ticks{position:absolute;inset:0;pointer-events:none}
         .segmented-bar .ticks span{position:absolute;top:50%;width:1px;height:10px;background:rgba(0,0,0,0.1);transform:translateY(-50%)}
         .segmented-bar .knob{position:absolute;top:50%;width:16px;height:16px;border-radius:9999px;transform:translateY(-50%);box-shadow:0 2px 6px rgba(0,0,0,0.2);border:2px solid #fff}
@@ -47,7 +47,7 @@
         .donut::after{content:attr(data-label);position:absolute;inset:0;display:grid;place-items:center;font-weight:700;color:#111827;font-size:22px}
         input[type="text"], input[type="date"], input[type="tel"], input[type="email"], select, textarea { border-width:1.5px; }
         input, select, textarea { transition: box-shadow .2s ease, border-color .2s ease; }
-        input:focus, select:focus, textarea:focus { outline: none; box-shadow:0 0 0 3px rgba(99,102,241,0.25); border-color:#6366f1; }
+        input:focus, select:focus, textarea:focus { outline: none; box-shadow:0 0 0 3px rgba(99,102,241,0.25); border-color:#f05537; }
         .sb-bar{width:100%;height:8px;background:#e5e7eb;border-radius:9999px;position:relative;overflow:hidden}
         .sb-fill{height:100%;border-radius:9999px;transition:width 400ms ease}
         .sb-knob{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:9999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
@@ -55,7 +55,7 @@
         .toast .item{min-width:260px;max-width:360px;padding:10px 12px;border-radius:10px;color:#fff;box-shadow:0 6px 14px rgba(17,24,39,0.15);display:flex;align-items:center;gap:8px}
         .toast .success{background:#16a34a}
         .toast .error{background:#dc2626}
-        .toast .info{background:#2563eb}
+        .toast .info{background:#f05537}
         .chart-tooltip{position:absolute;background:#1f2937;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 8px 20px rgba(0,0,0,0.25);white-space:nowrap;pointer-events:none;z-index:10}
         input, select, textarea { padding: 10px 12px; line-height: 1.4; }
     </style>
@@ -134,6 +134,14 @@
                     languages: <?= json_encode($existingLanguages ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
                     certificates: <?= json_encode($existingCertificates ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
                     verification: <?= json_encode($existingVerification ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                    preferences: {
+                        preferred_job_titles: <?= json_encode($existingPreferences['preferred_job_titles'] ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                        preferred_job_types: <?= json_encode($existingPreferences['preferred_job_types'] ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                        preferred_work_mode: <?= json_encode($existingPreferences['preferred_work_mode'] ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                        preferred_locations: <?= json_encode($existingPreferences['preferred_locations'] ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
+                        minimum_acceptable_salary: <?= json_encode($existingPreferences['minimum_acceptable_salary'] ?? null) ?>,
+                        open_to_relocation: <?= json_encode($existingPreferences['open_to_relocation'] ?? false) ?>
+                    },
                     additional: {
                         expected_salary_min: <?= json_encode($candidate->attributes['expected_salary_min'] ?? null) ?>,
                         expected_salary_max: <?= json_encode($candidate->attributes['expected_salary_max'] ?? null) ?>,
@@ -475,6 +483,34 @@
                     } catch (e) {}
                     finally { this.drawPie(); }
                 },
+                async deleteVideo() {
+                    try {
+                        const res = await fetch('/candidate/profile/delete-video', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.formData.basic.video_intro_url = null;
+                            this.profileStrength = data.profile_strength;
+                            this.showToast('Video deleted successfully', 'success');
+                        }
+                    } catch (e) { this.showToast('Error deleting video', 'error'); }
+                },
+                async deleteResume() {
+                    try {
+                        const res = await fetch('/candidate/profile/delete-resume', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.formData.basic.resume_url = null;
+                            this.profileStrength = data.profile_strength;
+                            this.showToast('Resume deleted successfully', 'success');
+                        }
+                    } catch (e) { this.showToast('Error deleting resume', 'error'); }
+                },
                 countdownText(expiresAt) {
                     if (!expiresAt) return '';
                     const end = new Date(expiresAt);
@@ -627,6 +663,11 @@
                             section: 'verification',
                             need_verification: v.need_verification || false,
                             employments: v.employments || []
+                        };
+                    } else if (section === 'preferences') {
+                        payload = {
+                            section: 'preferences',
+                            ...this.formData.preferences
                         };
                     } else if (section === 'additional') {
                         const a = this.formData.additional;
@@ -809,7 +850,7 @@
                 sectionColor(key) {
                     const map = {
                         basic: '#22c55e',
-                        education: '#6366f1',
+                        education: '#f05537',
                         experience: '#10b981',
                         skills: '#f59e0b',
                         languages: '#fbbf24',
@@ -817,7 +858,7 @@
                         verification: '#14b8a6',
                         additional: '#a78bfa'
                     };
-                    return map[key] || '#6366f1';
+                    return map[key] || '#f05537';
                 },
                 get donutCallout() {
                     const br = this.completionBreakdown;
@@ -865,7 +906,7 @@
                     }
                 },
                 nextStep() {
-                    if (this.currentStep < 8) this.currentStep++;
+                    if (this.currentStep < 9) this.currentStep++;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
                 prevStep() {
@@ -909,8 +950,8 @@
         <div class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">Profile Strength: <strong class="text-indigo-600" x-text="profileStrength + '%'"></strong></span>
-                    <a href="/candidate/dashboard" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Skip for now</a>
+                    <span class="text-sm text-gray-600">Profile Strength: <strong class="text-primary" x-text="profileStrength + '%'"></strong></span>
+                    <a href="/candidate/dashboard" class="text-sm text-primary hover:text-primary font-medium">Skip for now</a>
                 </div>
             </div>
         </div>
@@ -921,12 +962,12 @@
                     <h1 class="text-3xl font-bold text-gray-900">Complete Your Profile</h1>
                     <div class="text-right">
                         <div class="text-sm text-gray-600">Completion</div>
-                        <div class="text-2xl font-bold text-indigo-600" x-text="overallPercent + '%'"></div>
+                        <div class="text-2xl font-bold text-primary" x-text="overallPercent + '%'"></div>
                     </div>
                 </div>
                 <div class="segmented-bar">
                     <div class="fill" :style="'width: ' + overallPercent + '%'"></div>
-                    <div class="knob" :style="'left: calc(' + overallPercent + '% - 8px)'" :class="overallPercent>=75 ? 'bg-purple-500' : overallPercent>=50 ? 'bg-orange-500' : 'bg-green-500'"></div>
+                    <div class="knob" :style="'left: calc(' + overallPercent + '% - 8px)'" :class="overallPercent>=75 ? 'bg-primary' : overallPercent>=50 ? 'bg-orange-500' : 'bg-green-500'"></div>
                     <div class="ticks">
                         <span style="left:0%"></span>
                         <span style="left:25%"></span>
@@ -947,9 +988,9 @@
                 <div class="flex-1 min-w-0">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 p-4 overflow-x-auto">
                         <div class="flex flex-nowrap gap-3 min-w-max">
-                            <template x-for="(step, index) in ['Basic Details', 'Education', 'Experience', 'Skills', 'Languages', 'Certificates', 'Employer Verification', 'Additional']">
+                            <template x-for="(step, index) in ['Basic Details', 'Education', 'Experience', 'Skills', 'Languages', 'Certificates', 'Employer Verification', 'Job Preferences', 'Additional']">
                                 <button @click="currentStep = index + 1" 
-                                        :class="currentStep === index + 1 ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'"
+                                        :class="currentStep === index + 1 ? 'bg-primary-50 text-primary border border-primary shadow-sm' : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100'"
                                         class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap">
                                     <span x-text="(index + 1) + '. ' + step"></span>
                                 </button>
@@ -964,19 +1005,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                            <input type="text" x-model="formData.basic.full_name" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Enter your full name">
+                            <input type="text" x-model="formData.basic.full_name" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Enter your full name">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Professional Title / Designation</label>
-                            <input type="text" x-model="formData.basic.professional_title" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="e.g. PHP Developer, Marketing Manager">
+                            <input type="text" x-model="formData.basic.professional_title" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="e.g. PHP Developer, Marketing Manager">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                            <input type="date" x-model="formData.basic.dob" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <input type="date" x-model="formData.basic.dob" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                            <select x-model="formData.basic.gender" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <select x-model="formData.basic.gender" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm">
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -986,19 +1027,19 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                            <input type="tel" x-model="formData.basic.mobile" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Enter mobile number">
+                            <input type="tel" x-model="formData.basic.mobile" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Enter mobile number">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                            <input type="text" x-model="formData.basic.city" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="City">
+                            <input type="text" x-model="formData.basic.city" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="City">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input type="text" x-model="formData.basic.state" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="State">
+                            <input type="text" x-model="formData.basic.state" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="State">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                            <input type="text" x-model="formData.basic.country" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Country">
+                            <input type="text" x-model="formData.basic.country" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Country">
                         </div>
                     </div>
 
@@ -1006,7 +1047,7 @@
                         <h3 class="text-lg font-semibold text-gray-800">Introduction</h3>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Self Introduction</label>
-                            <textarea x-model="formData.basic.self_introduction" rows="4" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Tell us about yourself..."></textarea>
+                            <textarea x-model="formData.basic.self_introduction" rows="4" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Tell us about yourself..."></textarea>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -1016,7 +1057,7 @@
                                         <img x-show="formData.basic.profile_picture" :src="formData.basic.profile_picture" class="w-full h-full object-cover" alt="">
                                         <span x-show="!formData.basic.profile_picture" class="text-gray-400 text-xs">No Image</span>
                                     </div>
-                                    <label class="px-3 py-2 btn-primary rounded-md text-sm cursor-pointer">
+                                    <label class="px-3 py-2 btn-primary-solid rounded-md text-sm cursor-pointer">
                                         <input type="file" class="hidden" accept="image/*" @change="($event.target.files[0]) && uploadFile('profile_picture', $event.target.files[0])">
                                         Upload
                                     </label>
@@ -1024,9 +1065,22 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Resume / CV</label>
-                                <div class="flex items-center gap-3">
-                                    <input type="file" accept=".pdf,.doc,.docx" @change="($event.target.files[0]) && uploadFile('resume', $event.target.files[0])" class="text-sm">
-                                    <span x-show="formData.basic.resume_url" class="text-xs text-indigo-600">Uploaded</span>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <label class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm cursor-pointer hover:bg-gray-50 transition shadow-sm">
+                                            <input type="file" class="hidden" accept=".pdf,.doc,.docx" @change="($event.target.files[0]) && uploadFile('resume', $event.target.files[0])">
+                                            <span x-text="formData.basic.resume_url ? 'Change Resume' : 'Upload Resume'"></span>
+                                        </label>
+                                        <span x-show="formData.basic.resume_url" class="text-xs text-green-600 font-medium flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            Uploaded
+                                        </span>
+                                    </div>
+                                    <div x-show="formData.basic.resume_url" class="flex items-center gap-2">
+                                        <a :href="formData.basic.resume_url" target="_blank" class="text-xs text-primary hover:underline font-medium">View Current Resume</a>
+                                        <span class="text-gray-300">|</span>
+                                        <button type="button" @click="if(confirm('Are you sure you want to remove your resume?')) deleteResume()" class="text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1050,7 +1104,7 @@
                                 <input type="file" accept="video/mp4,video/*" @change="($event.target.files[0]) && uploadFile('video', $event.target.files[0])" class="text-sm">
                             </div>
                             <div x-show="formData.basic.video_type === 'youtube'">
-                                <input type="url" x-model="formData.basic.video_url" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="https://youtube.com/watch?v=...">
+                                <input type="url" x-model="formData.basic.video_url" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="https://youtube.com/watch?v=...">
                             </div>
                             <div x-show="formData.basic.video_type === 'record'">
                                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -1060,9 +1114,9 @@
                                             <video x-ref="recPreview" autoplay playsinline muted class="w-full h-full"></video>
                                         </div>
                                         <div class="mt-3 flex items-center gap-3">
-                                            <button type="button" class="px-4 py-2 btn-primary rounded-md text-sm" @click="startRecording()" :disabled="isRecording || !recordingSupported">Start Recording</button>
+                                            <button type="button" class="px-4 py-2 btn-primary-solid rounded-md text-sm" @click="startRecording()" :disabled="isRecording || !recordingSupported">Start Recording</button>
                                             <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm" @click="stopRecording()" :disabled="!isRecording">Stop</button>
-                                            <button type="button" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md text-sm" @click="saveRecording()" :disabled="!recordedBlob">Save Video</button>
+                                            <button type="button" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-md text-sm" @click="saveRecording()" :disabled="!recordedBlob">Save Video</button>
                                         </div>
                                         <div class="text-xs text-gray-500 mt-2">640×360, 24fps, compressed upload.</div>
                                     </div>
@@ -1072,7 +1126,7 @@
                                 <div class="flex items-center gap-3">
                                     <a :href="formData.basic.video_intro_url"
                                        target="_blank"
-                                       class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
+                                       class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-50 transition text-sm font-medium">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1093,7 +1147,7 @@
                             </div>
                         </div>
                         <div class="flex justify-end">
-                            <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('basic').then(() => nextStep())">
+                            <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('basic').then(() => nextStep())">
                                 <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                                 <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                             </button>
@@ -1105,7 +1159,7 @@
                 <div x-show="currentStep === 2" x-transition:enter="step-enter" class="space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Education Details</h2>
-                        <button type="button" @click="addEducation()" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
+                        <button type="button" @click="addEducation()" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition">
                             + Add Education
                         </button>
                     </div>
@@ -1144,7 +1198,7 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('education').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('education').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
@@ -1155,7 +1209,7 @@
                 <div x-show="currentStep === 3" x-transition:enter="step-enter" class="space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Work Experience</h2>
-                        <button type="button" @click="addExperience()" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
+                        <button type="button" @click="addExperience()" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition">
                             + Add Experience
                         </button>
                     </div>
@@ -1182,7 +1236,7 @@
                                     <label class="block text-xs font-medium text-gray-500 mb-1">End Date</label>
                                     <input type="date" x-model="exp.end_date" :disabled="exp.is_current" class="w-full rounded-lg border-gray-300 text-sm disabled:bg-gray-100">
                                     <div class="mt-1 flex items-center">
-                                        <input type="checkbox" x-model="exp.is_current" class="rounded text-indigo-600 focus:ring-indigo-500">
+                                        <input type="checkbox" x-model="exp.is_current" class="rounded text-primary focus:ring-primary">
                                         <span class="ml-2 text-xs text-gray-600">Currently Working</span>
                                     </div>
                                 </div>
@@ -1198,7 +1252,7 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('experience').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('experience').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
@@ -1209,7 +1263,7 @@
                 <div x-show="currentStep === 4" x-transition:enter="step-enter" class="space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Skills</h2>
-                        <button type="button" @click="addSkill()" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
+                        <button type="button" @click="addSkill()" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition">
                             + Add Skill
                         </button>
                     </div>
@@ -1218,10 +1272,10 @@
                         <template x-for="(skill, index) in formData.skills" :key="index">
                             <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                 <div class="flex-1">
-                                    <input type="text" x-model="skill.name" class="w-full rounded border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Skill Name (e.g. PHP)">
+                                    <input type="text" x-model="skill.name" class="w-full rounded border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="Skill Name (e.g. PHP)">
                                 </div>
                                 <div class="w-32">
-                                    <select x-model="skill.level" class="w-full rounded border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <select x-model="skill.level" class="w-full rounded border-gray-300 text-sm focus:border-primary focus:ring-primary">
                                         <option value="beginner">Beginner</option>
                                         <option value="intermediate">Intermediate</option>
                                         <option value="expert">Expert</option>
@@ -1238,7 +1292,7 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('skills').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('skills').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
@@ -1249,7 +1303,7 @@
                 <div x-show="currentStep === 5" x-transition:enter="step-enter" class="space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Languages</h2>
-                        <button type="button" @click="addLanguage()" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
+                        <button type="button" @click="addLanguage()" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition">
                             + Add Language
                         </button>
                     </div>
@@ -1258,10 +1312,10 @@
                         <template x-for="(lang, index) in formData.languages" :key="index">
                             <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                 <div class="flex-1">
-                                    <input type="text" x-model="lang.language" class="w-full rounded border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Language (e.g. English)">
+                                    <input type="text" x-model="lang.language" class="w-full rounded border-gray-300 text-sm focus:border-primary focus:ring-primary" placeholder="Language (e.g. English)">
                                 </div>
                                 <div class="w-40">
-                                    <select x-model="lang.proficiency" class="w-full rounded border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <select x-model="lang.proficiency" class="w-full rounded border-gray-300 text-sm focus:border-primary focus:ring-primary">
                                         <option value="basic">Basic</option>
                                         <option value="conversational">Conversational</option>
                                         <option value="fluent">Fluent</option>
@@ -1276,7 +1330,7 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('languages').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('languages').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
@@ -1287,7 +1341,7 @@
                 <div x-show="currentStep === 6" x-transition:enter="step-enter" class="space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <h2 class="text-2xl font-bold text-gray-800">Certificates</h2>
-                        <button type="button" @click="addCertificate()" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
+                        <button type="button" @click="addCertificate()" class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium hover:bg-primary-50 transition">
                             + Add Certificate
                         </button>
                     </div>
@@ -1336,7 +1390,7 @@
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('certificates').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('certificates').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
@@ -1351,10 +1405,10 @@
                         <!-- Integrated verification within this step -->
                     </div>
 
-                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                    <div class="bg-primary-50 border border-primary rounded-xl p-6">
                         <div class="flex items-start gap-4">
                             <div class="flex items-center h-5">
-                                <input type="checkbox" x-model="formData.verification.need_verification" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                <input type="checkbox" x-model="formData.verification.need_verification" class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary">
                             </div>
                             <div class="flex-1">
                                 <label class="font-medium text-gray-900">I want to get Employer Verified</label>
@@ -1365,17 +1419,17 @@
 
                     <div x-show="formData.verification.need_verification" class="space-y-6">
                         <!-- Experience Summary -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
+                        <div class="bg-gradient-to-r from-[#fff1ed] to-[#ffe3db] p-4 rounded-xl border border-primary flex justify-between items-center">
                             <div>
-                                <h3 class="text-sm font-semibold text-blue-900">Total Verified Experience</h3>
-                                <p class="text-xs text-blue-700 mt-1">Calculated from verified employment blocks</p>
+                                <h3 class="text-sm font-semibold text-primary">Total Verified Experience</h3>
+                                <p class="text-xs text-primary-600 mt-1">Calculated from verified employment blocks</p>
                             </div>
-                            <div class="text-2xl font-bold text-indigo-600" x-text="totalVerifiedExperience"></div>
+                            <div class="text-2xl font-bold text-primary" x-text="totalVerifiedExperience"></div>
                         </div>
 
                         <!-- Employment Blocks -->
                         <template x-for="(emp, index) in formData.verification.employments" :key="index">
-                            <div class="p-6 bg-gray-50 rounded-xl border border-gray-200 relative group transition-all hover:border-indigo-300">
+                            <div class="p-6 bg-gray-50 rounded-xl border border-gray-200 relative group transition-all hover:border-primary">
                                 <button type="button" @click="removeEmployment(index)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition p-1 hover:bg-white rounded-full shadow-sm">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
@@ -1384,7 +1438,7 @@
                                     <!-- Company Details -->
                                     <div class="space-y-4">
                                         <h4 class="font-semibold text-gray-800 flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                             Company Details
                                         </h4>
                                         <div>
@@ -1421,7 +1475,7 @@
                                     <!-- Duration -->
                                     <div class="space-y-4">
                                         <h4 class="font-semibold text-gray-800 flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                             Duration
                                         </h4>
                                         <div class="grid grid-cols-2 gap-4">
@@ -1435,7 +1489,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center pt-2">
-                                            <input type="checkbox" x-model="emp.is_current" :id="'current-'+index" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" @change="saveEmploymentBlock(index)">
+                                            <input type="checkbox" x-model="emp.is_current" :id="'current-'+index" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" @change="saveEmploymentBlock(index)">
                                             <label :for="'current-'+index" class="ml-2 text-sm text-gray-600">Currently Working here</label>
                                         </div>
                                     </div>
@@ -1444,13 +1498,13 @@
                                 <!-- Documents -->
                                 <div class="border-t pt-4">
                                     <h4 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                         Documents
                                     </h4>
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <!-- Helper for uploads -->
                                         <template x-for="docType in ['offer_letter', 'relieving_letter', 'experience_letter', 'salary_slip']">
-                                            <div class="border rounded-lg p-3 bg-white relative hover:border-indigo-300 transition-colors" :key="docType">
+                                            <div class="border rounded-lg p-3 bg-white relative hover:border-primary transition-colors" :key="docType">
                                                 <label class="block text-xs font-medium text-gray-700 mb-2 capitalize" x-text="docType.replace('_', ' ')"></label>
                                                 
                                                 <!-- Upload State -->
@@ -1462,7 +1516,7 @@
                                                         <span class="text-[10px]" x-show="!(emp.documentNames && emp.documentNames[docType])">Upload</span>
                                                         <div class="text-[10px] text-gray-600 truncate" x-show="emp.documentNames && emp.documentNames[docType]">
                                                             <span x-text="(emp.documentNames && emp.documentNames[docType]) ? emp.documentNames[docType] : ''"></span>
-                                                            <span class="text-indigo-600" x-show="emp.uploadingDocs && emp.uploadingDocs[docType]"> • Uploading…</span>
+                                                            <span class="text-primary" x-show="emp.uploadingDocs && emp.uploadingDocs[docType]"> • Uploading…</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1502,8 +1556,8 @@
                                                         </template>
                                                     </div>
                                                     <div class="flex items-center gap-3">
-                                                        <button type="button" x-show="emp.documents && emp.documents[docType] && !(emp.uploadingDocs && emp.uploadingDocs[docType])" @click="replaceEmploymentDocument(index, docType)" class="text-[10px] text-indigo-600 hover:underline">Replace</button>
-                                                        <span x-show="emp.uploadingDocs && emp.uploadingDocs[docType]" class="text-[10px] text-indigo-600">Uploading...</span>
+                                                        <button type="button" x-show="emp.documents && emp.documents[docType] && !(emp.uploadingDocs && emp.uploadingDocs[docType])" @click="replaceEmploymentDocument(index, docType)" class="text-[10px] text-primary hover:underline">Replace</button>
+                                                        <span x-show="emp.uploadingDocs && emp.uploadingDocs[docType]" class="text-[10px] text-primary">Uploading...</span>
                                                     </div>
                                                 </div>
                                                 <p x-show="emp.uploadError" class="text-[10px] text-red-600 mt-1" x-text="emp.uploadError"></p>
@@ -1513,7 +1567,7 @@
                                     <!-- HR Contact + Consent + Request -->
                                     <div class="mt-6 space-y-3" x-show="formData.verification.need_verification">
                                       <h4 class="font-semibold text-gray-800 flex items-center gap-2">
-                                          <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14M7 15h10"></path></svg>
+                                          <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 11h14M7 15h10"></path></svg>
                                           Verification
                                       </h4>
                                               <template x-if="emp.request && emp.status_overall !== 'verified'">
@@ -1558,11 +1612,11 @@
                                         </div>
                                       </div>
                                       <div class="flex items-center gap-3 pt-2">
-                                        <input type="checkbox" x-model="emp.consent" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                                        <input type="checkbox" x-model="emp.consent" class="h-4 w-4 text-primary border-gray-300 rounded" />
                                         <span class="text-sm text-gray-700">I authorize the portal to contact previous employer for verification.</span>
                                       </div>
                                       <div class="pt-2">
-                                                <button type="button" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 " :class="emp.requesting ? 'opacity-50 cursor-not-allowed' : ''" @click="if(!emp.requesting) requestVerification(index)">Request Verification</button>
+                                                <button type="button" class="inline-flex items-center px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-600 " :class="emp.requesting ? 'opacity-50 cursor-not-allowed' : ''" @click="if(!emp.requesting) requestVerification(index)">Request Verification</button>
                                       </div>
                                       <div class="pt-2 text-xs text-gray-600 space-y-1">
                                         <div class="flex items-center gap-2"><span :class="emp.docsUploaded ? 'text-green-600' : 'text-gray-500'">📄 Documents Uploaded</span></div>
@@ -1576,7 +1630,7 @@
                         </template>
 
                         <!-- Add Button -->
-                        <button type="button" @click="addEmployment()" class="w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-medium hover:bg-indigo-50 hover:border-indigo-400 transition flex items-center justify-center gap-2">
+                        <button type="button" @click="addEmployment()" class="w-full py-3 border-2 border-dashed border-primary-100 rounded-xl text-primary font-medium hover:bg-primary-50 hover:border-primary transition flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                             Add Another Employment
                         </button>
@@ -1584,33 +1638,116 @@
 
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('verification').then(() => nextStep())">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('verification').then(() => nextStep())">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Step 8: Additional -->
+                <!-- Step 8: Job Preferences -->
                 <div x-show="currentStep === 8" x-transition:enter="step-enter" class="space-y-6">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4">Job Preferences & Interests</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Job Titles (Interests)</label>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <template x-for="(title, idx) in formData.preferences.preferred_job_titles" :key="idx">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm">
+                                        <span x-text="title"></span>
+                                        <button type="button" @click="formData.preferences.preferred_job_titles.splice(idx, 1)" class="hover:text-red-500">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" x-ref="jobTitleInput" @keydown.enter.prevent="if($refs.jobTitleInput.value) { formData.preferences.preferred_job_titles.push($refs.jobTitleInput.value); $refs.jobTitleInput.value = '' }" class="flex-1 rounded-lg border-gray-300 text-sm" placeholder="e.g. PHP Developer (Press Enter to add)">
+                                <button type="button" @click="if($refs.jobTitleInput.value) { formData.preferences.preferred_job_titles.push($refs.jobTitleInput.value); $refs.jobTitleInput.value = '' }" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">Add</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Job Types</label>
+                            <div class="space-y-2">
+                                <template x-for="type in ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance']">
+                                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                        <input type="checkbox" :value="type" x-model="formData.preferences.preferred_job_types" class="rounded text-primary">
+                                        <span x-text="type"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Work Mode</label>
+                            <div class="space-y-2">
+                                <template x-for="mode in ['On-site', 'Remote', 'Hybrid']">
+                                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                        <input type="checkbox" :value="mode" x-model="formData.preferences.preferred_work_mode" class="rounded text-primary">
+                                        <span x-text="mode"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Job Locations</label>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <template x-for="(loc, idx) in formData.preferences.preferred_locations" :key="idx">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm">
+                                        <span x-text="loc"></span>
+                                        <button type="button" @click="formData.preferences.preferred_locations.splice(idx, 1)" class="hover:text-red-500">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" x-ref="locInput" @keydown.enter.prevent="if($refs.locInput.value) { formData.preferences.preferred_locations.push($refs.locInput.value); $refs.locInput.value = '' }" class="flex-1 rounded-lg border-gray-300 text-sm" placeholder="e.g. Noida, Bangalore (Press Enter to add)">
+                                <button type="button" @click="if($refs.locInput.value) { formData.preferences.preferred_locations.push($refs.locInput.value); $refs.locInput.value = '' }" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">Add</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Acceptable Salary (Annual)</label>
+                            <input type="number" x-model="formData.preferences.minimum_acceptable_salary" class="w-full rounded-lg border-gray-300 text-sm" placeholder="e.g. 500000">
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="checkbox" x-model="formData.preferences.open_to_relocation" class="rounded text-primary">
+                                <span class="font-medium text-gray-700">Open to Relocation</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between pt-4">
+                        <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('preferences').then(() => nextStep())">
+                            <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span x-text="saving ? 'Saving...' : 'Save & Continue'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 9: Additional -->
+                <div x-show="currentStep === 9" x-transition:enter="step-enter" class="space-y-6">
                     <h2 class="text-2xl font-bold text-gray-800 border-b pb-4">Additional Information</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Salary (Min)</label>
-                            <input type="number" x-model="formData.additional.expected_salary_min" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Annual Salary">
+                            <input type="number" x-model="formData.additional.expected_salary_min" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Annual Salary">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Salary (Max)</label>
-                            <input type="number" x-model="formData.additional.expected_salary_max" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Annual Salary">
+                            <input type="number" x-model="formData.additional.expected_salary_max" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Annual Salary">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Salary</label>
-                            <input type="number" x-model="formData.additional.current_salary" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="Current Annual Salary">
+                            <input type="number" x-model="formData.additional.current_salary" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="Current Annual Salary">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Notice Period</label>
-                            <select x-model="formData.additional.notice_period" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                            <select x-model="formData.additional.notice_period" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm">
                                 <option value="">Select Notice Period</option>
                                 <option value="Immediate">Immediate</option>
                                 <option value="15 Days">15 Days</option>
@@ -1621,7 +1758,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Location</label>
-                            <input type="text" x-model="formData.additional.preferred_job_location" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="e.g. Bangalore, Remote">
+                            <input type="text" x-model="formData.additional.preferred_job_location" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="e.g. Bangalore, Remote">
                         </div>
                     </div>
 
@@ -1630,21 +1767,21 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
-                                <input type="url" x-model="formData.additional.linkedin_url" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="https://linkedin.com/in/...">
+                                <input type="url" x-model="formData.additional.linkedin_url" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="https://linkedin.com/in/...">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">GitHub URL</label>
-                                <input type="url" x-model="formData.additional.github_url" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="https://github.com/...">
+                                <input type="url" x-model="formData.additional.github_url" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="https://github.com/...">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Portfolio/Website</label>
-                                <input type="url" x-model="formData.additional.portfolio_url" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" placeholder="https://...">
+                                <input type="url" x-model="formData.additional.portfolio_url" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm" placeholder="https://...">
                             </div>
                         </div>
                     </div>
                     <div class="flex justify-between pt-4">
                         <button type="button" class="px-6 py-2 border rounded-md" @click="prevStep()">Previous</button>
-                        <button type="button" class="px-6 py-2 btn-primary rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('additional')">
+                        <button type="button" class="px-6 py-2 btn-primary-solid rounded-md disabled:opacity-50 flex items-center gap-2" :disabled="saving" @click="saveSection('additional')">
                             <span x-show="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Saving...' : 'Save & Complete Profile'"></span>
                         </button>
@@ -1700,7 +1837,7 @@
                             </div>
                         </template>
                     </div>
-                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                    <div class="bg-primary-50 border border-primary rounded-xl p-6">
                         <h4 class="font-semibold mb-2">💡 Profile Tips</h4>
                         <ul class="space-y-2 text-xs text-gray-900">
                             <li class="flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-3.5 w-3.5 mt-0.5 shrink-0"><path d="M20 6 9 17l-5-5"></path></svg> Complete all sections for 5x more visibility</li>
@@ -1722,3 +1859,13 @@
     <?php include __DIR__ . '/../include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

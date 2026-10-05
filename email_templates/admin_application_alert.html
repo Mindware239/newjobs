@@ -1,0 +1,40 @@
+<h1 style="color: #111827; font-size: 22px; font-weight: 700; margin-bottom: 15px;">New Job Application Alert</h1>
+<p style="font-size: 16px; color: #4b5563;">A new application has been submitted on the portal.</p>
+
+<div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 25px; margin: 25px 0;">
+    <h3 style="color: #111827; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Application Summary</h3>
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 14px; color: #4b5563;">
+        <tr>
+            <td style="padding-bottom: 12px; border-bottom: 1px solid #eeeeee;"><strong>Job Title:</strong></td>
+            <td style="padding-bottom: 12px; border-bottom: 1px solid #eeeeee;">{{job_title}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;"><strong>Candidate:</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;">{{candidate_name}} ({{candidate_email}})</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;"><strong>Employer:</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;">{{company_name}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;"><strong>Applied At:</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;">{{applied_at}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;"><strong>Match Score:</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;">{{match_score}}%</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;"><strong>Profile Comp.:</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eeeeee;">{{profile_completion}}%</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0;"><strong>Resume:</strong></td>
+            <td style="padding: 12px 0;">{{resume_status}}</td>
+        </tr>
+    </table>
+</div>
+
+<div style="text-align: center; margin-bottom: 30px;">
+    <a href="{{app_url}}/admin/applications/{{application_id}}" class="btn" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">Review in Admin Panel</a>
+</div>

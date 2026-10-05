@@ -19,9 +19,12 @@ if (!headers_sent()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title><?= htmlspecialchars($title ?? 'Candidate Dashboard') ?> - Mindware Infotech</title>
-    <link rel="icon" type="image/png" href="/uploads/Mindware-infotech.png">
+    <title><?= htmlspecialchars($title ?? 'Candidate Dashboard') ?> - Jobsence</title>
+    <link rel="icon" type="image/png" href="/uploads/jobsence.png">
     <link href="/css/output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="/js/consent-manager.js"></script>
     <script defer src="/js/script-loader.js"></script>
     <script>
@@ -35,8 +38,28 @@ if (!headers_sent()) {
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Nunito Sans', sans-serif; font-weight: 600; }
         [x-cloak] { display: none !important; }
+        :root {
+            --color-primary: #f05537;
+            --color-primary-hover: #FF6A3D;
+            --color-active-menu-bg: #fff1ed;
+        }
+        .bg-primary, .bg-primary-600 {
+            background-color: var(--color-primary) !important;
+        }
+        .hover\:bg-primary-600:hover, .hover\:bg-primary:hover {
+            background-color: var(--color-primary-hover) !important;
+        }
+        .text-primary, .text-primary-600, .text-primary-900 {
+            color: var(--color-primary) !important;
+        }
+        .bg-primary-50, .hover\:bg-primary-50:hover {
+            background-color: var(--color-active-menu-bg) !important;
+        }
+        .border-primary, .border-primary-100 {
+            border-color: #ffd2c8 !important;
+        }
     </style>
     <?= $extra_head ?? '' ?>
     <script>
@@ -71,7 +94,7 @@ if (!headers_sent()) {
                             console.log('Message received. ', payload);
                             const title = (payload.notification && payload.notification.title) || 'Notification';
                             const body = (payload.notification && payload.notification.body) || '';
-                            const icon = (payload.notification && payload.notification.icon) || '/uploads/Mindware-infotech.png';
+                            const icon = (payload.notification && payload.notification.icon) || '/uploads/jobsence.png';
                             const link = (payload.data && payload.data.link) || '/';
                             
                             if (Notification.permission === 'granted') {
@@ -120,3 +143,14 @@ if (!headers_sent()) {
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

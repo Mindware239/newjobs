@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Core\Database;
 
-abstract class Model
+abstract class Model implements \JsonSerializable
 {
     protected string $table;
     protected string $primaryKey = 'id';
@@ -23,6 +23,14 @@ abstract class Model
     public function __construct(array $attributes = [])
     {
         $this->attributes = $attributes;
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     public function getDb(): Database
@@ -207,8 +215,9 @@ abstract class Model
      * Find a model by its primary key
      * @return static|null
      */
-    public static function find(int $id): ?self
+    public static function find($id): ?self
     {
+        $id = (int)$id;
         $model = new static();
         $sql = "SELECT * FROM {$model->getTable()} WHERE {$model->primaryKey} = :id LIMIT 1";
         $result = $model->getDb()->fetchOne($sql, ['id' => $id]);

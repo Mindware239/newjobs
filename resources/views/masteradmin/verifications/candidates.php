@@ -1,6 +1,6 @@
 <div>
   <div class="mb-6">
-    <a href="/master/verifications" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Employers KYC</a>
+    <a href="/master/verifications" class="text-primary hover:text-primary-900 mb-4 inline-block">← Employers KYC</a>
     <h1 class="text-3xl font-bold text-gray-900">Candidate Verifications</h1>
     <form method="GET" class="mt-4 flex items-center gap-3">
       <label class="text-sm text-gray-600">Status</label>
@@ -34,7 +34,7 @@
             <td class="px-6 py-4 text-sm text-gray-600"><?= htmlspecialchars($row['email'] ?? '') ?></td>
             <td class="px-6 py-4 text-sm text-gray-600"><?= htmlspecialchars($row['document_type'] ?? '') ?></td>
             <td class="px-6 py-4 text-sm">
-              <?php $s = strtolower($row['status'] ?? 'pending'); $cls = $s==='approved'?'bg-green-100 text-green-800':($s==='rejected'?'bg-red-100 text-red-800':($s==='assigned'?'bg-blue-100 text-blue-800':'bg-yellow-100 text-yellow-800')); ?>
+              <?php $s = strtolower($row['status'] ?? 'pending'); $cls = $s==='approved'?'bg-green-100 text-green-800':($s==='rejected'?'bg-red-100 text-red-800':($s==='assigned'?'bg-primary-50 text-primary-900':'bg-yellow-100 text-yellow-800')); ?>
               <span class="px-2 py-1 rounded <?= $cls ?> text-xs font-semibold capitalize"><?= htmlspecialchars($s) ?></span>
             </td>
             <td class="px-6 py-4">
@@ -50,7 +50,7 @@
               </form>
             </td>
             <td class="px-6 py-4">
-              <a href="/master/verifications/candidates/<?= (int)($row['user_id'] ?? 0) ?>" class="text-blue-600 hover:text-blue-800">Open</a>
+              <a href="/master/verifications/candidates/<?= (int)($row['user_id'] ?? 0) ?>" class="text-primary hover:text-primary-900">Open</a>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -61,3 +61,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

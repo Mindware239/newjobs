@@ -54,7 +54,7 @@ class SocialServiceController extends BaseController
                 $name = (string)($r['organization_name'] ?? '');
                 $website = (string)($r['website'] ?? '');
                 $host = $extractHost($website);
-                $logo = $host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
+                $logo = $host ? ("https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host)) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
                 $min = $r['min_pay'] ?? null;
                 $max = $r['max_pay'] ?? null;
                 $salary = 'Negotiable';
@@ -133,7 +133,7 @@ class SocialServiceController extends BaseController
                 $name = (string)($o['organization_name'] ?? '');
                 $website = (string)($o['website'] ?? '');
                 $host = $extractHost($website);
-                $logo = $host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
+                $logo = $host ? ("https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host)) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
                 $featuredOrgs[] = [
                     'id' => (int)($o['id'] ?? 0),
                     'name' => $name,
@@ -239,7 +239,7 @@ public function findjob(Request $request, Response $response): void
             $host = substr($host, 4);
         }
         $logo = $uploadedLogo !== '' ? $uploadedLogo
-            : ($host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f"));
+            : ($host ? ("https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host)) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f"));
         $jobs[] = [
             'id'          => (int)$row['id'],
             'title'       => $row['role_name'] ?? '',
@@ -1005,7 +1005,7 @@ public function candidatesubscriptions(Request $request, Response $response): vo
         };
         $host = $extractHost($website);
         $logo = $uploadedLogo !== '' ? $uploadedLogo
-            : ($host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f"));
+            : ($host ? ("https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host)) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f"));
         $job['logo'] = $logo;
         $job['organization_website'] = $website;
         $response->view('social-employer/viewdetails', [
@@ -1259,7 +1259,7 @@ public function hiringInsight(Request $request, Response $response): void
                 if (stripos($host, 'www.') === 0) {
                     $host = substr($host, 4);
                 }
-                $logo = "https://logo.clearbit.com/" . $host;
+                $logo = "https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host);
             }
             if ($logo === '' && $name !== '') {
                 $logo = "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f";
@@ -1344,7 +1344,7 @@ public function hiringInsight(Request $request, Response $response): void
                 $logo = $candidate;
             }
         } else {
-            $logo = $host ? ("https://logo.clearbit.com/" . $host) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
+            $logo = $host ? ("https://www.google.com/s2/favicons?sz=128&domain=" . rawurlencode($host)) : ("https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=ffffff&color=54595f");
         }
         $org = [
             'id' => (int)$row['id'],

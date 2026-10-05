@@ -1,13 +1,19 @@
+<?php
+/** @var array $job */
+/** @var array $relatedJobs */
+/** @var object|null $candidate */
+/** @var array $mapLocation */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title><?= htmlspecialchars($job['title'] ?? 'Job') ?> - Mindware Infotech</title>
+    <title><?= htmlspecialchars($job['title'] ?? 'Job') ?> - Jobsence</title>
     <meta name="description" content="<?= htmlspecialchars($job['description'] ?? 'Job Description') ?>">
     <meta name="keywords" content="<?= htmlspecialchars($job['keywords'] ?? 'Job Keywords') ?>">
-    <meta name="author" content="Mindware Infotech">
+    <meta name="author" content="Jobsence">
     <link href="/css/output.css" rel="stylesheet">
     <link rel="canonical" href="<?= htmlspecialchars($job['url'] ?? '#') ?>">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -36,8 +42,8 @@
     ];
     $schemaEmpType = $empTypeMap[$job['employment_type'] ?? 'full_time'] ?? 'FULL_TIME';
     
-    $schemaOrgName = $job['company_name'] ?? 'Mindware Infotech';
-    $schemaOrgLogo = $job['company_logo'] ?? '';
+    $schemaOrgName = $job['company_name'] ?? 'Jobsence';
+    $schemaOrgLogo = fix_url($job['company_logo'] ?? '');
     
     // Location
     $schemaLocation = [
@@ -101,6 +107,7 @@
             -webkit-line-clamp: 6;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            line-clamp: 6;
         }
         .map-container { height: 260px; width: 100%; border-radius: 0.75rem; overflow: hidden; }
         @media (max-width: 1024px) { .map-container { height: 240px; } }
@@ -135,8 +142,10 @@
                 <!-- Job Title and Company -->
                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
                     <div class="flex items-start gap-4 flex-1">
-                    <?php if (!empty($job['company_logo'])): ?>
-                    <img src="<?= htmlspecialchars($job['company_logo']) ?>" 
+                    <?php if (!empty($job['company_logo'])): 
+                        $logoUrl = fix_url($job['company_logo']);
+                    ?>
+                    <img src="<?= htmlspecialchars($logoUrl) ?>" 
                          alt="<?= htmlspecialchars($job['company_name'] ?? 'Company') ?>"
                          class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                     <?php else: ?>
@@ -157,12 +166,18 @@
                                 <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"></path>
                             </svg>
                         </button>
-                    <button x-show="!job.has_applied" 
+                    <template x-if="job.job_type === 'external' && job.apply_link">
+                        <a :href="job.apply_link" target="_blank" rel="noopener noreferrer"
+                           class="px-6 py-3 bg-primary text-white font-semibold rounded-lg border border-primary hover:bg-primary-600 hover:border-primary-600 transition whitespace-nowrap inline-flex items-center">
+                            Apply on Company Site
+                        </a>
+                    </template>
+                    <button x-show="job.job_type !== 'external' && !job.has_applied" 
                             @click="showApplyModal = true" 
-                                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg border border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition whitespace-nowrap">
+                            class="px-6 py-3 bg-primary text-white font-semibold rounded-lg border border-primary hover:bg-primary-600 hover:border-primary-600 transition whitespace-nowrap">
                             Apply Now
                     </button>
-                    <button x-show="job.has_applied" 
+                    <button x-show="job.job_type !== 'external' && job.has_applied" 
                             disabled
                                 class="px-6 py-3 bg-gray-200 text-gray-600 font-semibold rounded-lg cursor-not-allowed whitespace-nowrap">
                         ✓ Already Applied
@@ -363,7 +378,7 @@
                             <?php if (!empty($job['skills']) && is_array($job['skills'])): ?>
                                 <?php foreach (array_slice($job['skills'], 0, 5) as $skill): ?>
                                 <li class="flex items-start gap-3">
-                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                         </svg>
                                     <span class="text-gray-700"><?= htmlspecialchars($skill['name'] ?? '') ?></span>
@@ -371,7 +386,7 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <li class="flex items-start gap-3">
-                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                     </svg>
                                     <span class="text-gray-700">Strong problem-solving and analytical skills</span>
@@ -551,8 +566,9 @@
                                     <script>
                                         // Initialize map with exact location
                                         document.addEventListener('DOMContentLoaded', function() {
+                                            let map;
                                             <?php if (!empty($mapLocation['latitude']) && !empty($mapLocation['longitude'])): ?>
-                                            const map = L.map('job-location-map').setView([<?= $mapLocation['latitude'] ?>, <?= $mapLocation['longitude'] ?>], 15);
+                                            map = L.map('job-location-map').setView([<?= $mapLocation['latitude'] ?>, <?= $mapLocation['longitude'] ?>], 15);
                                             
                                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                                 attribution: '© OpenStreetMap contributors',
@@ -564,7 +580,7 @@
                                             marker.bindPopup('<?= htmlspecialchars($mapLocation['address'], ENT_QUOTES) ?>').openPopup();
                                             <?php else: ?>
                                             // Fallback: Show map centered on address (will be geocoded)
-                                            const map = L.map('job-location-map').setView([20.5937, 78.9629], 5); // Default to India center
+                                            map = L.map('job-location-map').setView([20.5937, 78.9629], 5); // Default to India center
                                             
                                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                                 attribution: '© OpenStreetMap contributors',
@@ -603,7 +619,7 @@
                             <?php if (!empty($job['company_website'])): ?>
                             <p>
                                 <span class="font-semibold">Website:</span>
-                                <a href="<?= htmlspecialchars($job['company_website']) ?>" target="_blank" class="ml-1 text-blue-600 hover:underline">
+                                <a href="<?= htmlspecialchars($job['company_website']) ?>" target="_blank" class="ml-1 text-primary hover:underline">
                                     <?= htmlspecialchars($job['company_website']) ?>
                                 </a>
                             </p>
@@ -624,7 +640,8 @@
                     </div>
 
                     <div id="candidate-contact-card" class="bg-white rounded-lg border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold mb-4">Send Us Message</h3>
+                        <h3 class="text-lg font-semibold mb-2">Send Us Message</h3>
+                        <p class="text-xs text-gray-500 mb-4">Direct messages are free! (Attachments like Resume/Video require Premium)</p>
                         <form @submit.prevent="sendMessage()" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Full name</label>
@@ -674,8 +691,10 @@
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3">
                                     <!-- Company Logo -->
                                     <div class="flex-shrink-0">
-                                        <?php if (!empty($relatedJob['company_logo'])): ?>
-                                        <img src="<?= htmlspecialchars($relatedJob['company_logo']) ?>" 
+                                        <?php if (!empty($relatedJob['company_logo'])): 
+                                            $rLogoUrl = fix_url($relatedJob['company_logo']);
+                                        ?>
+                                        <img src="<?= htmlspecialchars($rLogoUrl) ?>" 
                                              alt="<?= htmlspecialchars($relatedJob['company_name'] ?? 'Company') ?>"
                                              class="w-14 h-14 rounded-lg object-cover border border-gray-200">
                                         <?php else: ?>
@@ -777,7 +796,7 @@
                                     <!-- Action Buttons: Desktop - Right Side -->
                                     <div class="hidden sm:flex flex-shrink-0 items-center gap-3">
                                         <a href="/candidate/jobs/<?= htmlspecialchars($relatedJob['slug'] ?? $relatedJob['id'] ?? '') ?>" 
-                                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition shadow-sm whitespace-nowrap">
+                                           class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 text-sm font-semibold transition shadow-sm whitespace-nowrap">
                                             Job Details
                                         </a>
                                         <button @click.stop="bookmarkRelatedJob('<?= htmlspecialchars($relatedJob['slug'] ?? $relatedJob['id'] ?? '') ?>')" 
@@ -914,7 +933,7 @@
                             <div class="flex justify-center gap-2 mt-4">
                                 <?php for ($i = 0; $i < $blogCount; $i++): ?>
                                 <button @click="currentSlide = <?= $i ?>"
-                                        :class="currentSlide === <?= $i ?> ? 'bg-blue-600' : 'bg-gray-300'"
+                                        :class="currentSlide === <?= $i ?> ? 'bg-primary' : 'bg-gray-300'"
                                         class="w-2 h-2 rounded-full transition"></button>
                                 <?php endfor; ?>
                             </div>
@@ -1005,11 +1024,14 @@
                 showApplyModal: false,
                 isSubmitting: false,
                 isSendingMessage: false,
+                isLoggedIn: <?= ($candidate !== null) ? 'true' : 'false' ?>,
                 job: {
                     id: <?= $job['id'] ?? 0 ?>,
                     slug: <?= json_encode($job['slug'] ?? '') ?>,
                     employer_id: <?= $job['employer_id'] ?? 0 ?>,
                     title: <?= json_encode($job['title'] ?? '') ?>,
+                    job_type: <?= json_encode($job['job_type'] ?? 'internal') ?>,
+                    apply_link: <?= json_encode($job['apply_link'] ?? '') ?>,
                     is_bookmarked: <?= ($job['is_bookmarked'] ?? false) ? 'true' : 'false' ?>,
                     has_applied: <?= ($job['has_applied'] ?? false) ? 'true' : 'false' ?>
                 },
@@ -1024,18 +1046,21 @@
                     phone: '<?= htmlspecialchars($candidate->attributes['mobile'] ?? '') ?>',
                     message: ''
                 },
-                relatedJobSaved: {
-                    <?php if (!empty($relatedJobs)): ?>
-                    <?php 
-                    $relatedJobsList = array_slice($relatedJobs, 0, 5);
-                    $lastIndex = count($relatedJobsList) - 1;
-                    foreach ($relatedJobsList as $index => $relatedJob): ?>
-                    '<?= htmlspecialchars($relatedJob['slug'] ?? $relatedJob['id'] ?? '') ?>': <?= ($relatedJob['is_bookmarked'] ?? false) ? 'true' : 'false' ?><?= $index < $lastIndex ? ',' : '' ?>
-
-                    <?php endforeach; ?>
-                    <?php endif; ?>
-                    },
-                async bookmarkRelatedJob(jobSlug) {
+                relatedJobSaved: <?php 
+                    $savedStates = [];
+                    if (!empty($relatedJobs)) {
+                        foreach (array_slice($relatedJobs, 0, 5) as $rJob) {
+                            $key = $rJob['slug'] ?? $rJob['id'] ?? '';
+                            $savedStates[$key] = (bool)($rJob['is_bookmarked'] ?? false);
+                        }
+                    }
+                    echo json_encode($savedStates);
+                ?>,
+                bookmarkRelatedJob: async function(jobSlug) {
+                    if (!this.isLoggedIn) {
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
                     try {
                         if (!this.relatedJobSaved[jobSlug]) {
                             this.relatedJobSaved[jobSlug] = false;
@@ -1054,7 +1079,11 @@
                         console.error('Bookmark error:', error);
                     }
                 },
-                async bookmarkJob() {
+                bookmarkJob: async function() {
+                    if (!this.isLoggedIn) {
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
                     try {
                         const jobSlug = this.job.slug || this.job.id;
                         const response = await fetch(`/candidate/jobs/${jobSlug}/bookmark`, {
@@ -1080,7 +1109,7 @@
                         console.error('Bookmark error:', error);
                     }
                 },
-                async submitApplication() {
+                submitApplication: async function() {
                     this.isSubmitting = true;
                     try {
                         const jobSlug = this.job.slug || this.job.id;
@@ -1118,7 +1147,7 @@
                         this.isSubmitting = false;
                     }
                 },
-                async uploadResume(event) {
+                uploadResume: async function(event) {
                     const file = event.target.files[0];
                     if (!file) return;
 
@@ -1148,7 +1177,7 @@
                         console.error('Upload error:', error);
                     }
                 },
-                async sendMessage() {
+                sendMessage: async function() {
                     this.isSendingMessage = true;
                     try {
                         const response = await fetch('/candidate/chat/start', {
@@ -1216,3 +1245,14 @@ require __DIR__ . '/../../include/footer.php';
 ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

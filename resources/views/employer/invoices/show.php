@@ -26,17 +26,17 @@ $city   = $addr['city'] ?? '';
 $state  = $addr['state'] ?? '';
 $pin    = $addr['postal_code'] ?? '';
 
-$companyName  = $_ENV['COMPANY_NAME'] ?? 'Mindware Infotech';
-$companyAddr  = $_ENV['COMPANY_ADDRESS'] ?? 'Mindware, S-4, Pankaj Plaza, Pocket-7, Plot-7,<br>Dwarka Sector-12, Delhi-110078';
+$companyName  = $_ENV['COMPANY_NAME'] ?? 'Jobsence';
+$companyAddr  = $_ENV['COMPANY_ADDRESS'] ?? 'Jobsence, S-4, Pankaj Plaza, Pocket-7, Plot-7,<br>Dwarka Sector-12, Delhi-110078';
 $companyCity  = $_ENV['COMPANY_CITY'] ?? 'Dwarka';
 $companyState = $_ENV['COMPANY_STATE'] ?? 'Delhi';
 $companyZip   = $_ENV['COMPANY_ZIP'] ?? '110078';
-$companyEmail = $_ENV['COMPANY_EMAIL'] ?? 'sales@mindwareinfotech.com';
+$companyEmail = $_ENV['COMPANY_EMAIL'] ?? 'gm@jobsence.com';
 $companyPhone = $_ENV['COMPANY_PHONE'] ?? '+91-8527522688';
 $gst          = $_ENV['COMPANY_GSTIN'] ?? '07AFDPM9463K1ZY';
 
 /* IMPORTANT → use PUBLIC URL not local disk path */
-$logo = '/uploads/Mindware-infotech.png';
+$logo = '/uploads/jobsence.png';
 $qr   = '/uploads/qr.jpeg';
 ?>
 
@@ -152,7 +152,7 @@ $qr   = '/uploads/qr.jpeg';
                 <table class="w-1/2 border-collapse border border-[#000080] text-xs">
                     <tr><td class="p-2 border border-[#000080] font-medium text-gray-700">Subtotal</td><td class="p-2 border border-[#000080] text-right font-medium text-gray-900">₹<?= number_format($amount,2) ?></td></tr>
                     <tr><td class="p-2 border border-[#000080] text-gray-700">Tax (<?= $taxRate * 100 ?>%)</td><td class="p-2 border border-[#000080] text-right text-gray-900">₹<?= number_format($tax,2) ?></td></tr>
-                    <tr class="bg-blue-50"><td class="p-2 border border-[#000080] font-bold text-[#000080]">GRAND TOTAL</td><td class="p-2 border border-[#000080] text-right font-bold text-sm text-[#000080]">₹<?= number_format($total,2) ?></td></tr>
+                    <tr class="bg-primary-50"><td class="p-2 border border-[#000080] font-bold text-[#000080]">GRAND TOTAL</td><td class="p-2 border border-[#000080] text-right font-bold text-sm text-[#000080]">₹<?= number_format($total,2) ?></td></tr>
                 </table>
             </div>
 
@@ -174,12 +174,12 @@ $qr   = '/uploads/qr.jpeg';
 
     <div class="mt-8 flex justify-center gap-4 no-print">
         <?php if ($pdfPath !== ''): ?>
-            <a href="<?= htmlspecialchars($pdfPath) ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
+            <a href="<?= htmlspecialchars($pdfPath) ?>" target="_blank" class="bg-primary hover:bg-primary-600 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4m4 5v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1"/></svg>
                 Download PDF
             </a>
         <?php else: ?>
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
+            <button onclick="window.print()" class="bg-primary hover:bg-primary-600 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download Invoice (PDF)
             </button>
@@ -291,3 +291,14 @@ $qr   = '/uploads/qr.jpeg';
     }
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+

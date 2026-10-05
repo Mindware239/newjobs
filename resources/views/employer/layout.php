@@ -13,22 +13,26 @@ if (empty($_SESSION['csrf_token'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title><?= $title ?? 'Employer Dashboard' ?> - Mindware Infotech</title>
+    <title><?= $title ?? 'Employer Dashboard' ?> - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Nunito Sans', sans-serif;
+            font-weight: 600;
         }
 
         :root {
             --success: 146 75% 45%;
-            --color-active-menu-bg: #eef2ff;
+            --color-active-menu-bg: #fff1ed;
+            --color-primary: #f05537;
+            --color-primary-hover: #FF6A3D;
+            --color-primary-soft: #fff1ed;
         }
 
         .text-success {
@@ -43,11 +47,43 @@ if (empty($_SESSION['csrf_token'])) {
             border-color: hsla(var(--success), .20);
         }
 
-        .bg-blue-50,
-        .hover\:bg-blue-50:hover,
-        .bg-indigo-50,
-        .bg-purple-50 {
+        .bg-primary-50,
+        .hover\:bg-primary-50:hover {
             background-color: var(--color-active-menu-bg) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--color-primary) !important;
+        }
+
+        .hover\:bg-primary-600:hover {
+            background-color: var(--color-primary-hover) !important;
+        }
+
+        .text-primary, .text-primary-600 {
+            color: var(--color-primary) !important;
+        }
+
+        .text-\[\#3c50ff\], .text-\[\#7283ff\] {
+            color: var(--color-primary) !important;
+        }
+
+        .bg-\[\#7283ff\]\/20 {
+            background-color: rgba(240, 85, 55, 0.12) !important;
+        }
+
+        .focus\:ring-\[\#7283ff\]:focus {
+            --tw-ring-color: rgba(240, 85, 55, 0.25) !important;
+        }
+
+        .from-\[\#6d82ff\], .to-\[\#7d8aff\] {
+            --tw-gradient-from: #f05537 var(--tw-gradient-from-position) !important;
+            --tw-gradient-to: rgb(255 106 61 / 0) var(--tw-gradient-to-position) !important;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+        }
+
+        .to-\[\#7d8aff\] {
+            --tw-gradient-to: #FF6A3D var(--tw-gradient-to-position) !important;
         }
 
         [x-cloak] {
@@ -106,7 +142,7 @@ if (empty($_SESSION['csrf_token'])) {
                             console.log('Message received. ', payload);
                             const title = (payload.notification && payload.notification.title) || 'Notification';
                             const body = (payload.notification && payload.notification.body) || '';
-                            const icon = (payload.notification && payload.notification.icon) || '/uploads/Mindware-infotech.png';
+                            const icon = (payload.notification && payload.notification.icon) || '/uploads/jobsence.png';
                             const link = (payload.data && payload.data.link) || '/';
                             
                             if (Notification.permission === 'granted') {
@@ -144,7 +180,7 @@ if (empty($_SESSION['csrf_token'])) {
             <div class="flex justify-between items-center h-full">
                 <div class="flex items-center flex-1 gap-4">
                     <!-- Mobile Sidebar Toggle -->
-                    <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -154,13 +190,13 @@ if (empty($_SESSION['csrf_token'])) {
                     <div class="hidden md:flex flex-1 max-w-xl">
                         <div class="relative w-full group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-focus-within:text-[#7283ff] transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
                             <input type="text"
                                 placeholder="Search candidates, jobs, or keywords..."
-                                class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#7283ff] focus:border-transparent sm:text-sm transition-all duration-200 hover:bg-gray-100 focus:shadow-sm">
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm transition-all duration-200 hover:bg-gray-100 focus:shadow-sm">
                         </div>
                     </div>
                 </div>
@@ -182,11 +218,11 @@ if (empty($_SESSION['csrf_token'])) {
                         <button @click="profileDropdownOpen = !profileDropdownOpen"
                             @click.away="profileDropdownOpen = false"
                             class="flex items-center gap-4 focus:outline-none group">
-                            <div class="h-9 w-9 rounded-full bg-[#7283ff]/20 flex items-center justify-center text-white font-bold ring-2 ring-transparent group-hover:ring-[#7283ff]/30 transition-all duration-200 overflow-hidden">
+                            <div class="h-9 w-9 rounded-full bg-primary-50 flex items-center justify-center text-primary font-bold ring-2 ring-transparent group-hover:ring-primary transition-all duration-200 overflow-hidden">
                                 <?= strtoupper(substr($employer->company_name ?? 'E', 0, 1)) ?>
                             </div>
                             <div class="flex flex-col items-start hidden md:block">
-                                <span class="text-sm font-semibold text-gray-900 group-hover:text-[#7283ff] transition-colors"><?= $employer->company_name ?? 'Employer' ?></span>
+                                <span class="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors"><?= $employer->company_name ?? 'Employer' ?></span>
                             </div>
                             <svg class="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -232,13 +268,13 @@ if (empty($_SESSION['csrf_token'])) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <span class="ml-2 text-xl font-bold text-white tracking-tight font-display" x-show="!sidebarCollapsed" x-transition>Mindware</span>
+                    <span class="ml-2 text-xl font-bold text-white tracking-tight font-display" x-show="!sidebarCollapsed" x-transition>Jobsence</span>
                 </div>
             </div>
 
             <!-- Create New Button -->
             <div class="p-4 pb-2 flex-shrink-0">
-                <a href="/employer/jobs/create" class="w-full px-4 py-3 bg-white text-indigo-600 font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/10 hover:shadow-xl hover:shadow-indigo-900/20 transition-all duration-200 transform hover:-translate-y-0.5 group">
+                <a href="/employer/jobs/create" class="w-full px-4 py-3 bg-white text-primary font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary-900/10 hover:shadow-xl hover:shadow-primary-900/20 transition-all duration-200 transform hover:-translate-y-0.5 group">
                     <svg class="h-5 w-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -389,3 +425,14 @@ if (empty($_SESSION['csrf_token'])) {
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+

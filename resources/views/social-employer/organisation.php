@@ -21,7 +21,7 @@
   <div class="container-wf mx-auto px-6 py-4 flex justify-between items-center">
     <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
  <nav class="flex gap-6 text-sm text-gray-700">
@@ -114,7 +114,7 @@ Not found? Create a new organization
                 $img = $logo ?: $fallback;
               ?>
               <div class="w-10 h-10 border rounded bg-white flex items-center justify-center">
-                <img src="<?= htmlspecialchars($img) ?>" alt="Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='/uploads/mindware-infotechlogo.png'">
+                <img src="<?= htmlspecialchars($img) ?>" alt="Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='/uploads/jobsence.png'">
               </div>
             </td>
             <td class="px-4 py-3 font-medium text-gray-900">
@@ -125,7 +125,7 @@ Not found? Create a new organization
             </td>
             <td class="px-4 py-3">
               <?php if (!empty($org['website'])): ?>
-                <a href="<?= htmlspecialchars($org['website']) ?>" target="_blank" class="text-blue-600 hover:underline">Visit</a>
+                <a href="<?= htmlspecialchars($org['website']) ?>" target="_blank" class="text-primary hover:underline">Visit</a>
               <?php else: ?>
                 <span class="text-gray-400">—</span>
               <?php endif; ?>
@@ -252,7 +252,7 @@ class="w-full border px-3 py-2 rounded">
 <!-- Mission focus -->
 <div>
 <label class="font-medium block mb-1">
-Primary mission focus
+#f05537 mission focus
 </label>
 <select name="mission_focus"
 class="w-full border px-3 py-2 rounded">
@@ -298,3 +298,14 @@ Create Organization
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -11,7 +11,7 @@
               <div class="text-xs text-gray-500">Lead: <?= htmlspecialchars($n['company_name'] ?? '-') ?> • <?= htmlspecialchars($n['message'] ?? '') ?></div>
             </div>
             <?php if ((int)($n['is_read'] ?? 0) === 0): ?>
-              <span class="ml-auto px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs">New</span>
+              <span class="ml-auto px-2 py-1 rounded bg-primary-50 text-primary-600 text-xs">New</span>
             <?php endif; ?>
           </label>
         <?php endforeach; ?>
@@ -20,9 +20,20 @@
         <?php endif; ?>
       </div>
       <div class="mt-4">
-        <button class="px-4 py-2 bg-purple-600 text-white rounded">Mark Selected as Read</button>
+        <button class="px-4 py-2 bg-primary text-white rounded">Mark Selected as Read</button>
       </div>
     </div>
   </form>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

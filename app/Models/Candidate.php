@@ -165,6 +165,59 @@ class Candidate extends Model
     }
 
     /**
+     * Get missing mandatory fields for profile completion
+     */
+    public function getMissingFields(): array
+    {
+        $missing = [];
+        $labels = [
+            'full_name' => 'Full Name',
+            'dob' => 'Date of Birth',
+            'gender' => 'Gender',
+            'mobile' => 'Mobile Number',
+            'location' => 'City & State',
+            'profile_picture' => 'Profile Photo',
+            'resume' => 'Resume (CV)',
+            'skills' => 'Skills (at least 3)',
+            'experience' => 'Work Experience',
+            'education' => 'Education Details',
+            'languages' => 'Languages Known',
+            'self_introduction' => 'Self Introduction'
+        ];
+
+        if (empty($this->attributes['full_name'])) $missing[] = $labels['full_name'];
+        if (empty($this->attributes['dob'])) $missing[] = $labels['dob'];
+        if (empty($this->attributes['gender'])) $missing[] = $labels['gender'];
+        if (empty($this->attributes['mobile'])) $missing[] = $labels['mobile'];
+        if (empty($this->attributes['city']) || empty($this->attributes['state'])) $missing[] = $labels['location'];
+        if (empty($this->attributes['profile_picture'])) $missing[] = $labels['profile_picture'];
+        if (empty($this->attributes['resume_url'])) $missing[] = $labels['resume'];
+        if (empty($this->attributes['self_introduction'])) $missing[] = $labels['self_introduction'];
+        
+        $skills = $this->skills();
+        if (count($skills) < 3) $missing[] = $labels['skills'];
+        
+        $experience = $this->experience();
+        if (empty($experience)) $missing[] = $labels['experience'];
+        
+        $education = $this->education();
+        if (empty($education)) $missing[] = $labels['education'];
+
+        $languages = $this->languages();
+        if (empty($languages)) $missing[] = $labels['languages'];
+        
+        return $missing;
+    }
+
+    /**
+     * Get completion percentage
+     */
+    public function calculateCompletionPercentage(): int
+    {
+        return $this->calculateProfileStrength();
+    }
+
+    /**
      * Get user relationship
      */
     public function user(): ?User
@@ -252,5 +305,79 @@ class Candidate extends Model
             return [];
         }
         return json_decode($this->attributes['languages_data'], true) ?? [];
+    }
+
+    /**
+     * Get certificates from JSON column
+     */
+    public function certificates(): array
+    {
+        if (empty($this->attributes['certificates_data'])) {
+            return [];
+        }
+        return json_decode($this->attributes['certificates_data'], true) ?? [];
+    }
+
+    /**
+     * Get verification data from JSON column
+     */
+    public function verification(): array
+    {
+        if (empty($this->attributes['verification_data'])) {
+            return [];
+        }
+        return json_decode($this->attributes['verification_data'], true) ?? [];
+    }
+
+    /**
+     * Get suggested candidates for a job
+     */
+    public static function getSuggestedCandidates(int $jobId, array $excludeCandidateIds = [], int $limit = 45): array
+    {
+        $db = \App\Core\Database::getInstance();
+        $job = Job::find($jobId);
+        if (!$job) return [];
+
+        $jobCategory = $job->attributes['category'] ?? '';
+        $excludeIds = !empty($excludeCandidateIds) ? implode(',', array_map('intval', $excludeCandidateIds)) : '0';
+
+        $sql = "SELECT 
+                    c.id as candidate_id, u.id as candidate_user_id,
+                    c.full_name, c.city, c.state, c.country, c.profile_picture, c.resume_url,
+                    u.email as candidate_email, u.phone,
+                    c.current_salary, c.expected_salary_min, c.expected_salary_max,
+                    c.education_data, c.experience_data, c.skills_data, c.languages_data,
+                    rs_cert.section_data as certifications_data,
+                    cjs.overall_match_score, cjs.skill_score, cjs.experience_score, cjs.education_score,
+                    cjs.recommendation, cjs.summary as match_summary,
+                    cjs.matched_skills, cjs.missing_skills, cjs.extra_relevant_skills,
+                    'suggested' as status,
+                    :job_id as job_id, :job_title as job_title,
+                    :job_currency as job_currency, :job_slug as job_slug
+                FROM candidates c
+                INNER JOIN users u ON u.id = c.user_id
+                LEFT JOIN resumes r ON r.candidate_id = c.id AND r.is_primary = 1
+                LEFT JOIN resume_sections rs_cert ON rs_cert.resume_id = r.id AND rs_cert.section_type = 'certifications'
+                LEFT JOIN candidate_job_scores cjs ON cjs.candidate_id = c.id AND cjs.job_id = :job_id_join
+                WHERE c.id NOT IN ({$excludeIds})
+                AND (
+                    r.job_category = :category 
+                    OR c.skills_data LIKE :category_like
+                    OR :category_empty = 1
+                )
+                ORDER BY cjs.overall_match_score DESC, c.profile_strength DESC, c.created_at DESC
+                LIMIT :limit";
+
+        return $db->fetchAll($sql, [
+            'job_id' => $job->attributes['id'],
+            'job_title' => $job->attributes['title'],
+            'job_currency' => $job->attributes['currency'],
+            'job_slug' => $job->attributes['slug'],
+            'job_id_join' => $job->attributes['id'],
+            'category' => $jobCategory,
+            'category_like' => "%{$jobCategory}%",
+            'category_empty' => empty($jobCategory) ? 1 : 0,
+            'limit' => $limit
+        ]);
     }
 }

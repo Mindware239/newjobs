@@ -1,5 +1,5 @@
 <?php
-// Candidate Registration Page - Mindware Infotech
+// Candidate Registration Page -
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Candidate Registration - Mindware Infotech</title>
+    <title>Candidate Registration - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -34,13 +34,13 @@
         }
 
         /* ═══════ LEFT SLIDER PANEL ═══════ */
-        /* Calm indigo-to-blue gradient matching Mindware brand */
+        /* Calm indigo-to-blue gradient matching Jobsence brand */
         .slider-panel {
             position: sticky;
             top: 0;
             height: 100vh;
             overflow: hidden;
-            background: linear-gradient(150deg, #eef2ff 0%, #e0e7ff 35%, #dbeafe 70%, #eff6ff 100%);
+            background: linear-gradient(150deg, #eef2ff 0%, #fff1ed 35%, #fff1ed 70%, #fff1ed 100%);
         }
 
         /* Slider content */
@@ -56,7 +56,7 @@
             position: absolute; inset: 0;
             background:
                 radial-gradient(ellipse 70% 55% at 20% 20%, rgba(99,102,241,0.12) 0%, transparent 65%),
-                radial-gradient(ellipse 50% 65% at 80% 70%, rgba(59,130,246,0.1) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 65% at 80% 70%, rgba(240,85,55,0.1) 0%, transparent 65%),
                 radial-gradient(ellipse 60% 40% at 55% 5%, rgba(139,92,246,0.07) 0%, transparent 70%);
         }
 
@@ -74,7 +74,7 @@
             filter: blur(55px); pointer-events: none;
         }
         .blob-1 { width:280px;height:280px;top:-60px;left:-60px;background:rgba(99,102,241,.12);animation:blobFloat 14s ease-in-out infinite; }
-        .blob-2 { width:200px;height:200px;bottom:60px;right:-50px;background:rgba(59,130,246,.1);animation:blobFloat 10s ease-in-out infinite reverse; }
+        .blob-2 { width:200px;height:200px;bottom:60px;right:-50px;background:rgba(240,85,55,.1);animation:blobFloat 10s ease-in-out infinite reverse; }
         .blob-3 { width:150px;height:150px;bottom:-30px;left:80px;background:rgba(139,92,246,.1);animation:blobFloat 17s ease-in-out infinite 5s; }
         @keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(22px,-18px) scale(1.04)}66%{transform:translate(-16px,24px) scale(.96)}}
 
@@ -85,7 +85,7 @@
         }
         .s-logo-mark {
             width: 38px; height: 38px;
-            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            background: linear-gradient(135deg, #f05537, #FF6A3D);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -94,7 +94,7 @@
         }
         .s-logo-name {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700; font-size: 18px; color: #1e1b4b;
+            font-weight: 700; font-size: 18px; color: #0f172a;
             letter-spacing: -.2px;
         }
 
@@ -129,11 +129,11 @@
             display:inline-flex; align-items:center; gap:7px;
             background: rgba(79,70,229,.1); border:1px solid rgba(79,70,229,.2);
             border-radius:100px; padding:5px 13px;
-            font-size:11px; font-weight:600; color:#4338ca;
+            font-size:11px; font-weight:600; color:#f05537;
             letter-spacing:.5px; text-transform:uppercase; width:fit-content;
         }
         .s-badge .pulse {
-            width:6px;height:6px;border-radius:50%;background:#4f46e5;
+            width:6px;height:6px;border-radius:50%;background:#f05537;
             animation:pulse 2s ease-in-out infinite;
         }
         @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
@@ -141,10 +141,10 @@
         .s-title {
             font-family:'Plus Jakarta Sans',sans-serif;
             font-size: clamp(20px, 2.4vw, 30px);
-            font-weight:800; color:#1e1b4b; line-height:1.2; letter-spacing:-.6px;
+            font-weight:800; color:#0f172a; line-height:1.2; letter-spacing:-.6px;
         }
         .s-title .accent {
-            background:linear-gradient(135deg,#4f46e5,#3b82f6);
+            background:linear-gradient(135deg,#f05537,#FF6A3D);
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
         }
         .s-desc { font-size:13.5px; color:#4b5563; line-height:1.65; max-width:380px; }
@@ -152,12 +152,12 @@
         /* Stat cards */
         .stat-row { display:flex; gap:10px; }
         .stat-card {
-            background:white; border:1px solid #e0e7ff;
+            background:white; border:1px solid #fff1ed;
             border-radius:12px; padding:12px 14px; flex:1;
             box-shadow:0 2px 10px rgba(79,70,229,.05);
         }
-        .stat-val { font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1e1b4b; }
-        .stat-val span { color:#4f46e5; }
+        .stat-val { font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#0f172a; }
+        .stat-val span { color:#f05537; }
         .stat-lbl { font-size:11px;color:#6b7280;margin-top:1px; }
 
         /* Feature list */
@@ -171,7 +171,7 @@
         /* Profile cards */
         .profile-list { display:flex;flex-direction:column;gap:8px; }
         .p-card {
-            background:white; border:1px solid #e0e7ff;
+            background:white; border:1px solid #fff1ed;
             border-radius:11px; padding:10px 13px;
             display:flex;align-items:center;gap:9px;
             box-shadow:0 1px 6px rgba(79,70,229,.04);
@@ -193,12 +193,12 @@
             background:rgba(79,70,229,.2);cursor:pointer;
             transition:all .4s ease;flex:1;max-width:38px;
         }
-        .s-dot.active { background:#4f46e5;max-width:52px;box-shadow:0 0 8px rgba(79,70,229,.4); }
+        .s-dot.active { background:#f05537;max-width:52px;box-shadow:0 0 8px rgba(79,70,229,.4); }
         .s-arrows { display:flex;gap:7px; }
         .s-arrow-btn {
             width:34px;height:34px;border-radius:50%;
-            background:white;border:1.5px solid #e0e7ff;
-            color:#4338ca;cursor:pointer;
+            background:white;border:1.5px solid #fff1ed;
+            color:#f05537;cursor:pointer;
             display:flex;align-items:center;justify-content:center;
             transition:all .2s;box-shadow:0 1px 6px rgba(79,70,229,.08);
         }
@@ -206,7 +206,7 @@
         .s-arrow-btn svg { width:15px;height:15px; }
 
         .s-progress { height:3px;background:rgba(79,70,229,.12);border-radius:2px;overflow:hidden;margin-top:10px; }
-        .s-progress-bar { height:100%;background:linear-gradient(90deg,#4f46e5,#3b82f6);border-radius:2px;transition:width .1s linear; }
+        .s-progress-bar { height:100%;background:linear-gradient(90deg,#f05537,#FF6A3D);border-radius:2px;transition:width .1s linear; }
 
         /* ═══════ RIGHT REGISTER PANEL ═══════ */
         .reg-panel {
@@ -235,7 +235,7 @@
         .brand-row { display:flex;align-items:center;gap:11px;margin-bottom:22px; }
         .brand-mark {
             width:42px;height:42px;
-            background:linear-gradient(135deg,#4f46e5,#3b82f6);
+            background:linear-gradient(135deg,#f05537,#FF6A3D);
             border-radius:12px;display:flex;align-items:center;justify-content:center;
             font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;color:white;
             box-shadow:0 4px 14px rgba(79,70,229,.22);
@@ -278,7 +278,7 @@
         }
         .f-input::placeholder{color:#9ca3af;}
         .f-input:focus{
-            border-color:#4f46e5;background:#fff;
+            border-color:#f05537;background:#fff;
             box-shadow:0 0 0 3px rgba(79,70,229,.1);
         }
         .f-input.v-valid{border-color:#22c55e;background:#fff;}
@@ -301,7 +301,7 @@
         }
         .strength-weak  {background:linear-gradient(to right,#ef4444 0%,#ef4444 33%,#e5e7eb 33%,#e5e7eb 100%);}
         .strength-fair  {background:linear-gradient(to right,#f59e0b 0%,#f59e0b 66%,#e5e7eb 66%,#e5e7eb 100%);}
-        .strength-good  {background:linear-gradient(to right,#3b82f6 0%,#3b82f6 100%);}
+        .strength-good  {background:linear-gradient(to right,#FF6A3D 0%,#FF6A3D 100%);}
         .strength-strong{background:linear-gradient(to right,#10b981 0%,#10b981 100%);}
 
         .s-bar-row{display:flex;align-items:center;justify-content:space-between;}
@@ -345,12 +345,12 @@
         /* Suggestions */
         .sug-box{
             margin-top:9px;padding:10px 13px;
-            background:#eff6ff;border-left:3px solid #3b82f6;border-radius:7px;
+            background:#fff1ed;border-left:3px solid #FF6A3D;border-radius:7px;
             animation:fadeSlide .2s ease;
         }
-        .sug-title{font-size:11.5px;font-weight:700;color:#1d4ed8;margin-bottom:5px;}
+        .sug-title{font-size:11.5px;font-weight:700;color:#FF6A3D;margin-bottom:5px;}
         .sug-list{padding-left:13px;}
-        .sug-list li{font-size:11px;color:#1d4ed8;margin-bottom:2px;}
+        .sug-list li{font-size:11px;color:#FF6A3D;margin-bottom:2px;}
 
         /* Field messages */
         .f-hint{font-size:11.5px;color:#9ca3af;margin-top:5px;}
@@ -370,20 +370,20 @@
             padding:10px;border:1.5px solid #e5e7eb;border-radius:9px;
             background:white;cursor:pointer;transition:all .18s;text-decoration:none;
         }
-        .soc-btn:hover{border-color:#c7d2fe;background:#f5f3ff;transform:translateY(-1px);box-shadow:0 3px 10px rgba(79,70,229,.1);}
+        .soc-btn:hover{border-color:#c7d2fe;background:#fff5f2;transform:translateY(-1px);box-shadow:0 3px 10px rgba(79,70,229,.1);}
         .soc-btn img,.soc-btn svg{width:20px;height:20px;}
 
         /* Terms */
         .terms-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:18px;}
-        .terms-cb{width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#4f46e5;cursor:pointer;}
+        .terms-cb{width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#f05537;cursor:pointer;}
         .terms-txt{font-size:12.5px;color:#4b5563;line-height:1.55;}
-        .terms-txt a{color:#4f46e5;font-weight:600;text-decoration:none;}
-        .terms-txt a:hover{color:#4338ca;text-decoration:underline;}
+        .terms-txt a{color:#f05537;font-weight:600;text-decoration:none;}
+        .terms-txt a:hover{color:#f05537;text-decoration:underline;}
 
         /* Submit */
         .submit-btn{
             width:100%;padding:13px;
-            background:linear-gradient(135deg,#4f46e5,#3b82f6);
+            background:linear-gradient(135deg,#f05537,#FF6A3D);
             color:white;border:none;border-radius:11px;
             font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;
             cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -419,14 +419,128 @@
 
         /* Footer */
         .reg-footer{text-align:center;font-size:12.5px;color:#6b7280;}
-        .reg-footer a{font-weight:700;color:#4f46e5;text-decoration:none;}
-        .reg-footer a:hover{color:#4338ca;}
+        .reg-footer a{font-weight:700;color:#f05537;text-decoration:none;}
+        .reg-footer a:hover{color:#f05537;}
 
         /* Responsive */
         @media(max-width:900px){
             .page-grid{grid-template-columns:1fr;}
             .slider-panel{display:none;}
             .reg-panel{padding:36px 24px;}
+        }
+
+        .page-grid,
+        body{background:#f6f7f9;}
+        .page-grid{grid-template-columns:minmax(420px,.9fr) minmax(620px,1.1fr);}
+        .slider-panel{background:#f6f7f9!important;position:relative;height:auto;min-height:100vh;overflow:visible;}
+        .s-content{height:auto;min-height:100vh;justify-content:flex-start;overflow:visible;}
+        .s-logo{padding:34px 40px 0;}
+        .slides-wrap{flex:0;justify-content:flex-start;padding:64px 40px 32px;max-width:560px;}
+        .slides-container{flex:0;min-height:245px;overflow:hidden;}
+        .slide{gap:14px;}
+        .s-title{font-size:clamp(26px,2.7vw,36px);line-height:1.14;}
+        .s-desc{max-width:420px;margin:0;}
+        .s-progress{margin-top:4px;}
+        .s-nav{margin-top:14px;}
+        .stat-card,.p-card{border-color:rgba(240,85,55,.12);box-shadow:0 8px 24px rgba(17,24,39,.05);}
+        .reg-panel{background:#f6f7f9;border-left:0;overflow-y:visible;}
+        .reg-box{max-width:560px;background:rgba(255,255,255,.9);border:1px solid rgba(240,85,55,.12);border-radius:12px;padding:28px;box-shadow:0 18px 48px rgba(17,24,39,.08);}
+        .f-input{background:#fff;border-color:#d0d5dd;border-radius:8px;}
+        .f-input:focus{box-shadow:0 0 0 3px rgba(240,85,55,.12);}
+        .submit-btn{border-radius:8px;}
+        .s-mesh,.s-dots,.blob{display:none!important;}
+        .s-logo-mark,.brand-mark,.submit-btn{background:#f05537!important;box-shadow:0 4px 12px rgba(240,85,55,.18)!important;}
+        .s-title .accent{background:none!important;-webkit-text-fill-color:currentColor!important;color:#111827!important;}
+        .s-progress-bar,.strength-good{background:#f05537!important;}
+        .p-avatar{background:#64748b!important;}
+        .otp-modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.62);padding:20px;}
+        .otp-modal{width:100%;max-width:430px;background:#fff;border-radius:14px;padding:26px;border:1px solid #e5e7eb;box-shadow:0 24px 70px rgba(15,23,42,.24);}
+        .otp-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+        .otp-modal-title{font-size:20px;font-weight:800;color:#111827;margin:0 0 4px;}
+        .otp-modal-sub{font-size:13px;color:#667085;line-height:1.55;margin:0;}
+        .otp-close{border:0;background:#f3f4f6;color:#667085;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:20px;line-height:1;}
+        .otp-input{height:52px;text-align:center;letter-spacing:8px;font-size:20px;font-weight:800;}
+
+        /* Resume Upload UI */
+        .resume-upload-zone {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .resume-upload-zone:hover {
+            border-color: #f05537;
+            background: #fff;
+        }
+        .resume-upload-zone.has-file {
+            border-style: solid;
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        .upload-icon {
+            width: 40px;
+            height: 40px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .upload-hint {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            color: #22c55e;
+            flex-shrink: 0;
+        }
+        .file-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-size {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .remove-file {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .remove-file:hover {
+            background: #fecaca;
+            transform: scale(1.1);
+        }
+        .remove-file svg {
+            width: 14px;
+            height: 14px;
         }
     </style>
 </head>
@@ -450,8 +564,8 @@
         <div class="s-content">
             <!-- Logo -->
             <div class="s-logo">
-                <div class="s-logo-mark">M</div>
-                <span class="s-logo-name">Mindware</span>
+                <div class="s-logo-mark">JS</div>
+                <span class="s-logo-name">Jobsence</span>
             </div>
 
             <!-- Slides -->
@@ -490,7 +604,7 @@
                                 <span>AI job matching based on your skills & preferences</span>
                             </div>
                             <div class="feat-item">
-                                <div class="feat-icon" style="background:#eff6ff;">📊</div>
+                                <div class="feat-icon" style="background:#fff1ed;">📊</div>
                                 <span>Live application tracking with instant status updates</span>
                             </div>
                             <div class="feat-item">
@@ -508,15 +622,15 @@
                     <div class="slide" data-slide="2">
                         <div class="s-badge"><span class="pulse"></span>Success Stories</div>
                         <div class="s-title">Real People,<br><span class="accent">Real Careers</span> Built Here</div>
-                        <div class="s-desc">Join thousands of professionals who found their dream roles through Mindware's trusted network.</div>
+                        <div class="s-desc">Join thousands of professionals who found their dream roles through Jobsence's trusted network.</div>
                         <div class="profile-list">
                             <div class="p-card">
-                                <div class="p-avatar" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">P</div>
+                                <div class="p-avatar" style="background:linear-gradient(135deg,#f05537,#f05537);">P</div>
                                 <div><div class="p-name">Priya Sharma</div><div class="p-role">Senior UX Designer · Bangalore</div></div>
                                 <span class="p-badge">✓ Hired</span>
                             </div>
                             <div class="p-card">
-                                <div class="p-avatar" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">R</div>
+                                <div class="p-avatar" style="background:linear-gradient(135deg,#FF6A3D,#06b6d4);">R</div>
                                 <div><div class="p-name">Rahul Mehta</div><div class="p-role">Backend Engineer · Mumbai</div></div>
                                 <span class="p-badge">✓ Hired</span>
                             </div>
@@ -562,9 +676,9 @@
             </a>
 
             <div class="brand-row">
-                <div class="brand-mark">M</div>
+                <div class="brand-mark">JS</div>
                 <div>
-                    <div class="brand-name-text">Mindware</div>
+                    <div class="brand-name-text">Jobsence</div>
                     <div class="brand-sub">Recruitment Platform</div>
                 </div>
             </div>
@@ -600,7 +714,7 @@
                 </button>
                 <button type="button" @click="authMode='otp'; error=''; success=''"
                         :class="authMode === 'otp' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
-                        class="auth-toggle-btn">
+                        class="auth-toggle-btn" disabled style="opacity:.6;cursor:not-allowed;">
                     Mobile OTP
                 </button>
             </div>
@@ -627,10 +741,56 @@
                     <div class="f-wrap">
                         <input type="tel"
                                x-model="formData.mobile"
+                               @input="formData.mobile = formData.mobile.replace(/\D+/g, '').slice(0, 10)"
+                               maxlength="10"
                                required
-                               placeholder="Enter mobile number"
+                               placeholder="Enter 10-digit mobile number"
                                class="f-input">
                     </div>
+                </div>
+
+                <!-- Resume Upload -->
+                <div class="f-group">
+                    <label class="f-label">Resume / CV <span class="req">*</span></label>
+                    <div class="f-wrap">
+                        <div class="resume-upload-zone" 
+                             :class="resumeFile ? 'has-file' : ''"
+                             @click="$refs.resumeInput.click()"
+                             @dragover.prevent="isDragging = true"
+                             @dragleave.prevent="isDragging = false"
+                             @drop.prevent="handleDrop($event)">
+                            <input type="file" 
+                                   x-ref="resumeInput"
+                                   @change="handleResumeUpload($event)"
+                                   accept=".pdf,.doc,.docx"
+                                   style="display:none">
+                            <div class="upload-content">
+                                <template x-if="!resumeFile">
+                                    <div style="text-align:center;">
+                                        <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                        <p class="upload-text">Click to upload or drag & drop</p>
+                                        <p class="upload-hint">PDF, DOC, DOCX (Max 5MB)</p>
+                                    </div>
+                                </template>
+                                <template x-if="resumeFile">
+                                    <div class="file-info">
+                                        <svg class="file-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                                        <div style="flex:1; min-width:0;">
+                                            <p class="file-name" x-text="resumeFile.name"></p>
+                                            <p class="file-size" x-text="formatSize(resumeFile.size)"></p>
+                                        </div>
+                                        <button type="button" @click.stop="removeResume()" class="remove-file">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <p x-show="resumeError" class="f-err" style="margin-top:8px;">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span x-text="resumeError"></span>
+                    </p>
                 </div>
 
                 <!-- Email -->
@@ -714,7 +874,7 @@
                         </div>
 
                         <div x-show="!passwordValid && formData.password.length > 0" class="sug-box">
-                            <div class="sug-title">💡 Password Suggestions:</div>
+                            <div class="sug-title">Password Suggestions:</div>
                             <ul class="sug-list">
                                 <template x-for="suggestion in passwordSuggestions" :key="suggestion">
                                     <li x-text="suggestion"></li>
@@ -804,6 +964,9 @@
                 </div>
 
                 <div x-show="authMode === 'otp'" x-cloak>
+                    <div class="f-hint" style="padding:10px 12px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:700;">
+                        Mobile OTP registration is coming soon. Please use Email OTP.
+                    </div>
                     <div class="f-group">
                         <label class="f-label">Full Name <span class="req">*</span></label>
                         <div class="f-wrap">
@@ -812,7 +975,7 @@
                     </div>
 
                     <div class="f-group">
-                        <label class="f-label">Primary Mobile Number <span class="req">*</span></label>
+                        <label class="f-label"> Mobile Number <span class="req">*</span></label>
                         <div class="f-wrap">
                             <input type="tel" x-model="otpForm.phone" placeholder="Enter mobile number" class="f-input">
                         </div>
@@ -839,13 +1002,12 @@
                             <button type="button"
                                     @click="sendOtp()"
                                     :disabled="isSendingOtp || !otpForm.phone || otpCooldown > 0"
-                                    style="padding:0 14px;border:none;border-radius:10px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
+                                    style="padding:0 14px;border:none;border-radius:10px;background:#fff1ed;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
                                 <span x-show="!isSendingOtp && otpCooldown === 0">Send OTP</span>
                                 <span x-show="isSendingOtp">Sending...</span>
                                 <span x-show="!isSendingOtp && otpCooldown > 0" x-text="otpCooldown + 's'"></span>
                             </button>
                         </div>
-                        <p x-show="otpPreview" class="f-hint">Test OTP: <span x-text="otpPreview"></span></p>
                     </div>
 
                     <div class="terms-row">
@@ -875,6 +1037,32 @@
                 </div>
 
             </form>
+
+            <div x-show="showOtpModal" x-cloak class="otp-modal-overlay">
+                <div class="otp-modal" @click.away="!isSubmitting && (showOtpModal = false)">
+                    <div class="otp-modal-head">
+                        <div>
+                            <h2 class="otp-modal-title">Verify your email</h2>
+                            <p class="otp-modal-sub">Enter the 6-digit OTP sent to <strong x-text="formData.email"></strong>.</p>
+                        </div>
+                        <button type="button" class="otp-close" @click="showOtpModal = false" :disabled="isSubmitting">&times;</button>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">Email OTP <span class="req">*</span></label>
+                        <input type="text" x-model="formData.email_otp" maxlength="6" inputmode="numeric" placeholder="000000" class="f-input otp-input">
+                        <p x-show="otpError" class="f-err" x-text="otpError"></p>
+                    </div>
+                    <button type="button" class="submit-btn" @click="verifyEmailOtpAndRegister()" :disabled="isSubmitting || formData.email_otp.length < 6">
+                        <span x-show="!isSubmitting">Verify & Create Account</span>
+                        <span x-show="isSubmitting" style="display:flex;align-items:center;gap:7px;"><div class="spinner"></div> Verifying...</span>
+                    </button>
+                    <button type="button" @click="sendEmailOtpForCandidateRegistration(true)" :disabled="isSendingEmailOtp || emailOtpCooldown > 0" style="width:100%;border:0;background:transparent;color:#f05537;font-weight:700;font-size:13px;cursor:pointer;">
+                        <span x-show="!isSendingEmailOtp && emailOtpCooldown === 0">Resend OTP</span>
+                        <span x-show="isSendingEmailOtp">Sending...</span>
+                        <span x-show="!isSendingEmailOtp && emailOtpCooldown > 0" x-text="'Resend in ' + emailOtpCooldown + 's'"></span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -926,14 +1114,18 @@
             authMode: 'password',
             error: '',
             success: '',
+            showOtpModal: false,
+            otpError: '',
             showPassword: false,
             showConfirmPassword: false,
             emailValid: true,
             emailError: '',
             isSendingOtp: false,
             otpCooldown: 0,
-            otpPreview: '',
             otpTimer: null,
+            isSendingEmailOtp: false,
+            emailOtpCooldown: 0,
+            emailOtpTimer: null,
             modeActiveStyle: 'background:#ffffff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)',
             modeInactiveStyle: 'background:transparent;color:#6b7280',
             passwordValid: false,
@@ -950,13 +1142,19 @@
                 number: false,
                 special: false,
                 length: false,
-                noCommon: false
+                noCommon: false,
+                noSequential: false,
+                noRepeated: false
             },
             passwordSuggestions: [],
+            resumeFile: null,
+            resumeError: '',
+            isDragging: false,
             formData: {
                 full_name: '',
                 mobile: '',
                 email: '',
+                email_otp: '',
                 password: '',
                 password_confirm: '',
                 agree_terms: false
@@ -969,6 +1167,49 @@
                 otp: '',
                 purpose: 'auth',
                 agree_terms: false
+            },
+
+            handleResumeUpload(event) {
+                const file = event.target.files[0];
+                this.processFile(file);
+            },
+
+            handleDrop(event) {
+                this.isDragging = false;
+                const file = event.dataTransfer.files[0];
+                this.processFile(file);
+            },
+
+            processFile(file) {
+                this.resumeError = '';
+                if (!file) return;
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                const allowed = ['pdf', 'doc', 'docx'];
+                if (!allowed.includes(ext)) {
+                    this.resumeError = 'Only PDF, DOC, and DOCX files are allowed';
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    this.resumeError = 'File size must be less than 5MB';
+                    return;
+                }
+
+                this.resumeFile = file;
+            },
+
+            removeResume() {
+                this.resumeFile = null;
+                this.$refs.resumeInput.value = '';
+            },
+
+            formatSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             },
 
             validateEmail() {
@@ -992,7 +1233,9 @@
                     number: /[0-9]/.test(password),
                     special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
                     length: password.length >= 8 && password.length <= 20,
-                    noCommon: !this.isCommonPassword(password)
+                    noCommon: !this.isCommonPassword(password),
+                    noSequential: !this.hasSequentialCharacters(password),
+                    noRepeated: !/(.)\1{3,}/.test(password)
                 };
                 let score = 0;
                 if (this.passwordChecks.lowercase) score += 15;
@@ -1001,6 +1244,8 @@
                 if (this.passwordChecks.special) score += 20;
                 if (this.passwordChecks.length) score += 20;
                 if (this.passwordChecks.noCommon) score += 15;
+                if (!this.passwordChecks.noSequential) score = Math.min(score, 65);
+                if (!this.passwordChecks.noRepeated) score = Math.min(score, 65);
                 if (password.length >= 12) score += 5;
                 if (password.length >= 16) score += 5;
                 this.passwordStrength = score;
@@ -1011,7 +1256,7 @@
                 } else if (score < 70) {
                     this.passwordStrengthText = 'Fair'; this.passwordStrengthTextClass = 'text-yellow-600'; this.passwordStrengthClass = 'strength-fair';
                 } else if (score < 85) {
-                    this.passwordStrengthText = 'Good'; this.passwordStrengthTextClass = 'text-blue-600'; this.passwordStrengthClass = 'strength-good';
+                    this.passwordStrengthText = 'Good'; this.passwordStrengthTextClass = 'text-primary'; this.passwordStrengthClass = 'strength-good';
                 } else {
                     this.passwordStrengthText = 'Strong'; this.passwordStrengthTextClass = 'text-green-600'; this.passwordStrengthClass = 'strength-strong';
                 }
@@ -1026,6 +1271,10 @@
                 return commonPasswords.includes(password.toLowerCase());
             },
 
+            hasSequentialCharacters(password) {
+                return /(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(password);
+            },
+
             generatePasswordSuggestions() {
                 this.passwordSuggestions = [];
                 if (!this.passwordChecks.lowercase) this.passwordSuggestions.push('Add lowercase letters (a-z)');
@@ -1037,6 +1286,8 @@
                     else this.passwordSuggestions.push('Keep it under 20 characters');
                 }
                 if (!this.passwordChecks.noCommon) this.passwordSuggestions.push('Avoid common passwords - use a unique combination');
+                if (!this.passwordChecks.noSequential) this.passwordSuggestions.push('Avoid sequential characters like 123 or abc');
+                if (!this.passwordChecks.noRepeated) this.passwordSuggestions.push('Avoid repeating the same character 4 or more times');
                 if (this.passwordChecks.length && this.formData.password.length < 12) this.passwordSuggestions.push('Consider making it 12+ characters for better security');
             },
 
@@ -1059,9 +1310,91 @@
                     }
                 }, 1000);
             },
+            startEmailOtpCooldown() {
+                clearInterval(this.emailOtpTimer);
+                this.emailOtpCooldown = 30;
+                this.emailOtpTimer = setInterval(() => {
+                    if (this.emailOtpCooldown > 0) {
+                        this.emailOtpCooldown--;
+                    } else {
+                        clearInterval(this.emailOtpTimer);
+                    }
+                }, 1000);
+            },
+            async sendEmailOtpForCandidateRegistration(openModal = false) {
+                this.validateEmail();
+                if (!this.formData.email || !this.emailValid || this.isSendingEmailOtp) return false;
+                if (this.emailOtpCooldown > 0) {
+                    if (openModal) this.showOtpModal = true;
+                    return true;
+                }
+                this.error = ''; this.success = ''; this.otpError = '';
+                this.isSendingEmailOtp = true;
+                try {
+                    const response = await fetch('/auth/email/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-Token': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({ email: this.formData.email, mobile: this.formData.mobile, purpose: 'register_candidate', role: 'candidate' })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        this.success = data.message || 'OTP sent to your email';
+                        this.startEmailOtpCooldown();
+                        if (openModal) this.showOtpModal = true;
+                        return true;
+                    } else {
+                        this.error = data.error || data.message || 'Failed to send OTP';
+                        return false;
+                    }
+                } catch (error) {
+                    this.error = 'Failed to send OTP';
+                    return false;
+                } finally {
+                    this.isSendingEmailOtp = false;
+                }
+            },
+            async prevalidateCandidateRegistration() {
+                const csrf = this.getCsrfToken();
+                const fd = new FormData();
+                fd.append('full_name', this.formData.full_name);
+                fd.append('mobile', this.formData.mobile);
+                fd.append('email', this.formData.email);
+                fd.append('password', this.formData.password);
+                fd.append('confirm_password', this.formData.password_confirm);
+                fd.append('prevalidate_only', '1');
+                fd.append('_token', csrf);
+                if (this.resumeFile) {
+                    fd.append('resume', this.resumeFile);
+                }
+
+                const response = await fetch('/register-candidate', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: fd
+                });
+                const data = await response.json();
+                if (response.ok && (data.success === true || data.data?.success === true)) {
+                    return true;
+                }
+
+                const errorData = data.data || data;
+                if (errorData.errors) {
+                    this.error = Object.values(errorData.errors).flat().join(', ');
+                } else {
+                    this.error = errorData.error || errorData.message || 'Please correct the highlighted details';
+                }
+                return false;
+            },
             async sendOtp() {
                 if (!this.otpForm.phone || this.isSendingOtp || this.otpCooldown > 0) return;
-                this.error = ''; this.success = ''; this.otpPreview = '';
+                this.error = ''; this.success = '';
                 this.isSendingOtp = true;
                 try {
                     const response = await fetch('/auth/phone/send-otp', {
@@ -1076,7 +1409,6 @@
                     const data = await response.json();
                     if (response.ok && data.success) {
                         this.success = data.message || 'OTP sent successfully';
-                        this.otpPreview = data.otp_preview || '';
                         this.startOtpCooldown();
                     } else {
                         this.error = data.error || data.message || 'Failed to send OTP';
@@ -1089,9 +1421,11 @@
             },
 
             async submitRegistration() {
-                this.error = ''; this.success = '';
+                this.error = ''; this.success = ''; this.otpError = '';
                 if (!this.formData.full_name) { this.error = 'Please enter your full name'; return; }
                 if (!this.formData.mobile) { this.error = 'Please enter your mobile number'; return; }
+                if (!/^[0-9]{10}$/.test(this.formData.mobile)) { this.error = 'Mobile Number must be exactly 10 digits'; return; }
+                if (!this.resumeFile) { this.error = 'Please upload your resume'; return; }
                 this.validateEmail();
                 this.checkPasswordStrength();
                 this.validatePasswordMatch();
@@ -1100,14 +1434,38 @@
                 if (!this.passwordMatch) { this.error = 'Passwords do not match'; return; }
                 if (!this.formData.agree_terms) { this.error = 'Please agree to the Terms and Conditions'; return; }
                 this.isSubmitting = true;
+                const detailsOk = await this.prevalidateCandidateRegistration();
+                if (!detailsOk) {
+                    this.isSubmitting = false;
+                    return;
+                }
+                const sent = await this.sendEmailOtpForCandidateRegistration(true);
+                this.isSubmitting = false;
+                if (sent) this.success = 'OTP sent. Please verify your email to finish registration.';
+            },
+            async verifyEmailOtpAndRegister() {
+                this.otpError = '';
+                if (!/^[0-9]{6}$/.test(this.formData.email_otp || '')) {
+                    this.otpError = 'Please enter the 6-digit OTP';
+                    return;
+                }
+                await this.performRegistration();
+            },
+            async performRegistration() {
+                this.error = ''; this.success = ''; this.otpError = '';
+                this.isSubmitting = true;
                 try {
                     const csrf = this.getCsrfToken();
                     const fd = new FormData();
                     fd.append('full_name', this.formData.full_name);
                     fd.append('mobile', this.formData.mobile);
                     fd.append('email', this.formData.email);
+                    fd.append('email_otp', this.formData.email_otp);
                     fd.append('password', this.formData.password);
                     fd.append('confirm_password', this.formData.password_confirm);
+                    if (this.resumeFile) {
+                        fd.append('resume', this.resumeFile);
+                    }
                     fd.append('role', 'candidate');
                     fd.append('_token', csrf);
                     const response = await fetch('/register-candidate', {
@@ -1126,18 +1484,19 @@
                     
                     if (isSuccess) {
                         this.success = successMsg;
+                        this.showOtpModal = false;
                         setTimeout(() => { window.location.href = redirectUrl; }, 3000);
                     } else {
                         const errorData = data.data || data;
                         if (errorData.errors) {
                             const errorMessages = Object.values(errorData.errors).flat();
-                            this.error = errorMessages.join(', ');
+                            this.otpError = errorMessages.join(', ');
                         } else {
-                            this.error = errorData.error || errorData.message || 'Registration failed. Please try again.';
+                            this.otpError = errorData.error || errorData.message || 'Registration failed. Please try again.';
                         }
                     }
                 } catch (error) {
-                    this.error = 'An error occurred. Please try again.';
+                    this.otpError = 'An error occurred. Please try again.';
                     console.error('Registration error:', error);
                 } finally {
                     this.isSubmitting = false;
@@ -1180,3 +1539,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

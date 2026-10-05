@@ -1,7 +1,3 @@
-<?php
-$content = ob_start();
-?>
-
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-lg shadow-sm p-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Help & Support</h1>
@@ -45,11 +41,11 @@ $content = ob_start();
                         </div>
                         <div>
                             <h3 class="text-lg font-medium text-gray-700 mb-2">How do I upgrade to Premium?</h3>
-                            <p class="text-gray-600">Visit the <a href="/candidate/premium/plans" class="text-blue-600 hover:text-blue-700 underline">Premium Plans</a> page to view available plans and upgrade your account.</p>
+                            <p class="text-gray-600">Visit the <a href="/candidate/premium/plans" class="text-primary hover:text-primary-600 underline">Premium Plans</a> page to view available plans and upgrade your account.</p>
                         </div>
                         <div>
                             <h3 class="text-lg font-medium text-gray-700 mb-2">How do I manage my Premium subscription?</h3>
-                            <p class="text-gray-600">You can view your billing history and manage your subscription on the <a href="/candidate/premium/billing" class="text-blue-600 hover:text-blue-700 underline">Billing & Receipts</a> page.</p>
+                            <p class="text-gray-600">You can view your billing history and manage your subscription on the <a href="/candidate/premium/billing" class="text-primary hover:text-primary-600 underline">Billing & Receipts</a> page.</p>
                         </div>
                     </div>
                 </section>
@@ -93,8 +89,8 @@ $content = ob_start();
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Still Need Help?</h2>
                     <p class="text-gray-600 mb-4">If you can't find the answer you're looking for, please contact our support team:</p>
                     <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:support@mindwareinfotech.com" class="text-blue-600 hover:text-blue-700">support@mindwareinfotech.com</a></p>
-                        <p class="text-gray-700 mt-2"><strong>Phone:</strong> <a href="tel:+918527522688" class="text-blue-600 hover:text-blue-700">+91 852 752 22688</a></p>
+                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:gm@jobsence.com" class="text-primary hover:text-primary-600">gm@jobsence.com</a></p>
+                        <p class="text-gray-700 mt-2"><strong>Phone:</strong> <a href="tel:+918527522688" class="text-primary hover:text-primary-600">+91 852 752 22688</a></p>
                         <p class="text-gray-700 mt-2"><strong>Business Hours:</strong> Monday - Friday, 9:00 AM - 6:00 PM IST</p>
                     </div>
                 </section>
@@ -103,8 +99,16 @@ $content = ob_start();
     </div>
 </div>
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/layout.php';
-?>
+
+
+
+
+
+
+
+
+
+
+
+
 

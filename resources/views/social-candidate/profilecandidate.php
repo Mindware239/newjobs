@@ -17,7 +17,7 @@
 
 <!-- HEADER (simple version) -->
 <header class="border-b p-6 flex justify-between items-center">
-    <h1 class="text-3xl font-bold">Mindware Infotech</h1>   
+    <h1 class="text-3xl font-bold">Jobsence</h1>   
 
     <nav class="flex gap-6 text-sm">
         <a>Applications</a>
@@ -61,7 +61,7 @@ Details saved to your account for easier applications and better recommendations
 
 <div>
     <p class="font-semibold">Full name</p>
-    <p>Mr. Mr. Mindware Info Sr.</p>
+    <p>Mr. Mr. Jobsence Sr.</p>
 </div>
 
 <div>
@@ -115,7 +115,7 @@ Submit
 <div class="md:col-span-2">
 <label class="font-medium">Your full name *</label>
 <input class="w-full border rounded p-2 mt-1" 
-       value="Mr. Mr. Mindware Info Sr.">
+       value="Mr. Mr. Jobsence Sr.">
 </div>
 
 <div>
@@ -144,7 +144,7 @@ Submit
 
 <input class="border rounded p-2" placeholder="First name" value="Mr.">
 
-<input class="border rounded p-2" placeholder="Middle name" value="Mindware">
+<input class="border rounded p-2" placeholder="Middle name" value="">
 
 <input class="border rounded p-2" placeholder="Last name" value="Info">
 
@@ -182,3 +182,14 @@ Submit
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

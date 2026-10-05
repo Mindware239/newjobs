@@ -6,7 +6,7 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mindware Infotech - Candidate</title>
+    <title>Jobsence - Candidate</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
@@ -16,8 +16,8 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
 <div class="border-b">
     <div class="max-w-6xl mx-auto flex items-center justify-between h-22">
         <img
-                src="<?php echo $base; ?>/uploads/Mindware-infotech.png"
-                alt="Mindware Infotech Logo"
+                src="<?php echo $base; ?>/uploads/jobsence.png"
+                alt="Jobsence Logo"
                 class="h-12 object-contain mr-auto">
 
         <nav class="hidden min-[900px]:flex items-center gap-4 lg:gap-8 text-base font-medium">
@@ -35,15 +35,15 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
         <div class="max-w-6xl mx-auto h-12 flex items-center justify-center gap-20 font-semibold">
         </div>
         <div class="max-w-6xl mx-auto h-12 flex items-center justify-center gap-20 font-semibold">
-            <a href="<?= rtrim($base, '/') ?>/social-services" class="hover:text-[#5b6bd5]">
+            <a href="<?= rtrim($base, '/') ?>/social-services" class="hover:text-[#f05537]">
                 ← Back to Home
             </a>
 
-            <li><a href="<?= rtrim($base, '/') ?>/find-a-job" class="hover:text-[#5b6bd5]">Find a job</a></li>
+            <li><a href="<?= rtrim($base, '/') ?>/find-a-job" class="hover:text-[#f05537]">Find a job</a></li>
             <span class="cursor-pointer">Search employers</span>
             <span class="cursor-pointer">Career insights</span>
-            <li><a href="<?= rtrim($base, '/') ?>/about" class="hover:text-[#5b6bd5]">About us</a></li>
-            <li><a href="<?= rtrim($base, '/') ?>/help" class="hover:text-[#5b6bd5]">Get Help</a></li>
+            <li><a href="<?= rtrim($base, '/') ?>/about" class="hover:text-[#f05537]">About us</a></li>
+            <li><a href="<?= rtrim($base, '/') ?>/help" class="hover:text-[#f05537]">Get Help</a></li>
 
         </div>
 
@@ -60,7 +60,7 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
     <div class="flex justify-center space-x-12 mb-10 text-sm">
 
         <div class="flex items-center space-x-2">
-            <div id="p1" class="w-8 h-8 bg-blue-800 text-white rounded-full flex justify-center items-center">1</div>
+            <div id="p1" class="w-8 h-8 bg-primary-900 text-white rounded-full flex justify-center items-center">1</div>
             <span>Applications</span>
         </div>
 
@@ -99,7 +99,7 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
         <div class="flex justify-between items-center mb-4 border-b pb-2">
 
             <div class="flex space-x-3">
-                <button class="bg-blue-900 text-white px-6 py-2 rounded text-sm">All</button>
+                <button class="bg-primary-900 text-white px-6 py-2 rounded text-sm">All</button>
                 <button class="px-4 py-2 text-sm text-gray-700">Applied To</button>
                 <button class="px-4 py-2 text-sm text-gray-700">Not Yet Applied To</button>
             </div>
@@ -290,7 +290,7 @@ t4rteetttw
 
             <div class="flex flex-col items-center">
                 <!--
-                <div class="w-6 h-6 bg-blue-800 text-white rounded-full flex justify-center items-center text-xs">
+                <div class="w-6 h-6 bg-primary-900 text-white rounded-full flex justify-center items-center text-xs">
 
                 </div> -->
             </div>
@@ -336,7 +336,7 @@ t4rteetttw
         step3.classList.add("hidden");
 
         p1.className = "w-8 h-8 bg-gray-300 rounded-full flex justify-center items-center";
-        p2.className = "w-8 h-8 bg-blue-800 text-white rounded-full flex justify-center items-center";
+        p2.className = "w-8 h-8 bg-primary-900 text-white rounded-full flex justify-center items-center";
         p3.className = "w-8 h-8 bg-gray-300 rounded-full flex justify-center items-center";
     }
 
@@ -345,7 +345,7 @@ t4rteetttw
         step3.classList.remove("hidden");
 
         p2.className = "w-8 h-8 bg-gray-300 rounded-full flex justify-center items-center";
-        p3.className = "w-8 h-8 bg-blue-800 text-white rounded-full flex justify-center items-center";
+        p3.className = "w-8 h-8 bg-primary-900 text-white rounded-full flex justify-center items-center";
     }
 
     function backStart() {
@@ -353,7 +353,7 @@ t4rteetttw
         step2.classList.add("hidden");
         step3.classList.add("hidden");
 
-        p1.className = "w-8 h-8 bg-blue-800 text-white rounded-full flex justify-center items-center";
+        p1.className = "w-8 h-8 bg-primary-900 text-white rounded-full flex justify-center items-center";
         p2.className = "w-8 h-8 bg-gray-300 rounded-full flex justify-center items-center";
         p3.className = "w-8 h-8 bg-gray-300 rounded-full flex justify-center items-center";
     }
@@ -403,3 +403,14 @@ t4rteetttw
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

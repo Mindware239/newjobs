@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Career Insights | Mindware Infotech</title>
+    <title>Career Insights | Jobsence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -52,7 +52,7 @@
                     <input type="text"
                            x-model="searchQuery"
                            placeholder="Search by keyword..."
-                           class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5b6bd5] focus:border-[#5b6bd5] outline-none transition-all">
+                           class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#f05537] focus:border-[#f05537] outline-none transition-all">
                 </div>
 
                 <h3 class="text-[16px] font-bold mt-4 text-black mb-2">Subscribe</h3>
@@ -93,7 +93,7 @@
                     @click="if(currentPage > 1) currentPage--"
                     :disabled="currentPage === 1"
                     :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'"
-                    class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-[#5b6bd5] transition-all">
+                    class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-[#f05537] transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -102,7 +102,7 @@
                 <template x-for="page in totalPages" :key="page">
                     <button
                         @click="currentPage = page"
-                        :class="currentPage === page ? 'bg-[#5b6bd5] text-white' : 'border border-slate-200 text-slate-600 hover:bg-white'"
+                        :class="currentPage === page ? 'bg-[#f05537] text-white' : 'border border-slate-200 text-slate-600 hover:bg-white'"
                         class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all"
                         x-text="page">
                     </button>
@@ -123,4 +123,15 @@
 <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 

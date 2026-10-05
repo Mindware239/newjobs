@@ -5,8 +5,8 @@
 
 <div class="bg-white rounded-2xl shadow p-6">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-extrabold text-purple-700">Assigned Staff</h2>
-        <a href="/master/roles" class="px-3 py-1.5 rounded bg-purple-600 text-white">Manage Roles</a>
+        <h2 class="text-xl font-extrabold text-primary-600">Assigned Staff</h2>
+        <a href="/master/roles" class="px-3 py-1.5 rounded bg-primary text-white">Manage Roles</a>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -23,7 +23,7 @@
                     <tr class="border-t">
                         <td class="py-2 pr-4 text-gray-900"><?= htmlspecialchars($u['email'] ?? '') ?></td>
                         <td class="py-2 pr-4">
-                            <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs"><?= htmlspecialchars($u['role_slug'] ?? $u['role'] ?? '') ?></span>
+                            <span class="px-2 py-0.5 rounded bg-primary-50 text-primary-600 text-xs"><?= htmlspecialchars($u['role_slug'] ?? $u['role'] ?? '') ?></span>
                         </td>
                         <td class="py-2 pr-4">
                             <span class="px-2 py-0.5 rounded <?= (($u['status'] ?? '') === 'active') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' ?> text-xs">
@@ -48,9 +48,9 @@
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar h-4 w-4 text-slate-500"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
             </span>
-            <input id="dash-date" type="date" class="pl-10 pr-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?= htmlspecialchars(date('Y-m-d')) ?>">
+            <input id="dash-date" type="date" class="pl-10 pr-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value="<?= htmlspecialchars(date('Y-m-d')) ?>">
         </div>
-        <a id="gen-report" href="/master/reports?date=<?= htmlspecialchars(date('Y-m-d')) ?>" class="px-4 py-2 rounded-md bg-indigo-600 text-white text-sm flex items-center gap-2">
+        <a id="gen-report" href="/master/reports?date=<?= htmlspecialchars(date('Y-m-d')) ?>" class="px-4 py-2 rounded-md bg-primary text-white text-sm flex items-center gap-2">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 13l3 3 7-7"></path></svg>
             Generate Report
         </a>
@@ -60,16 +60,16 @@
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
     <a href="/master/employers" class="block bg-white p-6 rounded-2xl shadow border border-gray-200 transform hover:scale-105 transition duration-300 ease-in-out hover:shadow-xl cursor-pointer group">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-300">
-                <svg class="h-6 w-6 text-blue-600 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M6 21V5a2 2 0 012-2h8a2 2 0 012 2v16"></path></svg>
+            <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
+                <svg class="h-6 w-6 text-primary group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M6 21V5a2 2 0 012-2h8a2 2 0 012 2v16"></path></svg>
             </div>
             <div>
                 <div class="text-sm text-gray-600">Total Employers</div>
                 <div class="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
                     <?= (int) ($stats['total_employers'] ?? 0) ?>
                     <span class="relative flex h-3 w-3">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                     </span>
                 </div>
             </div>
@@ -140,8 +140,8 @@
     </a>
     <a href="/master/reports" class="block bg-white p-6 rounded-2xl shadow border border-gray-200 transform hover:scale-105 transition duration-300 ease-in-out hover:shadow-xl cursor-pointer group">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-600 transition-colors duration-300">
-                <svg class="h-6 w-6 text-purple-600 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
+                <svg class="h-6 w-6 text-primary group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
             <div>
                 <div class="text-sm text-gray-600">Auto-Apply Today</div>
@@ -151,7 +151,7 @@
     </a>
     <a href="/master/reports" class="block bg-white p-6 rounded-2xl shadow border border-gray-200 transform hover:scale-105 transition duration-300 ease-in-out hover:shadow-xl cursor-pointer group">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-300">
+            <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
                 <svg class="h-6 w-6 text-amber-600 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path></svg>
             </div>
             <div>
@@ -245,8 +245,8 @@
                 <text x="<?= $x ?>" y="<?= $PT + $chartH + 18 ?>" text-anchor="middle" font-size="11" fill="#475569"><?= htmlspecialchars($months[$i] ?? '') ?></text>
             <?php endfor; ?>
             <path id="appsArea" d="<?= $areaApps ?>" fill="url(#colorApps)" stroke="none"></path>
-            <path id="jobsLine" d="<?= $pathJobs ?>" fill="none" stroke="#6366F1" stroke-width="2"></path>
-            <path id="autoLine" d="<?= $pathAuto ?>" fill="none" stroke="#8B5CF6" stroke-width="2"></path>
+            <path id="jobsLine" d="<?= $pathJobs ?>" fill="none" stroke="#f05537" stroke-width="2"></path>
+            <path id="autoLine" d="<?= $pathAuto ?>" fill="none" stroke="#f05537" stroke-width="2"></path>
             <path id="appsLine" d="<?= $pathApps ?>" fill="none" stroke="#10B981" stroke-width="2"></path>
             <?php for ($i = 0; $i < $count; $i++):
                 $x = $toX($i);
@@ -254,30 +254,30 @@
                 $ya = $toY((int) ($autos[$i] ?? 0));
                 $yapp = $toY((int) ($apps[$i] ?? 0)); ?>
                 <circle class="chart-dot" data-series="apps" data-month="<?= htmlspecialchars($months[$i] ?? '') ?>" data-jobs="<?= (int) ($jobs[$i] ?? 0) ?>" data-apps="<?= (int) ($apps[$i] ?? 0) ?>" data-auto="<?= (int) ($autos[$i] ?? 0) ?>" cx="<?= $x ?>" cy="<?= $yapp ?>" r="3.5" fill="#10B981"></circle>
-                <circle class="chart-dot" data-series="jobs" data-month="<?= htmlspecialchars($months[$i] ?? '') ?>" data-jobs="<?= (int) ($jobs[$i] ?? 0) ?>" data-apps="<?= (int) ($apps[$i] ?? 0) ?>" data-auto="<?= (int) ($autos[$i] ?? 0) ?>" cx="<?= $x ?>" cy="<?= $yj ?>" r="3" fill="#2563EB"></circle>
-                <circle class="chart-dot" data-series="auto" data-month="<?= htmlspecialchars($months[$i] ?? '') ?>" data-jobs="<?= (int) ($jobs[$i] ?? 0) ?>" data-apps="<?= (int) ($apps[$i] ?? 0) ?>" data-auto="<?= (int) ($autos[$i] ?? 0) ?>" cx="<?= $x ?>" cy="<?= $ya ?>" r="3" fill="#8B5CF6"></circle>
+                <circle class="chart-dot" data-series="jobs" data-month="<?= htmlspecialchars($months[$i] ?? '') ?>" data-jobs="<?= (int) ($jobs[$i] ?? 0) ?>" data-apps="<?= (int) ($apps[$i] ?? 0) ?>" data-auto="<?= (int) ($autos[$i] ?? 0) ?>" cx="<?= $x ?>" cy="<?= $yj ?>" r="3" fill="#f05537"></circle>
+                <circle class="chart-dot" data-series="auto" data-month="<?= htmlspecialchars($months[$i] ?? '') ?>" data-jobs="<?= (int) ($jobs[$i] ?? 0) ?>" data-apps="<?= (int) ($apps[$i] ?? 0) ?>" data-auto="<?= (int) ($autos[$i] ?? 0) ?>" cx="<?= $x ?>" cy="<?= $ya ?>" r="3" fill="#f05537"></circle>
             <?php endfor; ?>
             <defs>
                 <linearGradient id="colorJobs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stop-color="#6366F1" stop-opacity="0.3"></stop>
-                    <stop offset="95%" stop-color="#6366F1" stop-opacity="0"></stop>
+                    <stop offset="5%" stop-color="#f05537" stop-opacity="0.3"></stop>
+                    <stop offset="95%" stop-color="#f05537" stop-opacity="0"></stop>
                 </linearGradient>
                 <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stop-color="#10B981" stop-opacity="0.3"></stop>
                     <stop offset="95%" stop-color="#10B981" stop-opacity="0"></stop>
                 </linearGradient>
                 <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stop-color="#8B5CF6" stop-opacity="0.3"></stop>
-                    <stop offset="95%" stop-color="#8B5CF6" stop-opacity="0"></stop>
+                    <stop offset="5%" stop-color="#f05537" stop-opacity="0.3"></stop>
+                    <stop offset="95%" stop-color="#f05537" stop-opacity="0"></stop>
                 </linearGradient>
             </defs>
         </svg>
         <div id="chart-tip" class="hidden absolute z-20 bg-slate-900 text-white text-sm px-3 py-2 rounded-md shadow"></div>
         </div>
         <div class="flex items-center gap-6 mt-2">
-            <span class="inline-flex items-center gap-2 text-sm text-gray-700"><span class="w-3 h-3 rounded bg-blue-600"></span>Jobs</span>
+            <span class="inline-flex items-center gap-2 text-sm text-gray-700"><span class="w-3 h-3 rounded bg-primary"></span>Jobs</span>
             <span class="inline-flex items-center gap-2 text-sm text-gray-700"><span class="w-3 h-3 rounded bg-green-500"></span>Applications</span>
-            <span class="inline-flex items-center gap-2 text-sm text-gray-700"><span class="w-3 h-3 rounded bg-purple-600"></span>Auto-Apply</span>
+            <span class="inline-flex items-center gap-2 text-sm text-gray-700"><span class="w-3 h-3 rounded bg-primary"></span>Auto-Apply</span>
         </div>
         <script>
             (function(){
@@ -307,7 +307,7 @@
                     var s=d.getAttribute('data-series');
                     var map={jobs:'jobsLine',auto:'autoLine',apps:'appsLine'}; var id=map[s];
                     var line=id?document.getElementById(id):null;
-                    if(line){ line.style.transition='stroke-width 150ms ease, filter 150ms ease'; line.style.strokeWidth='3.5'; line.style.filter='drop-shadow(0 0 4px '+(s==='jobs'?'#2563EB':(s==='auto'?'#8B5CF6':'#10B981'))+')'; }
+                    if(line){ line.style.transition='stroke-width 150ms ease, filter 150ms ease'; line.style.strokeWidth='3.5'; line.style.filter='drop-shadow(0 0 4px '+(s==='jobs'?'#f05537':(s==='auto'?'#f05537':'#10B981'))+')'; }
                 }
                 function moveTip(e){
                     var rect=container.getBoundingClientRect();
@@ -472,7 +472,7 @@
                         ?>
                         <text x="<?= $YL - 6 ?>" y="<?= $yCenter ?>" text-anchor="end" font-size="12" fill="#94A3B8"><?= htmlspecialchars($label) ?></text>
                         <rect x="<?= $xStart ?>" y="<?= $y ?>" width="<?= $xEndBg - $xStart ?>" height="<?= $barH ?>" rx="<?= $barH / 2 ?>" fill="#E5E7EB"></rect>
-                        <rect class="cat-bar" data-label="<?= htmlspecialchars($label) ?>" data-value="<?= $val ?>" x="<?= $xStart ?>" y="<?= $y ?>" width="<?= max(0, $xEndVal - $xStart) ?>" height="<?= $barH ?>" rx="<?= $barH / 2 ?>" fill="#6366F1"></rect>
+                        <rect class="cat-bar" data-label="<?= htmlspecialchars($label) ?>" data-value="<?= $val ?>" x="<?= $xStart ?>" y="<?= $y ?>" width="<?= max(0, $xEndVal - $xStart) ?>" height="<?= $barH ?>" rx="<?= $barH / 2 ?>" fill="#f05537"></rect>
                     <?php endfor; ?>
                 </g>
             </svg>
@@ -511,14 +511,14 @@
                 <div class="text-lg font-semibold text-slate-800">Recent Activity</div>
                 <div class="text-sm text-slate-500">Latest platform events</div>
             </div>
-            <a href="/master/logs" class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">View All</a>
+            <a href="/master/logs" class="text-sm font-medium text-primary hover:text-primary-600 hover:underline">View All</a>
         </div>
         <div class="mt-4 space-y-3">
             <?php
             $list = array_slice(($recentApplications ?? []), 0, 5);
             foreach ($list as $ra):
                 $status = strtolower((string) ($ra['status'] ?? ''));
-                $pill = 'bg-blue-50 text-blue-600 border-blue-200';
+                $pill = 'bg-primary-50 text-primary border-primary-100';
                 $iconType = 'user';
                 if ($status === 'shortlisted' || $status === 'approved') {
                     $pill = 'bg-emerald-50 text-emerald-600 border-emerald-200';
@@ -527,7 +527,7 @@
                     $pill = 'bg-red-50 text-red-600 border-red-200';
                     $iconType = 'x';
                 } elseif ($status === 'pending' || $status === 'applied') {
-                    $pill = 'bg-blue-50 text-blue-600 border-blue-200';
+                    $pill = 'bg-primary-50 text-primary border-primary-100';
                 }
                 $title = (string) ($ra['job_title'] ?? 'Job');
                 $subtitle = (string) ($ra['company_name'] ?? 'Employer');
@@ -550,7 +550,7 @@
                 }
                 ?>
             <a href="/master/reports?application=<?= (int)($ra['id'] ?? 0) ?>" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all duration-200 border border-slate-100 transform hover:scale-[1.02] hover:shadow-md cursor-pointer group">
-                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-primary-50 group-hover:text-primary transition-colors">
                     <?php if ($iconType === 'check'): ?>
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     <?php elseif ($iconType === 'x'): ?>
@@ -561,7 +561,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-0.5">
-                        <div class="truncate text-sm font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors"><?= htmlspecialchars($title) ?></div>
+                        <div class="truncate text-sm font-semibold text-slate-900 group-hover:text-primary-600 transition-colors"><?= htmlspecialchars($title) ?></div>
                         <span class="ml-2 shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-medium <?= $pill ?>">
                             <?= htmlspecialchars($status) ?>
                         </span>
@@ -578,24 +578,24 @@
     <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
         <div class="flex items-center justify-between mb-4">
              <div class="text-lg font-semibold">Top Employers</div>
-             <a href="/master/employers" class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">View All</a>
+             <a href="/master/employers" class="text-sm font-medium text-primary hover:text-primary-600 hover:underline">View All</a>
         </div>
         <div class="space-y-3">
             <?php foreach (($topEmployers ?? []) as $te): ?>
             <a href="/master/employers?search=<?= urlencode((string)($te['company_name'] ?? '')) ?>" class="flex items-center justify-between border-b border-slate-100 pb-2 flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-100 transform hover:scale-[1.02] hover:shadow-md cursor-pointer group">
                 <div class="flex items-center gap-3">
-                     <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                     <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary font-bold text-sm">
                         <?= strtoupper(substr($te['company_name'] ?? 'E', 0, 1)) ?>
                      </div>
-                     <div class="text-sm text-gray-900 font-medium group-hover:text-indigo-700 transition-colors">
+                     <div class="text-sm text-gray-900 font-medium group-hover:text-primary-600 transition-colors">
                         <?= htmlspecialchars($te['company_name'] ?? 'Employer') ?>
                      </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold">
+                    <span class="px-2 py-1 rounded-md bg-primary-50 text-primary-600 text-xs font-semibold">
                         <?= (int) ($te['jobs'] ?? 0) ?> jobs
                     </span>
-                    <svg class="h-4 w-4 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <svg class="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </div>
             </a>
             <?php endforeach; ?>
@@ -604,11 +604,11 @@
     <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
         <div class="text-lg font-semibold mb-4">Quick Actions</div>
         <div class="grid grid-cols-2 gap-4">
-            <a href="/master/settings" class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-lg group">
+            <a href="/master/settings" class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#f05537] to-[#f05537] text-white shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-lg group">
                 <svg class="h-6 w-6 mb-2 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 <span class="text-sm font-medium">Settings</span>
             </a>
-            <a href="/master/system/cron" class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-lg group">
+            <a href="/master/system/cron" class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#f05537] to-[#f05537] text-white shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-lg group">
                 <svg class="h-6 w-6 mb-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium">Cron</span>
             </a>
@@ -727,7 +727,7 @@
 <!-- Floating Chat Widget -->
 <div id="chat-widget" class="fixed bottom-6 right-6 z-50">
     <!-- Chat Toggle Button -->
-    <button id="chat-toggle" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none">
+    <button id="chat-toggle" class="bg-primary hover:bg-primary-600 text-white rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
         </svg>
@@ -736,7 +736,7 @@
     <!-- Chat Window -->
     <div id="chat-window" class="hidden absolute bottom-16 right-0 w-80 bg-white rounded-lg shadow-2xl overflow-hidden border border-gray-200 flex flex-col transition-all duration-300 transform origin-bottom-right scale-95 opacity-0">
         <!-- Chat Header -->
-        <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+        <div class="bg-primary p-4 text-white flex justify-between items-center">
             <h3 class="font-bold">Live Support</h3>
             <span class="flex h-3 w-3 relative">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -756,8 +756,8 @@
         <!-- Chat Input -->
         <div class="p-3 bg-white border-t border-gray-100">
             <div class="flex gap-2">
-                <input type="text" placeholder="Type a message..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                <button class="bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 transition">
+                <input type="text" placeholder="Type a message..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                <button class="bg-primary text-white rounded-full p-2 hover:bg-primary-600 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
             </div>
@@ -801,3 +801,14 @@
         }, 3000);
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+

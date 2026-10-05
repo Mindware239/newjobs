@@ -19,7 +19,7 @@ $searchQuery = $filters['search'] ?? '';
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Interviews</h1>
             <p class="text-sm text-gray-600">Manage and track all your candidate interviews</p>
         </div>
-        <button onclick="openScheduleModal()" class="px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 w-full sm:w-auto justify-center">
+        <button onclick="openScheduleModal()" class="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-600 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 w-full sm:w-auto justify-center">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -48,12 +48,12 @@ $searchQuery = $filters['search'] ?? '';
         <!-- Upcoming -->
         <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex items-center justify-between mb-4">
-                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                <div class="p-2 bg-primary-50 text-primary rounded-lg group-hover:bg-primary-50 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Upcoming</span>
+                <span class="text-xs font-semibold text-primary uppercase tracking-wider">Upcoming</span>
             </div>
             <div>
                 <p class="text-3xl font-bold text-gray-900 mb-1"><?= $stats['upcoming'] ?? 0 ?></p>
@@ -64,12 +64,12 @@ $searchQuery = $filters['search'] ?? '';
         <!-- Today -->
         <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex items-center justify-between mb-4">
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                <div class="p-2 bg-primary-50 text-primary rounded-lg group-hover:bg-primary-50 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Today</span>
+                <span class="text-xs font-semibold text-primary uppercase tracking-wider">Today</span>
             </div>
             <div>
                 <p class="text-3xl font-bold text-gray-900 mb-1"><?= $stats['today'] ?? 0 ?></p>
@@ -80,12 +80,12 @@ $searchQuery = $filters['search'] ?? '';
         <!-- This Week -->
         <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
             <div class="flex items-center justify-between mb-4">
-                <div class="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition-colors">
+                <div class="p-2 bg-primary-50 text-primary rounded-lg group-hover:bg-primary-50 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Week</span>
+                <span class="text-xs font-semibold text-primary uppercase tracking-wider">Week</span>
             </div>
             <div>
                 <p class="text-3xl font-bold text-gray-900 mb-1"><?= $stats['this_week'] ?? 0 ?></p>
@@ -164,7 +164,7 @@ $searchQuery = $filters['search'] ?? '';
                        id="searchInput"
                        value="<?= htmlspecialchars($searchQuery) ?>"
                        placeholder="Search..." 
-                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-shadow">
+                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary shadow-sm transition-shadow">
                 <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
@@ -174,7 +174,7 @@ $searchQuery = $filters['search'] ?? '';
             <div class="relative">
                 <select id="typeFilter" 
                         onchange="applyFilters()"
-                        class="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm cursor-pointer hover:border-gray-300 transition-colors">
+                        class="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary shadow-sm cursor-pointer hover:border-gray-300 transition-colors">
                     <option value="all" <?= $currentType === 'all' ? 'selected' : '' ?>>All Types</option>
                     <option value="phone" <?= $currentType === 'phone' ? 'selected' : '' ?>>Phone</option>
                     <option value="video" <?= $currentType === 'video' ? 'selected' : '' ?>>Video</option>
@@ -191,7 +191,7 @@ $searchQuery = $filters['search'] ?? '';
             <div class="relative">
                 <select id="sortFilter" 
                         onchange="applyFilters()"
-                        class="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm cursor-pointer hover:border-gray-300 transition-colors">
+                        class="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary shadow-sm cursor-pointer hover:border-gray-300 transition-colors">
                     <option value="date" <?= $currentSort === 'date' ? 'selected' : '' ?>>Latest First</option>
                     <option value="candidate" <?= $currentSort === 'candidate' ? 'selected' : '' ?>>Candidate Name</option>
                     <option value="job" <?= $currentSort === 'job' ? 'selected' : '' ?>>Job Title</option>
@@ -214,7 +214,7 @@ $searchQuery = $filters['search'] ?? '';
             <h3 class="text-lg font-semibold text-gray-900 mb-2">No Interviews Found</h3>
             <p class="text-sm text-gray-600 mb-6"><?= $currentStatus !== 'all' ? 'No interviews match your current filter.' : 'Schedule your first interview to get started.' ?></p>
             <?php if ($currentStatus === 'all'): ?>
-                <button onclick="openScheduleModal()" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200 inline-flex items-center gap-2">
+                <button onclick="openScheduleModal()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 font-semibold shadow-md hover:shadow-lg transition-all duration-200 inline-flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -227,7 +227,7 @@ $searchQuery = $filters['search'] ?? '';
             <?php
             foreach ($interviews as $interview):
                 $statusColor = match ($interview['status']) {
-                    'scheduled', 'rescheduled' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                    'scheduled', 'rescheduled' => 'bg-primary-50 text-primary-600 border-primary-100',
                     'live' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                     'completed' => 'bg-green-50 text-green-700 border-green-200',
                     'cancelled' => 'bg-red-50 text-red-700 border-red-200',
@@ -248,7 +248,7 @@ $searchQuery = $filters['search'] ?? '';
                                      alt="<?= htmlspecialchars($interview['candidate_name'] ?? 'Candidate') ?>"
                                      class="w-16 h-16 rounded-xl object-cover border border-gray-100">
                             <?php else: ?>
-                                <div class="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xl border border-blue-100">
+                                <div class="w-16 h-16 rounded-xl bg-primary-50 flex items-center justify-center text-primary font-bold text-xl border border-primary">
                                     <?= strtoupper(substr($interview['candidate_name'] ?? 'C', 0, 1)) . strtoupper(substr(explode(' ', $interview['candidate_name'] ?? '')[1] ?? '', 0, 1)) ?>
                                 </div>
                             <?php endif; ?>
@@ -260,7 +260,7 @@ $searchQuery = $filters['search'] ?? '';
                                 <?= htmlspecialchars($interview['candidate_name'] ?? 'Unknown Candidate') ?>
                             </h3>
                             
-                            <div class="flex items-center text-blue-600 mb-4 gap-2">
+                            <div class="flex items-center text-primary mb-4 gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                 <a href="/employer/jobs/<?= htmlspecialchars($interview['job_slug'] ?? $interview['job_id']) ?>" class="font-medium hover:underline">
                                     <?= htmlspecialchars($interview['job_title'] ?? 'Unknown Job') ?>
@@ -272,7 +272,7 @@ $searchQuery = $filters['search'] ?? '';
                                     <?= htmlspecialchars((string)($interview['interview_type'] ?? '—')) ?>
                                 </span>
                                 <?php if (!empty($interview['platform_label'])): ?>
-                                <span class="px-2 py-0.5 text-xs rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                <span class="px-2 py-0.5 text-xs rounded-full bg-primary-50 text-primary-600 border border-primary-100">
                                     <?= htmlspecialchars((string)$interview['platform_label']) ?>
                                 </span>
                                 <?php endif; ?>
@@ -312,7 +312,7 @@ $searchQuery = $filters['search'] ?? '';
                             <div class="flex flex-wrap items-center gap-2 w-full lg:justify-end">
                                 <?php if (($interview['interview_type'] ?? '') === 'video' && !empty($interview['meeting_link'])): ?>
                                     <a href="<?= htmlspecialchars($interview['meeting_link']) ?>"
-                                       class="px-3 py-1.5 text-xs font-bold text-white bg-purple-600 rounded hover:bg-purple-700 transition-colors flex items-center gap-1 shadow-sm"
+                                       class="px-3 py-1.5 text-xs font-bold text-white bg-primary rounded hover:bg-primary-600 transition-colors flex items-center gap-1 shadow-sm"
                                        target="_blank" rel="noopener noreferrer">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                                         Join
@@ -373,7 +373,7 @@ $searchQuery = $filters['search'] ?? '';
                                 <?php endif; ?>
                                 
                                 <a href="/employer/applications/<?= $interview['application_id'] ?>" 
-                                   class="px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-sm">
+                                   class="px-3 py-1.5 text-xs font-bold text-white bg-primary rounded hover:bg-primary-600 transition-colors flex items-center gap-1 shadow-sm">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                     View Details
                                 </a>
@@ -405,7 +405,7 @@ $searchQuery = $filters['search'] ?? '';
                 <button onclick="closeScheduleModal()" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-semibold transition-colors">
                     Close
                 </button>
-                <a href="/employer/applications" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold shadow-sm hover:shadow transition-all">
+                <a href="/employer/applications" class="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-600 font-semibold shadow-sm hover:shadow transition-all">
                     Go to Applications
                 </a>
             </div>
@@ -437,7 +437,7 @@ $searchQuery = $filters['search'] ?? '';
                        name="scheduled_date" 
                        required
                        min="<?= date('Y-m-d') ?>"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
             </div>
 
             <!-- Time Range -->
@@ -448,7 +448,7 @@ $searchQuery = $filters['search'] ?? '';
                            id="reschedule_start_time"
                            name="scheduled_time" 
                            required
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">End Time *</label>
@@ -456,14 +456,14 @@ $searchQuery = $filters['search'] ?? '';
                            id="reschedule_end_time"
                            name="end_time" 
                            required
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
                 </div>
             </div>
 
             <!-- Timezone -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">Timezone</label>
-                <select name="timezone" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                <select name="timezone" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
                     <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
                     <option value="UTC">UTC</option>
                     <option value="America/New_York">America/New_York (EST)</option>
@@ -479,7 +479,7 @@ $searchQuery = $filters['search'] ?? '';
                        id="reschedule_location"
                        name="location" 
                        placeholder="Enter interview location"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
             </div>
 
             <!-- Meeting Link -->
@@ -489,7 +489,7 @@ $searchQuery = $filters['search'] ?? '';
                        id="reschedule_meeting_link"
                        name="meeting_link" 
                        placeholder="https://meet.example.com/room-id"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-shadow">
             </div>
             <div id="rescheduleError" class="hidden text-sm rounded-xl border p-3 bg-red-50 text-red-700 border-red-200"></div>
 
@@ -740,3 +740,14 @@ async function markComplete(interviewId) {
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

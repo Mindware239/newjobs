@@ -15,7 +15,7 @@
     <form id="ss-forgot" class="space-y-4">
       <label class="block text-sm font-medium">Email</label>
       <input type="email" name="email" id="ss-email" required class="w-full border border-gray-300 rounded-md p-2.5">
-      <button id="ss-submit" type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Send Reset Link</button>
+      <button id="ss-submit" type="submit" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-600">Send Reset Link</button>
     </form>
   </div>
   <script>
@@ -63,3 +63,14 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

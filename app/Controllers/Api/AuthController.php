@@ -15,6 +15,10 @@ use App\Services\GoogleOAuthService;
 use App\Services\VerificationService;
 use App\Services\NotificationService;
 use App\Models\User;
+use App\Models\Candidate;
+use App\Models\ResumeFile;
+use App\Core\Storage;
+use App\Services\ResumeTextExtractor;
 
 class AuthController extends ApiController
 {
@@ -46,6 +50,7 @@ class AuthController extends ApiController
         $errors = $this->validate($data, [
             'email' => 'required|email',
             'password' => 'required',
+            // 'email_otp' => 'required', // Removed mandatory OTP for login
         ]);
 
         if (!empty($errors)) {
@@ -95,11 +100,16 @@ class AuthController extends ApiController
      *     tags={"Authentication"},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string"),
-     *             @OA\Property(property="full_name", type="string"),
-     *             @OA\Property(property="mobile", type="string")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="email", type="string", format="email"),
+     *                 @OA\Property(property="password", type="string"),
+     *                 @OA\Property(property="full_name", type="string"),
+     *                 @OA\Property(property="mobile", type="string"),
+     *                 @OA\Property(property="email_otp", type="string"),
+     *                 @OA\Property(property="resume", type="string", format="binary", description="Resume file (PDF, DOC, DOCX)")
+     *             )
      *         )
      *     ),
      *     @OA\Response(response=201, description="Registration successful")
@@ -112,26 +122,115 @@ class AuthController extends ApiController
             'email' => 'required|email',
             'password' => 'required|password_strong|min:8',
             'full_name' => 'required',
-            'mobile' => 'required'
+            'mobile' => 'required',
+            'email_otp' => 'required',
         ]);
+
+        $resumeErrors = $this->validateCandidateResume($request);
+        if (!empty($resumeErrors)) {
+            $errors['resume'] = $resumeErrors;
+        }
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
             return;
         }
 
+        $data['email'] = strtolower(trim((string)$data['email']));
+        $normalizedMobile = AuthService::normalizePhoneNumber((string)($data['mobile'] ?? ''));
+        if ($normalizedMobile === '') {
+            $this->error($response, 'Mobile Number must be 10 digits', 422);
+            return;
+        }
+        $data['mobile'] = $normalizedMobile;
+
+        if ($this->authService->findUserByAnyEmail((string)$data['email'])) {
+            $this->error($response, 'Email already registered', 409);
+            return;
+        }
+        if ($this->authService->findUserByPhone($normalizedMobile)) {
+            $this->error($response, 'Mobile number already registered', 409);
+            return;
+        }
+
+        $emailVerification = VerificationService::verifyEmailAuthOTP(
+            (string)$data['email'],
+            (string)$data['email_otp'],
+            'register_candidate'
+        );
+        if (empty($emailVerification['success'])) {
+            $this->error($response, $emailVerification['error'] ?? 'Invalid or expired email OTP', 422);
+            return;
+        }
+
         $user = $this->authService->registerCandidate($data);
 
         if (!$user) {
-            $this->error($response, 'Registration failed or email already exists', 400);
+            $this->error($response, 'Registration failed', 400);
             return;
+        }
+
+        // Handle Resume Upload (API support)
+        $resumeUrl = null;
+        if ($request->hasFile('resume')) {
+            try {
+                $resumeFile = $request->file('resume');
+                $storage = Storage::disk('local');
+                $resumePath = $storage->store($resumeFile, 'uploads/resumes');
+                $resumeUrl = $storage->url($resumePath);
+
+                // Update Candidate Profile with resume URL
+                $candidate = Candidate::findByUserId((int)$user->id);
+                if ($candidate) {
+                    $candidate->setAttribute('resume_url', $resumeUrl);
+                    $candidate->setAttribute('is_profile_complete', 1);
+                    $candidate->save();
+
+                    // Save Resume File record
+                    $resumeFileModel = new ResumeFile();
+                    $resumeFileModel->fill([
+                        'candidate_id' => $candidate->id,
+                        'filename' => $resumeFile['name'],
+                        'filepath' => $resumePath,
+                        'hash' => sha1_file($storage->path($resumePath)),
+                        'status' => 'uploaded',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $resumeFileModel->save();
+                }
+            } catch (\Throwable $e) {
+                error_log('API Resume upload failed: ' . $e->getMessage());
+            }
         }
 
         // Send welcome / verification email
         try {
-            \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+            // Send role-based welcome email
+            \App\Services\NotificationService::send(
+                (int)$user->id,
+                'candidate_welcome',
+                'Welcome to Jobsence',
+                'Welcome, ' . $data['full_name'] . '! Thanks for joining Jobsence. We\'re excited to help you find your next career opportunity.',
+                ['candidate_name' => $data['full_name']],
+                null,
+                ['email']
+            );
+
+            // Notify Admin about new candidate registration
+            $adminMail = getenv('ADMIN_MAIL') ?: 'admin@example.com';
+            \App\Services\MailService::sendEmail(
+                $adminMail,
+                'New Candidate Registered: ' . $data['full_name'],
+                "<p>A new candidate has registered on the platform" . ($resumeUrl ? " with a resume" : "") . ":</p>
+                 <ul>
+                    <li><strong>Name:</strong> {$data['full_name']}</li>
+                    <li><strong>Email:</strong> {$user->email}</li>
+                    <li><strong>Mobile:</strong> {$data['mobile']}</li>
+                    " . ($resumeUrl ? "<li><strong>Resume:</strong> <a href=\"{$resumeUrl}\">View Resume</a></li>" : "") . "
+                 </ul>"
+            );
         } catch (\Throwable $e) {
-            error_log('Failed to send verification email during API registration: ' . $e->getMessage());
+            error_log('Failed to send notifications during API registration: ' . $e->getMessage());
         }
 
         $token = $this->authService->generateToken($user);
@@ -143,7 +242,8 @@ class AuthController extends ApiController
                 'email' => $user->email,
                 'role' => $user->role,
                 'name' => $data['full_name'],
-                'mobile' => $data['mobile']
+                'mobile' => $data['mobile'],
+                'resume_url' => $resumeUrl
             ]
         ], 'Registration successful', 201);
     }
@@ -156,10 +256,25 @@ class AuthController extends ApiController
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"email","password","company_name","full_name","phone","pincode","email_otp"},
      *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string"),
+     *             @OA\Property(property="password", type="string", minLength=8),
+     *             @OA\Property(property="password_confirm", type="string", minLength=8),
      *             @OA\Property(property="company_name", type="string"),
-     *             @OA\Property(property="phone", type="string")
+     *             @OA\Property(property="full_name", type="string", description="Contact person name"),
+     *             @OA\Property(property="phone", type="string", example="9876543210"),
+     *             @OA\Property(property="register_as", type="string", enum={"company","individual"}, example="company"),
+     *             @OA\Property(property="industry", type="string", example="IT / Software"),
+     *             @OA\Property(property="company_type", type="string", example="private_limited"),
+     *             @OA\Property(property="company_size", type="string", example="11-50"),
+     *             @OA\Property(property="profession_type", type="string", example="Consultant"),
+     *             @OA\Property(property="service_category", type="string", example="HR Services"),
+     *             @OA\Property(property="gstin", type="string", nullable=true, description="Must be unique across companies/mentors"),
+     *             @OA\Property(property="no_gst", type="boolean", nullable=true, description="Send true when the company has no GST. If this field is sent, gstin becomes mandatory unless no_gst is true."),
+     *             @OA\Property(property="website", type="string", nullable=true),
+     *             @OA\Property(property="pincode", type="string", example="110001"),
+     *             @OA\Property(property="address", type="object", nullable=true),
+     *             @OA\Property(property="email_otp", type="string", description="6-digit OTP sent with purpose register_employer")
      *         )
      *     ),
      *     @OA\Response(response=201, description="Registration successful")
@@ -171,10 +286,116 @@ class AuthController extends ApiController
         $errors = $this->validate($data, [
             'email' => 'required|email',
             'password' => 'required|password_strong|min:8',
+            'company_name' => 'required',
+            'full_name' => 'required',
+            'phone' => 'required',
+            'email_otp' => 'required',
         ]);
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
+            return;
+        }
+
+        if (($data['password_confirm'] ?? $data['password']) !== $data['password']) {
+            $this->error($response, 'Passwords do not match', 422);
+            return;
+        }
+
+        $phoneDigits = preg_replace('/\D+/', '', (string)($data['phone'] ?? ''));
+        if (!preg_match('/^[0-9]{10}$/', $phoneDigits)) {
+            $this->error($response, 'Mobile Number must be 10 digits', 422);
+            return;
+        }
+        $data['phone'] = AuthService::normalizePhoneNumber($phoneDigits);
+
+        $data['email'] = strtolower(trim((string)$data['email']));
+        if ($this->authService->findUserByAnyEmail((string)$data['email'])) {
+            $this->error($response, 'Email already registered', 409);
+            return;
+        }
+        if ($this->authService->findUserByPhone((string)$data['phone'])) {
+            $this->error($response, 'Mobile number already registered', 409);
+            return;
+        }
+
+        $registerAs = strtolower(trim((string)($data['register_as'] ?? 'company')));
+        if (!in_array($registerAs, ['company', 'individual'], true)) {
+            $this->error($response, 'register_as must be company or individual', 422);
+            return;
+        }
+        $data['register_as'] = $registerAs;
+
+        if ($registerAs === 'company') {
+            $requiredCompanyFields = [
+                'industry' => 'Industry Type is required',
+                'company_type' => 'Company Type is required',
+                'company_size' => 'Company Size is required',
+            ];
+            foreach ($requiredCompanyFields as $field => $message) {
+                if (trim((string)($data[$field] ?? '')) === '') {
+                    $this->error($response, $message, 422);
+                    return;
+                }
+            }
+        } else {
+            $requiredIndividualFields = [
+                'profession_type' => 'Profession Type is required',
+                'service_category' => 'Service Category is required',
+            ];
+            foreach ($requiredIndividualFields as $field => $message) {
+                if (trim((string)($data[$field] ?? '')) === '') {
+                    $this->error($response, $message, 422);
+                    return;
+                }
+            }
+        }
+
+        $address = $data['address'] ?? [];
+        if (is_string($address)) {
+            $address = json_decode($address, true) ?: [];
+        }
+        if (!is_array($address)) {
+            $address = [];
+        }
+
+        $postalCode = trim((string)($data['pincode'] ?? $data['postal_code'] ?? ($address['postal_code'] ?? '')));
+        if ($postalCode === '') {
+            $this->error($response, 'Pin Code is required', 422);
+            return;
+        }
+        if (!preg_match('/^[0-9]{6}$/', $postalCode)) {
+            $this->error($response, 'Pin Code must be exactly 6 digits', 422);
+            return;
+        }
+
+        $gstin = strtoupper(trim((string)($data['gstin'] ?? $data['tax_id'] ?? '')));
+        if ($gstin !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $gstin)) {
+            $this->error($response, 'Please enter valid GSTIN number.', 422);
+            return;
+        }
+        $providerError = $this->providerIdentityError($data, (string)$data['email'], $phoneDigits, $gstin);
+        if ($providerError !== null) {
+            $this->error($response, $providerError, 409);
+            return;
+        }
+
+        if ($postalCode !== '') {
+            $data['postal_code'] = $postalCode;
+            $address['postal_code'] = $postalCode;
+            $data['address'] = $address;
+        }
+        if ($gstin !== '') {
+            $data['tax_id'] = $gstin;
+        }
+
+        $emailVerification = VerificationService::verifyEmailAuthOTP(
+            (string)$data['email'],
+            (string)$data['email_otp'],
+            'register_employer'
+        );
+        if (empty($emailVerification['success'])) {
+            $this->error($response, $emailVerification['error'] ?? 'Invalid or expired email OTP', 422);
             return;
         }
 
@@ -188,20 +409,83 @@ class AuthController extends ApiController
         // Send welcome / verification email for Employer
         try {
             \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+
+            // Send role-based welcome email for Employer
+            \App\Services\NotificationService::send(
+                (int)$user->id,
+                'employer_welcome',
+                'Welcome to Jobsence',
+                'Thank you for registering as an employer. We are here to help you hire the best talent.',
+                [],
+                null,
+                ['email']
+            );
+
+            // Notify Admin about new employer registration
+            $adminMail = getenv('ADMIN_MAIL') ?: 'admin@example.com';
+            \App\Services\MailService::sendEmail(
+                $adminMail,
+                'New Employer Registered: ' . ($data['company_name'] ?? 'Unknown'),
+                "<p>A new employer has registered on the platform:</p>
+                 <ul>
+                    <li><strong>Company:</strong> " . ($data['company_name'] ?? 'N/A') . "</li>
+                    <li><strong>Email:</strong> {$user->email}</li>
+                    <li><strong>Phone:</strong> " . ($data['phone'] ?? 'N/A') . "</li>
+                 </ul>"
+            );
         } catch (\Throwable $e) {
-            error_log('Failed to send verification email during API employer registration: ' . $e->getMessage());
+            error_log('Failed to send notifications during API employer registration: ' . $e->getMessage());
         }
 
         $token = $this->authService->generateToken($user);
+        $employer = Employer::where('user_id', '=', (int)$user->id)->first();
 
         $this->success($response, [
             'token' => $token,
             'user' => [
                 'id' => $user->id,
                 'email' => $user->email,
-                'role' => $user->role
-            ]
+                'role' => $user->role,
+                'status' => $user->status,
+                'name' => $data['full_name'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'company_name' => $data['company_name'] ?? null,
+            ],
+            'employer' => $employer ? [
+                'id' => (int)$employer->id,
+                'company_name' => $employer->attributes['company_name'] ?? null,
+                'register_as' => $employer->attributes['register_as'] ?? null,
+                'industry' => $employer->attributes['industry'] ?? null,
+                'company_type' => $employer->attributes['company_type'] ?? null,
+                'profession_type' => $employer->attributes['profession_type'] ?? null,
+                'service_category' => $employer->attributes['service_category'] ?? null,
+                'company_size' => $employer->attributes['size'] ?? null,
+                'postal_code' => $employer->attributes['postal_code'] ?? null,
+                'kyc_status' => $employer->attributes['kyc_status'] ?? null,
+            ] : null,
+            'redirect' => '/employer/company-profile'
         ], 'Registration successful', 201);
+    }
+
+    /**
+     * One company = one Email + Mobile + GST (shared with the website and mentor registrations).
+     * GST is mandatory only for clients that send the `no_gst` flag (newer app versions), so older
+     * app builds keep working; an already-registered GST is always refused.
+     */
+    private function providerIdentityError(array $data, string $email, string $phone, string $gstin): ?string
+    {
+        if (array_key_exists('no_gst', $data)) {
+            $noGst = in_array($data['no_gst'], [true, 1, '1', 'true', 'on'], true);
+            if ($gstin === '' && !$noGst) {
+                return 'GST नंबर भरें या “मेरे पास GST नहीं है” चुनें / Enter GSTIN or set no_gst';
+            }
+        }
+
+        $conflicts = \App\Services\Registration\ProviderIdentity::conflicts($email, $phone, $gstin);
+        if (!$conflicts) {
+            return null;
+        }
+        return implode(' • ', array_map(static fn($m) => $m[0] . ' / ' . $m[1], $conflicts));
     }
 
     public function sendPhoneOtp(Request $request, Response $response): void
@@ -209,32 +493,85 @@ class AuthController extends ApiController
         $data = $request->getJsonBody();
         $phone = trim((string)($data['phone'] ?? ''));
         $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $role = trim((string)($data['role'] ?? ''));
 
         if ($phone === '') {
             $this->error($response, 'Phone number is required', 422);
             return;
         }
 
-        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, [
-            'role' => $data['role'] ?? null,
-        ]);
+        if (in_array(strtolower($purpose), ['register_candidate', 'register_employer'], true)) {
+            $normalizedPhone = AuthService::normalizePhoneNumber($phone);
+            if ($normalizedPhone === '') {
+                $this->error($response, 'Mobile Number must be 10 digits', 422);
+                return;
+            }
+            if ($this->authService->findUserByPhone($normalizedPhone)) {
+                $this->error($response, 'Mobile number already registered', 409);
+                return;
+            }
+        }
 
+        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, ['role' => $role]);
+        if (empty($result['success'])) {
+            $this->error($response, $result['error'] ?? 'Failed to send OTP', 500);
+            return;
+        }
+
+        $this->success($response, [
+            'phone' => $result['phone'],
+            'purpose' => $result['purpose'],
+            'mode' => $result['mode'] ?? 'sms',
+            'otp_preview' => $result['otp_preview'] ?? null,
+        ], 'OTP sent to your phone');
+    }
+
+    public function sendEmailOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody();
+        $email = trim((string)($data['email'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $role = trim((string)($data['role'] ?? ''));
+
+        if ($email === '') {
+            $this->error($response, 'Email is required', 422);
+            return;
+        }
+
+        if (in_array(strtolower($purpose), ['register_candidate', 'register_employer'], true)) {
+            if ($this->authService->findUserByAnyEmail($email)) {
+                $this->error($response, 'Email already registered', 409);
+                return;
+            }
+
+            $phone = AuthService::normalizePhoneNumber((string)($data['phone'] ?? ($data['mobile'] ?? '')));
+            if ($phone !== '' && $this->authService->findUserByPhone($phone)) {
+                $this->error($response, 'Mobile number already registered', 409);
+                return;
+            }
+
+            if (strtolower($purpose) === 'register_employer') {
+                $gstin = strtoupper(trim((string)($data['gstin'] ?? '')));
+                $providerError = $this->providerIdentityError($data, $email, $phone, $gstin);
+                if ($providerError !== null) {
+                    $this->error($response, $providerError, 409);
+                    return;
+                }
+            }
+        }
+
+        $result = VerificationService::sendEmailAuthOTP($email, $purpose, ['role' => $role]);
         if (empty($result['success'])) {
             $this->error($response, $result['error'] ?? 'Failed to send OTP', 500);
             return;
         }
 
         $payload = [
-            'phone' => $result['phone'],
-            'purpose' => $result['purpose'],
-            'mode' => $result['mode'] ?? 'sms',
+            'email' => $result['email'] ?? $email,
+            'purpose' => $result['purpose'] ?? $purpose,
         ];
 
-        if (!empty($result['otp_preview'])) {
-            $payload['otp_preview'] = $result['otp_preview'];
-        }
-
-        $this->success($response, $payload, 'OTP sent successfully');
+        $this->success($response, $payload, 'OTP sent to your email');
     }
 
     public function loginWithPhoneOtp(Request $request, Response $response): void
@@ -245,84 +582,164 @@ class AuthController extends ApiController
         $purpose = trim((string)($data['purpose'] ?? 'auth'));
 
         if ($phone === '' || $otp === '') {
-            $this->error($response, 'phone and otp are required', 422);
+            $this->error($response, 'Phone and OTP are required', 422);
             return;
         }
 
-        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
-        if (empty($verification['success'])) {
-            $this->error($response, $verification['error'] ?? 'Invalid OTP', 400);
+        // Try 'login' purpose first, then fallback to 'auth'
+        $verify = VerificationService::verifyAuthPhoneOTP($phone, $otp, 'login');
+        if (empty($verify['success'])) {
+            $verify = VerificationService::verifyAuthPhoneOTP($phone, $otp, 'auth');
+        }
+
+        if (empty($verify['success'])) {
+            $this->error($response, $verify['error'] ?? 'Invalid or expired OTP', 422);
             return;
         }
 
-        $user = $this->authService->loginByPhone($phone);
+        // Find user by normalized phone, accepting 10-digit and +91 formats.
+        $user = $this->authService->findUserByPhone($phone);
         if (!$user) {
-            $this->error($response, 'Account not found for this phone number', 404);
+            $this->error($response, 'No account found with this phone number', 404);
             return;
         }
 
-        $payload = $this->buildOAuthAuthPayload($user);
-        $prefs = $user->getNotificationPreferences();
-        if (!empty($prefs['contact']['additional_mobile'])) {
-            $payload['user']['additional_mobile'] = $prefs['contact']['additional_mobile'];
+        $token = $this->authService->generateToken($user);
+
+        $userData = [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role' => $user->role,
+            'status' => $user->status,
+        ];
+
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::where('user_id', '=', $user->id)->first();
+            if ($candidate) {
+                $userData['name'] = $candidate->full_name;
+                $userData['mobile'] = $candidate->mobile ?? $user->phone;
+            }
+        } elseif ($user->role === 'employer') {
+            $employer = Employer::where('user_id', '=', $user->id)->first();
+            if ($employer) {
+                $userData['company_name'] = $employer->company_name;
+            }
         }
 
-        $this->success($response, $payload, 'Login successful');
+        $this->success($response, [
+            'token' => $token,
+            'user' => $userData
+        ], 'Login successful');
     }
 
     public function registerCandidateWithPhoneOtp(Request $request, Response $response): void
     {
         $data = $request->getJsonBody();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $otp = trim((string)($data['otp'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
-
         $errors = $this->validate($data, [
             'phone' => 'required',
             'otp' => 'required',
             'full_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
+            'email' => 'required|email',
+            'password' => 'required|password_strong|min:8',
         ]);
+
+        $resumeErrors = $this->validateCandidateResume($request);
+        if (!empty($resumeErrors)) {
+            $errors['resume'] = $resumeErrors;
+        }
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
             return;
         }
 
-        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
-        if (empty($verification['success'])) {
-            $this->error($response, $verification['error'] ?? 'Invalid OTP', 400);
+        $data['email'] = strtolower(trim((string)$data['email']));
+        $data['phone'] = AuthService::normalizePhoneNumber((string)$data['phone']);
+        if ($data['phone'] === '') {
+            $this->error($response, 'Mobile Number must be 10 digits', 422);
+            return;
+        }
+        if ($this->authService->findUserByAnyEmail((string)$data['email'])) {
+            $this->error($response, 'Email already registered', 409);
+            return;
+        }
+        if ($this->authService->findUserByPhone((string)$data['phone'])) {
+            $this->error($response, 'Mobile number already registered', 409);
             return;
         }
 
-        $result = $this->authService->registerCandidateWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $this->error($response, $result['error'] ?? 'Registration failed', 400);
+        $verify = VerificationService::verifyAuthPhoneOTP($data['phone'], $data['otp'], 'register_candidate');
+        if (empty($verify['success'])) {
+            $this->error($response, $verify['error'] ?? 'Invalid or expired OTP', 422);
             return;
         }
 
-        $payload = $this->buildOAuthAuthPayload($result['user']);
-        if (!empty($result['additional_mobile'])) {
-            $payload['user']['additional_mobile'] = $result['additional_mobile'];
+        // Add phone to data for registration
+        $data['mobile'] = $data['phone'];
+        $user = $this->authService->registerCandidate($data);
+
+        if (!$user) {
+            $this->error($response, 'Registration failed or email/phone already exists', 400);
+            return;
         }
 
-        $this->success($response, $payload, 'Registration successful', 201);
+        // Handle Resume Upload (API support)
+        $resumeUrl = null;
+        if ($request->hasFile('resume')) {
+            try {
+                $resumeFile = $request->file('resume');
+                $storage = Storage::disk('local');
+                $resumePath = $storage->store($resumeFile, 'uploads/resumes');
+                $resumeUrl = $storage->url($resumePath);
+
+                // Update Candidate Profile with resume URL
+                $candidate = Candidate::findByUserId((int)$user->id);
+                if ($candidate) {
+                    $candidate->setAttribute('resume_url', $resumeUrl);
+                    $candidate->setAttribute('is_profile_complete', 1);
+                    $candidate->save();
+
+                    // Save Resume File record
+                    $resumeFileModel = new ResumeFile();
+                    $resumeFileModel->fill([
+                        'candidate_id' => $candidate->id,
+                        'filename' => $resumeFile['name'],
+                        'filepath' => $resumePath,
+                        'hash' => sha1_file($storage->path($resumePath)),
+                        'status' => 'uploaded',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $resumeFileModel->save();
+                }
+            } catch (\Throwable $e) {
+                error_log('API Phone Register Resume upload failed: ' . $e->getMessage());
+            }
+        }
+
+        $token = $this->authService->generateToken($user);
+
+        $this->success($response, [
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'name' => $data['full_name'],
+                'mobile' => $data['phone'],
+                'resume_url' => $resumeUrl
+            ]
+        ], 'Registration successful', 201);
     }
 
     public function registerEmployerWithPhoneOtp(Request $request, Response $response): void
     {
         $data = $request->getJsonBody();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $otp = trim((string)($data['otp'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
-
         $errors = $this->validate($data, [
             'phone' => 'required',
             'otp' => 'required',
             'company_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
+            'email' => 'required|email',
+            'password' => 'required|password_strong|min:8',
         ]);
 
         if (!empty($errors)) {
@@ -330,24 +747,58 @@ class AuthController extends ApiController
             return;
         }
 
-        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
-        if (empty($verification['success'])) {
-            $this->error($response, $verification['error'] ?? 'Invalid OTP', 400);
+        $data['email'] = strtolower(trim((string)$data['email']));
+        $data['phone'] = AuthService::normalizePhoneNumber((string)$data['phone']);
+        if ($data['phone'] === '') {
+            $this->error($response, 'Mobile Number must be 10 digits', 422);
+            return;
+        }
+        if ($this->authService->findUserByAnyEmail((string)$data['email'])) {
+            $this->error($response, 'Email already registered', 409);
+            return;
+        }
+        if ($this->authService->findUserByPhone((string)$data['phone'])) {
+            $this->error($response, 'Mobile number already registered', 409);
+            return;
+        }
+        $gstin = strtoupper(trim((string)($data['gstin'] ?? $data['tax_id'] ?? '')));
+        if ($gstin !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $gstin)) {
+            $this->error($response, 'Please enter valid GSTIN number.', 422);
+            return;
+        }
+        $providerError = $this->providerIdentityError($data, (string)$data['email'], (string)$data['phone'], $gstin);
+        if ($providerError !== null) {
+            $this->error($response, $providerError, 409);
+            return;
+        }
+        if ($gstin !== '') {
+            $data['tax_id'] = $gstin;
+        }
+
+        $verify = VerificationService::verifyAuthPhoneOTP($data['phone'], $data['otp'], 'register_employer');
+        if (empty($verify['success'])) {
+            $this->error($response, $verify['error'] ?? 'Invalid or expired OTP', 422);
             return;
         }
 
-        $result = $this->authService->registerEmployerWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $this->error($response, $result['error'] ?? 'Registration failed', 400);
+        $user = $this->authService->registerEmployer($data);
+
+        if (!$user) {
+            $this->error($response, 'Registration failed or email/phone already exists', 400);
             return;
         }
 
-        $payload = $this->buildOAuthAuthPayload($result['user']);
-        if (!empty($result['additional_mobile'])) {
-            $payload['user']['additional_mobile'] = $result['additional_mobile'];
-        }
+        $token = $this->authService->generateToken($user);
 
-        $this->success($response, $payload, 'Registration successful', 201);
+        $this->success($response, [
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'company_name' => $data['company_name'] ?? null,
+            ]
+        ], 'Registration successful', 201);
     }
 
     public function me(Request $request, Response $response): void
@@ -633,7 +1084,7 @@ class AuthController extends ApiController
         }
     }
 
-    private function normalizeOAuthRole($role): string
+    private function normalizeOAuthRole(mixed $role): string
     {
         $value = strtolower(trim((string)$role));
         return in_array($value, ['candidate', 'employer'], true) ? $value : 'candidate';
@@ -671,9 +1122,9 @@ class AuthController extends ApiController
             return $user;
         }
 
-        $email = trim((string)($userData['email'] ?? ''));
+        $email = strtolower(trim((string)($userData['email'] ?? '')));
         if ($email !== '') {
-            $user = User::where('email', '=', $email)->first();
+            $user = $this->authService->findUserByAnyEmail($email);
             if ($user) {
                 if ($user->role !== $requestedRole) {
                     throw new \RuntimeException('An account with this email already exists under a different role.');
@@ -706,7 +1157,14 @@ class AuthController extends ApiController
             $payload['google_picture'] = $userData['picture'];
         }
         if (!empty($extraData['phone'])) {
-            $payload['phone'] = (string)$extraData['phone'];
+            $phone = AuthService::normalizePhoneNumber((string)$extraData['phone']);
+            if ($phone === '') {
+                throw new \RuntimeException('A valid phone number is required.');
+            }
+            if ($this->authService->findUserByPhone($phone)) {
+                throw new \RuntimeException('Mobile number already registered.');
+            }
+            $payload['phone'] = $phone;
         }
 
         $user->fill($payload);
@@ -744,6 +1202,57 @@ class AuthController extends ApiController
         $user->fill($payload);
         $user->last_login = date('Y-m-d H:i:s');
         $user->save();
+    }
+
+    private function validateCandidateResume(Request $request): array
+    {
+        if (!$request->hasFile('resume')) {
+            return []; // Optional for API unless strictly required
+        }
+
+        $resumeFile = $request->file('resume');
+        $ext = strtolower(pathinfo((string)($resumeFile['name'] ?? ''), PATHINFO_EXTENSION));
+        if (!in_array($ext, ['pdf', 'doc', 'docx'], true)) {
+            return ['Invalid resume format. Only PDF, DOC, and DOCX are allowed'];
+        }
+
+        if ((int)($resumeFile['size'] ?? 0) > 5 * 1024 * 1024) {
+            return ['Resume size exceeds 5MB limit'];
+        }
+
+        $mime = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mime = (string)finfo_file($finfo, (string)$resumeFile['tmp_name']);
+                finfo_close($finfo);
+            }
+        }
+
+        $allowedMimes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/zip',
+            'application/octet-stream',
+        ];
+
+        if ($mime !== '' && !in_array($mime, $allowedMimes, true)) {
+            return ['Invalid file content. Please upload a real PDF or Word document.'];
+        }
+
+        try {
+            $extractor = new ResumeTextExtractor();
+            $text = $extractor->extractResumeText((string)$resumeFile['tmp_name'], $ext);
+            $text = trim($text);
+            if ($text !== '' && strlen($text) < 80) {
+                return ['The uploaded resume contains too little readable text. Please upload a text-based PDF or Word document.'];
+            }
+        } catch (\Throwable $e) {
+            error_log("Resume text verification skipped during registration: " . $e->getMessage());
+        }
+
+        return [];
     }
 
     private function ensureOAuthProfileForRole(User $user, array $data): void

@@ -40,15 +40,15 @@
                 <p class="text-gray-600 mt-1">Comprehensive insights into your hiring process</p>
             </div>
             <div class="flex flex-wrap gap-3 w-full lg:w-auto">
-                <select x-model="filters.job_id" @change="loadAllData()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <select x-model="filters.job_id" @change="loadAllData()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm">
                     <option value="">All Jobs</option>
                     <?php foreach ($jobs ?? [] as $job): ?>
                         <option value="<?= $job->id ?>"><?= htmlspecialchars($job->title) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <input type="date" x-model="filters.date_from" @change="updateTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <input type="date" x-model="filters.date_to" @change="updateTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <select x-model="filters.timeframe" @change="applyTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <input type="date" x-model="filters.date_from" @change="updateTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                <input type="date" x-model="filters.date_to" @change="updateTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                <select x-model="filters.timeframe" @change="applyTimeframe()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm">
                     <option value="custom">Custom Range</option>
                     <option value="7d">Last 7 Days</option>
                     <option value="30d" selected>Last 30 Days</option>
@@ -56,7 +56,7 @@
                     <option value="6m">Last 6 Months</option>
                     <option value="1y">Last Year</option>
                 </select>
-                <button @click="exportReport()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2">
+                <button @click="exportReport()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
@@ -67,7 +67,7 @@
 
         <!-- Loading Indicator -->
         <div x-show="loading" class="text-center py-4">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             <p class="text-gray-600 mt-2">Loading analytics data...</p>
         </div>
     </div>
@@ -307,7 +307,7 @@
                 <h2 class="text-xl font-semibold text-gray-900">Hiring Funnel Analytics</h2>
                 <p class="text-sm text-gray-600 mt-1">Track applicant journey through each stage</p>
             </div>
-            <button @click="loadFunnelData()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Refresh</button>
+            <button @click="loadFunnelData()" class="text-sm text-primary hover:text-primary-900 font-medium">Refresh</button>
         </div>
         <div x-show="!funnelData.stages" class="text-center py-8 text-gray-500">
             <p>Loading funnel data...</p>
@@ -326,8 +326,8 @@
                 </div>
             </div>
             <div x-show="funnelData.stages" class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                <div class="text-center p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                    <div class="text-2xl font-bold text-blue-600" x-text="funnelData.stages?.applied?.count || 0"></div>
+                <div class="text-center p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
+                    <div class="text-2xl font-bold text-primary" x-text="funnelData.stages?.applied?.count || 0"></div>
                     <div class="text-sm text-gray-600 mt-1">Applied</div>
                     <div class="text-xs text-gray-500 mt-1" x-text="(funnelData.stages?.applied?.percentage || 0) + '%'"></div>
                 </div>
@@ -336,8 +336,8 @@
                     <div class="text-sm text-gray-600 mt-1">Shortlisted</div>
                     <div class="text-xs text-gray-500 mt-1" x-text="(funnelData.stages?.shortlisted?.percentage || 0) + '%'"></div>
                 </div>
-                <div class="text-center p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                    <div class="text-2xl font-bold text-purple-600" x-text="funnelData.stages?.interviewed?.count || 0"></div>
+                <div class="text-center p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
+                    <div class="text-2xl font-bold text-primary" x-text="funnelData.stages?.interviewed?.count || 0"></div>
                     <div class="text-sm text-gray-600 mt-1">Interviewed</div>
                     <div class="text-xs text-gray-500 mt-1" x-text="(funnelData.stages?.interviewed?.percentage || 0) + '%'"></div>
                 </div>
@@ -388,25 +388,25 @@
         </div>
         <div x-show="timeToHireData.avg_days_total_time_to_hire" class="space-y-6" x-cloak>
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                <div class="p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
                     <div class="text-sm text-gray-600 mb-1">Posted to Application</div>
-                    <div class="text-2xl font-bold text-blue-600" x-text="(timeToHireData.avg_days_posted_to_application || 0) + ' days'"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="(timeToHireData.avg_days_posted_to_application || 0) + ' days'"></div>
                 </div>
                 <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
                     <div class="text-sm text-gray-600 mb-1">Application to Shortlisted</div>
                     <div class="text-2xl font-bold text-green-600" x-text="(timeToHireData.avg_days_application_to_shortlisted || 0) + ' days'"></div>
                 </div>
-                <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                <div class="p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
                     <div class="text-sm text-gray-600 mb-1">Shortlisted to Interview</div>
-                    <div class="text-2xl font-bold text-purple-600" x-text="(timeToHireData.avg_days_shortlisted_to_interview || 0) + ' days'"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="(timeToHireData.avg_days_shortlisted_to_interview || 0) + ' days'"></div>
                 </div>
                 <div class="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
                     <div class="text-sm text-gray-600 mb-1">Interview to Offer</div>
                     <div class="text-2xl font-bold text-orange-600" x-text="(timeToHireData.avg_days_interview_to_offer || 0) + ' days'"></div>
                 </div>
-                <div class="p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
+                <div class="p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
                     <div class="text-sm text-gray-600 mb-1">Offer to Hire</div>
-                    <div class="text-2xl font-bold text-indigo-600" x-text="(timeToHireData.avg_days_offer_to_hire || 0) + ' days'"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="(timeToHireData.avg_days_offer_to_hire || 0) + ' days'"></div>
                 </div>
                 <div class="p-4 bg-emerald-50 rounded-lg border-l-4 border-emerald-500">
                     <div class="text-sm text-gray-600 mb-1">Total Time to Hire</div>
@@ -526,7 +526,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <div class="text-sm text-gray-600">Resume Completeness</div>
-                            <div class="text-xl font-bold text-blue-600" x-text="(parseFloat(job.avg_resume_completeness) || 0).toFixed(1) + '%'"></div>
+                            <div class="text-xl font-bold text-primary" x-text="(parseFloat(job.avg_resume_completeness) || 0).toFixed(1) + '%'"></div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600">Skill Match</div>
@@ -534,11 +534,11 @@
                         </div>
                         <div>
                             <div class="text-sm text-gray-600">Interview Score</div>
-                            <div class="text-xl font-bold text-purple-600" x-text="(parseFloat(job.avg_interview_score) || 0).toFixed(1)"></div>
+                            <div class="text-xl font-bold text-primary" x-text="(parseFloat(job.avg_interview_score) || 0).toFixed(1)"></div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-600">Overall Score</div>
-                            <div class="text-xl font-bold text-indigo-600" x-text="(parseFloat(job.avg_overall_score) || 0).toFixed(1)"></div>
+                            <div class="text-xl font-bold text-primary" x-text="(parseFloat(job.avg_overall_score) || 0).toFixed(1)"></div>
                         </div>
                     </div>
                 </div>
@@ -553,17 +553,17 @@
             <p>Loading communication data...</p>
         </div>
         <div x-show="communicationData.messages_sent" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="p-4 bg-blue-50 rounded-lg">
+            <div class="p-4 bg-primary-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Messages Sent</div>
-                <div class="text-2xl font-bold text-blue-600" x-text="communicationData.messages_sent || 0"></div>
+                <div class="text-2xl font-bold text-primary" x-text="communicationData.messages_sent || 0"></div>
             </div>
             <div class="p-4 bg-green-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Replies Received</div>
                 <div class="text-2xl font-bold text-green-600" x-text="communicationData.replies_received || 0"></div>
             </div>
-            <div class="p-4 bg-purple-50 rounded-lg">
+            <div class="p-4 bg-primary-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Avg Response Time</div>
-                <div class="text-2xl font-bold text-purple-600" x-text="(communicationData.avg_response_time_hours || 0).toFixed(1) + ' hrs'"></div>
+                <div class="text-2xl font-bold text-primary" x-text="(communicationData.avg_response_time_hours || 0).toFixed(1) + ' hrs'"></div>
             </div>
             <div class="p-4 bg-orange-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Interview Invites Sent</div>
@@ -588,18 +588,18 @@
         </div>
         <div x-show="notificationData.total_sent" class="space-y-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="p-4 bg-blue-50 rounded-lg">
+                <div class="p-4 bg-primary-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Total Sent</div>
-                    <div class="text-2xl font-bold text-blue-600" x-text="notificationData.total_sent || 0"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="notificationData.total_sent || 0"></div>
                 </div>
                 <div class="p-4 bg-green-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Delivered</div>
                     <div class="text-2xl font-bold text-green-600" x-text="notificationData.delivered || 0"></div>
                     <div class="text-xs text-gray-500 mt-1" x-text="(notificationData.delivery_rate || 0) + '% delivery rate'"></div>
                 </div>
-                <div class="p-4 bg-purple-50 rounded-lg">
+                <div class="p-4 bg-primary-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Opened</div>
-                    <div class="text-2xl font-bold text-purple-600" x-text="notificationData.opened || 0"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="notificationData.opened || 0"></div>
                     <div class="text-xs text-gray-500 mt-1" x-text="(notificationData.open_rate || 0) + '% open rate'"></div>
                 </div>
                 <div class="p-4 bg-red-50 rounded-lg">
@@ -625,17 +625,17 @@
         </div>
         <div x-show="activityData.summary" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="p-4 bg-blue-50 rounded-lg">
+                <div class="p-4 bg-primary-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Jobs Created This Month</div>
-                    <div class="text-2xl font-bold text-blue-600" x-text="activityData.summary?.days_with_job_creation || 0"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="activityData.summary?.days_with_job_creation || 0"></div>
                 </div>
                 <div class="p-4 bg-green-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Profiles Viewed</div>
                     <div class="text-2xl font-bold text-green-600" x-text="activityData.summary?.total_profiles_viewed || 0"></div>
                 </div>
-                <div class="p-4 bg-purple-50 rounded-lg">
+                <div class="p-4 bg-primary-50 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Resumes Downloaded</div>
-                    <div class="text-2xl font-bold text-purple-600" x-text="activityData.summary?.total_resumes_downloaded || 0"></div>
+                    <div class="text-2xl font-bold text-primary" x-text="activityData.summary?.total_resumes_downloaded || 0"></div>
                 </div>
             </div>
             <div class="h-64">
@@ -651,9 +651,9 @@
             <p>No active subscription found</p>
         </div>
         <div x-show="subscriptionData.has_subscription" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="p-4 bg-blue-50 rounded-lg">
+            <div class="p-4 bg-primary-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Plan</div>
-                <div class="text-lg font-bold text-blue-600" x-text="subscriptionData.plan_name || 'N/A'"></div>
+                <div class="text-lg font-bold text-primary" x-text="subscriptionData.plan_name || 'N/A'"></div>
                 <div class="text-xs text-gray-500 mt-1" x-text="'₹' + (subscriptionData.plan_price || 0)"></div>
             </div>
             <div class="p-4 bg-green-50 rounded-lg">
@@ -661,17 +661,17 @@
                 <div class="text-lg font-bold text-green-600" x-text="(subscriptionData.job_slots_used || 0) + '/' + (subscriptionData.job_slots_total || 0)"></div>
                 <div class="text-xs text-gray-500 mt-1" x-text="(subscriptionData.job_slots_remaining || 0) + ' remaining'"></div>
             </div>
-            <div class="p-4 bg-purple-50 rounded-lg">
+            <div class="p-4 bg-primary-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Cost per Job</div>
-                <div class="text-lg font-bold text-purple-600" x-text="'₹' + (subscriptionData.cost_per_job || 0)"></div>
+                <div class="text-lg font-bold text-primary" x-text="'₹' + (subscriptionData.cost_per_job || 0)"></div>
             </div>
             <div class="p-4 bg-orange-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Cost per Hire</div>
                 <div class="text-lg font-bold text-orange-600" x-text="'₹' + (subscriptionData.cost_per_hire || 0)"></div>
             </div>
-            <div class="p-4 bg-indigo-50 rounded-lg">
+            <div class="p-4 bg-primary-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Hiring ROI</div>
-                <div class="text-lg font-bold text-indigo-600" x-text="(subscriptionData.hiring_roi || 0) + '%'"></div>
+                <div class="text-lg font-bold text-primary" x-text="(subscriptionData.hiring_roi || 0) + '%'"></div>
             </div>
             <div class="p-4 bg-teal-50 rounded-lg">
                 <div class="text-sm text-gray-600 mb-1">Jobs Posted</div>
@@ -707,7 +707,7 @@
                         <?php foreach ($stats['top_jobs'] as $job): ?>
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
+                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="text-sm font-medium text-gray-900 hover:text-primary transition-colors cursor-pointer">
                                         <?= htmlspecialchars($job['title']) ?>
                                     </a>
                                 </td>
@@ -717,7 +717,7 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="text-blue-600 hover:text-blue-900 font-semibold transition-colors">View</a>
+                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id']) ?>" class="text-primary hover:text-primary font-semibold transition-colors">View</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -741,9 +741,9 @@
                     <a href="/employer/applications?month=<?= $month ?>" class="flex items-center hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer group">
                         <div class="w-32 text-sm text-gray-600 group-hover:text-gray-900 font-medium"><?= date('M Y', strtotime($month . '-01')) ?></div>
                         <div class="flex-1 bg-gray-200 rounded-full h-6 mr-4 group-hover:bg-gray-300 transition-colors">
-                            <div class="bg-blue-600 h-6 rounded-full group-hover:bg-blue-700 transition-colors" style="width: <?= min(100, ($count / max(1, max($stats['applications_by_month']))) * 100) ?>%"></div>
+                            <div class="bg-primary h-6 rounded-full group-hover:bg-primary-600 transition-colors" style="width: <?= min(100, ($count / max(1, max($stats['applications_by_month']))) * 100) ?>%"></div>
                         </div>
-                        <div class="w-16 text-sm font-medium text-gray-900 text-right group-hover:text-blue-600 transition-colors"><?= $count ?></div>
+                        <div class="w-16 text-sm font-medium text-gray-900 text-right group-hover:text-primary transition-colors"><?= $count ?></div>
                     </a>
                 <?php endforeach; ?>
             </div>
@@ -760,7 +760,7 @@
                     <option value="successful">Successful</option>
                     <option value="failed">Failed</option>
                 </select>
-                <button @click="loadSecurityLogs()" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">Refresh</button>
+                <button @click="loadSecurityLogs()" class="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-600">Refresh</button>
             </div>
         </div>
         <div x-show="!securityLogs.logs" class="text-center py-8 text-gray-500">
@@ -1973,3 +1973,14 @@
         });
     </script>
 <?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+

@@ -22,14 +22,27 @@ class JobFilterRepository
     public function getPotentialCandidatesForJob(Job $job, array $titleKeywords, int $limit, int $lastId = 0): array
     {
         $params = ['last_id' => $lastId];
-        $whereSql = "status = 'active' AND id > :last_id";
+        $whereSql = "id > :last_id
+            AND COALESCE(profile_status, 'verified') != 'suspended'
+            AND COALESCE(visibility, 'searchable') != 'private'";
 
         if (!empty($titleKeywords)) {
             $likeParts = [];
             foreach ($titleKeywords as $i => $kw) {
-                $key = "kw_{$i}";
-                $likeParts[] = "LOWER(professional_title) LIKE :{$key}";
-                $params[$key] = "%{$kw}%";
+                $titleKey = "kw_title_{$i}";
+                $skillsKey = "kw_skills_{$i}";
+                $experienceKey = "kw_experience_{$i}";
+                $introKey = "kw_intro_{$i}";
+                $likeParts[] = "(
+                    LOWER(COALESCE(professional_title, '')) LIKE :{$titleKey}
+                    OR LOWER(COALESCE(skills_data, '')) LIKE :{$skillsKey}
+                    OR LOWER(COALESCE(experience_data, '')) LIKE :{$experienceKey}
+                    OR LOWER(COALESCE(self_introduction, '')) LIKE :{$introKey}
+                )";
+                $params[$titleKey] = "%{$kw}%";
+                $params[$skillsKey] = "%{$kw}%";
+                $params[$experienceKey] = "%{$kw}%";
+                $params[$introKey] = "%{$kw}%";
             }
             $whereTitle = implode(' OR ', $likeParts);
             $whereSql .= " AND ({$whereTitle})";
@@ -49,22 +62,37 @@ class JobFilterRepository
     public function getPotentialJobsForCandidate(array $titleKeywords, int $limit, int $lastId = 0): array
     {
         $params = ['last_id' => $lastId];
-        $whereSql = "status = 'published' AND id > :last_id";
+        $whereSql = "j.status = 'published' AND j.id > :last_id";
 
         if (!empty($titleKeywords)) {
             $likeParts = [];
             foreach ($titleKeywords as $i => $kw) {
-                $key = "kw_{$i}";
-                $likeParts[] = "LOWER(title) LIKE :{$key}";
-                $params[$key] = "%{$kw}%";
+                $titleKey = "kw_title_{$i}";
+                $categoryKey = "kw_category_{$i}";
+                $descriptionKey = "kw_description_{$i}";
+                $skillKey = "kw_skill_{$i}";
+                $likeParts[] = "(
+                    LOWER(COALESCE(j.title, '')) LIKE :{$titleKey}
+                    OR LOWER(COALESCE(j.category, '')) LIKE :{$categoryKey}
+                    OR LOWER(COALESCE(j.description, '')) LIKE :{$descriptionKey}
+                    OR EXISTS (
+                        SELECT 1 FROM job_skills js
+                        INNER JOIN skills s ON s.id = js.skill_id
+                        WHERE js.job_id = j.id AND LOWER(s.name) LIKE :{$skillKey}
+                    )
+                )";
+                $params[$titleKey] = "%{$kw}%";
+                $params[$categoryKey] = "%{$kw}%";
+                $params[$descriptionKey] = "%{$kw}%";
+                $params[$skillKey] = "%{$kw}%";
             }
             $whereTitle = implode(' OR ', $likeParts);
             $whereSql .= " AND ({$whereTitle})";
         }
 
-        $sql = "SELECT * FROM jobs 
+        $sql = "SELECT j.* FROM jobs j
                 WHERE {$whereSql}
-                ORDER BY id ASC
+                ORDER BY j.id ASC
                 LIMIT {$limit}";
 
         return $this->db->fetchAll($sql, $params);

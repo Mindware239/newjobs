@@ -12,7 +12,7 @@
       <div class="max-w-[1200px] mx-auto px-6 py-4 flex justify-between items-center">
         <div class="flex-shrink-0">
             <a href="<?= $base ?>">
-                <img src="<?= $base ?>uploads/Mindware-infotech.png" alt="Logo" class="h-10 md:h-14 w-auto">
+                <img src="<?= $base ?>uploads/jobsence.png" alt="Logo" class="h-10 md:h-14 w-auto">
             </a>
         </div>
         <nav class="flex gap-6 text-sm text-gray-700">
@@ -37,7 +37,7 @@
     </nav>
     <div class="max-w-3xl mx-auto p-6">
         <div class="mb-4">
-            <a href="/social-employer/organisation" class="text-indigo-600 text-sm">&larr; Back to Organizations</a>
+            <a href="/social-employer/organisation" class="text-primary text-sm">&larr; Back to Organizations</a>
         </div>
         <div class="bg-white border rounded-xl shadow-sm p-6">
             <h1 class="text-xl font-semibold mb-4">Edit Organization</h1>
@@ -91,7 +91,7 @@
                         <div class="w-20 h-20 border rounded flex items-center justify-center bg-white">
                             <?php $logo = (string)($org['logo_url'] ?? ''); ?>
                             <?php if ($logo): ?>
-                                <img src="<?= htmlspecialchars($logo) ?>" class="max-w-full max-h-full object-contain" alt="Logo" onerror="this.onerror=null;this.src='/uploads/mindware-infotechlogo.png'">
+                                <img src="<?= htmlspecialchars($logo) ?>" class="max-w-full max-h-full object-contain" alt="Logo" onerror="this.onerror=null;this.src='/uploads/jobsence.png'">
                             <?php else: ?>
                                 <span class="text-xs text-gray-500">No logo</span>
                             <?php endif; ?>
@@ -100,10 +100,21 @@
                     </div>
                 </div>
                 <div class="pt-4">
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save Changes</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

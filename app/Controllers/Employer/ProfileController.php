@@ -8,10 +8,12 @@ use App\Controllers\BaseController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Employer;
+use App\Models\EmployerKycDocument;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\Application;
 use App\Core\Storage;
+use App\Helpers\AddressHelper;
 
 class ProfileController extends BaseController
 {
@@ -38,29 +40,34 @@ class ProfileController extends BaseController
         $totalApplications = !empty($jobIds) 
             ? Application::whereIn('job_id', $jobIds)->count()
             : 0;
+        $kycDocuments = EmployerKycDocument::where('employer_id', '=', $employer->id)->get();
+        $kycDocumentsArray = array_map(fn($doc) => $doc->toArray(), $kycDocuments);
 
-        // Parse address JSON and merge with column fallbacks
-        $address = [];
-        if (!empty($employer->address)) {
-            $address = is_string($employer->address)
-                ? json_decode($employer->address, true)
-                : $employer->address;
-            if (!is_array($address)) {
-                $address = [];
-            }
-        }
-        $address['state'] = $address['state'] ?? ($employer->state ?? '');
-        $address['city'] = $address['city'] ?? ($employer->city ?? '');
-        $address['postal_code'] = $address['postal_code'] ?? ($employer->postal_code ?? '');
-        $address['street'] = $address['street'] ?? '';
+        $address = AddressHelper::normalize($employer->attributes['address'] ?? null, [
+            'country' => $employer->country ?? '',
+            'state' => $employer->state ?? '',
+            'city' => $employer->city ?? '',
+            'postal_code' => $employer->postal_code ?? '',
+        ]);
+        $address['country'] = $employer->country ?? ($address['country'] ?? '');
+        $address['company_type'] = $employer->company_type ?? ($address['company_type'] ?? '');
+        $address['tax_id'] = $employer->tax_id ?? ($address['tax_id'] ?? '');
+
+        $basicInfoComplete = method_exists($employer, 'isBasicInfoComplete') && $employer->isBasicInfoComplete();
+        $addressComplete = method_exists($employer, 'isAddressComplete') && $employer->isAddressComplete();
+        $startStep = method_exists($employer, 'nextProfileStep') ? $employer->nextProfileStep() : ($basicInfoComplete ? 2 : 1);
 
         $response->view('employer/profile', [
             'title' => 'My Profile',
             'employer' => $employer,
             'user' => $this->currentUser,
             'address' => $address,
+            'kycDocuments' => $kycDocumentsArray,
             'jobCount' => $activeJobsCount,
-            'applicationCount' => $totalApplications
+            'applicationCount' => $totalApplications,
+            'startStep' => $startStep,
+            'basicInfoComplete' => $basicInfoComplete,
+            'addressComplete' => $addressComplete
         ], 200, 'employer/layout');
     }
 
@@ -105,6 +112,11 @@ class ProfileController extends BaseController
 
             // Update user phone if provided
             if (isset($data['phone'])) {
+                $phone = preg_replace('/\D+/', '', (string)$data['phone']);
+                if ($phone !== '' && strlen($phone) < 10) {
+                    $response->json(['error' => 'Mobile Number must be 10 digits'], 422);
+                    return;
+                }
                 $this->currentUser->phone = $data['phone'];
                 $this->currentUser->save();
             }
@@ -133,8 +145,33 @@ class ProfileController extends BaseController
                 $updateData['industry'] = $industry ?: null;
             }
             
+            if (array_key_exists('company_type', $data)) {
+                $updateData['company_type'] = $data['company_type'] ?: null;
+            }
+            
             if (array_key_exists('company_size', $data)) {
                 $updateData['size'] = $data['company_size'] ?: null;
+            }
+            
+            if (array_key_exists('tax_id', $data)) {
+                $taxId = strtoupper(trim((string)$data['tax_id']));
+                if ($taxId !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $taxId)) {
+                    $response->json(['error' => 'Please enter valid GSTIN number.'], 422);
+                    return;
+                }
+                $updateData['tax_id'] = $taxId ?: null;
+            }
+
+            if (array_key_exists('register_as', $data)) {
+                $updateData['register_as'] = $data['register_as'] ?: 'company';
+            }
+
+            if (array_key_exists('profession_type', $data)) {
+                $updateData['profession_type'] = $data['profession_type'] ?: null;
+            }
+
+            if (array_key_exists('service_category', $data)) {
+                $updateData['service_category'] = $data['service_category'] ?: null;
             }
             
             if (array_key_exists('country', $data)) {
@@ -143,21 +180,35 @@ class ProfileController extends BaseController
 
             // Handle address
             if (isset($data['address'])) {
-                $address = is_string($data['address']) 
+                $rawAddress = is_string($data['address']) 
                     ? json_decode($data['address'], true) 
                     : $data['address'];
                 
-                if (is_array($address)) {
-                    // Normalize address strings
-                    foreach (['state','city','postal_code','street'] as $k) {
-                        if (isset($address[$k]) && is_string($address[$k])) {
-                            $address[$k] = trim($address[$k]);
-                        }
+                if (is_array($rawAddress)) {
+                    $address = AddressHelper::forStorage($rawAddress, [
+                        'country' => $data['country'] ?? '',
+                    ]);
+                    
+                    if (($address['street'] ?? '') === '') {
+                        $response->json(['error' => 'Street Address is required'], 422);
+                        return;
                     }
+
+                    if (!empty($address['postal_code']) && !preg_match('/^[0-9]{6}$/', (string)$address['postal_code'])) {
+                        $response->json(['error' => 'Pin Code must be exactly 6 digits'], 422);
+                        return;
+                    }
+
+                    if (array_key_exists('country', $data)) {
+                        $address['country'] = is_string($data['country']) ? trim($data['country']) : $data['country'];
+                    }
+
                     $updateData['address'] = json_encode($address, JSON_UNESCAPED_UNICODE);
                     $updateData['state'] = $address['state'] ?? null;
                     $updateData['city'] = $address['city'] ?? null;
                     $updateData['postal_code'] = $address['postal_code'] ?? null;
+                    
+                    error_log('Saving employer address: ' . $updateData['address']);
                 }
             }
     
@@ -174,16 +225,30 @@ class ProfileController extends BaseController
 
             // Update employer
             $employer->fill($updateData);
-            if ($employer->save()) {
-                $response->json([
-                    'success' => true,
-                    'message' => 'Profile updated successfully',
-                    'employer' => $employer->toArray(),
-                    'user' => $this->currentUser->toArray()
-                ]);
-            } else {
-                $response->json(['error' => 'Failed to update profile'], 500);
+
+            // Handle missing company_type column in database
+            try {
+                $employer->save();
+            } catch (\Throwable $e) {
+                if (strpos($e->getMessage(), "Unknown column 'company_type'") !== false) {
+                    error_log('company_type column missing, attempting to add it...');
+                    \App\Core\Database::getInstance()->execute("ALTER TABLE employers ADD COLUMN company_type VARCHAR(100) DEFAULT NULL AFTER industry");
+                    $employer->save();
+                } else {
+                    throw $e;
+                }
             }
+
+            $response->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'employer' => $employer->toArray(),
+                'user' => $this->currentUser->toArray(),
+                'basic_info_complete' => method_exists($employer, 'isBasicInfoComplete') ? $employer->isBasicInfoComplete() : false,
+                'address_complete' => method_exists($employer, 'isAddressComplete') ? $employer->isAddressComplete() : false,
+                'profile_complete' => method_exists($employer, 'isProfileComplete') ? $employer->isProfileComplete() : false,
+                'next_profile_step' => method_exists($employer, 'nextProfileStep') ? $employer->nextProfileStep() : 1
+            ]);
         } catch (\Throwable $t) {
             error_log('Employer profile update error: ' . $t->getMessage());
             $response->json(['error' => 'Failed to update profile', 'message' => $t->getMessage()], 500);

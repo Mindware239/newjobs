@@ -57,7 +57,7 @@ class EmploymentVerificationPDFService
         $riskCat = htmlspecialchars((string)($score['category'] ?? ''));
         $finalStatus = htmlspecialchars((string)($er['status_overall'] ?? 'under_review'));
         $verDate = htmlspecialchars((string)($er['verification_date'] ?? date('Y-m-d')));
-        $verBy = 'Mindware Employment Screening Division';
+        $verBy = 'Jobsence Employment Screening Division';
         return '<html><head><style>
             body{font-family:DejaVu Sans, sans-serif;color:#111;}
             .card{padding:18px;border:1px solid #e5e7eb;border-radius:10px}

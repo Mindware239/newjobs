@@ -50,7 +50,7 @@
             </div>
         </div>
         <div class="flex gap-3">
-            <button class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+            <button class="px-4 py-2 bg-primary text-white rounded">Save</button>
             <a href="/admin/career-articles" class="px-4 py-2 border rounded">Back</a>
         </div>
     </form>
@@ -86,3 +86,14 @@ if (window.CKEDITOR) {
   });
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

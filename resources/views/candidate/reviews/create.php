@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/css/output.css" rel="stylesheet">
-    <title><?= $title ?? 'Write a Review' ?> - Mindware Infotech</title>
+    <title><?= $title ?? 'Write a Review' ?> - Jobsence</title>
 
     <style>
         .option-btn.active { background-color: #1f2937 !important; color: #fff !important; border-color: #1f2937 !important; }
-        .option-checkbox:checked + span { font-weight: 600; color: #4f46e5; }
+        .option-checkbox:checked + span { font-weight: 600; color: #f05537; }
         .star { cursor: pointer; transition: transform .15s ease; }
         .star:hover { transform: scale(1.05); }
     </style>
@@ -22,7 +22,7 @@
 
             <!-- Icon -->
             <div class="flex justify-center mb-6">
-                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                <div class="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center text-primary">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
@@ -38,18 +38,18 @@
             </p>
 
             <!-- Info Note -->
-            <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4 mb-8 flex items-start gap-3">
-                <svg class="w-5 h-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-primary-50 border border-primary rounded-lg p-4 mb-8 flex items-start gap-3">
+                <svg class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
                 </svg>
-                <p class="text-sm text-indigo-800">
+                <p class="text-sm text-primary">
                     Your review will be posted anonymously. Please be honest and constructive.
                 </p>
             </div>
 
             <form id="reviewForm" onsubmit="submitReview(event)">
                 <div class="flex justify-between items-center mb-6">
-                    <a href="/candidate/reviews" class="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center gap-2">
+                    <a href="/candidate/reviews" class="text-sm text-primary hover:text-primary-900 inline-flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                         Back to Reviews
                     </a>
@@ -61,7 +61,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                        <input type="text" id="companyName" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-3 border" placeholder="e.g. Mindware Infotech">
+                        <input type="text" id="companyName" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary focus:border-primary p-3 border" placeholder="e.g. Jobsence">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Overall Rating</label>
@@ -91,15 +91,15 @@
                 <!-- Additional Comments -->
                 <div class="mt-8">
                     <label class="block text-lg font-medium text-gray-800 mb-3">Any other comments? (Optional)</label>
-                    <textarea id="reviewText" rows="4" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-4 border" placeholder="Share more details about your experience..." oninput="updateCounter()"></textarea>
+                    <textarea id="reviewText" rows="4" class="w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary focus:border-primary p-4 border" placeholder="Share more details about your experience..." oninput="updateCounter()"></textarea>
                     <div class="mt-1 text-right text-xs text-gray-500"><span id="charCount">0</span>/500</div>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="mt-10">
                     <button type="submit"
-                        class="w-full bg-blue-50 font-bold text-lg py-4 rounded-xl shadow-lg transform transition duration-200 
-                        hover:translate-y-[-2px] focus:outline-none focus:ring-4 focus:ring-blue-300 flex justify-center items-center gap-2">
+                        class="w-full bg-primary-50 font-bold text-lg py-4 rounded-xl shadow-lg transform transition duration-200 
+                        hover:translate-y-[-2px] focus:outline-none focus:ring-4 focus:ring-primary-100 flex justify-center items-center gap-2">
                         <span>Submit Review</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -115,15 +115,15 @@
 
     <!-- Questions Data & Logic -->
     <style>
-        .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        .btn-primary-solid {
+            background: linear-gradient(135deg, #f05537 0%, #FF6A3D 100%);
             border: none;
             color: white;
             transition: all 0.2s ease;
             box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        .btn-primary-solid:hover {
+            background: linear-gradient(135deg, #0f172a 0%, #f05537 100%);
             box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
             transform: translateY(-1px);
         }
@@ -194,16 +194,16 @@
                 if (qObj.type === "yesno") {
                     innerHTML += `
                         <div class="grid grid-cols-2 gap-4 max-w-md">
-                            <button type="button" class="option-btn py-3 px-6 rounded-lg border-2 border-gray-200 bg-white text-gray-600 font-medium hover:border-indigo-500 hover:text-indigo-600 transition-all duration-200" data-question="${index}" data-answer="Yes" onclick="selectOption(this)">Yes</button>
-                            <button type="button" class="option-btn py-3 px-6 rounded-lg border-2 border-gray-200 bg-white text-gray-600 font-medium hover:border-indigo-500 hover:text-indigo-600 transition-all duration-200" data-question="${index}" data-answer="No" onclick="selectOption(this)">No</button>
+                            <button type="button" class="option-btn py-3 px-6 rounded-lg border-2 border-gray-200 bg-white text-gray-600 font-medium hover:border-primary hover:text-primary transition-all duration-200" data-question="${index}" data-answer="Yes" onclick="selectOption(this)">Yes</button>
+                            <button type="button" class="option-btn py-3 px-6 rounded-lg border-2 border-gray-200 bg-white text-gray-600 font-medium hover:border-primary hover:text-primary transition-all duration-200" data-question="${index}" data-answer="No" onclick="selectOption(this)">No</button>
                         </div>
                     `;
                 } else if (qObj.type === "multiple") {
                     innerHTML += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
                     qObj.options.forEach(option => {
                         innerHTML += `
-                            <label class="option-label flex items-center gap-3 bg-white border-2 border-gray-200 rounded-lg p-3 cursor-pointer hover:border-indigo-400 transition-colors">
-                                <input type="checkbox" data-question="${index}" value="${option}" class="option-checkbox w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                            <label class="option-label flex items-center gap-3 bg-white border-2 border-gray-200 rounded-lg p-3 cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" data-question="${index}" value="${option}" class="option-checkbox w-5 h-5 text-primary rounded focus:ring-primary border-gray-300">
                                 <span class="text-gray-700">${option}</span>
                             </label>
                         `;
@@ -313,3 +313,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

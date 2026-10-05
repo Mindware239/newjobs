@@ -24,14 +24,14 @@
     --text-2: #4A5568;
     --text-3: #8896AA;
     --text-inv: #FFFFFF;
-    --blue: #2563EB;
-    --blue-light: #EFF6FF;
-    --blue-mid: #BFDBFE;
+    --blue: #f05537;
+    --blue-light: #fff1ed;
+    --blue-mid: #fff1ed;
     --green: #059669;
     --green-light: #ECFDF5;
     --green-mid: #A7F3D0;
-    --violet: #7C3AED;
-    --violet-light: #F5F3FF;
+    --violet: #f05537;
+    --violet-light: #fff5f2;
     --violet-mid: #DDD6FE;
     --amber: #D97706;
     --amber-light: #FFFBEB;
@@ -110,7 +110,7 @@
     font-family: 'Sora', sans-serif;
     transition: background 0.15s, transform 0.1s;
 }
-.adash-refresh-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+.adash-refresh-btn:hover { background: #FF6A3D; transform: translateY(-1px); }
 
 /* ── Section label ── */
 .adash-section-label {
@@ -257,7 +257,7 @@
     width: 36px;
     height: 36px;
     border-radius: 9px;
-    background: linear-gradient(135deg, #2563EB, #1d4ed8);
+    background: linear-gradient(135deg, #f05537, #FF6A3D);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -310,11 +310,11 @@
 .adash-alert-title { font-size: 13px; font-weight: 700; }
 .adash-alert.error .adash-alert-title { color: #991b1b; }
 .adash-alert.warning .adash-alert-title { color: #92400e; }
-.adash-alert.info .adash-alert-title { color: #1e40af; }
+.adash-alert.info .adash-alert-title { color: #0f172a; }
 .adash-alert-msg { font-size: 12px; margin-top: 2px; }
 .adash-alert.error .adash-alert-msg { color: #b91c1c; }
 .adash-alert.warning .adash-alert-msg { color: #a16207; }
-.adash-alert.info .adash-alert-msg { color: #1d4ed8; }
+.adash-alert.info .adash-alert-msg { color: #FF6A3D; }
 .adash-alert-link { font-size: 12px; font-weight: 700; white-space: nowrap; text-decoration: none; }
 .adash-alert.error .adash-alert-link { color: var(--red); }
 .adash-alert.warning .adash-alert-link { color: var(--amber); }
@@ -528,7 +528,7 @@
         </div>
     </div>
 
-    <!-- ── PRIMARY STATS ── -->
+    <!-- ── #f05537 STATS ── -->
     <div class="adash-section-label">Platform Metrics</div>
     <div class="adash-stats-grid" style="margin-bottom:16px;">
 
@@ -607,7 +607,7 @@
         </a>
 
         <a href="/admin/payments" class="adash-rev-card">
-            <div class="adash-rev-icon" style="background: linear-gradient(135deg,#7c3aed,#6d28d9);">
+            <div class="adash-rev-icon" style="background: linear-gradient(135deg,#f05537,#f05537);">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             </div>
             <div>
@@ -658,7 +658,7 @@
                     <div class="adash-chart-sub">Last 30 days — Employers vs Candidates</div>
                 </div>
                 <div class="adash-chart-legend">
-                    <span class="adash-legend-item"><span class="adash-legend-dot" style="background:#2563EB;"></span>Employers</span>
+                    <span class="adash-legend-item"><span class="adash-legend-dot" style="background:#f05537;"></span>Employers</span>
                     <span class="adash-legend-item"><span class="adash-legend-dot" style="background:#059669;"></span>Candidates</span>
                 </div>
             </div>
@@ -674,7 +674,7 @@
                     <div class="adash-chart-sub">Last 30 days — Total jobs posted daily</div>
                 </div>
                 <div class="adash-chart-legend">
-                    <span class="adash-legend-item"><span class="adash-legend-dot" style="background:#7c3aed;"></span>Jobs Posted</span>
+                    <span class="adash-legend-item"><span class="adash-legend-dot" style="background:#f05537;"></span>Jobs Posted</span>
                 </div>
             </div>
             <div class="adash-chart-wrap">
@@ -792,8 +792,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Gradient fill for employers
         const ctxEl = signupsCtx.getContext('2d');
         const blueGrad = ctxEl.createLinearGradient(0, 0, 0, 220);
-        blueGrad.addColorStop(0, 'rgba(37,99,235,0.18)');
-        blueGrad.addColorStop(1, 'rgba(37,99,235,0)');
+        blueGrad.addColorStop(0, 'rgba(240,85,55,0.18)');
+        blueGrad.addColorStop(1, 'rgba(240,85,55,0)');
 
         const greenGrad = ctxEl.createLinearGradient(0, 0, 0, 220);
         greenGrad.addColorStop(0, 'rgba(5,150,105,0.15)');
@@ -806,13 +806,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Employers',
                     data: signupsData.map(d => d.employers || 0),
-                    borderColor: '#2563EB',
+                    borderColor: '#f05537',
                     backgroundColor: blueGrad,
                     borderWidth: 2,
                     tension: 0.45,
                     fill: true,
                     pointRadius: 3,
-                    pointBackgroundColor: '#2563EB',
+                    pointBackgroundColor: '#f05537',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointHoverRadius: 5,
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Jobs Posted',
                     data: jobsData.map(d => d.count || 0),
                     backgroundColor: violetGrad,
-                    borderColor: '#7C3AED',
+                    borderColor: '#f05537',
                     borderWidth: 0,
                     borderRadius: 5,
                     borderSkipped: false,
@@ -926,3 +926,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 60000);
 });
 </script>
+
+
+
+
+
+
+
+
+
+

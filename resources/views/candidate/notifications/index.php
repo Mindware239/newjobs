@@ -1,13 +1,12 @@
 <?php
 $candidate = $candidate ?? null;
 $notifications = $notifications ?? [];
-ob_start();
 ?>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-            <div class="p-3 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow-lg shadow-blue-200">
+            <div class="p-3 bg-gradient-to-br from-[#f05537] to-[#e64a2e] rounded-xl shadow-lg shadow-primary-100">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                 </svg>
@@ -21,7 +20,7 @@ ob_start();
         <div x-data>
             <button @click="$dispatch('mark-all-read')" 
                     class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition shadow-sm">
-                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
                 Mark all as read
@@ -79,18 +78,18 @@ ob_start();
 
                         switch ($iconType) {
                             case 'interview':
-                                $iconBg = 'bg-blue-100';
-                                $iconColor = 'text-blue-600';
+                                $iconBg = 'bg-primary-50';
+                                $iconColor = 'text-primary';
                                 $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />';
                                 break;
                             case 'application':
-                                $iconBg = 'bg-blue-100';
-                                $iconColor = 'text-blue-600';
+                                $iconBg = 'bg-primary-50';
+                                $iconColor = 'text-primary';
                                 $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />';
                                 break;
                             case 'message':
-                $iconBg = 'bg-blue-100';
-                $iconColor = 'text-blue-600';
+                $iconBg = 'bg-primary-50';
+                $iconColor = 'text-primary';
                 $iconSvg = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />';
                 break;
                             default:
@@ -115,7 +114,7 @@ ob_start();
                             <!-- Content -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-start justify-between mb-1">
-                                    <h3 class="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                    <h3 class="text-base font-semibold text-gray-900 group-hover:text-primary transition-colors">
                                         <?= htmlspecialchars($n['title'] ?? 'Notification') ?>
                                     </h3>
                                     <span class="text-xs font-medium text-gray-400 whitespace-nowrap ml-2">
@@ -128,7 +127,7 @@ ob_start();
                                 
                                 <div class="flex items-center gap-4">
                                     <?php if (!empty($link)): ?>
-                                        <a href="<?= htmlspecialchars($link) ?>" class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-700">
+                                        <a href="<?= htmlspecialchars($link) ?>" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-600">
                                             View Details
                                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -148,7 +147,7 @@ ob_start();
                             </div>
                             
                             <!-- Unread Indicator -->
-                            <div class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-2 shadow-sm shadow-blue-200" 
+                            <div class="w-2.5 h-2.5 rounded-full bg-primary mt-2 shadow-sm shadow-primary-100" 
                                  x-show="<?= $isRead ? 'false' : 'true' ?>"></div>
                         </div>
                     </li>
@@ -195,7 +194,7 @@ function notifPage() {
             window.addEventListener('delete-read', () => this.clearRead());
         },
         rowClass(isRead) {
-            return isRead ? 'opacity-75' : 'bg-blue-50/30';
+            return isRead ? 'opacity-75' : 'bg-primary-50/30';
         },
         applyFilter() {
             const list = this.$refs.list;
@@ -224,7 +223,7 @@ function notifPage() {
                     if (btn) btn.remove();
                     
                     li.classList.add('opacity-75');
-                    li.classList.remove('bg-blue-50/30');
+                    li.classList.remove('bg-primary-50/30');
                 }
                 this.applyFilter();
             } catch (e) {
@@ -250,7 +249,7 @@ function notifPage() {
                     if (btn) btn.remove();
                     
                     li.classList.add('opacity-75');
-                    li.classList.remove('bg-blue-50/30');
+                    li.classList.remove('bg-primary-50/30');
                 });
                 this.applyFilter();
             } catch (e) {
@@ -295,8 +294,15 @@ function notifPage() {
 }
 </script>
 
-<?php
-$content = ob_get_clean();
-$title = 'Notifications';
-require __DIR__ . '/../../candidate/layout.php';
-?>
+
+
+
+
+
+
+
+
+
+
+
+

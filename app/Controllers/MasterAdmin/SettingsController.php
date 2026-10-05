@@ -145,7 +145,7 @@ class SettingsController extends BaseController
         try {
             $db = Database::getInstance();
             // Active users in last 5 minutes by role
-            $users = $db->fetchAll("SELECT DISTINCT u.id, u.role FROM activity_logs al LEFT JOIN users u ON u.id = al.user_id WHERE al.created_at >= NOW() - INTERVAL 5 MINUTE");
+            $users = $db->fetchAll("SELECT DISTINCT u.id, u.role FROM activity_logs al LEFT JOIN users u ON u.id = al.actor_id WHERE al.created_at >= NOW() - INTERVAL 5 MINUTE");
             $out['active_users_total'] = count($users);
             foreach ($users as $u) {
                 $r = ucfirst((string)($u['role'] ?? ''));

@@ -4,7 +4,7 @@
         <p class="mt-2 text-sm text-gray-600">Payment history for candidate: <span class="font-semibold"><?= htmlspecialchars($candidate['full_name']) ?></span></p>
     </div>
     <div class="flex flex-col sm:flex-row gap-3">
-         <a href="/admin/candidates/<?= htmlspecialchars($candidate['id']) ?>" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+         <a href="/admin/candidates/<?= htmlspecialchars($candidate['id']) ?>" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
             <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             Back to Profile
         </a>
@@ -80,3 +80,13 @@
         </table>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+

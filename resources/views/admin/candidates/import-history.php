@@ -5,13 +5,13 @@
             <p class="mt-2 text-sm text-gray-600">Track bulk import batches and errors.</p>
         </div>
         <div class="flex gap-3">
-            <a href="/admin/candidates/import" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+            <a href="/admin/candidates/import" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
                 New Import
             </a>
-            <a href="/admin/candidates" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+            <a href="/admin/candidates" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 Back to Candidates
             </a>
         </div>
@@ -72,7 +72,7 @@
                                 <?php $hasErrors = !empty($log['error_log']); ?>
                                 <?php if ($hasErrors): ?>
                                     <details>
-                                        <summary class="cursor-pointer text-blue-600 hover:text-blue-800">View Errors</summary>
+                                        <summary class="cursor-pointer text-primary hover:text-primary-900">View Errors</summary>
                                         <pre class="mt-2 p-3 bg-gray-50 border border-gray-200 rounded text-xs overflow-x-auto"><?= htmlspecialchars($log['error_log']) ?></pre>
                                     </details>
                                 <?php else: ?>
@@ -119,7 +119,7 @@
 
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <a href="?page=<?= $i ?>" 
-                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <?= $i === $currentPage ? 'text-blue-600 bg-blue-50 z-10' : 'text-gray-700 hover:bg-gray-50' ?>">
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <?= $i === $currentPage ? 'text-primary bg-primary-50 z-10' : 'text-gray-700 hover:bg-gray-50' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
@@ -146,3 +146,14 @@
     </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+

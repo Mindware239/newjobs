@@ -1,0 +1,5 @@
+# Registration uploads (resumes, demo videos) are served only through /admin/registrations/{id}/file/*
+Require all denied
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

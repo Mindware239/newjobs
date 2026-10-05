@@ -109,7 +109,7 @@ class NotificationController extends BaseController
                 'totalPages' => $totalPages,
                 'tab' => $tab
             ]
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     /**

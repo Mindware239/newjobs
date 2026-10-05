@@ -1,0 +1,60 @@
+<!-- Match Score Badge -->
+<div style="text-align: center; margin-bottom: 25px;">
+    <div style="display: inline-block; background-color: {{match_color_bg}}; border: 1px solid {{match_color_border}}; padding: 10px 20px; border-radius: 99px;">
+        <span style="color: {{match_color_text}}; font-weight: 800; font-size: 18px;">{{match_score}}% Match Score</span>
+    </div>
+    <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">{{match_label}} for your profile</p>
+</div>
+
+<!-- Header -->
+<h1 style="color: #111827; font-size: 24px; font-weight: 700; margin-bottom: 15px;">New Opportunity Found!</h1>
+<p style="font-size: 16px; color: #4b5563;">Hello {{user_name}}, we found a new job that perfectly matches your skills and preferences. This could be your next big career move.</p>
+
+<!-- Job Highlight Card -->
+<div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; margin: 30px 0; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    <div style="padding: 25px; border-bottom: 1px solid #f3f4f6;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td width="60" valign="top">
+                    <img src="{{company_logo}}" alt="{{company_name}}" width="50" style="border-radius: 8px; display: block;" />
+                </td>
+                <td style="padding-left: 15px;">
+                    <h2 style="margin: 0; color: #ff5a36; font-size: 20px;">{{job_title}}</h2>
+                    <p style="margin: 5px 0 0 0; font-weight: 600; color: #111827;">{{company_name}} <span style="color: #3b82f6; font-size: 14px;">✔ Verified</span></p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="padding: 25px; background-color: #fafafa;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 14px; color: #4b5563;">
+            <tr>
+                <td style="padding-bottom: 10px;">📍 <strong>Location:</strong> {{job_location}}</td>
+                <td style="padding-bottom: 10px;">💰 <strong>Salary:</strong> {{salary_range}}</td>
+            </tr>
+            <tr>
+                <td style="padding-bottom: 10px;">💼 <strong>Type:</strong> {{job_type}}</td>
+                <td style="padding-bottom: 10px;">🎓 <strong>Exp:</strong> {{experience_required}}</td>
+            </tr>
+        </table>
+        <p style="margin: 15px 0 0 0; font-size: 14px; line-height: 1.6; color: #6b7280;">{{job_summary}}</p>
+    </div>
+</div>
+
+<!-- Why you match section -->
+<div style="background-color: #f0f9ff; border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid #e0f2fe;">
+    <h3 style="margin: 0 0 12px 0; color: #0369a1; font-size: 16px;">Why this job matches you:</h3>
+    <ul style="margin: 0; padding-left: 20px; color: #075985; font-size: 14px; line-height: 1.6;">
+        <li><strong>Skills Match:</strong> {{matching_skills_list}}</li>
+        <li><strong>Location:</strong> Fits your preference for {{preferred_location}}</li>
+        <li><strong>Experience:</strong> Aligns with your {{experience_years}} years of expertise</li>
+    </ul>
+</div>
+
+<!-- Action Buttons -->
+<div style="text-align: center; margin-bottom: 30px;">
+    <a href="{{cta_link}}" class="btn" style="display: inline-block; background-color: #ff5a36; color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px; margin-right: 10px;">Apply Now</a>
+    <a href="{{app_url}}/jobs/{{job_slug}}" class="btn" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">View Details</a>
+</div>
+
+<!-- Profile Completion Reminder (Logic controlled by PHP) -->
+{{profile_completion_html}}

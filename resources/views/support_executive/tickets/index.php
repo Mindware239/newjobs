@@ -14,7 +14,7 @@
           <option value="escalated" <?= $s==='escalated'?'selected':'' ?>>Escalated</option>
         </select>
       </div>
-      <button class="px-4 py-2 bg-blue-600 text-white rounded">Filter</button>
+      <button class="px-4 py-2 bg-primary text-white rounded">Filter</button>
     </form>
   </div>
   <div class="bg-white rounded shadow overflow-hidden">
@@ -37,7 +37,7 @@
             <td class="px-4 py-2"><span class="px-2 py-1 text-xs rounded bg-gray-100"><?= htmlspecialchars($t['status'] ?? 'open') ?></span></td>
             <td class="px-4 py-2"><?= htmlspecialchars($t['priority'] ?? 'medium') ?></td>
             <td class="px-4 py-2"><?= htmlspecialchars($t['updated_at'] ?? '') ?></td>
-            <td class="px-4 py-2"><a href="/support-exec/tickets/<?= (int)$t['id'] ?>" class="text-blue-600">View</a></td>
+            <td class="px-4 py-2"><a href="/support-exec/tickets/<?= (int)$t['id'] ?>" class="text-primary">View</a></td>
           </tr>
         <?php endforeach; ?>
         <?php if (empty($tickets)): ?>
@@ -47,4 +47,15 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

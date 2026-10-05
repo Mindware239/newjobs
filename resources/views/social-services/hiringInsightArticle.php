@@ -25,8 +25,8 @@
   .article-content table{width:100%;border-collapse:collapse;margin:1rem 0}
   .article-content th,.article-content td{border:1px solid #e5e7eb;padding:.6rem .9rem}
   .article-content tr:nth-child(odd){background:#fafafa}
-  .article-content a{color:#2563eb;text-decoration:none;border-bottom:1px solid #bfdbfe}
-  .article-content a:hover{color:#1d4ed8;border-bottom-color:#93c5fd}
+  .article-content a{color:#f05537;text-decoration:none;border-bottom:1px solid #fff1ed}
+  .article-content a:hover{color:#FF6A3D;border-bottom-color:#93c5fd}
   .article-content hr{border:0;border-top:1px solid #e5e7eb;margin:1.5rem 0}
   .article-content img{max-width:100%;height:auto;border-radius:.5rem;margin:1rem 0}
   .article-content code{background:#f3f4f6;border:1px solid #e5e7eb;padding:.15rem .35rem;border-radius:.3rem}
@@ -45,7 +45,7 @@
         <div class="flex items-center gap-6">
 
             <a href="/hiringInsight"
-               class="text-sm text-[#5b6bd5] font-semibold hover:underline">
+               class="text-sm text-[#f05537] font-semibold hover:underline">
                 ← Back to articles
             </a>
 
@@ -157,7 +157,7 @@
                         <div class="p-4">
                             <h3 class="text-lg font-bold text-slate-900 mb-2">
                                 <a href="/hiringInsight/article?id=<?= (int)$r['id'] ?>"
-                                   class="text-[#5b6bd5] font-bold hover:underline">
+                                   class="text-[#f05537] font-bold hover:underline">
                                     <?= htmlspecialchars($r['title']) ?>
                                 </a>
                             </h3>
@@ -197,3 +197,14 @@
 <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

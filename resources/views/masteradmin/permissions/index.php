@@ -6,7 +6,7 @@ $currentModule = null;
         <h1 class="text-2xl font-bold text-gray-900">Permissions</h1>
         <p class="text-sm text-gray-500 mt-1">Manage system access rights and modules.</p>
     </div>
-    <a href="/master/permissions/create" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    <a href="/master/permissions/create" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
         </svg>
@@ -24,12 +24,12 @@ $currentModule = null;
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <input type="text" name="search" id="search" value="<?= htmlspecialchars($search ?? '') ?>" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" placeholder="Search permissions...">
+                <input type="text" name="search" id="search" value="<?= htmlspecialchars($search ?? '') ?>" class="focus:ring-primary focus:border-primary block w-full pl-10 sm:text-sm border-gray-300 rounded-md" placeholder="Search permissions...">
             </div>
         </div>
         <div>
             <label for="perPage" class="block text-sm font-medium text-gray-700 mb-1">Show</label>
-            <select name="perPage" id="perPage" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+            <select name="perPage" id="perPage" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
                 <?php foreach ([10, 20, 50, 100] as $pp): ?>
                     <option value="<?= $pp ?>" <?= (int)($perPage ?? 20) === $pp ? 'selected' : '' ?>><?= $pp ?></option>
                 <?php endforeach; ?>
@@ -39,7 +39,7 @@ $currentModule = null;
             Filter
         </button>
         <?php if (!empty($search)): ?>
-            <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                 Reset
             </a>
         <?php endif; ?>
@@ -55,7 +55,7 @@ $currentModule = null;
             <h3 class="mt-2 text-sm font-medium text-gray-900">No permissions found</h3>
             <p class="mt-1 text-sm text-gray-500">Get started by creating a new permission.</p>
             <div class="mt-6">
-                <a href="/master/permissions/create" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <a href="/master/permissions/create" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                     <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -92,7 +92,7 @@ $currentModule = null;
                 ?>
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-900">
                             <?= htmlspecialchars($mod) ?>
                         </span>
                     </td>
@@ -103,7 +103,7 @@ $currentModule = null;
                         <?= htmlspecialchars($p['slug'] ?? '') ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="/master/permissions/<?= $p['id'] ?>/edit" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                        <a href="/master/permissions/<?= $p['id'] ?>/edit" class="text-primary hover:text-primary-900 mr-4">Edit</a>
                         <form method="POST" action="/master/permissions/<?= $p['id'] ?>/delete" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this permission? This cannot be undone.');">
                             <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
                         </form>
@@ -150,7 +150,7 @@ $currentModule = null;
                 for ($i = 1; $i <= $totalPages; $i++):
                     if ($i == 1 || $i == $totalPages || ($i >= $page - $range && $i <= $page + $range)):
                 ?>
-                    <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&perPage=<?= $perPage ?>" aria-current="<?= $i === $page ? 'page' : 'false' ?>" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold <?= $i === $page ? 'bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0' ?>">
+                    <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&perPage=<?= $perPage ?>" aria-current="<?= $i === $page ? 'page' : 'false' ?>" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold <?= $i === $page ? 'bg-primary text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-#f05537' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0' ?>">
                         <?= $i ?>
                     </a>
                 <?php elseif (($i == $page - $range - 1 && $i > 1) || ($i == $page + $range + 1 && $i < $totalPages)): ?>
@@ -169,3 +169,14 @@ $currentModule = null;
     </div>
 </div>
 <?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+

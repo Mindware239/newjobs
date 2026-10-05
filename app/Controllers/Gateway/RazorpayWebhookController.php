@@ -15,8 +15,8 @@ class RazorpayWebhookController
     public function handle(Request $request, Response $response): void
     {
         $payload = file_get_contents('php://input');
-        $headers = $request->headers();
-        $signature = $headers['x-razorpay-signature'] ?? '';
+        // Header names keep the sender's casing (Razorpay sends "X-Razorpay-Signature"), so look up case-insensitively.
+        $signature = (string)$request->header('X-Razorpay-Signature', '');
 
         PaymentLogger::logWebhook('razorpay', 'Webhook received', ['signature' => $signature]);
 
@@ -78,6 +78,22 @@ class RazorpayWebhookController
             );
         } catch (\Throwable $t) {
             PaymentLogger::logError('razorpay', 'Failed to store webhook in DB', ['error' => $t->getMessage()]);
+        }
+
+        // Jobsence ₹155 registration forms (/apply/*)
+        if (($notes['purpose'] ?? '') === 'jobsence_registration_fee') {
+            $reg = $orderId ? \App\Models\PortalRegistration::findByOrderId((string)$orderId) : null;
+            $amountOk = $reg && (int)($entity['amount'] ?? 0) === (int)round((float)$reg['total_amount'] * 100);
+            if ($event === 'payment.captured' && $amountOk && $gatewayPaymentId) {
+                \App\Services\Registration\RegistrationPayments::completePayment($reg, (string)$gatewayPaymentId);
+                PaymentLogger::logPayment('razorpay', 'Registration fee captured via webhook', ['reg_no' => $reg['reg_no']]);
+            } elseif ($event === 'payment.failed' && $reg) {
+                \App\Models\PortalRegistration::markFailed((int)$reg['id']);
+            } else {
+                PaymentLogger::logWebhook('razorpay', 'Registration webhook ignored', ['order_id' => $orderId, 'amount_ok' => $amountOk]);
+            }
+            $response->json(['message' => 'ok']);
+            return;
         }
 
         if (!$paymentId) {
@@ -155,7 +171,10 @@ class RazorpayWebhookController
                     $subscription = $db->fetchOne('SELECT * FROM employer_subscriptions WHERE id = :id', ['id' => $subscriptionId]);
                     if ($subscription) {
                         $cycle = strtolower((string)($subscription['billing_cycle'] ?? 'monthly'));
-                        $baseTs = isset($subscription['expires_at']) && $subscription['expires_at'] ? max(strtotime((string)$subscription['expires_at']), time()) : time();
+                        $isRenewal = in_array(strtolower((string)($subscription['status'] ?? '')), ['active', 'trial', 'grace'], true);
+                        $baseTs = ($isRenewal && !empty($subscription['expires_at']))
+                            ? max(strtotime((string)$subscription['expires_at']), time())
+                            : time();
                         $expires = match ($cycle) {
                             'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months', $baseTs)),
                             'annual' => date('Y-m-d H:i:s', strtotime('+1 year', $baseTs)),

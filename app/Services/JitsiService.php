@@ -14,7 +14,10 @@ class JitsiService
         $domain = trim($domain);
         $domain = preg_replace('#^https?://#i', '', $domain);
         $domain = rtrim((string)$domain, '/');
-        return $domain !== '' ? $domain : 'meet.jit.si';
+        if ($domain === '' || strtolower($domain) === 'your-jitsi-domain.com') {
+            return 'meet.jit.si';
+        }
+        return $domain;
     }
 
     public function getAppName(): string
@@ -26,6 +29,51 @@ class JitsiService
     public function isRecordingEnabled(): bool
     {
         return (string)($_ENV['JITSI_RECORDING_ENABLED'] ?? 'false') === 'true';
+    }
+
+    public function shouldForceHttps(): bool
+    {
+        $value = strtolower((string)($_ENV['FORCE_HTTPS'] ?? $_ENV['JITSI_FORCE_HTTPS'] ?? ''));
+        if ($value !== '') {
+            return in_array($value, ['1', 'true', 'yes', 'on'], true);
+        }
+
+        return strtolower((string)($_ENV['APP_DEBUG'] ?? 'false')) !== 'true'
+            && str_starts_with(strtolower((string)($_ENV['APP_URL'] ?? '')), 'https://');
+    }
+
+    public function getIceServers(): array
+    {
+        $servers = [];
+        $stunUrls = $this->splitEnvList((string)($_ENV['JITSI_STUN_SERVERS'] ?? 'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302'));
+        foreach ($stunUrls as $url) {
+            $servers[] = ['urls' => $url];
+        }
+
+        $turnUrls = $this->splitEnvList((string)($_ENV['JITSI_TURN_SERVERS'] ?? ''));
+        $turnUser = (string)($_ENV['JITSI_TURN_USERNAME'] ?? '');
+        $turnCredential = (string)($_ENV['JITSI_TURN_CREDENTIAL'] ?? '');
+        foreach ($turnUrls as $url) {
+            $server = ['urls' => $url];
+            if ($turnUser !== '' || $turnCredential !== '') {
+                $server['username'] = $turnUser;
+                $server['credential'] = $turnCredential;
+            }
+            $servers[] = $server;
+        }
+
+        return $servers;
+    }
+
+    public function getClientConfig(): array
+    {
+        return [
+            'domain' => $this->getDomain(),
+            'app_name' => $this->getAppName(),
+            'ice_servers' => $this->getIceServers(),
+            'force_https' => $this->shouldForceHttps(),
+            'is_public_meet_jitsi' => $this->getDomain() === 'meet.jit.si',
+        ];
     }
 
     public function generateRoomName(): string
@@ -145,6 +193,12 @@ class JitsiService
             return null;
         }
         return hash('sha256', $secret, true);
+    }
+
+    private function splitEnvList(string $value): array
+    {
+        $parts = preg_split('/[\s,]+/', $value) ?: [];
+        return array_values(array_filter(array_map('trim', $parts), static fn(string $item): bool => $item !== ''));
     }
 }
 

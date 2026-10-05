@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Candidate Login | Mindware Infotech</title>
+<title>Candidate Login | Jobsence</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -29,8 +29,8 @@
 
       <!-- LOGO -->
       <a href="<?= $base ?>" style="text-decoration:none;">
-        <img src="<?= $base ?>uploads/Mindware-infotech.png"
-             alt="Mindware Infotech"
+        <img src="<?= $base ?>uploads/jobsence.png"
+             alt="Jobsence"
              style="height:46px;">
       </a>
 
@@ -221,3 +221,14 @@ foreach ($navItems as $item):
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

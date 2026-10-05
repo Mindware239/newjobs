@@ -28,21 +28,44 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
         if (!$candidate) {
             $this->error($response, 'Profile not found', 404);
             return;
         }
 
-        $education = CandidateEducation::where('candidate_id', '=', $candidate->id)->get();
-        $experience = CandidateExperience::where('candidate_id', '=', $candidate->id)
-            ->orderBy('end_date', 'DESC')->get();
-        $skills = CandidateSkill::where('candidate_id', '=', $candidate->id)->get();
-        $languages = CandidateLanguage::where('candidate_id', '=', $candidate->id)->get();
-        $interests = CandidateInterest::where('candidate_id', '=', $candidate->id)->get();
+        // Match the website profile view: these sections are stored on candidates as JSON.
+        $education = $candidate->education();
+        $experience = $candidate->experience();
+        $skills = $candidate->skills();
+        $languages = $candidate->languages();
+
+        // Interests (Preferences) - Prefer JSON as website uses it
+        $preferences = [];
+        if (!empty($candidate->preferences_data)) {
+            $preferences = json_decode((string)$candidate->preferences_data, true) ?? [];
+        }
+
+        $interests = $preferences['preferred_job_titles'] ?? [];
+
+        // Also check if there are any records in candidate_interest table (legacy or different use)
+        $tableInterests = CandidateInterest::where('candidate_id', '=', $candidate->id)->get();
+        if (!empty($tableInterests) && empty($interests)) {
+            $interests = array_map(function($i) {
+                return $i->interest_value ?? $i->interest_level;
+            }, $tableInterests);
+        }
+
+        // Certificates
+        $certificates = $candidate->certificates();
+
+        // Verification
+        $verification = $candidate->verification();
 
         $this->success($response, [
             'personal' => [
+                'id' => $candidate->id,
+                'user_id' => $candidate->user_id,
                 'full_name' => $candidate->full_name,
                 'professional_title' => $candidate->professional_title,
                 'email' => $user->email,
@@ -64,14 +87,18 @@ class ProfileController extends ApiController
                 'linkedin_url' => $candidate->linkedin_url,
                 'github_url' => $candidate->github_url,
                 'portfolio_url' => $candidate->portfolio_url,
-                'website_url' => $candidate->website_url
+                'website_url' => $candidate->website_url,
+                'profile_strength' => $candidate->profile_strength ?? $this->calculateCompletion($candidate)
             ],
             'education' => $education,
             'experience' => $experience,
             'skills' => $skills,
             'languages' => $languages,
             'interests' => $interests,
-            'completion_percentage' => $this->calculateCompletion($candidate)
+            'preferences' => $preferences,
+            'certificates' => $certificates,
+            'verification' => $verification,
+            'completion_percentage' => $candidate->profile_strength ?? $this->calculateCompletion($candidate)
         ]);
     }
 
@@ -87,7 +114,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
         if (!$candidate) {
             $this->error($response, 'Profile not found', 404);
             return;
@@ -110,7 +137,7 @@ class ProfileController extends ApiController
             'expected_salary_min' => isset($data['expected_salary_min']) ? (is_numeric($data['expected_salary_min']) ? (int)$data['expected_salary_min'] : null) : $candidate->expected_salary_min,
             'expected_salary_max' => isset($data['expected_salary_max']) ? (is_numeric($data['expected_salary_max']) ? (int)$data['expected_salary_max'] : null) : $candidate->expected_salary_max,
             'current_salary' => isset($data['current_salary']) ? (is_numeric($data['current_salary']) ? (int)$data['current_salary'] : null) : $candidate->current_salary,
-            'notice_period' => isset($data['notice_period']) ? (is_numeric($data['notice_period']) ? (int)$data['notice_period'] : null) : $candidate->notice_period,
+            'notice_period' => isset($data['notice_period']) ? $this->parseNoticePeriod($data['notice_period']) : $candidate->notice_period,
             'preferred_job_location' => $data['preferred_job_location'] ?? $candidate->preferred_job_location,
             'linkedin_url' => $data['linkedin_url'] ?? $candidate->linkedin_url,
             'github_url' => $data['github_url'] ?? $candidate->github_url,
@@ -152,7 +179,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
 
         $education = new CandidateEducation();
         $education->fill(array_merge(
@@ -235,7 +262,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
 
         $experience = new CandidateExperience();
         $experience->fill(array_merge(
@@ -314,7 +341,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
 
         $skill = new CandidateSkill();
         $skill->fill(array_merge(
@@ -370,7 +397,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
 
         $language = new CandidateLanguage();
         $language->fill(array_merge(
@@ -418,9 +445,7 @@ class ProfileController extends ApiController
 
         $errors = $this->validate($request->getJsonBody(), [
             'job_titles' => 'required|array',
-            'industries' => 'required|array',
-            'locations' => 'required|array',
-            'experience_level' => 'required|in:entry,mid,senior'
+            'experience_level' => 'sometimes|in:entry,mid,senior'
         ]);
 
         if (!empty($errors)) {
@@ -428,19 +453,41 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
+        if (!$candidate) {
+            $this->error($response, 'Profile not found', 404);
+            return;
+        }
 
-        // Delete existing interests
-        CandidateInterest::where('candidate_id', '=', $candidate->id)->delete();
+        $data = $request->getJsonBody();
 
-        // Add new interests
-        foreach ($request->input('job_titles', []) as $title) {
-            $interest = new CandidateInterest();
-            $interest->fill([
-                'candidate_id' => $candidate->id,
-                'interest_type' => 'job_title',
-                'interest_value' => $title
-            ])->save();
+        // Update preferences_data JSON in candidates table (Website Style)
+        $preferences = [];
+        if (!empty($candidate->preferences_data)) {
+            $preferences = json_decode((string)$candidate->preferences_data, true) ?? [];
+        }
+
+        $preferences['preferred_job_titles'] = $data['job_titles'];
+        if (isset($data['experience_level'])) {
+            $preferences['experience_level'] = $data['experience_level'];
+        }
+        if (isset($data['industries'])) {
+            $preferences['preferred_industries'] = $data['industries'];
+        }
+        if (isset($data['locations'])) {
+            $preferences['preferred_locations'] = $data['locations'];
+        }
+
+        $candidate->fill(['preferences_data' => json_encode($preferences)]);
+        $candidate->save();
+
+        // Optional: Keep legacy candidate_interest table in sync if needed
+        try {
+            CandidateInterest::where('candidate_id', '=', $candidate->id)->delete();
+            // Note: We don't add new records here because the table schema might not support interest_type/value
+            // as seen in mindware.sql. We rely on preferences_data for candidate interests.
+        } catch (\Throwable $e) {
+            // Ignore legacy table errors
         }
 
         $this->success($response, [], 'Interests updated', 200);
@@ -458,7 +505,7 @@ class ProfileController extends ApiController
             return;
         }
 
-        $candidate = Candidate::where('user_id', '=', $user->id)->first();
+        $candidate = Candidate::findByUserId((int)$user->id);
 
         $completion = $this->calculateCompletion($candidate);
         $suggestions = $this->getCompletionSuggestions($candidate);
@@ -518,5 +565,28 @@ class ProfileController extends ApiController
         }
 
         return $suggestions;
+    }
+
+    private function parseNoticePeriod($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int)$value;
+        }
+
+        $value = strtolower((string)$value);
+        if ($value === 'immediate') {
+            return 0;
+        }
+
+        // Extract numbers from strings like "15 Days", "30 days", etc.
+        if (preg_match('/(\d+)/', $value, $matches)) {
+            return (int)$matches[1];
+        }
+
+        return null;
     }
 }

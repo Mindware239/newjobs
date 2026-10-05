@@ -12,7 +12,7 @@
         <input type="text" name="label" placeholder="Office" class="w-full px-3 py-2 border rounded">
       </div>
       <div class="flex items-end">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded">Add</button>
+        <button class="px-4 py-2 bg-primary text-white rounded">Add</button>
       </div>
     </form>
   </div>
@@ -63,4 +63,15 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

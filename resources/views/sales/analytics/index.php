@@ -8,13 +8,13 @@
             <p class="text-slate-500">Deep dive into your sales metrics and team performance.</p>
         </div>
         <div class="flex gap-3">
-            <select x-model="days" @change="updateCharts" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 shadow-sm">
+            <select x-model="days" @change="updateCharts" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-primary focus:border-primary block p-2.5 shadow-sm">
                 <option value="7">Last 7 Days</option>
                 <option value="14">Last 14 Days</option>
                 <option value="30">Last 30 Days</option>
                 <option value="90">Last 90 Days</option>
             </select>
-            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-medium shadow-lg shadow-indigo-200 transition-all flex items-center gap-2">
+            <button onclick="window.print()" class="px-4 py-2 bg-primary text-white hover:bg-primary-600 rounded-xl font-medium shadow-lg shadow-primary-100 transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 Export Report
             </button>
@@ -38,7 +38,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
              <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-bold text-slate-800">Team Performance</h3>
-                <button class="text-slate-400 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg></button>
+                <button class="text-slate-400 hover:text-primary"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg></button>
             </div>
             <div class="relative h-80 w-full">
                 <canvas id="teamPerformanceChart"></canvas>
@@ -119,7 +119,7 @@
                         datasets: [{
                             label: 'New Leads',
                             data: [12, 19, 3, 5, 2, 3, 15, 20, 25, 18, 12, 19, 15, 22],
-                            borderColor: '#4f46e5',
+                            borderColor: '#f05537',
                             backgroundColor: gradientLead,
                             borderWidth: 2,
                             tension: 0.4,
@@ -140,7 +140,7 @@
                             label: 'Deals Closed',
                             data: [12, 8, 15, 6, 10],
                             backgroundColor: [
-                                '#4f46e5', '#818cf8', '#6366f1', '#a5b4fc', '#4338ca'
+                                '#f05537', '#818cf8', '#f05537', '#a5b4fc', '#f05537'
                             ],
                             borderRadius: 6
                         }]
@@ -158,7 +158,7 @@
                         labels: ['New', 'Contacted', 'Proposal', 'Negotiation', 'Closed'],
                         datasets: [{
                             data: [30, 20, 15, 10, 25],
-                            backgroundColor: ['#e0e7ff', '#c7d2fe', '#818cf8', '#4f46e5', '#312e81'],
+                            backgroundColor: ['#fff1ed', '#c7d2fe', '#818cf8', '#f05537', '#0f172a'],
                             borderWidth: 0
                         }]
                     },
@@ -188,7 +188,7 @@
                             {
                                 label: 'Actual',
                                 data: [60, 55, 75, 85, 60, 100],
-                                backgroundColor: '#4f46e5',
+                                backgroundColor: '#f05537',
                                 borderRadius: 4,
                                 barPercentage: 0.6
                             }
@@ -200,3 +200,14 @@
         }
     }
 </script>
+
+
+
+
+
+
+
+
+
+
+

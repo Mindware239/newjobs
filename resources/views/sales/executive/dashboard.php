@@ -1,17 +1,17 @@
 <div class="space-y-6">
     <?php if (!empty($is_viewing_as) && $is_viewing_as): ?>
-        <div class="bg-indigo-600 rounded-lg shadow-sm p-4 flex items-center justify-between text-white">
+        <div class="bg-primary rounded-lg shadow-sm p-4 flex items-center justify-between text-white">
             <div class="flex items-center space-x-3">
-                <svg class="w-6 h-6 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-6 h-6 text-primary-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
                 <div>
                     <p class="font-medium">Viewing as Executive: <?= htmlspecialchars($user->name ?? $user->email) ?></p>
-                    <p class="text-xs text-indigo-200">You are viewing this dashboard as a manager.</p>
+                    <p class="text-xs text-primary-50">You are viewing this dashboard as a manager.</p>
                 </div>
             </div>
-            <a href="/sales/manager/team" class="bg-white text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors">
+            <a href="/sales/manager/team" class="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors">
                 Back to Team
             </a>
         </div>
@@ -56,7 +56,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= htmlspecialchars($lead['contact_name'] ?? $lead['company_name']) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= htmlspecialchars($lead['company_name'] ?? '-') ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 uppercase">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-50 text-primary-900 uppercase">
                                         <?= htmlspecialchars($lead['stage']) ?>
                                     </span>
                                 </td>
@@ -65,7 +65,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= date('M d, Y', strtotime($lead['updated_at'])) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="/sales/leads/<?= $lead['id'] ?>" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                    <a href="/sales/leads/<?= $lead['id'] ?>" class="text-primary hover:text-primary-900">View</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -75,3 +75,13 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+

@@ -14,7 +14,7 @@
 <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
             </a>
         </div>
  <nav class="flex gap-6 text-sm text-gray-700">
@@ -233,3 +233,14 @@ Your name is not shared with candidates.
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

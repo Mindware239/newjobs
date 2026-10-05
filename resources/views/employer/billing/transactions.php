@@ -49,7 +49,7 @@
             </select>
         </div>
         <div class="flex gap-2">
-            <button class="px-4 py-2 bg-blue-50 text-[#3c50ff] hover:bg-blue-100 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">Filter</button>
+            <button class="px-4 py-2 bg-primary-50 text-[#3c50ff] hover:bg-primary-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">Filter</button>
             <a href="/employer/billing/transactions" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Reset Filters</a>
         </div>
     </form>
@@ -125,11 +125,11 @@
                                 </button>
                             <?php endif; ?>
                         <?php elseif ($st === 'failed'): ?>
-                            <a href="/employer/billing/pay/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-[#3c50ff] hover:bg-blue-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
+                            <a href="/employer/billing/pay/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-[#3c50ff] hover:bg-primary-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
                                 Pay Now
                             </a>
                         <?php else: ?>
-                            <a href="/employer/billing/pay/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-[#3c50ff] hover:bg-blue-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
+                            <a href="/employer/billing/pay/<?= (int)$r['id'] ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-[#3c50ff] hover:bg-primary-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
                                 Pay Now
                             </a>
                         <?php endif; ?>
@@ -166,8 +166,19 @@
     <div class="flex items-center gap-2">
         <a href="<?= pageUrl(max(1, $page-1), $baseQs) ?>" class="px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 <?= $page <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-200' ?>">Previous</a>
         <?php for ($i = 1; $i <= $pages; $i++): ?>
-            <a href="<?= pageUrl($i, $baseQs) ?>" class="px-3 py-1.5 text-sm rounded-md <?= $i === $page ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' ?>"><?= (int)$i ?></a>
+            <a href="<?= pageUrl($i, $baseQs) ?>" class="px-3 py-1.5 text-sm rounded-md <?= $i === $page ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' ?>"><?= (int)$i ?></a>
         <?php endfor; ?>
         <a href="<?= pageUrl(min($pages, $page+1), $baseQs) ?>" class="px-3 py-1.5 text-sm rounded-md bg-gray-100 text-gray-700 <?= $page >= $pages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-200' ?>">Next</a>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

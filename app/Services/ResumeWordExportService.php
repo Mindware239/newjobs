@@ -69,7 +69,7 @@ class ResumeWordExportService
             // Add watermark if not premium
             if (!$skipWatermark) {
                 $footer = $section->addFooter();
-                $footer->addText('Created with Mindware Infotech', [
+                $footer->addText('Created with Jobsence', [
                     'size' => 8,
                     'color' => 'CCCCCC'
                 ], ['alignment' => 'right']);

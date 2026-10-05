@@ -25,7 +25,7 @@ $notificationPrefs = $notificationPrefs ?? [];
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sticky top-20">
                 <nav class="space-y-1">
                     <button @click="activeTab = 'account'" 
-                            :class="activeTab === 'account' ? 'bg-indigo-50 text-indigo-700 border-indigo-500' : 'text-gray-700 hover:bg-gray-50'"
+                            :class="activeTab === 'account' ? 'bg-primary-50 text-primary-600 border-primary' : 'text-gray-700 hover:bg-gray-50'"
                             class="w-full text-left px-4 py-3 rounded-lg border-2 font-medium transition-all duration-200 flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -33,7 +33,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         Account
                     </button>
                     <button @click="activeTab = 'company'" 
-                            :class="activeTab === 'company' ? 'bg-indigo-50 text-indigo-700 border-indigo-500' : 'text-gray-700 hover:bg-gray-50'"
+                            :class="activeTab === 'company' ? 'bg-primary-50 text-primary-600 border-primary' : 'text-gray-700 hover:bg-gray-50'"
                             class="w-full text-left px-4 py-3 rounded-lg border-2 font-medium transition-all duration-200 flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -41,7 +41,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         Company
                     </button>
                     <button @click="activeTab = 'notifications'" 
-                            :class="activeTab === 'notifications' ? 'bg-indigo-50 text-indigo-700 border-indigo-500' : 'text-gray-700 hover:bg-gray-50'"
+                            :class="activeTab === 'notifications' ? 'bg-primary-50 text-primary-600 border-primary' : 'text-gray-700 hover:bg-gray-50'"
                             class="w-full text-left px-4 py-3 rounded-lg border-2 font-medium transition-all duration-200 flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -49,7 +49,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         Notifications
                     </button>
                     <button @click="activeTab = 'preferences'" 
-                            :class="activeTab === 'preferences' ? 'bg-indigo-50 text-indigo-700 border-indigo-500' : 'text-gray-700 hover:bg-gray-50'"
+                            :class="activeTab === 'preferences' ? 'bg-primary-50 text-primary-600 border-primary' : 'text-gray-700 hover:bg-gray-50'"
                             class="w-full text-left px-4 py-3 rounded-lg border-2 font-medium transition-all duration-200 flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -58,7 +58,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         Preferences
                     </button>
                     <button @click="activeTab = 'security'" 
-                            :class="activeTab === 'security' ? 'bg-indigo-50 text-indigo-700 border-indigo-500' : 'text-gray-700 hover:bg-gray-50'"
+                            :class="activeTab === 'security' ? 'bg-primary-50 text-primary-600 border-primary' : 'text-gray-700 hover:bg-gray-50'"
                             class="w-full text-left px-4 py-3 rounded-lg border-2 font-medium transition-all duration-200 flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -86,7 +86,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <input type="email" 
                                x-model="accountData.email"
                                required
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                         <p class="text-xs text-gray-500 mt-1">We'll send important updates to this email</p>
                     </div>
 
@@ -95,7 +95,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <input type="tel" 
                                x-model="accountData.phone"
                                placeholder="+91 1234567890"
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"> 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"> 
                         <p class="text-xs text-gray-500 mt-1">Optional - for important notifications</p>
                     </div>
 
@@ -104,7 +104,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <input type="tel" 
                                x-model="accountData.additional_mobile"
                                placeholder="Optional second number"
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                     </div>
 
                     <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
@@ -119,7 +119,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                             <button type="button"
                                     @click="sendPhoneOtp"
                                     :disabled="isSubmitting || !accountData.phone"
-                                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50">
+                                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-50 disabled:opacity-50">
                                 Send OTP
                             </button>
                         </div>
@@ -128,7 +128,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                                    x-model="phoneVerification.otp"
                                    maxlength="6"
                                    placeholder="Enter OTP"
-                                   class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                   class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                             <button type="button"
                                     @click="verifyPhoneOtp"
                                     :disabled="isSubmitting || !phoneVerification.otp"
@@ -136,7 +136,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                                 Verify OTP
                             </button>
                         </div>
-                        <p x-show="phoneVerification.otpPreview" class="text-xs text-blue-600 mt-2">
+                        <p x-show="phoneVerification.otpPreview" class="text-xs text-primary mt-2">
                             Test OTP: <span x-text="phoneVerification.otpPreview"></span>
                         </p>
                     </div>
@@ -151,7 +151,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         </div>
                         <button type="submit" 
                                 :disabled="isSubmitting"
-                                class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="px-6 py-3 bg-gradient-to-r from-[#f05537] to-[#f05537]-600 text-white font-semibold rounded-lg hover:from-[#f05537]-600 hover:to-primary shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">Save Changes</span>
                             <span x-show="isSubmitting" class="flex items-center gap-2">
                                 <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -181,7 +181,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                             <input type="text" 
                                    x-model="companyData.company_name"
                                    required
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                         </div>
 
                         <div>
@@ -189,7 +189,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                             <input type="url" 
                                    x-model="companyData.website"
                                    placeholder="https://example.com"
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                         </div>
                     </div>
 
@@ -198,7 +198,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <textarea x-model="companyData.description"
                                   rows="4"
                                   placeholder="Tell us about your company..."
-                                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+                                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"></textarea>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,14 +207,14 @@ $notificationPrefs = $notificationPrefs ?? [];
                             <input type="text" 
                                    x-model="companyData.industry"
                                    placeholder="e.g. IT/Software, Healthcare, Finance"
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                             <p class="text-xs text-gray-500 mt-1">Enter your company's industry</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Company Size</label>
                             <select x-model="companyData.company_size"
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                                 <option value="">Select Size</option>
                                 <option value="1-10">1-10 employees</option>
                                 <option value="11-50">11-50 employees</option>
@@ -229,7 +229,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                     <div class="flex justify-end pt-4 border-t border-gray-200">
                         <button type="submit" 
                                 :disabled="isSubmitting"
-                                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm hover:shadow-md">
+                                class="px-6 py-3 bg-primary hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm hover:shadow-md">
                                 
                             <span x-show="!isSubmitting">Save Changes</span>
                             <span x-show="isSubmitting" class="flex items-center gap-2">
@@ -258,7 +258,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <template x-for="(enabled, channel) in channels" :key="channel">
                                     <label class="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                        <input type="checkbox" x-model="notificationData[category][channel]" class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                                        <input type="checkbox" x-model="notificationData[category][channel]" class="form-checkbox h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary">
                                         <span class="text-sm text-gray-700 capitalize" x-text="channel == 'sms' ? 'SMS' : channel.replace(/_/g, ' ')"></span>
                                     </label>
                                 </template>
@@ -269,7 +269,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                     <div class="flex justify-end pt-4 border-t border-gray-200">
                         <button type="submit" 
                                 :disabled="isSubmitting"
-                                class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="px-6 py-3 bg-gradient-to-r from-[#f05537] to-[#f05537]-600 text-white font-semibold rounded-lg hover:from-[#f05537]-600 hover:to-primary shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">Save Preferences</span>
                             <span x-show="isSubmitting" class="flex items-center gap-2">
                                 <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -294,7 +294,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Timezone</label>
                         <select x-model="preferencesData.timezone"
-                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                             <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
                             <option value="Asia/Dubai">Asia/Dubai (GST)</option>
                             <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
@@ -311,7 +311,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                     <div class="flex justify-end pt-4 border-t border-gray-200">
                         <button type="submit" 
                                 :disabled="isSubmitting"
-                                class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="px-6 py-3 bg-gradient-to-r from-[#f05537] to-[#f05537]-600 text-white font-semibold rounded-lg hover:from-[#f05537]-600 hover:to-primary shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">Save Preferences</span>
                             <span x-show="isSubmitting" class="flex items-center gap-2">
                                 <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -338,7 +338,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                         <input type="password" 
                                x-model="passwordData.current_password"
                                required
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                     </div>
 
                     <div>
@@ -347,7 +347,7 @@ $notificationPrefs = $notificationPrefs ?? [];
                                x-model="passwordData.new_password"
                                required
                                minlength="8"
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                         <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
                     </div>
 
@@ -357,18 +357,18 @@ $notificationPrefs = $notificationPrefs ?? [];
                                x-model="passwordData.confirm_password"
                                required
                                minlength="8"
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
                     </div>
 
-                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                    <div class="bg-primary-50 border-l-4 border-primary p-4 rounded">
                         <div class="flex">
                             <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <p class="text-sm text-indigo-700">
+                                <p class="text-sm text-primary-600">
                                     <strong>Password Tips:</strong> Use a combination of letters, numbers, and special characters for better security.
                                 </p>
                             </div>
@@ -664,3 +664,14 @@ function settingsPage() {
 <style>
 [x-cloak] { display: none !important; }
 </style>
+
+
+
+
+
+
+
+
+
+
+

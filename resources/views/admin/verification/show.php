@@ -36,7 +36,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 
     <!-- BACK -->
     <div class="mb-6">
-        <a href="/admin/verification" class="text-sm text-blue-600 hover:underline">&larr; Back to Verifications</a>
+        <a href="/admin/verification" class="text-sm text-primary hover:underline">&larr; Back to Verifications</a>
     </div>
 
     <!-- HEADER -->
@@ -48,12 +48,12 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                     ? 'bg-green-50 border-green-200 text-green-800'
                     : ($_GET['msg'] == 'not_verified'
                             ? 'bg-red-50 border-red-200 text-red-800'
-                            : 'bg-blue-50 border-blue-200 text-blue-800') ?>">
+                            : 'bg-primary-50 border-primary-100 text-primary-900') ?>">
                 <?php echo e($_GET['msg']) ?>
             </div>
         <?php endif; ?>
 
-        <div class="h-1 w-full bg-gradient-to-r from-purple-500 via-purple-400 to-pink-400 rounded"></div>
+        <div class="h-1 w-full bg-gradient-to-r from-[#f05537] via-primary to-pink-400 rounded"></div>
 
         <div class="flex flex-col lg:flex-row justify-between mt-4 gap-4">
 
@@ -64,7 +64,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                 $parts = explode(' ', $name);
                 $initials = strtoupper(($parts[0][0] ?? '') . ($parts[count($parts) - 1][0] ?? ''));
                 ?>
-                <div class="w-11 h-11 rounded-full bg-purple-600 text-white flex items-center justify-center font-semibold shadow">
+                <div class="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center font-semibold shadow">
                     <?php echo $initials ?: 'NA' ?>
                 </div>
 
@@ -175,7 +175,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 
                         <div class="rounded-xl border-2 border-dashed p-4
                        <?php
-                        echo $has ? 'border-indigo-100 bg-white hover:shadow-md' : 'border-gray-200 bg-gray-50/60' ?>">
+                        echo $has ? 'border-primary bg-white hover:shadow-md' : 'border-gray-200 bg-gray-50/60' ?>">
 
                             <div class="flex justify-between mb-2">
                                 <p class="font-semibold text-sm">
@@ -184,7 +184,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 
                                 <span class="text-[10px] px-2.5 py-0.5 rounded-full border
                                    <?php
-                                echo $has ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-50 text-gray-500 border-gray-200' ?>">
+                                echo $has ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-gray-50 text-gray-500 border-gray-200' ?>">
                                   <?php
                                   echo $has ? 'Uploaded' : 'Not Uploaded'
                                   ?>
@@ -197,8 +197,8 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 
                                     <div class="space-y-1.5 mb-3">
 
-                                        <div class="flex items-center gap-2 bg-indigo-50 rounded-lg p-2">
-                                           <span class="text-xs text-indigo-700 truncate flex-1">
+                                        <div class="flex items-center gap-2 bg-primary-50 rounded-lg p-2">
+                                           <span class="text-xs text-primary-600 truncate flex-1">
                                               <?php
                                               echo e(basename($f['file_path']))
                                               ?>
@@ -212,7 +212,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 
                                         <div class="flex gap-2">
                                             <a href="<?php echo e($f['file_path']) ?>" target="_blank"
-                                               class="px-3 h-7 text-xs border-2 border-indigo-200 text-indigo-600 rounded-md flex items-center hover:bg-indigo-600 hover:text-white transition">
+                                               class="px-3 h-7 text-xs border-2 border-primary-100 text-primary rounded-md flex items-center hover:bg-primary hover:text-white transition">
                                                 Preview
                                             </a>
 
@@ -248,15 +248,15 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                     <div class="grid md:grid-cols-2 gap-5">
                         <?php foreach ($unknown as $ukey): $files = $grouped[$ukey] ?? [];
                             $has = !empty($files); ?>
-                            <div class="rounded-xl border-2 border-dashed p-4 <?php echo $has ? 'border-indigo-100 bg-white hover:shadow-md' : 'border-gray-200 bg-gray-50/60' ?>">
+                            <div class="rounded-xl border-2 border-dashed p-4 <?php echo $has ? 'border-primary bg-white hover:shadow-md' : 'border-gray-200 bg-gray-50/60' ?>">
                                 <div class="flex justify-between mb-2">
                                     <p class="font-semibold text-sm"><?php echo e(ucwords(str_replace('_', ' ', (string)$ukey))) ?></p>
-                                    <span class="text-[10px] px-2.5 py-0.5 rounded-full border <?php echo $has ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-50 text-gray-500 border-gray-200' ?>"><?php echo $has ? 'Uploaded' : 'Not Uploaded' ?></span>
+                                    <span class="text-[10px] px-2.5 py-0.5 rounded-full border <?php echo $has ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-gray-50 text-gray-500 border-gray-200' ?>"><?php echo $has ? 'Uploaded' : 'Not Uploaded' ?></span>
                                 </div>
                                 <?php if ($has): foreach ($files as $f): ?>
                                     <div class="space-y-1.5 mb-3">
-                                        <div class="flex items-center gap-2 bg-indigo-50 rounded-lg p-2">
-                                            <span class="text-xs text-indigo-700 truncate flex-1"><?php echo e(basename($f['file_path'])) ?></span>
+                                        <div class="flex items-center gap-2 bg-primary-50 rounded-lg p-2">
+                                            <span class="text-xs text-primary-600 truncate flex-1"><?php echo e(basename($f['file_path'])) ?></span>
                                         </div>
                                         <div class="flex justify-between text-[11px] text-gray-400">
                                             <span><?php echo round(($f['size_bytes'] ?? 0) / 1024) ?> KB</span>
@@ -264,7 +264,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                                         </div>
                                         <div class="flex gap-2">
                                             <a href="<?php echo e($f['file_path']) ?>" target="_blank"
-                                               class="px-3 h-7 text-xs border-2 border-indigo-200 text-indigo-600 rounded-md flex items-center hover:bg-indigo-600 hover:text-white transition">Preview</a>
+                                               class="px-3 h-7 text-xs border-2 border-primary-100 text-primary rounded-md flex items-center hover:bg-primary hover:text-white transition">Preview</a>
                                             <a href="<?php echo e($f['file_path']) ?>" download
                                                class="px-3 h-7 text-xs border-2 border-gray-200 text-gray-600 rounded-md flex items-center hover:bg-gray-100 transition">Download</a>
                                         </div>
@@ -284,7 +284,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                 <h3 class="tracking-tight text-base font-semibold flex items-center gap-2 text-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                         class="lucide lucide-mail h-5 w-5 text-indigo-500">
+                         class="lucide lucide-mail h-5 w-5 text-primary">
                         <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                     </svg>
@@ -352,7 +352,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                 <h3 class="tracking-tight text-base font-semibold flex items-center gap-2 text-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                         class="lucide lucide-building2 h-5 w-5 text-indigo-500">
+                         class="lucide lucide-building2 h-5 w-5 text-primary">
                         <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
                         <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
                         <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
@@ -454,7 +454,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
         <!-- HR Email Details -->
         <div class="bg-white shadow rounded-xl p-6 mt-4">
             <h3 class="tracking-tight text-base font-semibold flex items-center gap-2 text-gray-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" viewBox="0 0 24 24"
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor">
                     <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
@@ -470,12 +470,12 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                             class="font-mono"><?php echo e(substr(val($request, 'token', ''), 0, 8)) ?>…</span></p>
                 <p>
                     <a href="<?php echo e(val($request, 'token') ? ('/hr/verify?token=' . urlencode(val($request, 'token'))) : '#') ?>"
-                       target="_blank" class="text-indigo-600 hover:text-indigo-800">Open Secure Link</a></p>
+                       target="_blank" class="text-primary hover:text-primary">Open Secure Link</a></p>
             </div>
             <div class="mt-3">
                 <form method="post" action="/admin/verification/<?php echo (int)val($record, 'id') ?>/resend">
                     <input type="hidden" name="_token" value="<?php echo e($csrf) ?>">
-                    <button class="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded">Resend
+                    <button class="px-3 py-1.5 text-xs bg-primary hover:bg-primary-600 text-white rounded">Resend
                         to HR
                     </button>
                 </form>
@@ -505,7 +505,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
             <h3 class="tracking-tight text-base font-semibold flex items-center gap-2 text-gray-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-clock h-5 w-5 text-indigo-500">
+                     class="lucide lucide-clock h-5 w-5 text-primary">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
@@ -548,10 +548,10 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                     <div class="flex gap-3 relative">
                         <div class="absolute left-[11px] top-7 bottom-0 w-0.5 bg-gray-100">
                         </div>
-                        <div class="h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-blue-100">
+                        <div class="h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary-50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                 stroke-linejoin="round" class="lucide lucide-refresh-cw h-3 w-3 text-blue-600">
+                                 stroke-linejoin="round" class="lucide lucide-refresh-cw h-3 w-3 text-primary">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                                 <path d="M21 3v5h-5"></path>
                                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
@@ -589,3 +589,14 @@ $csrf = $_SESSION['csrf_token'] ?? '';
 </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

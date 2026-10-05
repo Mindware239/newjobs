@@ -78,13 +78,13 @@ $progressMessages = [
         
         /* ResumeNow Exact Colors */
         :root {
-            --sidebar-blue: #1e3a8a; /* Dark blue for sidebar */
-            --sidebar-blue-light: #1e40af;
+            --sidebar-blue: #0f172a; /* Dark blue for sidebar */
+            --sidebar-blue-light: #0f172a;
             --current-step-bg: #ffffff;
-            --current-step-text: #1e3a8a;
+            --current-step-text: #0f172a;
             --completed-green: #10b981;
-            --button-blue: #2563eb;
-            --button-blue-hover: #1d4ed8;
+            --button-blue: #f05537;
+            --button-blue-hover: #FF6A3D;
             --text-gray: #4b5563;
             --text-dark: #111827;
             --border-gray: #e5e7eb;
@@ -385,7 +385,7 @@ $progressMessages = [
                     </div>
                     <div class="mt-6 text-center">
                         <a href="/candidate/resume/builder/<?= (int)($resume->attributes['id'] ?? 0) ?>/edit" 
-                           class="text-sm text-blue-600 hover:text-blue-700 transition font-medium">
+                           class="text-sm text-primary hover:text-primary-600 transition font-medium">
                             Change template
                         </a>
                     </div>
@@ -974,3 +974,14 @@ $progressMessages = [
     <?php include __DIR__ . '/../../../include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

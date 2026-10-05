@@ -19,7 +19,7 @@ $base = $base ?? '/';
 <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
 <a href="<?= $base ?>" class="flex items-center gap-3">
-<img src="<?php echo $base; ?>uploads/Mindware-infotech.png" class="h-11">
+<img src="<?php echo $base; ?>uploads/jobsence.png" class="h-11">
 <span class="font-bold text-lg text-gray-700">Employer Panel</span>
 </a>
 
@@ -133,7 +133,7 @@ $status = strtolower($a['application_status'] ?? 'applied');
 $badge = match($status){
 'accepted' => 'bg-green-100 text-green-700',
 'rejected' => 'bg-red-100 text-red-700',
-default => 'bg-blue-100 text-blue-700'
+default => 'bg-primary-50 text-primary-600'
 };
 ?>
 
@@ -164,7 +164,7 @@ default => 'bg-blue-100 text-blue-700'
 <td class="px-6 py-4">
 <?php if(!empty($a['resume_file'])): ?>
 <a target="_blank"
-class="text-blue-600 hover:underline"
+class="text-primary hover:underline"
 href="<?= rtrim($base,'/') ?>/uploads/applications/<?= htmlspecialchars($a['resume_file']) ?>">
 View
 </a>
@@ -214,3 +214,14 @@ Reject
 </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

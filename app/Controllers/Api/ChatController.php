@@ -12,9 +12,17 @@ use App\Models\Employer;
 use App\Models\Message;
 use App\Models\Notification;
 use App\Models\User;
+use App\Repositories\ApiChatRepository;
 
 class ChatController extends ApiController
 {
+    private ApiChatRepository $chatRepository;
+
+    public function __construct()
+    {
+        $this->chatRepository = new ApiChatRepository();
+    }
+
     public function listConversations(Request $request, Response $response): void
     {
         $user = $this->user($request);
@@ -23,8 +31,6 @@ class ChatController extends ApiController
             return;
         }
 
-        $db = \App\Core\Database::getInstance();
-
         if ($user->role === 'employer') {
             $employer = $user->employer();
             if (!$employer) {
@@ -32,43 +38,9 @@ class ChatController extends ApiController
                 return;
             }
 
-            $sql = "SELECT 
-                        c.id,
-                        c.candidate_user_id,
-                        c.updated_at,
-                        c.unread_employer AS unread_count,
-                        m.body AS last_message_body,
-                        m.created_at AS last_message_time,
-                        u.email AS other_email,
-                        cand.full_name AS other_name
-                    FROM conversations c
-                    LEFT JOIN messages m ON c.last_message_id = m.id
-                    LEFT JOIN users u ON c.candidate_user_id = u.id
-                    LEFT JOIN candidates cand ON cand.user_id = u.id
-                    WHERE c.employer_id = :employer_id
-                    ORDER BY c.updated_at DESC
-                    LIMIT 100";
-
-            $rows = $db->fetchAll($sql, ['employer_id' => (int)$employer->id]);
+            $rows = $this->chatRepository->getEmployerConversations((int)$employer->id);
         } else {
-            $sql = "SELECT 
-                        c.id,
-                        c.employer_id,
-                        c.updated_at,
-                        c.unread_candidate AS unread_count,
-                        m.body AS last_message_body,
-                        m.created_at AS last_message_time,
-                        e.company_name AS other_name,
-                        u.email AS other_email
-                    FROM conversations c
-                    LEFT JOIN messages m ON c.last_message_id = m.id
-                    LEFT JOIN employers e ON c.employer_id = e.id
-                    LEFT JOIN users u ON e.user_id = u.id
-                    WHERE c.candidate_user_id = :candidate_user_id
-                    ORDER BY c.updated_at DESC
-                    LIMIT 100";
-
-            $rows = $db->fetchAll($sql, ['candidate_user_id' => (int)$user->id]);
+            $rows = $this->chatRepository->getCandidateConversations((int)$user->id);
         }
 
         $conversations = array_map(function (array $row) use ($user): array {
@@ -100,20 +72,9 @@ class ChatController extends ApiController
         }
 
         $data = $request->getJsonBody();
-        $otherUserId = (int)($data['user_id'] ?? 0);
         $initialMessage = trim((string)($data['initial_message'] ?? ''));
 
-        if ($otherUserId <= 0) {
-            $this->error($response, 'user_id is required', 422);
-            return;
-        }
-
-        if ($otherUserId === (int)$user->id) {
-            $this->error($response, 'Cannot create conversation with yourself', 400);
-            return;
-        }
-
-        [$conversation, $error] = $this->findOrCreateConversationForUser($user, $otherUserId);
+        [$conversation, $error, $created] = $this->findOrCreateConversationForUser($user, $data);
         if (!$conversation) {
             $this->error($response, $error ?? 'Unable to create conversation', 422);
             return;
@@ -130,7 +91,7 @@ class ChatController extends ApiController
         $this->success($response, [
             'id' => (int)$conversation->id,
             'conversation_id' => (int)$conversation->id,
-        ], 'Conversation ready', isset($conversation->attributes['created_at']) ? 200 : 201);
+        ], 'Conversation ready', $created ? 201 : 200);
     }
 
     public function getMessages(Request $request, Response $response, int $id): void
@@ -147,11 +108,11 @@ class ChatController extends ApiController
             return;
         }
 
+        $this->markConversationReadForUser($conversation, $user);
+
         $messages = Message::where('conversation_id', '=', $id)
             ->orderBy('created_at', 'ASC')
             ->get();
-
-        $this->markConversationReadForUser($conversation, $user);
 
         $this->success($response, [
             'messages' => array_map(fn($message) => $this->formatMessage($message, (int)$user->id), $messages),
@@ -191,7 +152,7 @@ class ChatController extends ApiController
         ], 'Message sent', 201);
     }
 
-    public function deleteMessage(Request $request, Response $response, int $id, int $msg_id): void
+    public function deleteMessage(Request $request, Response $response, int $id, int $message_id): void
     {
         $user = $this->user($request);
         if (!$user) {
@@ -205,7 +166,7 @@ class ChatController extends ApiController
             return;
         }
 
-        $message = Message::find($msg_id);
+        $message = Message::find($message_id);
         if (!$message || (int)$message->conversation_id !== $id || (int)$message->sender_user_id !== (int)$user->id) {
             $this->error($response, 'Cannot delete this message', 403);
             return;
@@ -221,7 +182,7 @@ class ChatController extends ApiController
         $this->success($response, [], 'Message deleted');
     }
 
-    public function editMessage(Request $request, Response $response, int $id, int $msg_id): void
+    public function editMessage(Request $request, Response $response, int $id, int $message_id): void
     {
         $user = $this->user($request);
         if (!$user) {
@@ -235,7 +196,7 @@ class ChatController extends ApiController
             return;
         }
 
-        $message = Message::find($msg_id);
+        $message = Message::find($message_id);
         if (!$message || (int)$message->conversation_id !== $id || (int)$message->sender_user_id !== (int)$user->id) {
             $this->error($response, 'Cannot edit this message', 403);
             return;
@@ -320,7 +281,6 @@ class ChatController extends ApiController
             return;
         }
 
-        $db = \App\Core\Database::getInstance();
         if ($user->role === 'employer') {
             $employer = $user->employer();
             if (!$employer) {
@@ -328,18 +288,12 @@ class ChatController extends ApiController
                 return;
             }
 
-            $row = $db->fetchOne(
-                "SELECT SUM(unread_employer) AS total FROM conversations WHERE employer_id = :employer_id",
-                ['employer_id' => (int)$employer->id]
-            );
+            $unreadCount = $this->chatRepository->getEmployerUnreadCount((int)$employer->id);
         } else {
-            $row = $db->fetchOne(
-                "SELECT SUM(unread_candidate) AS total FROM conversations WHERE candidate_user_id = :candidate_user_id",
-                ['candidate_user_id' => (int)$user->id]
-            );
+            $unreadCount = $this->chatRepository->getCandidateUnreadCount((int)$user->id);
         }
 
-        $this->success($response, ['unread_count' => (int)($row['total'] ?? 0)]);
+        $this->success($response, ['unread_count' => (int)($unreadCount ?? 0)]);
     }
 
     private function authorizedConversation(User $user, int $conversationId): ?Conversation
@@ -360,31 +314,32 @@ class ChatController extends ApiController
         return (int)$conversation->candidate_user_id === (int)$user->id ? $conversation : null;
     }
 
-    private function findOrCreateConversationForUser(User $user, int $otherUserId): array
+    private function findOrCreateConversationForUser(User $user, array $data): array
     {
         if ($user->role === 'employer') {
             $employer = $user->employer();
             if (!$employer) {
-                return [null, 'Employer profile not found'];
+                return [null, 'Employer profile not found', false];
             }
 
-            $candidate = Candidate::findByUserId($otherUserId);
+            $candidate = $this->resolveCandidateParticipant($data);
             if (!$candidate) {
-                return [null, 'Candidate not found'];
+                return [null, 'candidate_id, candidate_user_id, or user_id is required', false];
             }
+            $candidateUserId = (int)$candidate->user_id;
 
             $conversation = Conversation::where('employer_id', '=', (int)$employer->id)
-                ->where('candidate_user_id', '=', $otherUserId)
+                ->where('candidate_user_id', '=', $candidateUserId)
                 ->first();
 
             if ($conversation) {
-                return [$conversation, null];
+                return [$conversation, null, false];
             }
 
             $conversation = new Conversation();
             $conversation->fill([
                 'employer_id' => (int)$employer->id,
-                'candidate_user_id' => $otherUserId,
+                'candidate_user_id' => $candidateUserId,
                 'unread_employer' => 0,
                 'unread_candidate' => 0,
             ]);
@@ -393,14 +348,18 @@ class ChatController extends ApiController
                 $saved = $conversation->save();
             } catch (\Throwable $e) {
                 error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
-                return [null, 'Database error occurred. Please try again.'];
+                return [null, 'Database error occurred. Please try again.', false];
             }
-            return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation'];
+            return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation', (bool)$saved];
         }
 
-        $employer = Employer::findByUserId($otherUserId);
+        $employer = $this->resolveEmployerParticipant($data);
         if (!$employer) {
-            return [null, 'Employer not found'];
+            return [null, 'employer_id or user_id is required', false];
+        }
+
+        if ((int)$employer->user_id === (int)$user->id) {
+            return [null, 'Cannot create conversation with yourself', false];
         }
 
         $conversation = Conversation::where('candidate_user_id', '=', (int)$user->id)
@@ -408,7 +367,7 @@ class ChatController extends ApiController
             ->first();
 
         if ($conversation) {
-            return [$conversation, null];
+            return [$conversation, null, false];
         }
 
         $conversation = new Conversation();
@@ -423,9 +382,31 @@ class ChatController extends ApiController
             $saved = $conversation->save();
         } catch (\Throwable $e) {
             error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
-            return [null, 'Database error occurred. Please try again.'];
+            return [null, 'Database error occurred. Please try again.', false];
         }
-        return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation'];
+        return [$saved ? $conversation : null, $saved ? null : 'Failed to create conversation', (bool)$saved];
+    }
+
+    private function resolveEmployerParticipant(array $data): ?Employer
+    {
+        $employerId = (int)($data['employer_id'] ?? 0);
+        if ($employerId > 0) {
+            return Employer::find($employerId);
+        }
+
+        $userId = (int)($data['user_id'] ?? 0);
+        return $userId > 0 ? Employer::findByUserId($userId) : null;
+    }
+
+    private function resolveCandidateParticipant(array $data): ?Candidate
+    {
+        $candidateId = (int)($data['candidate_id'] ?? 0);
+        if ($candidateId > 0) {
+            return Candidate::find($candidateId);
+        }
+
+        $candidateUserId = (int)($data['candidate_user_id'] ?? ($data['user_id'] ?? 0));
+        return $candidateUserId > 0 ? Candidate::findByUserId($candidateUserId) : null;
     }
 
     private function storeMessage(Conversation $conversation, int $senderUserId, string $body): ?Message

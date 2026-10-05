@@ -72,7 +72,7 @@
                         <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt class="text-sm font-medium text-gray-500">Stage</dt>
                             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary-50 text-primary-900">
                                     <?= ucfirst(str_replace('_', ' ', $lead['stage'])) ?>
                                 </span>
                             </dd>
@@ -111,7 +111,7 @@
              <div class="bg-white shadow sm:rounded-lg">
                 <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                     <h3 class="text-lg leading-6 font-medium text-gray-900">Internal Notes</h3>
-                    <button class="text-xs text-indigo-600 hover:text-indigo-900">Add Note</button>
+                    <button class="text-xs text-primary hover:text-primary-900">Add Note</button>
                 </div>
                 <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
                     <p class="text-sm text-gray-900 whitespace-pre-wrap"><?= htmlspecialchars($lead['internal_notes'] ?? 'No notes added.') ?></p>
@@ -219,7 +219,7 @@
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Email</div>
-                        <div class="text-indigo-600 hover:underline">
+                        <div class="text-primary hover:underline">
                             <a href="mailto:<?= htmlspecialchars($lead['contact_email']) ?>"><?= htmlspecialchars($lead['contact_email']) ?></a>
                         </div>
                     </div>
@@ -287,3 +287,14 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

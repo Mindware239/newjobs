@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Sales Manager' ?> - Mindware Infotech</title>
+    <title><?= $title ?? 'Sales Manager' ?> - Jobsence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         [x-cloak] { display: none !important; }
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Nunito Sans', sans-serif; font-weight: 600; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -41,8 +41,8 @@
                             900: '#0f172a',
                         },
                         indigo: {
-                            600: '#4f46e5',
-                            700: '#4338ca',
+                            600: '#FF6A3D',
+                            700: '#e55a2d',
                         }
                     }
                 }
@@ -62,12 +62,12 @@
         <!-- Logo Area -->
         <div class="flex items-center justify-between h-20 px-6 bg-slate-950/50 border-b border-slate-800">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f05537] to-[#f05537] flex items-center justify-center shadow-lg shadow-primary/30">
                     <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <span class="font-bold text-lg tracking-tight text-white">Sales<span class="text-indigo-400">Manager</span></span>
+                <span class="font-bold text-lg tracking-tight text-white">Sales<span class="text-primary">Manager</span></span>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,7 +94,7 @@
             <?php foreach($menuItems as $item): 
                 $active = strpos($currentUri, $item['url']) !== false;
             ?>
-                <a href="<?= $item['url'] ?>" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 <?= $active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' ?>">
+                <a href="<?= $item['url'] ?>" class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 <?= $active ? 'bg-primary text-white shadow-lg shadow-primary-900/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' ?>">
                     <svg class="w-5 h-5 mr-3 <?= $active ? 'text-white' : 'text-slate-500 group-hover:text-white transition-colors' ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><?= $item['icon'] ?></svg>
                     <?= $item['label'] ?>
                 </a>
@@ -105,7 +105,7 @@
         <!-- User Profile -->
         <div class="p-4 border-t border-slate-800 bg-slate-950/30">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-slate-800">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#f05537] to-[#f05537] flex items-center justify-center text-white font-bold shadow-md ring-2 ring-slate-800">
                     <?= isset($user) ? strtoupper(substr($user->email, 0, 1)) : 'U' ?>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -137,7 +137,7 @@
 
             <div class="flex items-center gap-4">
                 <!-- Notifications -->
-                <button class="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-indigo-50">
+                <button class="relative p-2 text-slate-400 hover:text-primary transition-colors rounded-full hover:bg-primary-50">
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -167,3 +167,13 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

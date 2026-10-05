@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Messages - Mindware Infotech</title>
+    <title>Messages - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -54,10 +54,10 @@
                         </span>
                         <?php endif; ?>
                     </div>
-                    <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                    <div class="flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-600 rounded-full border border-primary">
                         <span class="relative flex h-2.5 w-2.5">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
                         </span>
                         <span class="text-xs font-semibold uppercase tracking-wide">Online</span>
                     </div>
@@ -81,17 +81,17 @@
                         <div class="divide-y divide-gray-100">
                             <?php foreach ($conversations as $conv): ?>
                                 <a href="/candidate/chat/<?= $conv['id'] ?>" 
-                                   class="block px-5 py-4 hover:bg-white hover:shadow-sm transition-all duration-200 group <?= (($selectedConversationId ?? 0) == $conv['id']) ? 'bg-white border-l-4 border-blue-600 shadow-sm' : 'border-l-4 border-transparent' ?>">
+                                   class="block px-5 py-4 hover:bg-white hover:shadow-sm transition-all duration-200 group <?= (($selectedConversationId ?? 0) == $conv['id']) ? 'bg-white border-l-4 border-primary shadow-sm' : 'border-l-4 border-transparent' ?>">
                                     <div class="flex items-start space-x-4">
                                         <!-- Employer Logo/Avatar -->
                                         <div class="flex-shrink-0 relative">
                                             <?php if (!empty($conv['employer_logo'])): ?>
                                                 <img src="<?= htmlspecialchars($conv['employer_logo']) ?>" 
                                                      alt="<?= htmlspecialchars($conv['employer_name']) ?>"
-                                                     class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-blue-100 transition-colors">
+                                                     class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-primary transition-colors">
                                             <?php else: ?>
-                                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center border-2 border-white shadow-sm group-hover:border-blue-100 transition-colors">
-                                                    <span class="text-blue-600 font-bold text-lg">
+                                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-[#ffe3db] flex items-center justify-center border-2 border-white shadow-sm group-hover:border-primary transition-colors">
+                                                    <span class="text-primary font-bold text-lg">
                                                         <?= strtoupper(substr($conv['employer_name'], 0, 1)) ?>
                                                     </span>
                                                 </div>
@@ -106,7 +106,7 @@
                                         <div class="flex-1 min-w-0">
                                             <!-- Employer Name -->
                                             <div class="flex items-center justify-between mb-0.5">
-                                                <p class="text-sm font-bold text-gray-900 truncate group-hover:text-blue-700 transition-colors">
+                                                <p class="text-sm font-bold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
                                                     <?= htmlspecialchars($conv['employer_name']) ?>
                                                 </p>
                                                 <?php if (!empty($conv['last_message_time'])): ?>
@@ -136,7 +136,7 @@
 
                                             <!-- Job Title (if available) -->
                                             <?php if (!empty($conv['job_title'])): ?>
-                                                <p class="text-xs text-blue-600 font-medium truncate mb-1 bg-blue-50 inline-block px-1.5 py-0.5 rounded">
+                                                <p class="text-xs text-primary font-medium truncate mb-1 bg-primary-50 inline-block px-1.5 py-0.5 rounded">
                                                     <?= htmlspecialchars($conv['job_title']) ?>
                                                 </p>
                                             <?php endif; ?>
@@ -161,8 +161,8 @@
                 <!-- Right Side - Empty State or Selected Conversation -->
                 <div class="hidden md:flex flex-1 items-center justify-center bg-white bg-[url('/assets/images/pattern.svg')] bg-repeat opacity-90">
                     <div class="text-center p-8 max-w-md">
-                        <div class="bg-blue-50 p-6 rounded-full inline-flex mb-6 animate-bounce-slow">
-                            <svg class="h-16 w-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-primary-50 p-6 rounded-full inline-flex mb-6 animate-bounce-slow">
+                            <svg class="h-16 w-16 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                             </svg>
                         </div>
@@ -198,3 +198,14 @@ require __DIR__ . '/../../include/footer.php';
 </body>
 </html>
         
+
+
+
+
+
+
+
+
+
+
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Candidates') ?> - Mindware Infotech</title>
+    <title><?= htmlspecialchars($title ?? 'Candidates') ?> - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
@@ -12,7 +12,7 @@
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Candidates for: <?= htmlspecialchars($job['title'] ?? 'Job') ?></h1>
-            <button onclick="generateScores()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 shadow-md">
+            <button onclick="generateScores()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-600 shadow-md">
                 Generate AI Scores
             </button>
         </div>
@@ -55,7 +55,7 @@
                                         } elseif ($score < 70) {
                                             $scoreColor = 'bg-yellow-100 text-yellow-800';
                                         } elseif ($score < 85) {
-                                            $scoreColor = 'bg-purple-100 text-purple-800';
+                                            $scoreColor = 'bg-primary-50 text-primary-900';
                                         }
                                         ?>
                                         <span class="px-3 py-1 rounded-full text-sm font-semibold <?= $scoreColor ?>">
@@ -70,7 +70,7 @@
                                             if ($rec === 'Strong Hire') {
                                                 $recColor = 'bg-green-600 text-white';
                                             } elseif ($rec === 'Shortlist') {
-                                                $recColor = 'bg-purple-600 text-white';
+                                                $recColor = 'bg-primary text-white';
                                             } elseif ($rec === 'Review') {
                                                 $recColor = 'bg-yellow-100 text-yellow-800';
                                             }
@@ -133,7 +133,7 @@
                                 <?php if (!empty($candidate['resume_url'])): ?>
                                     <a href="<?= htmlspecialchars($candidate['resume_url']) ?>" 
                                        target="_blank"
-                                       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center text-sm">
+                                       class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-600 text-center text-sm">
                                         View Resume
                                     </a>
                                 <?php endif; ?>
@@ -187,4 +187,15 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 

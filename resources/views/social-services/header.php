@@ -4,7 +4,7 @@
     <div class="max-w-[1140px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 h-20 md:h-24 flex items-center justify-between">
         <div class="flex-shrink-0">
             <a href="<?php echo $base; ?>">
-                <img src="<?php echo $base; ?>uploads/Mindware-infotech.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
+                <img src="<?php echo $base; ?>uploads/jobsence.png" alt="Logo" class="h-9 sm:h-11 md:h-14 lg:h-16 w-auto">
             </a>
         </div>
 
@@ -76,11 +76,22 @@
             </li>
             <?php endforeach; ?>
             <li class="pt-4 flex flex-col gap-3">
-                <a href="candidate" class="w-full py-3 bg-[#5b6bd5] text-white text-center font-bold rounded">JOBSEEKERS</a>
+                <a href="candidate" class="w-full py-3 bg-[#f05537] text-white text-center font-bold rounded">JOBSEEKERS</a>
                 <div class="text-center text-sm py-2">
-                    Employers: <a href="employers" class="text-[#5b6bd5] font-bold">Login/CreateAccount</a>
+                    Employers: <a href="employers" class="text-[#f05537] font-bold">Login/CreateAccount</a>
                 </div>
             </li>
         </ul>
     </div>
 </header>
+
+
+
+
+
+
+
+
+
+
+

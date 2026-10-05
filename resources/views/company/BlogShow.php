@@ -19,7 +19,7 @@ function e($v) {
 
     <!-- Blog Header -->
     <div class="mb-6">
-        <a href="javascript:history.back()" class="text-blue-600 text-sm hover:underline">← Back</a>
+        <a href="javascript:history.back()" class="text-primary text-sm hover:underline">← Back</a>
     </div>
 
     <article class="bg-white p-8 rounded-xl shadow">
@@ -44,3 +44,14 @@ function e($v) {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

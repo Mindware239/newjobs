@@ -12,7 +12,7 @@
           <option value="notify_expiring_subscriptions">Notify Expiring Subscriptions</option>
           <option value="auto_apply_candidates">Run Auto-Apply Now</option>
         </select>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded">Run</button>
+        <button class="px-4 py-2 bg-primary text-white rounded">Run</button>
       </form>
     </div>
 
@@ -56,8 +56,19 @@
             <?= $enabled ? 'Emergency Stop' : 'Enable Auto-Apply' ?>
           </button>
         </form>
-        <a href="/master/settings" class="text-sm text-blue-600 hover:text-blue-800">Open Settings</a>
+        <a href="/master/settings" class="text-sm text-primary hover:text-primary-900">Open Settings</a>
       </div>
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

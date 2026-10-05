@@ -33,7 +33,7 @@
                 </select>
             </div>
             <div class="flex items-end">
-                <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Apply</button>
+                <button type="submit" class="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Apply</button>
             </div>
         </div>
     </form>
@@ -54,7 +54,7 @@
                 <?php foreach ($subscriptions as $subscription): ?>
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <a href="/admin/subscriptions/<?= (int)($subscription['id'] ?? 0) ?>" class="text-blue-600 hover:text-blue-800">
+                        <a href="/admin/subscriptions/<?= (int)($subscription['id'] ?? 0) ?>" class="text-primary hover:text-primary-900">
                             <?= htmlspecialchars($subscription['company_name'] ?? 'N/A') ?>
                         </a>
                     </td>
@@ -98,7 +98,7 @@
             <a href="/admin/subscriptions?page=<?= $page - 1 ?>&search=<?= $search ?>&status=<?= $status ?>&per_page=<?= $perPage ?>" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>
             <?php endif; ?>
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <a href="/admin/subscriptions?page=<?= $i ?>&search=<?= $search ?>&status=<?= $status ?>&per_page=<?= $perPage ?>" class="px-4 py-2 border border-gray-300 rounded-md <?= $i == $page ? 'bg-blue-600 text-white' : 'hover:bg-gray-50' ?>"><?= $i ?></a>
+            <a href="/admin/subscriptions?page=<?= $i ?>&search=<?= $search ?>&status=<?= $status ?>&per_page=<?= $perPage ?>" class="px-4 py-2 border border-gray-300 rounded-md <?= $i == $page ? 'bg-primary text-white' : 'hover:bg-gray-50' ?>"><?= $i ?></a>
             <?php endfor; ?>
             <?php if ($page < $totalPages): ?>
             <a href="/admin/subscriptions?page=<?= $page + 1 ?>&search=<?= $search ?>&status=<?= $status ?>&per_page=<?= $perPage ?>" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Next</a>
@@ -111,3 +111,14 @@
     </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+

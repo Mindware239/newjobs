@@ -14,7 +14,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
             <!-- Avatar -->
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-lg flex-shrink-0 shadow-md">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f05537] to-primary flex items-center justify-center text-white font-extrabold text-lg flex-shrink-0 shadow-md">
                 <?= strtoupper(mb_substr($accountName, 0, 1)) ?>
             </div>
             <div>
@@ -32,7 +32,7 @@
                 </p>
             </div>
         </div>
-        <a href="/admin/bulk-uploaders" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-blue-600 border border-gray-200 hover:border-blue-300 bg-white px-3 py-2 rounded-lg transition-all">
+        <a href="/admin/bulk-uploaders" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-primary border border-gray-200 hover:border-primary bg-white px-3 py-2 rounded-lg transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             Back
         </a>
@@ -60,10 +60,10 @@
             <div class="text-2xl font-extrabold text-red-700 font-mono"><?= (int)($summary['failed'] ?? 0) ?></div>
             <div class="text-xs text-red-400 mt-1">Parse errors</div>
         </div>
-        <div class="bg-white border border-indigo-100 rounded-xl p-4 shadow-sm col-span-2 sm:col-span-1">
-            <div class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Remaining</div>
-            <div class="text-2xl font-extrabold text-indigo-700 font-mono"><?= (int)($summary['remaining'] ?? 0) ?></div>
-            <div class="text-xs text-indigo-400 mt-1">Upload quota left</div>
+        <div class="bg-white border border-primary rounded-xl p-4 shadow-sm col-span-2 sm:col-span-1">
+            <div class="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Remaining</div>
+            <div class="text-2xl font-extrabold text-primary-600 font-mono"><?= (int)($summary['remaining'] ?? 0) ?></div>
+            <div class="text-xs text-primary mt-1">Upload quota left</div>
         </div>
     </div>
 
@@ -101,7 +101,7 @@
         <form method="post" action="/admin/bulk-uploaders/<?= $accountId ?>/credits" class="flex items-center gap-2">
             <input type="hidden" name="_token" value="<?= $csrf ?>">
             <input type="number" name="add" min="1" placeholder="Add CVs"
-                   class="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono transition-all">
+                   class="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 font-mono transition-all">
             <button type="submit" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 shadow-sm transition-all">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v12m6-6H6"/></svg>
                 Add Limit
@@ -113,12 +113,12 @@
     <div class="flex items-center gap-2 mb-5 border-b border-gray-200 pb-0">
         <?php $tab = (string)($view ?? ''); ?>
         <a href="/admin/bulk-uploaders/<?= $accountId ?>/batches"
-           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-t-lg border-b-2 transition-colors <?= $tab !== 'batches' ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50' ?>">
+           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-t-lg border-b-2 transition-colors <?= $tab !== 'batches' ? 'border-primary text-primary bg-primary-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50' ?>">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
             Overview
         </a>
         <a href="/admin/bulk-uploaders/<?= $accountId ?>/batches?view=batches"
-           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-t-lg border-b-2 transition-colors <?= $tab === 'batches' ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50' ?>">
+           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-t-lg border-b-2 transition-colors <?= $tab === 'batches' ? 'border-primary text-primary bg-primary-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50' ?>">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
             Batches
         </a>
@@ -160,9 +160,9 @@
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold
                                 <?= $bs === 'completed' ? 'bg-green-50 text-green-700 border border-green-100' :
                                    ($bs === 'failed'    ? 'bg-red-50 text-red-700 border border-red-100' :
-                                   ($bs === 'processing'? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                                   ($bs === 'processing'? 'bg-primary-50 text-primary-600 border border-primary' :
                                                          'bg-yellow-50 text-yellow-700 border border-yellow-100')) ?>">
-                                <span class="w-1.5 h-1.5 rounded-full <?= $bs === 'completed' ? 'bg-green-500' : ($bs === 'failed' ? 'bg-red-500' : ($bs === 'processing' ? 'bg-blue-500 animate-pulse' : 'bg-yellow-500')) ?>"></span>
+                                <span class="w-1.5 h-1.5 rounded-full <?= $bs === 'completed' ? 'bg-green-500' : ($bs === 'failed' ? 'bg-red-500' : ($bs === 'processing' ? 'bg-primary animate-pulse' : 'bg-yellow-500')) ?>"></span>
                                 <?= ucfirst($bs) ?>
                             </span>
                         </td>
@@ -232,7 +232,7 @@
                                 </div>
                                 <div>
                                     <a href="/admin/resumes/<?= $fid ?>/download"
-                                       class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline truncate max-w-xs block">
+                                       class="text-sm font-semibold text-primary hover:text-primary-900 hover:underline truncate max-w-xs block">
                                         <?= htmlspecialchars($f['filename'] ?? '') ?>
                                     </a>
                                     <a href="/admin/resumes/<?= $fid ?>"
@@ -325,14 +325,14 @@
                         </span>
                         <input type="text" name="q" value="<?= htmlspecialchars($search ?? '') ?>"
                                placeholder="Search name / email / phone"
-                               class="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg w-56 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                               class="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg w-56 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-50 transition-all">
                     </div>
                     <button type="submit" class="px-3.5 py-2 text-sm font-bold bg-gray-100 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-200 transition-all">
                         Search
                     </button>
                 </form>
                 <a href="/admin/bulk-uploaders/<?= $accountId ?>/candidates/export<?= !empty($search) ? ('?q=' . urlencode($search)) : '' ?>"
-                   class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-all">
+                   class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Export CSV
                 </a>
@@ -364,7 +364,7 @@
                         </td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#f05537] to-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                     <?= strtoupper(mb_substr($c['full_name'] ?? '?', 0, 1)) ?>
                                 </div>
                                 <span class="text-sm font-semibold text-gray-900"><?= htmlspecialchars($c['full_name'] ?? '') ?></span>
@@ -420,3 +420,13 @@
     </div>
 
 </div>
+
+
+
+
+
+
+
+
+
+

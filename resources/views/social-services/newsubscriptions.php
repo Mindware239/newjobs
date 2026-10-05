@@ -17,14 +17,14 @@
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
     <a href="<?= $base ?>">
-      <img src="<?= $base ?>uploads/Mindware-infotech.png" class="h-12">
+      <img src="<?= $base ?>uploads/jobsence.png" class="h-12">
     </a>
 
     <div class="hidden md:flex items-center gap-6 text-sm">
       <a href="<?= $base ?>candidate/listings" class="text-gray-600 hover:text-black">
         Applications & saved listings
       </a>
-      <span class="text-blue-600 font-medium">Job alerts</span>
+      <span class="text-primary font-medium">Job alerts</span>
       <a href="<?= $base ?>candidate/account" class="text-gray-600 hover:text-black">
         Account & profile
       </a>
@@ -50,12 +50,12 @@
 
   <!-- HEADER ROW -->
   <div class="flex items-center justify-between mb-6">
-    <a href="<?= $base ?>candidate/subscriptions" class="text-sm text-blue-600 hover:underline">
+    <a href="<?= $base ?>candidate/subscriptions" class="text-sm text-primary hover:underline">
       ← Cancel
     </a>
 
     <button type="submit" form="alertForm"
-      class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-10 py-2.5 rounded-md">
+      class="bg-primary hover:bg-primary-600 text-white text-sm px-10 py-2.5 rounded-md">
       Submit
     </button>
   </div>
@@ -87,7 +87,7 @@
           Enable or disable this alert.
         </p>
         <label class="flex items-center gap-3">
-          <input type="checkbox" checked class="accent-blue-600">
+          <input type="checkbox" checked class="accent-#f05537">
           <span class="text-sm">Active / Subscribed</span>
         </label>
       </div>
@@ -171,3 +171,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

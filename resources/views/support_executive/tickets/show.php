@@ -35,7 +35,7 @@
       <input type="hidden" name="id" value="<?= (int)($ticket['id'] ?? 0) ?>">
       <textarea name="body" rows="3" class="w-full px-3 py-2 border rounded" placeholder="Write a reply..."></textarea>
       <div class="mt-2 flex gap-2">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded">Send Reply</button>
+        <button class="px-4 py-2 bg-primary text-white rounded">Send Reply</button>
         <button formaction="/support-exec/tickets/assign" class="px-4 py-2 bg-yellow-600 text-white rounded">Assign to Me</button>
         <button formaction="/support-exec/tickets/close" class="px-4 py-2 bg-green-600 text-white rounded">Close Ticket</button>
         <button formaction="/support-exec/tickets/escalate" class="px-4 py-2 bg-red-600 text-white rounded">Escalate</button>
@@ -43,4 +43,15 @@
     </form>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

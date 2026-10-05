@@ -17,7 +17,7 @@ $title = 'Follow-ups';
 
     <!-- Calendar / List View Toggle (Mock) -->
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-1 inline-flex mb-4">
-        <button class="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium">List View</button>
+        <button class="px-4 py-2 rounded-xl bg-primary-50 dark:bg-primary/20 text-primary dark:text-primary text-sm font-medium">List View</button>
         <button class="px-4 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 text-sm font-medium">Calendar</button>
     </div>
 
@@ -68,7 +68,7 @@ $title = 'Follow-ups';
                                     <?= htmlspecialchars($f['executive_email'] ?? 'Unassigned') ?>
                                 </td>
                                 <td class="p-4 text-right">
-                                    <a href="/sales/leads/<?= $f['id'] ?>" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">View Lead</a>
+                                    <a href="/sales/leads/<?= $f['id'] ?>" class="text-primary hover:text-primary dark:text-primary dark:hover:text-primary text-sm font-medium">View Lead</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -78,3 +78,14 @@ $title = 'Follow-ups';
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

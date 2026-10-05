@@ -1,0 +1,116 @@
+<!-- Preheader for email clients -->
+<div style="display: none; max-height: 0px; overflow: hidden;">
+    New application from {{candidate_name}} for {{job_title}}. Profile Strength: {{profile_completion}}%.
+</div>
+
+<!-- Main Container -->
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 20px 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <tr>
+        <td align="center">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 650px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+                
+                <!-- Premium Header -->
+                <tr>
+                    <td style="padding: 35px 30px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: 4px solid #ff5a36;">
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="100">
+                                    <div style="width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid #ff5a36; background: #ffffff;">
+                                        <img src="{{candidate_photo}}" alt="{{candidate_name}}" width="85" height="85" style="display: block; object-fit: cover;">
+                                    </div>
+                                </td>
+                                <td style="padding-left: 20px;">
+                                    <div style="display: inline-block; background: {{verification_color}}; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">{{is_verified}}</div>
+                                    <h1 style="font-size: 26px; margin: 0; color: #ffffff; font-weight: 800; letter-spacing: -0.5px;">{{candidate_name}}</h1>
+                                    <p style="font-size: 16px; color: #94a3b8; margin: 4px 0 0 0; font-weight: 500;">Applied for <span style="color: #ff5a36; font-weight: 700;">{{job_title}}</span></p>
+                                </td>
+                                <td align="right" valign="top">
+                                    <div style="background: rgba(255, 90, 54, 0.1); border: 1px solid #ff5a36; border-radius: 12px; padding: 12px; text-align: center; min-width: 70px;">
+                                        <div style="font-size: 24px; font-weight: 900; color: #ff5a36;">{{profile_completion}}%</div>
+                                        <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-top: 2px;">Strength</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Candidate Quick Stats -->
+                <tr>
+                    <td style="padding: 0; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+                        <table width="100%" cellpadding="20" cellspacing="0" style="text-align: center;">
+                            <tr>
+                                <td style="border-right: 1px solid #e2e8f0;">
+                                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Experience</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 700;">{{experience}}</div>
+                                </td>
+                                <td style="border-right: 1px solid #e2e8f0;">
+                                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Current Location</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 700;">{{location}}</div>
+                                </td>
+                                <td>
+                                    <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Education</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">{{education}}</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Main Content Body -->
+                <tr>
+                    <td style="padding: 35px 30px;">
+                        
+                        <!-- Skills Section -->
+                        <div style="margin-bottom: 35px;">
+                            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Top Matching Skills</h3>
+                            <div style="line-height: 1.8;">
+                                {{skills}}
+                            </div>
+                        </div>
+
+                        <!-- Action Center -->
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td align="center">
+                                    <a href="{{app_url}}/employer/candidates/{{candidate_id}}" style="display: block; background: #ff5a36; color: #ffffff; text-decoration: none; padding: 20px 30px; border-radius: 12px; font-weight: 800; font-size: 18px; box-shadow: 0 6px 20px rgba(255, 90, 54, 0.3);">View Full Candidate Profile</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-top: 25px; text-align: center; color: #64748b; font-size: 14px;">
+                                    For security and privacy, contact details and resume are available on the employer dashboard.
+                                </td>
+                            </tr>
+                        </table>
+
+                    </td>
+                </tr>
+
+                <!-- Footer Stats -->
+                <tr>
+                    <td style="padding: 25px 30px; background: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;">
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="50%">
+                                    <div style="font-size: 18px; font-weight: 800; color: #0f172a;">#{{application_id}}</div>
+                                    <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Application ID</div>
+                                </td>
+                                <td width="50%">
+                                    <div style="font-size: 14px; font-weight: 700; color: #0f172a;">{{applied_at}}</div>
+                                    <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Applied On</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
+            <p style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: center; max-width: 650px;">
+                You are receiving this email because you are a registered employer on Jobsence. 
+                Keep your account secure and never share your password.
+                <br><br>
+                &copy; {{year}} Jobsence ATS System. All rights reserved.
+            </p>
+        </td>
+    </tr>
+</table>

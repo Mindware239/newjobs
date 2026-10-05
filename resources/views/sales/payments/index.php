@@ -38,7 +38,7 @@ $statusColors = [
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 Export
             </button>
-            <button class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-medium shadow-lg shadow-indigo-200 transition-all flex items-center gap-2">
+            <button class="px-4 py-2 bg-primary text-white hover:bg-primary-600 rounded-xl font-medium shadow-lg shadow-primary-100 transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 Create Invoice
             </button>
@@ -89,7 +89,7 @@ $statusColors = [
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </div>
                 <span class="flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
@@ -107,16 +107,16 @@ $statusColors = [
         <!-- Toolbar -->
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-                <button @click="currentTab = 'all'" :class="currentTab === 'all' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
+                <button @click="currentTab = 'all'" :class="currentTab === 'all' ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
                     All Transactions
                 </button>
-                <button @click="currentTab = 'paid'" :class="currentTab === 'paid' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
+                <button @click="currentTab = 'paid'" :class="currentTab === 'paid' ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
                     Paid
                 </button>
-                <button @click="currentTab = 'pending'" :class="currentTab === 'pending' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
+                <button @click="currentTab = 'pending'" :class="currentTab === 'pending' ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
                     Pending
                 </button>
-                <button @click="currentTab = 'overdue'" :class="currentTab === 'overdue' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
+                <button @click="currentTab = 'overdue'" :class="currentTab === 'overdue' ? 'bg-primary-50 text-primary-600 border-primary-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap">
                     Overdue
                 </button>
             </div>
@@ -127,7 +127,7 @@ $statusColors = [
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <input x-model="searchTerm" type="text" class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Search invoice, client...">
+                <input x-model="searchTerm" type="text" class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary sm:text-sm transition duration-150 ease-in-out" placeholder="Search invoice, client...">
             </div>
         </div>
 
@@ -147,7 +147,7 @@ $statusColors = [
                     <?php foreach($payments as $p): ?>
                     <tr x-show="(currentTab === 'all' || currentTab === '<?= $p['status'] ?>') && ('<?= strtolower($p['client']) ?>'.includes(searchTerm.toLowerCase()) || '<?= strtolower($p['invoice']) ?>'.includes(searchTerm.toLowerCase()))" class="hover:bg-slate-50/80 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-medium text-indigo-600 font-mono"><?= $p['invoice'] ?></span>
+                            <span class="text-sm font-medium text-primary font-mono"><?= $p['invoice'] ?></span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -169,7 +169,7 @@ $statusColors = [
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button class="text-slate-400 hover:text-indigo-600 transition-colors">
+                            <button class="text-slate-400 hover:text-primary transition-colors">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                             </button>
                         </td>
@@ -204,3 +204,14 @@ $statusColors = [
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

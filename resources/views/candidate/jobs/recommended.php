@@ -1,18 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Jobs for You') ?> - Mindware Infotech</title>
-    <meta name="description" content="Find your dream job with Mindware Infotech. Browse our latest job listings and apply today!">
-    <meta name="keywords" content="jobs, job listings, job search, Mindware Infotech">
-    <meta name="author" content="Mindware Infotech">
-    <link rel="canonical" href="<?= htmlspecialchars($job['url'] ?? '') ?>">
-    <link href="/css/output.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50">
-    <?php $base = $base ?? '/'; require __DIR__ . '/../../include/header.php'; ?>
-
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-8"><?= htmlspecialchars($title ?? 'Jobs for You') ?></h1>
 
@@ -26,7 +11,7 @@
                             <!-- Match Badge -->
                             <?php
                             $score = (int)($job['overall_match_score'] ?? 0);
-                            $scoreColor = 'bg-blue-100 text-blue-800';
+                            $scoreColor = 'bg-primary-50 text-primary-900';
                             $scoreText = 'Strong Match';
                             if ($score < 50) {
                                 $scoreColor = 'bg-red-100 text-red-800';
@@ -35,7 +20,7 @@
                                 $scoreColor = 'bg-yellow-100 text-yellow-800';
                                 $scoreText = 'Fair Match';
                             } elseif ($score < 85) {
-                                $scoreColor = 'bg-blue-100 text-blue-800';
+                                $scoreColor = 'bg-primary-50 text-primary-900';
                                 $scoreText = 'Good Match';
                             }
                             ?>
@@ -44,7 +29,7 @@
                                     <?= $score ?>% Match - <?= $scoreText ?>
                                 </span>
                                 <?php if ($job['recommendation'] === 'Strong Hire'): ?>
-                                    <span class="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium">
+                                    <span class="px-2 py-1 bg-primary text-white rounded text-xs font-medium">
                                         ⭐ Top Pick
                                     </span>
                                 <?php endif; ?>
@@ -52,7 +37,7 @@
 
                             <!-- Job Title -->
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="hover:text-blue-600">
+                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="hover:text-primary">
                                     <?= htmlspecialchars($job['title'] ?? 'Untitled Job') ?>
                                 </a>
                             </h3>
@@ -69,7 +54,7 @@
                                 <p class="text-gray-500 text-sm mb-2">
                                     📍 <?= htmlspecialchars($job['location']) ?>
                                     <?php if (!empty($job['is_remote']) && $job['is_remote']): ?>
-                                        <span class="text-blue-600">(Remote)</span>
+                                        <span class="text-primary">(Remote)</span>
                                     <?php endif; ?>
                                 </p>
                             <?php endif; ?>
@@ -93,11 +78,11 @@
                             <!-- Actions -->
                             <div class="flex space-x-2 mt-4">
                                 <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" 
-                                   class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center text-sm">
+                                   class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-600 text-center text-sm">
                                     View Details
                                 </a>
                                 <button onclick="applyJob('<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>')" 
-                                        class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                                        class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-600 text-sm">
                                     Apply Now
                                 </button>
                             </div>
@@ -131,7 +116,7 @@
 
                             <!-- Job Title -->
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="hover:text-blue-600">
+                                <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="hover:text-primary">
                                     <?= htmlspecialchars($job['title'] ?? 'Untitled Job') ?>
                                 </a>
                             </h3>
@@ -162,7 +147,7 @@
                             <!-- Actions -->
                             <div class="flex space-x-2 mt-4">
                                 <a href="/candidate/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" 
-                                   class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center text-sm">
+                                   class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-600 text-center text-sm">
                                     View Details
                                 </a>
                             </div>
@@ -179,9 +164,16 @@
             window.location.href = `/candidate/jobs/${jobSlug}/apply`;
         }
     </script>
-       <?php
-require __DIR__ . '/../../include/footer.php';
-?>
-</body>
-</html>
+
+
+
+
+
+
+
+
+
+
+
+
 

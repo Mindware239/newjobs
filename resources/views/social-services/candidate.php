@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Candidate Profile | Mindware Infotech</title>
+  <title>Candidate Profile | Jobsence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tailwind & Alpine -->
@@ -17,14 +17,14 @@
 <header class="bg-white border-b border-gray-200">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
     <a href="<?= $base ?>">
-      <img src="<?= $base ?>uploads/Mindware-infotech.png" class="h-12">
+      <img src="<?= $base ?>uploads/jobsence.png" class="h-12">
     </a>
 
     <nav class="hidden md:flex items-center gap-8 text-sm">
-      <a href="#" class="text-gray-600 hover:text-[#5b6bd5]">Applications & saved listings</a>
-      <a href="#" class="text-gray-600 hover:text-[#5b6bd5]">Job alerts</a>
-      <a href="#" class="text-[#5b6bd5] font-medium">Account & profile</a>
-      <a href="#" class="text-gray-600 hover:text-[#5b6bd5]">Logout</a>
+      <a href="#" class="text-gray-600 hover:text-[#f05537]">Applications & saved listings</a>
+      <a href="#" class="text-gray-600 hover:text-[#f05537]">Job alerts</a>
+      <a href="#" class="text-[#f05537] font-medium">Account & profile</a>
+      <a href="#" class="text-gray-600 hover:text-[#f05537]">Logout</a>
     </nav>
   </div>
 </header>
@@ -34,13 +34,13 @@
   <div class="max-w-7xl mx-auto px-6">
     <ul class="flex items-center gap-8 text-sm py-3 text-gray-600">
       <li>
-        <a href="<?=rtrim($base,'/') ?>/social-services" class="hover:text-[#5b6bd5]">
+        <a href="<?=rtrim($base,'/') ?>/social-services" class="hover:text-[#f05537]">
           ← Back to Home
         </a>
       </li>
-      <li><a href="<?= rtrim($base,'/') ?>/find-a-job" class="hover:text-[#5b6bd5]">Find a job</a></li>
-      <li><a href="<?= $base ?>about" class="hover:text-[#5b6bd5]">About us</a></li>
-      <li><a href="<?= $base ?>help" class="hover:text-[#5b6bd5]">Get Help</a></li>
+      <li><a href="<?= rtrim($base,'/') ?>/find-a-job" class="hover:text-[#f05537]">Find a job</a></li>
+      <li><a href="<?= $base ?>about" class="hover:text-[#f05537]">About us</a></li>
+      <li><a href="<?= $base ?>help" class="hover:text-[#f05537]">Get Help</a></li>
     </ul>
   </div>
 </nav>
@@ -61,7 +61,7 @@
       </div>
 
       <button type="submit" form="candidateForm"
-              class="bg-[#5b6bd5] hover:bg-[#4a59c8] text-white px-10 py-2.5 rounded-md text-sm transition">
+              class="bg-[#f05537] hover:bg-[#4a59c8] text-white px-10 py-2.5 rounded-md text-sm transition">
         Save Profile
       </button>
     </div>
@@ -80,7 +80,7 @@
           <p class="text-xs text-gray-500 mb-1">Your legal name as per records.</p>
           <input type="text" name="full_name"
                  class="w-full border border-gray-300 rounded-md p-2.5
-                        focus:ring-2 focus:ring-[#5b6bd5]/40 focus:outline-none"
+                        focus:ring-2 focus:ring-[#f05537]/40 focus:outline-none"
                  required>
         </div>
 
@@ -92,7 +92,7 @@
           <p class="text-xs text-gray-500 mb-1">What should we call you?</p>
           <input type="text" name="preferred_name"
                  class="w-full border border-gray-300 rounded-md p-2.5
-                        focus:ring-2 focus:ring-[#5b6bd5]/40 focus:outline-none"
+                        focus:ring-2 focus:ring-[#f05537]/40 focus:outline-none"
                  required>
         </div>
 
@@ -102,7 +102,7 @@
           <p class="text-xs text-gray-500 mb-1">(Optional)</p>
           <select name="pronouns"
                   class="w-full border border-gray-300 rounded-md p-2.5
-                         focus:ring-2 focus:ring-[#5b6bd5]/40 focus:outline-none">
+                         focus:ring-2 focus:ring-[#f05537]/40 focus:outline-none">
             <option value="">Select</option>
             <option>She / Her / Hers</option>
             <option>He / Him / His</option>
@@ -211,3 +211,14 @@ function multiSelect(options) {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

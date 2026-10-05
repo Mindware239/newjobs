@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv = Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/..');
 $dotenv->load();
 
 use App\Core\Database;
@@ -53,6 +53,16 @@ foreach ($migrations as $migration) {
             $table = $m[1]; $index = $m[2];
             $check = $db->prepare("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = :db AND TABLE_NAME = :tbl AND INDEX_NAME = :idx");
             $check->execute(['db' => $dbName, 'tbl' => $table, 'idx' => $index]);
+            if ((int)$check->fetchColumn() > 0) { $skip = true; }
+        } elseif (preg_match('/ALTER\s+TABLE\s+`?(\w+)`?\s+DROP\s+COLUMN\s+`?(\w+)`?/i', $stmt, $m)) {
+            $table = $m[1]; $column = $m[2];
+            $check = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = :db AND TABLE_NAME = :tbl AND COLUMN_NAME = :col");
+            $check->execute(['db' => $dbName, 'tbl' => $table, 'col' => $column]);
+            if ((int)$check->fetchColumn() === 0) { $skip = true; }
+        } elseif (preg_match('/ALTER\s+TABLE\s+`?(\w+)`?\s+ADD\s+CONSTRAINT\s+`?(\w+)`?/i', $stmt, $m)) {
+            $table = $m[1]; $constraint = $m[2];
+            $check = $db->prepare("SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = :db AND TABLE_NAME = :tbl AND CONSTRAINT_NAME = :con");
+            $check->execute(['db' => $dbName, 'tbl' => $table, 'con' => $constraint]);
             if ((int)$check->fetchColumn() > 0) { $skip = true; }
         } elseif (preg_match('/ALTER\s+TABLE\s+`?(\w+)`?\s+MODIFY\s+`?(\w+)`?\s+JSON/i', $stmt, $m)) {
             $table = $m[1]; $column = $m[2];

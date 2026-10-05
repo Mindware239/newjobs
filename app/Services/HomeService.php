@@ -54,9 +54,9 @@ class HomeService
                         }
                     }
                 }
-                $jobData['location_display'] = !empty($strings) ? implode(' | ', $strings) : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
+                $jobData['location_display'] = !empty($strings) ? implode(' | ', $strings) : (!empty($jobData['location']) ? $jobData['location'] : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified'));
             } else {
-                $jobData['location_display'] = $jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified';
+                $jobData['location_display'] = !empty($jobData['location']) ? $jobData['location'] : ($jobData['is_remote'] == 1 ? 'Remote' : 'Location not specified');
             }
 
             $jobData['employment_type_display'] = FormatHelper::formatEmploymentType($jobData['employment_type'] ?? null);
@@ -68,8 +68,8 @@ class HomeService
 
             $jobData['time_ago'] = FormatHelper::timeAgo($jobData['created_at'] ?? null);
 
-            $jobData['company_name'] = $jobData['company_name'] ?? 'Company Name Not Available';
             $jobData['company_logo'] = $jobData['company_logo'] ?? null;
+            $jobData['category_image'] = $jobData['category_image'] ?? null;
             $jobData['industry'] = $jobData['industry'] ?? 'Industry';
             $jobData['is_remote'] = (int)($jobData['is_remote'] ?? 0);
 
@@ -80,16 +80,20 @@ class HomeService
             if ($t !== '') $typedRoles[] = $t;
         }
 
-        // Ensure we have enough typed roles
-        if (count($typedRoles) < 5) {
-            $fallback = ['Blockchain Engineer', 'Data Scientist', 'Frontend Developer', 'Backend Developer', 'DevOps Engineer', 'Mobile Developer'];
-            $typedRoles = array_values(array_unique(array_merge($typedRoles, $fallback)));
-        } else {
-            $typedRoles = array_values(array_unique($typedRoles));
+        // Fetch all active category names for the hero typewriter effect (all categories from DB)
+        $typedRoles = $this->jobRepository->getAllActiveCategoryNames();
+        
+        // Shuffle roles to make it dynamic every time the page loads
+        shuffle($typedRoles);
+        
+        // Fetch all categories with job count (for the slider section) - fetching all active ones
+        $categories = $this->jobRepository->getCategoriesWithJobCount(200);
+        
+        // If categories from DB are empty, fallback to some defaults to ensure the UI doesn't break
+        if (empty($typedRoles)) {
+            $typedRoles = ['Software Engineer', 'AI/ML Specialist', 'Data Scientist', 'Frontend Developer', 'Backend Developer', 'DevOps Engineer', 'Mobile App Developer'];
         }
 
-        // Other aggregated data
-        $categories = $this->jobRepository->getCategoriesWithJobCount(10);
         $stats = $this->jobRepository->getJobStats();
 
         // Fetch Testimonials, Blogs, Logos (ideally in their own Repositories)
@@ -114,7 +118,7 @@ class HomeService
                 ) bcj ON bcj.blog_id = b.id
                 WHERE b.published_at IS NOT NULL
                 ORDER BY b.is_featured DESC, b.published_at DESC
-                LIMIT 8
+                LIMIT 4
             ");
 
             $rawLocs = JobLocation::getDistinctRaw();

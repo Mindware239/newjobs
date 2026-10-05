@@ -1,0 +1,102 @@
+<!-- Preheader -->
+<div style="display: none; max-height: 0px; overflow: hidden;">
+    Your application for {{job_title}} at {{company_name}} has been successfully submitted.
+</div>
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 30px 0;">
+    <tr>
+        <td align="center">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                
+                <!-- Success Banner -->
+                <tr>
+                    <td style="padding: 40px 30px; text-align: center; background: #ffffff;">
+                        <div style="background: #dcfce7; color: #15803d; width: 60px; height: 60px; border-radius: 50%; line-height: 60px; font-size: 30px; margin: 0 auto 20px auto; display: inline-block;">
+                            ✓
+                        </div>
+                        <h1 style="font-size: 26px; margin: 0; color: #0f172a; font-weight: 800;">Application Sent!</h1>
+                        <p style="font-size: 16px; color: #64748b; margin: 10px 0 0 0;">You've successfully applied to {{company_name}}</p>
+                    </td>
+                </tr>
+
+                <!-- Job Details Card -->
+                <tr>
+                    <td style="padding: 0 30px;">
+                        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; background: #f8fafc;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="60" valign="top">
+                                        <img src="{{company_logo}}" alt="{{company_name}}" width="50" height="50" style="border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff;">
+                                    </td>
+                                    <td style="padding-left: 15px;">
+                                        <h2 style="font-size: 18px; margin: 0; color: #0f172a; font-weight: 700;">{{job_title}}</h2>
+                                        <p style="margin: 4px 0 0 0; color: #ff5a36; font-weight: 600; font-size: 14px;">{{company_name}}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                                <tr>
+                                    <td width="50%">
+                                        <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Location</span><br>
+                                        <span style="font-size: 14px; color: #1e293b; font-weight: 600;">{{job_location}}</span>
+                                    </td>
+                                    <td width="50%">
+                                        <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Salary Range</span><br>
+                                        <span style="font-size: 14px; color: #1e293b; font-weight: 600;">{{salary_range}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-top: 15px;">
+                                        <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Experience</span><br>
+                                        <span style="font-size: 14px; color: #1e293b; font-weight: 600;">{{experience_required}}</span>
+                                    </td>
+                                    <td style="padding-top: 15px;">
+                                        <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Applied On</span><br>
+                                        <span style="font-size: 14px; color: #1e293b; font-weight: 600;">{{applied_at}}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Nudge/Next Steps -->
+                <tr>
+                    <td style="padding: 30px;">
+                        {{profile_warning_html}}
+                        
+                        <h3 style="font-size: 18px; margin: 0 0 15px 0; color: #0f172a;">What happens next?</h3>
+                        <ul style="padding: 0; margin: 0; list-style: none;">
+                            <li style="margin-bottom: 12px; display: flex;">
+                                <span style="color: #ff5a36; font-weight: bold; margin-right: 10px;">1.</span>
+                                <span style="font-size: 14px; color: #475569;">The hiring team at <strong>{{company_name}}</strong> will review your profile.</span>
+                            </li>
+                            <li style="margin-bottom: 12px; display: flex;">
+                                <span style="color: #ff5a36; font-weight: bold; margin-right: 10px;">2.</span>
+                                <span style="font-size: 14px; color: #475569;">If you're a good fit, they'll contact you for an interview.</span>
+                            </li>
+                            <li style="display: flex;">
+                                <span style="color: #ff5a36; font-weight: bold; margin-right: 10px;">3.</span>
+                                <span style="font-size: 14px; color: #475569;">You can track the live status in your dashboard.</span>
+                            </li>
+                        </ul>
+
+                        <div style="margin-top: 35px; text-align: center;">
+                            <a href="{{app_url}}/candidate/applications" style="display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 15px 35px; border-radius: 8px; font-weight: 700; font-size: 15px;">Track My Application</a>
+                            <p style="margin: 15px 0 0 0;"><a href="{{app_url}}/candidate/jobs" style="color: #64748b; font-size: 14px; text-decoration: none;">Browse more jobs &rarr;</a></p>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Branding Footer -->
+                <tr>
+                    <td style="padding: 25px 30px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 14px; color: #64748b;">Wishing you the best of luck!</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Team Jobsence</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>

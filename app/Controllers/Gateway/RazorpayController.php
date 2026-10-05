@@ -352,11 +352,15 @@ class RazorpayController extends BaseController
                         if ($subscriptionId > 0) {
                             $subscription = $db->fetchOne('SELECT * FROM employer_subscriptions WHERE id = :id', ['id' => $subscriptionId]);
                             if ($subscription) {
-                                $cycle = strtolower($subscription['billing_cycle'] ?? 'monthly');
+                                $cycle = strtolower((string)($subscription['billing_cycle'] ?? 'monthly'));
+                                $isRenewal = in_array(strtolower((string)($subscription['status'] ?? '')), ['active', 'trial', 'grace'], true);
+                                $baseTs = ($isRenewal && !empty($subscription['expires_at']))
+                                    ? max(strtotime((string)$subscription['expires_at']), time())
+                                    : time();
                                 $expires = match ($cycle) {
-                                    'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months')),
-                                    'annual' => date('Y-m-d H:i:s', strtotime('+1 year')),
-                                    default => date('Y-m-d H:i:s', strtotime('+1 month')),
+                                    'quarterly' => date('Y-m-d H:i:s', strtotime('+3 months', $baseTs)),
+                                    'annual' => date('Y-m-d H:i:s', strtotime('+1 year', $baseTs)),
+                                    default => date('Y-m-d H:i:s', strtotime('+1 month', $baseTs)),
                                 };
                                 $db->query('UPDATE employer_subscriptions SET status = "active", expires_at = :exp WHERE id = :id', [
                                     'exp' => $expires,

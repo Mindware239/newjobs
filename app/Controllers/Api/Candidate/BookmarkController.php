@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controllers\Api\Candidate;
 
 use App\Controllers\Api\ApiController;
+use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
+use App\Models\Candidate;
 use App\Models\JobBookmark;
 
 class BookmarkController extends ApiController
@@ -23,7 +25,13 @@ class BookmarkController extends ApiController
             return;
         }
 
-        $existing = JobBookmark::where('candidate_id', '=', $user->id)
+        $candidate = Candidate::findByUserId((int)$user->id);
+        if (!$candidate) {
+            $this->error($response, 'Candidate not found', 404);
+            return;
+        }
+
+        $existing = JobBookmark::where('candidate_id', '=', (int)$candidate->id)
             ->where('job_id', '=', $id)
             ->first();
 
@@ -34,7 +42,7 @@ class BookmarkController extends ApiController
 
         $bookmark = new JobBookmark();
         $bookmark->fill([
-            'candidate_id' => $user->id,
+            'candidate_id' => (int)$candidate->id,
             'job_id' => $id
         ])->save();
 
@@ -53,7 +61,13 @@ class BookmarkController extends ApiController
             return;
         }
 
-        JobBookmark::where('candidate_id', '=', $user->id)
+        $candidate = Candidate::findByUserId((int)$user->id);
+        if (!$candidate) {
+            $this->error($response, 'Candidate not found', 404);
+            return;
+        }
+
+        JobBookmark::where('candidate_id', '=', (int)$candidate->id)
             ->where('job_id', '=', $id)
             ->delete();
 
@@ -72,35 +86,52 @@ class BookmarkController extends ApiController
             return;
         }
 
-        $page = (int)$request->query('page', 1);
-        $perPage = (int)$request->query('per_page', 10);
-
-        $bookmarks = JobBookmark::where('candidate_id', '=', $user->id)
-            ->with('job')
-            ->orderBy('created_at', 'DESC')
-            ->paginate($perPage, $page);
-
-        $jobs = [];
-        foreach ($bookmarks['data'] as $bookmark) {
-            if ($bookmark->job) {
-                $jobs[] = [
-                    'id' => $bookmark->job->id,
-                    'title' => $bookmark->job->title,
-                    'company' => $bookmark->job->company,
-                    'location' => $bookmark->job->location,
-                    'salary_range' => $bookmark->job->salary_range,
-                    'bookmarked_at' => $bookmark->created_at
-                ];
-            }
+        $candidate = Candidate::findByUserId((int)$user->id);
+        if (!$candidate) {
+            $this->error($response, 'Candidate not found', 404);
+            return;
         }
+
+        $page = max(1, (int)$request->query('page', 1));
+        $perPage = min(50, max(1, (int)$request->query('per_page', 10)));
+        $offset = ($page - 1) * $perPage;
+        $db = Database::getInstance();
+
+        $totalRow = $db->fetchOne(
+            'SELECT COUNT(*) AS total FROM job_bookmarks WHERE candidate_id = :candidate_id',
+            ['candidate_id' => (int)$candidate->id]
+        );
+        $total = (int)($totalRow['total'] ?? 0);
+
+        $jobs = $db->fetchAll(
+            "SELECT
+                j.id,
+                j.title,
+                j.slug,
+                j.company_name AS company,
+                j.locations,
+                j.salary_min,
+                j.salary_max,
+                j.currency,
+                j.employment_type,
+                j.remote_policy,
+                j.status,
+                jb.created_at AS bookmarked_at
+             FROM job_bookmarks jb
+             INNER JOIN jobs j ON j.id = jb.job_id
+             WHERE jb.candidate_id = :candidate_id
+             ORDER BY jb.created_at DESC
+             LIMIT {$perPage} OFFSET {$offset}",
+            ['candidate_id' => (int)$candidate->id]
+        );
 
         $this->success($response, [
             'jobs' => $jobs,
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $perPage,
-                'total' => $bookmarks['total'],
-                'last_page' => ceil($bookmarks['total'] / $perPage)
+                'total' => $total,
+                'last_page' => (int)ceil($total / $perPage)
             ]
         ]);
     }
@@ -117,17 +148,26 @@ class BookmarkController extends ApiController
             return;
         }
 
-        $errors = $this->validate($request->getJsonBody(), [
-            'job_ids' => 'required|array'
-        ]);
+        $body = $request->getJsonBody();
+        $jobIds = $body['job_ids'] ?? null;
+        $errors = [];
+        if (!is_array($jobIds) || empty($jobIds)) {
+            $errors['job_ids'] = 'The job_ids field must be a non-empty array.';
+        }
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
             return;
         }
 
-        JobBookmark::where('candidate_id', '=', $user->id)
-            ->whereIn('job_id', $request->input('job_ids'))
+        $candidate = Candidate::findByUserId((int)$user->id);
+        if (!$candidate) {
+            $this->error($response, 'Candidate not found', 404);
+            return;
+        }
+
+        JobBookmark::where('candidate_id', '=', (int)$candidate->id)
+            ->whereIn('job_id', array_map('intval', $jobIds))
             ->delete();
 
         $this->success($response, [], 'Bookmarks deleted');

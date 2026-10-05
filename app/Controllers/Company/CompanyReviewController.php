@@ -7,9 +7,17 @@ namespace App\Controllers\Company;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Company;
+use App\Repositories\CompanyPortalRepository;
 
 class CompanyReviewController
 {
+    private CompanyPortalRepository $companyPortalRepository;
+
+    public function __construct()
+    {
+        $this->companyPortalRepository = new CompanyPortalRepository();
+    }
+
     public function store(Request $request, Response $response): void
     {
         $userId = $_SESSION['user_id'] ?? null;
@@ -34,7 +42,6 @@ class CompanyReviewController
             return;
         }
 
-        $db = \App\Core\Database::getInstance();
         try {
             // Get candidate_id if user is a candidate
             $candidateId = null;
@@ -46,18 +53,16 @@ class CompanyReviewController
             } catch (\Exception $e) {
                 // Candidate not found, continue without candidate_id
             }
-            
-            $sql = "INSERT INTO reviews (company_id, user_id, candidate_id, reviewer_name, rating, title, review_text, status, created_at) 
-                    VALUES (:cid, :uid, :candidate_id, :name, :rating, :title, :text, 'approved', NOW())";
-            $db->execute($sql, [
-                'cid' => $companyId,
-                'uid' => (int)$userId,
-                'candidate_id' => $candidateId,
-                'name' => $reviewer !== '' ? $reviewer : 'Anonymous',
-                'rating' => $rating,
-                'title' => $title,
-                'text' => $text
-            ]);
+
+            $this->companyPortalRepository->insertCompanyReview(
+                $companyId,
+                (int)$userId,
+                $candidateId ? (int)$candidateId : null,
+                $reviewer !== '' ? $reviewer : 'Anonymous',
+                $rating,
+                $title,
+                $text
+            );
         } catch (\Throwable $e) {
             $companyModel = new Company();
             $company = $companyModel->find($companyId);

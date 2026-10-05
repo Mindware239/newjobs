@@ -10,13 +10,13 @@
                 <option value="<?= $st ?>" <?= (($filters['status'] ?? 'all') === $st ? 'selected' : '') ?>><?= ucfirst($st) ?></option>
             <?php endforeach; ?>
         </select>
-        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Filter</button>
+        <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Filter</button>
     </form>
     <div class="mt-3 text-sm text-gray-600">
         Tip: Click an invoice to view details and download.
     </div>
     <div class="mt-4">
-        <a href="/employer/billing/overview" class="text-indigo-600 hover:text-indigo-800">Back to Billing Overview</a>
+        <a href="/employer/billing/overview" class="text-primary hover:text-primary">Back to Billing Overview</a>
     </div>
 </div>
 
@@ -61,7 +61,7 @@
                         $badgeClass = match($status) {
                             'completed', 'success' => 'bg-green-100 text-green-800',
                             'failed' => 'bg-red-100 text-red-800',
-                            'refunded' => 'bg-blue-100 text-blue-800',
+                            'refunded' => 'bg-primary-50 text-primary-900',
                             default => 'bg-yellow-100 text-yellow-800'
                         };
                         ?>
@@ -70,7 +70,7 @@
                         </span>
                     </td>
                     <td class="px-4 py-2 text-right">
-                        <a href="/employer/invoices/<?= (int)$inv['id'] ?>" class="text-indigo-600 hover:text-indigo-800 text-sm">View</a>
+                        <a href="/employer/invoices/<?= (int)$inv['id'] ?>" class="text-primary hover:text-primary text-sm">View</a>
                         <?php if (!empty($inv['invoice_url'])): ?>
                         <a href="<?= htmlspecialchars($inv['invoice_url']) ?>" target="_blank" class="ml-3 text-gray-600 hover:text-gray-800 text-sm">Download</a>
                         <?php endif; ?>
@@ -81,3 +81,14 @@
         </table>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

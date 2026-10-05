@@ -332,6 +332,10 @@ class SettingsController extends BaseController
             $updateData['industry'] = $data['industry'] ?: null;
         }
 
+        if (isset($data['company_type'])) {
+            $updateData['company_type'] = $data['company_type'] ?: null;
+        }
+
         if (isset($data['company_size'])) {
             $updateData['size'] = $data['company_size'];
         }

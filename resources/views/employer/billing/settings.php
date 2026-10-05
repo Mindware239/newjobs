@@ -2,13 +2,17 @@
 
 <div class="bg-white p-6 rounded-lg shadow-md">
     <?php 
-        $addrRaw = $employer->attributes['address'] ?? '';
-        $addr = is_string($addrRaw) ? json_decode($addrRaw, true) : (is_array($addrRaw) ? $addrRaw : []);
-        $street = is_array($addr) ? ($addr['street'] ?? '') : '';
-        $city = $employer->attributes['city'] ?? ($addr['city'] ?? '');
-        $state = $employer->attributes['state'] ?? ($addr['state'] ?? '');
-        $postal = $employer->attributes['postal_code'] ?? ($addr['postal_code'] ?? '');
-        $country = $employer->attributes['country'] ?? '';
+        $addr = \App\Helpers\AddressHelper::normalize($employer->attributes['address'] ?? '', [
+            'country' => $employer->attributes['country'] ?? '',
+            'state' => $employer->attributes['state'] ?? '',
+            'city' => $employer->attributes['city'] ?? '',
+            'postal_code' => $employer->attributes['postal_code'] ?? '',
+        ]);
+        $street = $addr['street'] ?? '';
+        $city = $addr['city'] ?? '';
+        $state = $addr['state'] ?? '';
+        $postal = $addr['postal_code'] ?? '';
+        $country = $addr['country'] ?? '';
     ?>
     <form id="billingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -42,7 +46,7 @@
         </div>
 
         <div class="md:col-span-2 flex items-center gap-3 mt-4">
-            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700">Save</button>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Save</button>
             <a href="/employer/billing/overview" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md">Back to Overview</a>
         </div>
     </form>
@@ -66,3 +70,14 @@ document.getElementById('billingForm').addEventListener('submit', async function
     msgEl.textContent = ok ? 'Billing information saved' : 'Failed to save billing information';
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,4 @@
-<?php
-$content = ob_start();
-?>
+
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-lg shadow-sm p-8">
@@ -13,7 +11,7 @@ $content = ob_start();
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Agreement to Terms</h2>
                     <p class="text-gray-600">
-                        By accessing or using the Mindware Infotech job portal ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service.
+                        By accessing or using the Jobsence job portal ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service.
                     </p>
                 </section>
 
@@ -77,14 +75,14 @@ $content = ob_start();
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Intellectual Property</h2>
                     <p class="text-gray-600">
-                        The Service and its original content, features, and functionality are owned by Mindware Infotech and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of any content you upload, but grant us a license to use, display, and distribute such content on the Service.
+                        The Service and its original content, features, and functionality are owned by Jobsence and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of any content you upload, but grant us a license to use, display, and distribute such content on the Service.
                     </p>
                 </section>
 
                 <section>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Limitation of Liability</h2>
                     <p class="text-gray-600">
-                        To the maximum extent permitted by law, Mindware Infotech shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of the Service.
+                        To the maximum extent permitted by law, Jobsence shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of the Service.
                     </p>
                 </section>
 
@@ -115,8 +113,8 @@ $content = ob_start();
                         If you have any questions about these Terms of Service, please contact us at:
                     </p>
                     <div class="bg-gray-50 rounded-lg p-4 mt-4">
-                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:gm@mindwareinfotech.com" class="text-green-600 hover:text-green-700">gm@mindwareinfotech.com</a></p>
-                        <p class="text-gray-700 mt-2"><strong>Address:</strong> Mindware Infotech, India</p>
+                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:gm@jobsence.com" class="text-green-600 hover:text-green-700">gm@jobsence.com</a></p>
+                        <p class="text-gray-700 mt-2"><strong>Address:</strong> Jobsence, India</p>
                     </div>
                 </section>
             </div>
@@ -124,8 +122,16 @@ $content = ob_start();
     </div>
 </div>
 
-<?php
-$content = ob_get_clean();
-include __DIR__ . '/layout.php';
-?>
+
+
+
+
+
+
+
+
+
+
+
+
 

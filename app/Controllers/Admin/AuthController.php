@@ -97,7 +97,7 @@ class AuthController extends BaseController
         }
 
         // At this point email & password are correct and user is admin and active.
-        if ((string)($_ENV['ADMIN_DISABLE_2FA'] ?? getenv('ADMIN_DISABLE_2FA') ?? '') === '1') {
+        if ((string)($_ENV['ADMIN_DISABLE_2FA'] ?? getenv('ADMIN_DISABLE_2FA') ?: '') === '1') {
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
             $_SESSION['admin_logged_in'] = true;
@@ -214,8 +214,8 @@ class AuthController extends BaseController
         try {
             $db = Database::getInstance();
             $db->query(
-                "INSERT INTO login_history (user_id, ip_address, user_agent, login_type, status, created_at)
-                 VALUES (:user_id, :ip_address, :user_agent, 'admin', 'success', NOW())",
+                "INSERT INTO login_history (user_id, user_type, ip_address, user_agent, login_successful, logged_in_at)
+                 VALUES (:user_id, 'admin', :ip_address, :user_agent, 1, NOW())",
                 [
                     'user_id' => $user->id,
                     'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
@@ -223,19 +223,24 @@ class AuthController extends BaseController
                 ]
             );
         } catch (\Exception $e) {
-            // Silently fail if table doesn't exist
+            // Silently fail if table doesn't exist or other error
         }
     }
 
     private function logFailedLogin(string $email): void
     {
         try {
+            $user = User::where('email', '=', $email)->first();
+            if (!$user) {
+                return; // Cannot log to login_history if user doesn't exist due to FK
+            }
+
             $db = Database::getInstance();
             $db->query(
-                "INSERT INTO login_history (email, ip_address, user_agent, login_type, status, created_at)
-                 VALUES (:email, :ip_address, :user_agent, 'admin', 'failed', NOW())",
+                "INSERT INTO login_history (user_id, user_type, ip_address, user_agent, login_successful, failure_reason, logged_in_at)
+                 VALUES (:user_id, 'admin', :ip_address, :user_agent, 0, 'Invalid credentials', NOW())",
                 [
-                    'email' => $email,
+                    'user_id' => $user->id,
                     'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
                 ]
@@ -250,8 +255,8 @@ class AuthController extends BaseController
         try {
             $db = Database::getInstance();
             $db->query(
-                "INSERT INTO activity_logs (user_id, action, ip_address, user_agent, created_at)
-                 VALUES (:user_id, 'admin_logout', :ip_address, :user_agent, NOW())",
+                "INSERT INTO activity_logs (actor_id, actor_type, action, ip_address, user_agent, created_at)
+                 VALUES (:user_id, 'admin', 'admin_logout', :ip_address, :user_agent, NOW())",
                 [
                     'user_id' => $user->id,
                     'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',

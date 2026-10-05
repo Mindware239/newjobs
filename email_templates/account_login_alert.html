@@ -1,0 +1,28 @@
+<h1 style="color: #111827; font-size: 24px; font-weight: 700; margin-bottom: 20px;">New Login Detected</h1>
+<p>Hello {{user_name}},</p>
+<p>This is a security alert to inform you that a new login was detected on your Jobsence account.</p>
+<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 30px 0; border: 1px solid #e5e7eb;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size: 15px;">
+        <tr>
+            <td width="100" style="padding: 5px 0; color: #6b7280;"><strong>Time:</strong></td>
+            <td style="padding: 5px 0; color: #111827;">{{login_time}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0; color: #6b7280;"><strong>Device:</strong></td>
+            <td style="padding: 5px 0; color: #111827;">{{login_device}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0; color: #6b7280;"><strong>Location:</strong></td>
+            <td style="padding: 5px 0; color: #111827;">{{login_location}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 0; color: #6b7280;"><strong>IP Address:</strong></td>
+            <td style="padding: 5px 0; color: #111827;">{{login_ip}}</td>
+        </tr>
+    </table>
+</div>
+<p>If this was you, you can safely ignore this email. If you do not recognize this activity, please reset your password immediately and contact our security team.</p>
+<div style="text-align: center; margin: 35px 0;">
+    <a href="{{app_url}}/forgot-password" class="btn" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">Secure My Account</a>
+</div>
+<p>Best Regards,<br />Security Team, Jobsence</p>

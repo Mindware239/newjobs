@@ -32,7 +32,7 @@
         </div>
       </div>
       <div class="mt-4">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded">Generate</button>
+        <button class="px-4 py-2 bg-primary text-white rounded">Generate</button>
       </div>
     </form>
   </div>
@@ -40,7 +40,7 @@
   <div class="bg-white rounded-lg shadow p-6 mt-6">
     <h2 class="text-lg font-semibold mb-3">Seed Permissions</h2>
     <p class="text-sm text-gray-600 mb-4">Seed Sales, Verification, Support, Finance, and System/Audit permissions.</p>
-    <a href="/master/system/permissions/seed" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded">Seed Now</a>
+    <a href="/master/system/permissions/seed" class="inline-block px-4 py-2 bg-primary text-white rounded">Seed Now</a>
   </div>
 
   <div class="bg-white rounded-lg shadow p-6 mt-6">
@@ -55,4 +55,15 @@
     <a href="/master/system/leads/seed" class="inline-block px-4 py-2 bg-green-600 text-white rounded">Insert Leads</a>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

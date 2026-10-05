@@ -94,18 +94,38 @@ class AuthMiddleware implements MiddlewareInterface
         if (isset($this->options['role'])) {
             $requiredRole = $this->options['role'];
 
-            $isAdmin = in_array($user->role, ['admin', 'super_admin']);
+            $isAdmin = in_array($user->role, ['admin', 'super_admin']) || $user->hasRole('admin') || $user->hasRole('super_admin');
 
             if (is_array($requiredRole)) {
-                if (!in_array($user->role, $requiredRole) && !$isAdmin) {
+                $hasRole = in_array($user->role, $requiredRole);
+                if (!$hasRole) {
+                    foreach ($requiredRole as $r) {
+                        if ($user->hasRole($r)) {
+                            $hasRole = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!$hasRole && !$isAdmin) {
+                    if ($request->getMethod() === 'GET' && !$request->isAjax()) {
+                        $response->redirect('/register-employer?message=' . urlencode('Employer access required'));
+                        return;
+                    }
                     $response->setStatusCode(403);
                     $response->json(['error' => 'Forbidden']);
                     return;
                 }
-            } elseif ($user->role !== $requiredRole && !$isAdmin) {
-                $response->setStatusCode(403);
-                $response->json(['error' => 'Forbidden']);
-                return;
+            } else {
+                if ($user->role !== $requiredRole && !$user->hasRole($requiredRole) && !$isAdmin) {
+                    if ($request->getMethod() === 'GET' && !$request->isAjax()) {
+                        $response->redirect('/register-employer?message=' . urlencode('Employer access required'));
+                        return;
+                    }
+                    $response->setStatusCode(403);
+                    $response->json(['error' => 'Forbidden']);
+                    return;
+                }
             }
         }
 

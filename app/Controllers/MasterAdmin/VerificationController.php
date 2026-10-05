@@ -32,8 +32,9 @@ class VerificationController extends BaseController
         $where = ["e.kyc_status = :status"];
         $params = ['status' => $status];
         if ($search !== '') {
-            $where[] = "(e.company_name LIKE :q OR u.email LIKE :q)";
-            $params['q'] = "%{$search}%";
+            $where[] = "(e.company_name LIKE :q1 OR u.email LIKE :q2)";
+            $params['q1'] = "%{$search}%";
+            $params['q2'] = "%{$search}%";
         }
 
         $sql = "SELECT e.*, u.email AS employer_email, e.kyc_assigned_to, e.kyc_level

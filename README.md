@@ -1,4 +1,4 @@
-# Mindware Infotech - Job Portal Project Overview
+# Jobsence - Job Portal Project Overview
 
 ## 📁 Project Structure
 

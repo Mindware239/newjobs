@@ -10,7 +10,7 @@ $summaryText = $summarySection['section_data']['content']['text'] ?? ($candidate
             <button 
                 @click="generateJobSummary()"
                 :disabled="loading || generatingAI"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
                 <svg x-show="!generatingAI" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
@@ -25,7 +25,7 @@ $summaryText = $summarySection['section_data']['content']['text'] ?? ($candidate
             <button 
                 @click="enhanceSummary()"
                 :disabled="loading || enhancingAI || !getSection('summary').section_data.content.text"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                 <svg x-show="!enhancingAI" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
@@ -43,9 +43,20 @@ $summaryText = $summarySection['section_data']['content']['text'] ?? ($candidate
             x-model="getSection('summary').section_data.content.text"
             @blur="autoSave()"
             rows="8"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             placeholder="Experienced professional with a proven track record in..."><?= htmlspecialchars($summaryText) ?></textarea>
         <p class="mt-2 text-sm text-gray-500"> Generate a professional summary!</p>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

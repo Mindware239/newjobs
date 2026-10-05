@@ -14,7 +14,7 @@ try {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>About Us | Mindware Infotech</title>
+    <title>About Us | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CSS -->
@@ -25,9 +25,9 @@ try {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#7e3aecff', // indigo-600
-                        secondary: '#eef2ff', // indigo-50
-                        accent: '#6c6ed8ff', // indigo-500
+                        primary: '#f05537',   // Jobsence brand orange
+                        secondary: '#fff1ed', // brand tint
+                        accent: '#FF6A3D',    // brand hover
                     }
                 }
             }
@@ -43,63 +43,61 @@ try {
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <style>
-        /* Fix header visibility - User reported issue */
-        header {
-            position: fixed !important;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 9999;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* ── HERO BAND ── */
+        .hero-band {
+            background: linear-gradient(180deg, #fff1ed 0%, #fff8f5 100%);
+            position: relative; overflow: hidden;
+            padding: 120px 0 100px;
+        }
+        .hero-z { position: relative; z-index: 2; }
+
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(240, 85, 55, 0.08);
+            border: 1px solid rgba(240, 85, 55, 0.15);
+            border-radius: 100px; padding: 6px 16px;
+            font-size: 11.5px; font-weight: 700;
+            color: #f05537;
+            letter-spacing: 0.6px; text-transform: uppercase;
+            margin-bottom: 22px;
         }
 
-        /* Custom animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(38px, 5.5vw, 64px);
+            font-weight: 800; color: #0f172a;
+            line-height: 1.1; letter-spacing: -1.5px;
+            margin-bottom: 24px;
         }
 
-        .fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+        .hero-desc {
+            font-size: 18px; color: #64748b;
+            max-width: 650px; line-height: 1.7;
+            margin: 0 auto 40px;
+            font-weight: 500;
         }
 
-        html, body {
-            overflow-x: hidden;
-            width: 100%;
+        .btn-main {
+            display: inline-flex; items-center; justify-content: center;
+            height: 52px; px-8: 32px; padding: 0 32px;
+            border-radius: 12px; font-weight: 700;
+            transition: all 0.2s;
         }
-
-        .container {
-            width: 100%;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 1280px;
+        .btn-primary {
+            background: #f05537; color: #fff;
+            box-shadow: 0 4px 14px rgba(240, 85, 55, 0.25);
         }
-
-        .text-gradient {
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .btn-primary:hover {
+            background: #FF6A3D; transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 85, 55, 0.35);
         }
-        :root{
-            --brand-blue:#5B6BD5;
-            --brand-blue-hover:#4F5FCC;
-            --brand-blue-400:#6d7ae5;
+        .btn-outline {
+            border: 2px solid #e2e8f0; color: #475569;
         }
-        .bg-blue-600{background-color:var(--brand-blue) !important}
-        .hover\:bg-blue-700:hover{background-color:var(--brand-blue-hover) !important}
-        .text-blue-700{color:var(--brand-blue) !important}
-        .from-blue-600{--tw-gradient-from:var(--brand-blue) !important; --tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to, rgb(91 107 213 / 0)) !important}
-        .via-blue-500{--tw-gradient-stops:var(--brand-blue), var(--brand-blue-hover), var(--tw-gradient-to, rgb(79 95 204 / 0)) !important}
-        .to-blue-500{--tw-gradient-to:var(--brand-blue-hover) !important}
-        .to-blue-400{--tw-gradient-to:var(--brand-blue-400) !important}
+        .btn-outline:hover {
+            border-color: #f05537; color: #f05537;
+            background: #fff1ed; transform: translateY(-2px);
+        }
     </style>
 </head>
 
@@ -108,49 +106,36 @@ try {
 <?php require 'include/header.php'; ?>
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden bg-blue-600 text-white pt-32 pb-20 lg:pt-40 lg:pb-32">
-    <!-- Abstract Shapes -->
-    <div class="absolute inset-0 opacity-10 pointer-events-none">
-        <div class="absolute top-20 left-20 w-72 h-72 rounded-full bg-white blur-3xl"></div>
-        <div class="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-purple-300 blur-3xl"></div>
-    </div>
+<section class="hero-band">
+    <!-- Decorative Blurs -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl opacity-50"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl opacity-50"></div>
 
-    <div class="relative container mx-auto px-4 text-center z-10" data-aos="fade-up">
-        <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2 mb-8 border border-white/20">
-            <svg class="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
+    <div class="hero-z container mx-auto px-4 text-center" data-aos="fade-up">
+        <div class="hero-tag">
+            <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
-            <span class="text-black font-medium text-sm">Trusted by 100,000+ Professionals</span>
+            <span>Trusted by 100,000+ Professionals</span>
         </div>
 
-        <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-            About Us
+        <h1 class="hero-title">
+            About <span class="text-primary">Jobsence</span>
         </h1>
 
-        <p class="text-lg md:text-xl text-indigo-50 max-w-2xl mx-auto leading-relaxed mb-10">
+        <p class="hero-desc">
             A global job portal connecting exceptional talent with trusted employers worldwide.
             Transforming careers and empowering businesses since 2020.
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/jobs"
-               class="inline-flex items-center justify-center h-12 px-8 rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 font-bold transition-all transform hover:-translate-y-1 shadow-lg">
+            <a href="/jobs" class="btn-main btn-primary">
                 Find Jobs
             </a>
-            <a href="/login?role=employer&redirect=/employer/jobs/create"
-               class="inline-flex items-center justify-center h-12 px-8 rounded-lg border border-white/30 text-white hover:bg-white/10 font-bold transition-all transform hover:-translate-y-1">
+            <a href="/login?role=employer&redirect=/employer/jobs/create" class="btn-main btn-outline">
                 Post a Job
             </a>
         </div>
-    </div>
-
-    <!-- Wave Decoration -->
-    <div class="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none">
-        <svg class="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[120px]" data-name="Layer 1"
-             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
-                  class="fill-white"></path>
-        </svg>
     </div>
 </section>
 
@@ -160,8 +145,8 @@ try {
         <!-- Stat 1 -->
         <div class="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-center group border border-gray-100"
              data-aos="fade-up" data-aos-delay="0">
-            <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
@@ -172,8 +157,8 @@ try {
         <!-- Stat 2 -->
         <div class="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-center group border border-gray-100"
              data-aos="fade-up" data-aos-delay="100">
-            <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
@@ -184,8 +169,8 @@ try {
         <!-- Stat 3 -->
         <div class="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-center group border border-gray-100"
              data-aos="fade-up" data-aos-delay="200">
-            <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
@@ -196,8 +181,8 @@ try {
         <!-- Stat 4 -->
         <div class="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-center group border border-gray-100"
              data-aos="fade-up" data-aos-delay="300">
-            <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -214,21 +199,21 @@ try {
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <!-- Content -->
             <div class="order-2 lg:order-1" data-aos="fade-right">
-                <div class="inline-flex items-center gap-2 bg-indigo-50 rounded-full px-4 py-2 mb-6">
-                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="inline-flex items-center gap-2 bg-primary-50 rounded-full px-4 py-2 mb-6">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    <span class="text-indigo-600 text-sm font-bold uppercase tracking-wide">Our Mission</span>
+                    <span class="text-primary text-sm font-bold uppercase tracking-wide">Our Mission</span>
                 </div>
 
                 <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
                     Empowering Careers,<br/>
-                    <span class="text-indigo-600">Simplifying Hiring</span>
+                    <span class="text-primary">Simplifying Hiring</span>
                 </h2>
 
                 <p class="text-lg text-gray-600 leading-relaxed mb-6">
-                    Mindware Infotech Job Portal is built to connect skilled professionals with trusted
+                    Jobsence Job Portal is built to connect skilled professionals with trusted
                     employers across the globe. Our platform focuses on transparency, verified hiring,
                     and long-term career growth.
                 </p>
@@ -241,21 +226,21 @@ try {
 
                 <div class="flex flex-wrap gap-4">
                     <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-5 py-3 border border-gray-100">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                         <span class="text-gray-900 font-semibold">Quality Jobs</span>
                     </div>
                     <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-5 py-3 border border-gray-100">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <span class="text-gray-900 font-semibold">Resume Builder</span>
                     </div>
                     <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-5 py-3 border border-gray-100">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                         </svg>
@@ -268,12 +253,12 @@ try {
             <div class="order-1 lg:order-2 relative" data-aos="fade-left">
                 <div class="relative">
                     <!-- Decorative Blurs -->
-                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-indigo-200/50 rounded-full blur-2xl"></div>
-                    <div class="absolute -bottom-6 -right-6 w-40 h-40 bg-purple-200/50 rounded-full blur-2xl"></div>
+                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-primary/50 rounded-full blur-2xl"></div>
+                    <div class="absolute -bottom-6 -right-6 w-40 h-40 bg-primary/50 rounded-full blur-2xl"></div>
 
                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Card 1 -->
-                        <div class="bg-gradient-to-br from-indigo-600 to-indigo-500 rounded-3xl p-8 text-white h-64 md:h-72 flex flex-col justify-end shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gradient-to-br from-[#f05537] to-[#f05537] rounded-3xl p-8 text-white h-64 md:h-72 flex flex-col justify-end shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                  stroke-linejoin="round" class="lucide lucide-globe w-10 h-10 mb-4 opacity-80">
@@ -282,12 +267,12 @@ try {
                                 <path d="M2 12h20"></path>
                             </svg>
                             <h4 class="font-bold text-xl">Global Network</h4>
-                            <p class="text-indigo-100 text-sm mt-1">Connecting talent worldwide</p>
+                            <p class="text-primary text-sm mt-1">Connecting talent worldwide</p>
                         </div>
 
                         <!-- Card 2 -->
                         <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 h-64 md:h-72 flex flex-col justify-end transform hover:-translate-y-2 transition-transform duration-300">
-                            <svg class="w-10 h-10 mb-4 text-indigo-500" fill="none" stroke="currentColor"
+                            <svg class="w-10 h-10 mb-4 text-primary" fill="none" stroke="currentColor"
                                  viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -303,7 +288,7 @@ try {
                                     <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-200"></div>
                                     <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-300"></div>
                                     <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-400"></div>
-                                    <div class="w-12 h-12 rounded-full border-4 border-white bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">
+                                    <div class="w-12 h-12 rounded-full border-4 border-white bg-primary-50 flex items-center justify-center text-xs font-bold text-primary">
                                         +2K
                                     </div>
                                 </div>
@@ -324,7 +309,7 @@ try {
 <section class="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white">
     <div class="container mx-auto px-4">
         <div class="text-center mb-16" data-aos="fade-up">
-            <div class="inline-flex items-center gap-2 bg-indigo-50 rounded-full px-4 py-2 mb-6">
+            <div class="inline-flex items-center gap-2 bg-primary-50 rounded-full px-4 py-2 mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                      class="lucide lucide-target w-4 h-4 text-primary">
@@ -332,7 +317,7 @@ try {
                     <circle cx="12" cy="12" r="6"></circle>
                     <circle cx="12" cy="12" r="2"></circle>
                 </svg>
-                <span class="text-indigo-600 text-sm font-semibold">How It Works</span>
+                <span class="text-primary text-sm font-semibold">How It Works</span>
             </div>
             <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
                 Your Journey to Success
@@ -346,11 +331,11 @@ try {
             <!-- Step 1 -->
             <div class="group relative" data-aos="fade-up" data-aos-delay="0">
                 <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full relative overflow-hidden border border-gray-100">
-                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-indigo-50 transition-colors select-none">
+                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-primary-50 transition-colors select-none">
                         01
                     </div>
-                    <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                         </svg>
@@ -364,11 +349,11 @@ try {
             <!-- Step 2 -->
             <div class="group relative" data-aos="fade-up" data-aos-delay="100">
                 <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full relative overflow-hidden border border-gray-100">
-                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-indigo-50 transition-colors select-none">
+                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-primary-50 transition-colors select-none">
                         02
                     </div>
-                    <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -382,10 +367,10 @@ try {
             <!-- Step 3 -->
             <div class="group relative" data-aos="fade-up" data-aos-delay="200">
                 <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full relative overflow-hidden border border-gray-100">
-                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-indigo-50 transition-colors select-none">
+                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-primary-50 transition-colors select-none">
                         03
                     </div>
-                    <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                              class="lucide lucide-target w-8 h-8 text-primary">
@@ -403,10 +388,10 @@ try {
             <!-- Step 4 -->
             <div class="group relative" data-aos="fade-up" data-aos-delay="300">
                 <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full relative overflow-hidden border border-gray-100">
-                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-indigo-50 transition-colors select-none">
+                    <div class="absolute top-4 right-4 text-6xl font-black text-gray-50 group-hover:text-primary-50 transition-colors select-none">
                         04
                     </div>
-                    <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <div class="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                              class="lucide lucide-circle-check-big w-8 h-8 text-primary">
@@ -428,17 +413,17 @@ try {
     <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div data-aos="fade-right">
-                <div class="inline-flex items-center gap-2 bg-indigo-50 rounded-full px-4 py-2 mb-6">
-                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="inline-flex items-center gap-2 bg-primary-50 rounded-full px-4 py-2 mb-6">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                     </svg>
-                    <span class="text-indigo-600 text-sm font-semibold">Our Values</span>
+                    <span class="text-primary text-sm font-semibold">Our Values</span>
                 </div>
 
                 <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
                     We're Only Working<br/>
-                    <span class="text-indigo-600">With The Best</span>
+                    <span class="text-primary">With The Best</span>
                 </h2>
 
                 <p class="text-lg text-gray-600 leading-relaxed mb-10">
@@ -448,8 +433,8 @@ try {
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group border border-gray-100">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                             </svg>
@@ -458,7 +443,7 @@ try {
                         <p class="text-sm text-gray-500">We verify all employers and ensure genuine job listings.</p>
                     </div>
                     <div class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group border border-gray-100">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                  stroke-linejoin="round" class="lucide lucide-globe w-6 h-6 text-primary">
@@ -472,8 +457,8 @@ try {
                             industries.</p>
                     </div>
                     <div class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group border border-gray-100">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                             </svg>
@@ -483,7 +468,7 @@ try {
                             journey.</p>
                     </div>
                     <div class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group border border-gray-100">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                  stroke-linejoin="round" class="lucide lucide-award w-6 h-6 text-primary">
@@ -501,7 +486,7 @@ try {
             <div class="relative" data-aos="fade-left">
                 <div class="grid grid-cols-1 md:grid-cols-5 md:grid-rows-4 gap-4 h-auto md:h-[500px]">
                     <!-- Large Blue Card -->
-                    <div class="md:col-span-3 md:row-span-4 h-80 md:h-auto bg-indigo-50 rounded-3xl relative overflow-hidden shadow-2xl p-8 flex flex-col justify-end">
+                    <div class="md:col-span-3 md:row-span-4 h-80 md:h-auto bg-primary-50 rounded-3xl relative overflow-hidden shadow-2xl p-8 flex flex-col justify-end">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         <div class="relative z-10">
                             <div class="flex items-center gap-3 mb-3">
@@ -547,22 +532,22 @@ try {
     <!-- Abstract Shapes -->
     <div class="absolute inset-0 opacity-20 pointer-events-none">
         <div class="absolute top-10 right-10 w-64 h-64 rounded-full bg-white blur-3xl"></div>
-        <div class="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-purple-400 blur-3xl"></div>
+        <div class="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-primary blur-3xl"></div>
     </div>
     <!-- Brand overlay for readability -->
-    <div class="absolute inset-0 bg-gradient-to-br from-[#5b6bd5]/70 via-[#4f5fcc]/60 to-[#5b6bd5]/40"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-[#f05537]/70 via-[#FF6A3D]/60 to-[#f05537]/40"></div>
 
     <div class="relative container mx-auto px-4 text-center z-10" data-aos="zoom-in">
         <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Career?
         </h2>
-        <p class="text-indigo-50 text-lg max-w-2xl mx-auto mb-10">
+        <p class="text-primary-50 text-lg max-w-2xl mx-auto mb-10">
             Join thousands of professionals who have found their dream jobs through our platform.
             Start your journey today.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/register-candidate"
-               class="inline-flex items-center justify-center h-14 px-10 rounded-xl bg-white text-indigo-700 hover:bg-gray-100 font-bold text-lg transition-all transform hover:-translate-y-1 shadow-lg">
+               class="inline-flex items-center justify-center h-14 px-10 rounded-xl bg-white text-primary-600 hover:bg-gray-100 font-bold text-lg transition-all transform hover:-translate-y-1 shadow-lg">
                 Get Started Free
             </a>
             <a href="/contact"
@@ -576,3 +561,14 @@ try {
 <?php require 'include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

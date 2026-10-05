@@ -8,9 +8,17 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Models\Company;
 use App\Models\CompanyBlog;
+use App\Repositories\CompanyPortalRepository;
 
 class CompanyController
 {
+    private CompanyPortalRepository $companyPortalRepository;
+
+    public function __construct()
+    {
+        $this->companyPortalRepository = new CompanyPortalRepository();
+    }
+
     public function featured(Request $request, Response $response): void
     {
         $model = new Company();
@@ -73,11 +81,7 @@ class CompanyController
         
         // If not found in companies table, try to find by employer company_slug
         if (!$company) {
-            $db = \App\Core\Database::getInstance();
-            $employer = $db->fetchOne(
-                "SELECT * FROM employers WHERE company_slug = ? LIMIT 1",
-                [$slug]
-            );
+            $employer = $this->companyPortalRepository->findEmployerByCompanySlug((string)$slug);
             
             if ($employer) {
                 // Create company record if it doesn't exist
@@ -86,20 +90,7 @@ class CompanyController
                     // Auto-create company from employer data
                     $companySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $employer['company_name'] ?? 'company')));
                     $companySlug = trim($companySlug, '-');
-                    
-                    $sql = "INSERT INTO companies (employer_id, short_name, name, slug, logo_url, website, description, industry, company_size, created_at, updated_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-                    $db->execute($sql, [
-                        (int)$employer['id'],
-                        $employer['company_name'] ?? 'Company',
-                        $employer['company_name'] ?? 'Company',
-                        $companySlug,
-                        $employer['logo_url'] ?? null,
-                        $employer['website'] ?? null,
-                        $employer['description'] ?? null,
-                        $employer['industry'] ?? null,
-                        $employer['size'] ?? null
-                    ]);
+                    $this->companyPortalRepository->createCompanyFromEmployer($employer, $companySlug);
                     
                     $company = $companyModel->findByEmployerId((int)$employer['id']);
                 } else {
@@ -133,30 +124,8 @@ class CompanyController
         // FETCH JOBS - Get all published jobs for this company (by employer_id)
         $jobs = [];
         try {
-            $db = \App\Core\Database::getInstance();
             if ($employerId > 0) {
-                $jobRows = $db->fetchAll(
-                    "SELECT j.*,
-                     GROUP_CONCAT(
-                        DISTINCT TRIM(CONCAT(
-                            COALESCE(c.name, ''),
-                            CASE WHEN s.name IS NOT NULL AND s.name <> '' THEN CONCAT(', ', s.name) ELSE '' END,
-                            CASE WHEN cnt.name IS NOT NULL AND cnt.name <> '' THEN CONCAT(', ', cnt.name) ELSE '' END
-                        ))
-                        SEPARATOR ' | '
-                     ) AS location_display
-                     FROM jobs j
-                     LEFT JOIN job_locations jl ON jl.job_id = j.id
-                     LEFT JOIN cities c ON jl.city_id = c.id
-                     LEFT JOIN states s ON jl.state_id = s.id
-                     LEFT JOIN countries cnt ON jl.country_id = cnt.id
-                     WHERE j.employer_id = :employer_id
-                     AND j.status = 'published'
-                     GROUP BY j.id
-                     ORDER BY j.created_at DESC",
-                    ['employer_id' => $employerId]
-                );
-                $jobs = $jobRows;
+                $jobs = $this->companyPortalRepository->getPublishedJobsByEmployerId($employerId);
             }
         } catch (\Exception $e) {
             error_log('Failed to fetch jobs for company: ' . $e->getMessage());
@@ -173,15 +142,7 @@ class CompanyController
         // FETCH REVIEWS (latest 10) - tolerate missing table
         $reviews = [];
         try {
-            $reviews = $db->fetchAll(
-                "SELECT reviewer_name, rating, title, review_text, created_at
-                 FROM reviews 
-                 WHERE company_id = :cid 
-                 AND (status = 'approved' OR status IS NULL)
-                 ORDER BY created_at DESC 
-                 LIMIT 10",
-                ['cid' => $companyId]
-            );
+            $reviews = $this->companyPortalRepository->getApprovedReviewsByCompanyId($companyId, 10);
         } catch (\Throwable $e) {
             error_log('Company reviews fetch failed: ' . $e->getMessage());
             // Fallback to description reviews if table doesn't exist
@@ -215,5 +176,52 @@ class CompanyController
             'reviews'   => is_array($reviews) ? $reviews : [],
             'activeTab' => $tab
         ]);
+    }
+
+    public function blogDetail(Request $request, Response $response): void
+    {
+        $companySlug = $request->param('company_slug');
+        $blogSlug    = $request->param('blog_slug');
+
+        $companyModel = new Company();
+        $blogModel    = new CompanyBlog();
+
+        $company = $companyModel->findBySlug($companySlug);
+        if (!$company) {
+            $response->view('errors/404', ['message' => 'Company not found']);
+            return;
+        }
+
+        $blog = $blogModel->getBySlug($blogSlug);
+        if (!$blog || (int)$blog['company_id'] !== (int)$company['id']) {
+            $response->view('errors/404', ['message' => 'Blog post not found']);
+            return;
+        }
+
+        // Initialize SEO
+        $seoService = \App\Services\SeoService::getInstance();
+        $seoService->resolve('blog_detail', [
+            'title' => $blog['title'],
+            'description' => $blog['excerpt'] ?? '',
+            'image' => $blog['image'] ?? null,
+            'canonical_path' => "/company/{$companySlug}/blog/{$blogSlug}"
+        ]);
+
+        // Adapt company blog data to match what blog/detail.php expects
+        $post = $blog;
+        $post['featured_image'] = $blog['image'];
+        $post['author_name'] = $company['name'];
+
+        $response->view('blog/detail', [
+            'blog' => $post,
+            'post' => $post,
+            'content' => $blog['content'] ?? '',
+            'company' => $company,
+            'title' => $blog['title'],
+            'categories' => [],
+            'tags' => [],
+            'related' => [],
+            'latestArticles' => []
+        ], 200, 'layout');
     }
 }

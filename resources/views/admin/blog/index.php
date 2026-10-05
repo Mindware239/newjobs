@@ -46,7 +46,7 @@
               </form>
             </td>
             <td class="p-3 text-center space-x-2">
-              <a class="text-blue-600" href="/admin/blog/<?= (int)$b['id'] ?>/edit">Edit</a>
+              <a class="text-primary" href="/admin/blog/<?= (int)$b['id'] ?>/edit">Edit</a>
               <a class="text-gray-600" href="/admin/blog/<?= (int)$b['id'] ?>/preview" target="_blank">Preview</a>
               <form class="inline" method="post" action="/admin/blog/<?= (int)$b['id'] ?>/delete">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
@@ -63,7 +63,7 @@
               <form class="inline-flex items-center gap-1" method="post" action="/admin/blog/<?= (int)$b['id'] ?>/schedule">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                 <input type="datetime-local" name="published_at" class="border rounded px-2 py-1">
-                <button class="text-blue-700">Schedule</button>
+                <button class="text-primary-600">Schedule</button>
               </form>
               <?php if ((int)($b['is_featured'] ?? 0) === 1): ?>
                 <form class="inline" method="post" action="/admin/blog/<?= (int)$b['id'] ?>/unfeature">
@@ -108,3 +108,14 @@
     </script>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

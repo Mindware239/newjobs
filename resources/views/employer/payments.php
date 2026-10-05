@@ -27,7 +27,7 @@
             </select>
         </div>
         <div class="flex items-end">
-            <button class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Filter</button>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Filter</button>
         </div>
     </form>
 </div>
@@ -62,7 +62,7 @@
                         </td>
                         <td class="px-4 py-2 text-right">
                             <?php if (!empty($p['id'])): ?>
-                            <a href="/employer/invoices/<?= (int)$p['id'] ?>" class="text-purple-600 hover:text-purple-800 text-sm">View Invoice</a>
+                            <a href="/employer/invoices/<?= (int)$p['id'] ?>" class="text-primary hover:text-primary-900 text-sm">View Invoice</a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -102,7 +102,7 @@
                         </td>
                         <td class="px-4 py-2 text-right">
                             <?php if (!empty($p['invoice_url'])): ?>
-                            <a href="<?= htmlspecialchars($p['invoice_url']) ?>" target="_blank" class="text-purple-600 hover:text-purple-800 text-sm">Invoice</a>
+                            <a href="<?= htmlspecialchars($p['invoice_url']) ?>" target="_blank" class="text-primary hover:text-primary-900 text-sm">Invoice</a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -115,4 +115,15 @@
         <?php endif; ?>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

@@ -21,7 +21,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                             type="text" 
                             x-model="getSection('education').section_data.content.items[index].degree"
                             @input="autoSave()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             placeholder="Bachelor's Degree">
                     </div>
                     <div>
@@ -30,7 +30,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                             type="text" 
                             x-model="getSection('education').section_data.content.items[index].field_of_study"
                             @input="autoSave()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             placeholder="Computer Science">
                     </div>
                     <div>
@@ -39,7 +39,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                             type="text" 
                             x-model="getSection('education').section_data.content.items[index].institution"
                             @input="autoSave()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             placeholder="University Name">
                     </div>
                     <div>
@@ -48,7 +48,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                             type="text" 
                             x-model="getSection('education').section_data.content.items[index].grade"
                             @input="autoSave()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             placeholder="3.8 or A">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -58,7 +58,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                                 type="date" 
                                 x-model="getSection('education').section_data.content.items[index].start_date"
                                 @input="autoSave()"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
@@ -67,7 +67,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                                 x-model="getSection('education').section_data.content.items[index].end_date"
                                 :disabled="getSection('education').section_data.content.items[index].is_current"
                                 @input="autoSave()"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary disabled:bg-gray-100">
                         </div>
                     </div>
                     <div class="flex items-end">
@@ -76,7 +76,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                                 type="checkbox" 
                                 x-model="getSection('education').section_data.content.items[index].is_current"
                                 @change="autoSave()"
-                                class="mr-2 w-4 h-4 text-blue-600">
+                                class="mr-2 w-4 h-4 text-primary">
                             <span class="text-sm text-gray-700">Currently studying</span>
                         </label>
                     </div>
@@ -87,7 +87,7 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
                         x-model="getSection('education').section_data.content.items[index].description"
                         @input="autoSave()"
                         rows="3"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                         placeholder="Additional details..."></textarea>
                 </div>
                 <button 
@@ -100,9 +100,20 @@ if (empty($eduItems) && !empty($candidate->attributes['education_data'])) {
 
         <button 
             @click="const newItem = {degree: '', field_of_study: '', institution: '', start_date: '', end_date: '', is_current: false, grade: '', description: ''}; if (!getSection('education').section_data.content.items) { getSection('education').section_data.content.items = []; } getSection('education').section_data.content.items.push(newItem);"
-            class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600">
+            class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary">
             + Add Education
         </button>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

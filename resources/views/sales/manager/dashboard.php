@@ -19,7 +19,7 @@ $todaysTasks = $todaysTasks ?? [];
             
             <!-- Quick Actions -->
             <div class="flex flex-wrap gap-3">
-                <a href="/sales/leads/create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-lg shadow-indigo-500/30 transition text-sm font-bold flex items-center gap-2">
+                <a href="/sales/leads/create" class="px-4 py-2 bg-primary hover:bg-primary text-white rounded-lg shadow-lg shadow-primary/30 transition text-sm font-bold flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     Add Lead
                 </a>
@@ -47,7 +47,7 @@ $todaysTasks = $todaysTasks ?? [];
         </div>
         
         <!-- Decorative background elements -->
-        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-indigo-500/20 blur-3xl"></div>
+        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl"></div>
         <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl"></div>
     </div>
 
@@ -121,10 +121,10 @@ $todaysTasks = $todaysTasks ?? [];
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         Today's Focus
                     </h3>
-                    <span class="text-xs font-medium px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full"><?= count($todaysTasks) ?> Tasks</span>
+                    <span class="text-xs font-medium px-2.5 py-1 bg-primary-50 text-primary rounded-full"><?= count($todaysTasks) ?> Tasks</span>
                 </div>
                 <div class="divide-y divide-slate-100">
                     <?php if(empty($todaysTasks)): ?>
@@ -144,7 +144,7 @@ $todaysTasks = $todaysTasks ?? [];
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     <?= date('g:i A', strtotime($task['next_followup_at'])) ?>
                                 </span>
-                                <a href="/sales/leads/<?= $task['id'] ?>" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition opacity-0 group-hover:opacity-100">
+                                <a href="/sales/leads/<?= $task['id'] ?>" class="p-2 text-slate-400 hover:text-primary hover:bg-primary-50 rounded-lg transition opacity-0 group-hover:opacity-100">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 </a>
                             </div>
@@ -158,7 +158,7 @@ $todaysTasks = $todaysTasks ?? [];
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-bold text-slate-800">Pipeline Overview</h3>
-                    <a href="/sales/manager/pipeline" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                    <a href="/sales/manager/pipeline" class="text-sm font-medium text-primary hover:text-primary-600 flex items-center gap-1">
                         View Full Pipeline
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </a>
@@ -168,7 +168,7 @@ $todaysTasks = $todaysTasks ?? [];
                     <!-- Proposal -->
                     <div class="bg-white rounded-xl border border-slate-200 flex flex-col h-full shadow-sm">
                         <div class="p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Proposal</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-primary">Proposal</span>
                             <span class="bg-white border border-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full"><?= count($pipeline['proposal'] ?? []) ?></span>
                         </div>
                         <div class="p-3 space-y-3 flex-1">
@@ -176,8 +176,8 @@ $todaysTasks = $todaysTasks ?? [];
                                 <div class="h-full flex items-center justify-center text-xs text-slate-400 italic">No deals</div>
                             <?php else: ?>
                                 <?php foreach ($pipeline['proposal'] as $p): ?>
-                                <a href="/sales/leads/<?= $p['id'] ?>" class="block bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition group">
-                                    <h4 class="font-semibold text-slate-800 text-sm truncate group-hover:text-indigo-600 transition-colors"><?= htmlspecialchars($p['contact_name'] ?? $p['company_name']) ?></h4>
+                                <a href="/sales/leads/<?= $p['id'] ?>" class="block bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:shadow-md hover:border-primary-100 transition group">
+                                    <h4 class="font-semibold text-slate-800 text-sm truncate group-hover:text-primary transition-colors"><?= htmlspecialchars($p['contact_name'] ?? $p['company_name']) ?></h4>
                                     <p class="text-xs text-slate-500 mt-1 truncate"><?= htmlspecialchars($p['company_name']) ?></p>
                                     <div class="mt-2 flex items-center justify-between text-xs">
                                         <span class="font-bold text-slate-700">$<?= number_format($p['deal_value']) ?></span>
@@ -243,7 +243,7 @@ $todaysTasks = $todaysTasks ?? [];
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-base font-bold text-slate-800">Team Performance</h3>
-                    <a href="/sales/manager/team" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Add Member</a>
+                    <a href="/sales/manager/team" class="text-sm font-medium text-primary hover:text-primary-600">Add Member</a>
                 </div>
                 <div class="divide-y divide-slate-100">
                     <?php if (empty($teamPerformance)): ?>
@@ -283,7 +283,7 @@ $todaysTasks = $todaysTasks ?? [];
                     <h3 class="text-base font-bold text-slate-800">Recent Leads</h3>
                     <div class="flex items-center gap-2">
                         <button class="px-3 py-1.5 text-sm bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-600">Filter</button>
-                        <a href="/sales/manager/leads" class="px-3 py-1.5 text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-indigo-700">View All</a>
+                        <a href="/sales/manager/leads" class="px-3 py-1.5 text-sm bg-primary-50 hover:bg-primary-50 border border-primary-100 rounded-lg text-primary-600">View All</a>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -335,7 +335,7 @@ $todaysTasks = $todaysTasks ?? [];
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="relative" x-data="{open:false}">
-                                        <button @click="open=!open" class="text-slate-400 hover:text-indigo-600 transition-colors">
+                                        <button @click="open=!open" class="text-slate-400 hover:text-primary transition-colors">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                                         </button>
                                         <div x-show="open" @click.away="open=false" x-transition class="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow border border-slate-200 z-50">
@@ -377,7 +377,7 @@ $todaysTasks = $todaysTasks ?? [];
                 </div>
                 <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
                     <?php 
-                    $colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+                    $colors = ['#f05537', '#10b981', '#f59e0b', '#ef4444', '#f05537'];
                     $i = 0;
                     foreach($leadSources as $source => $count): 
                         $color = $colors[$i % count($colors)];
@@ -443,7 +443,7 @@ $todaysTasks = $todaysTasks ?? [];
                     <?php else: ?>
                         <?php foreach ($activities as $act): ?>
                         <div class="flex gap-3 relative">
-                            <div class="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-white ring-1 ring-slate-100 z-10"></div>
+                            <div class="mt-1.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white ring-1 ring-slate-100 z-10"></div>
                             <div>
                                 <p class="text-sm text-slate-600">
                                     <span class="font-semibold text-slate-800"><?= htmlspecialchars($act['user_name'] ?? 'User') ?></span> 
@@ -455,7 +455,7 @@ $todaysTasks = $todaysTasks ?? [];
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                <a href="/sales/notifications" class="block text-center w-full mt-6 py-2 text-sm text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition-colors">View All Activity</a>
+                <a href="/sales/notifications" class="block text-center w-full mt-6 py-2 text-sm text-primary font-medium hover:bg-primary-50 rounded-lg transition-colors">View All Activity</a>
             </div>
         </div>
     </div>
@@ -523,7 +523,7 @@ $todaysTasks = $todaysTasks ?? [];
                     data: data,
                     backgroundColor: (labels.length === 1 && labels[0] === 'No data')
                         ? ['#cbd5e1']
-                        : ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                        : ['#f05537', '#10b981', '#f59e0b', '#ef4444', '#f05537'],
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -561,7 +561,7 @@ $todaysTasks = $todaysTasks ?? [];
                 labels: funnelLabels,
                 datasets: [{
                     data: funnelCounts,
-                    backgroundColor: ['#3b82f6','#6366f1','#8b5cf6','#f59e0b','#f97316','#10b981','#ef4444'],
+                    backgroundColor: ['#FF6A3D','#f05537','#f05537','#f59e0b','#f97316','#10b981','#ef4444'],
                     borderWidth: 0,
                     borderRadius: 6
                 }]
@@ -585,3 +585,14 @@ $todaysTasks = $todaysTasks ?? [];
         }
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+

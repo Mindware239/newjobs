@@ -9,16 +9,16 @@
     --text-1: #0D1117;
     --text-2: #4A5568;
     --text-3: #8896AA;
-    --blue: #2563EB;
-    --blue-light: #EFF6FF;
+    --blue: #f05537;
+    --blue-light: #fff1ed;
     --green: #059669;
     --green-light: #ECFDF5;
     --red: #DC2626;
     --red-light: #FEF2F2;
     --amber: #D97706;
     --amber-light: #FFFBEB;
-    --violet: #7C3AED;
-    --violet-light: #F5F3FF;
+    --violet: #f05537;
+    --violet-light: #fff5f2;
     --slate: #334155;
     --shadow-sm: 0 1px 2px rgba(13,17,23,0.05);
     --shadow: 0 2px 8px rgba(13,17,23,0.07), 0 0 1px rgba(13,17,23,0.06);
@@ -62,10 +62,10 @@
     font-family: 'Sora', sans-serif;
     text-decoration: none;
     transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-    box-shadow: 0 3px 10px rgba(37,99,235,0.25);
+    box-shadow: 0 3px 10px rgba(240,85,55,0.25);
     white-space: nowrap;
 }
-.bu-create-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(37,99,235,0.35); }
+.bu-create-btn:hover { background: #FF6A3D; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(240,85,55,0.35); }
 
 /* ── Stats Strip ── */
 .bu-stats-strip {
@@ -136,7 +136,7 @@
 .bu-avatar {
     width: 44px; height: 44px;
     border-radius: 11px;
-    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    background: linear-gradient(135deg, #f05537, #f05537);
     color: #fff;
     font-size: 16px;
     font-weight: 800;
@@ -256,7 +256,7 @@
     width: 130px;
     background: var(--card);
 }
-.bu-action-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.bu-action-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(240,85,55,0.1); }
 .bu-action-input::placeholder { color: var(--text-3); }
 
 /* inline form flex helper */
@@ -299,7 +299,7 @@
     font-weight: 700;
     background: var(--blue-light);
     color: var(--blue);
-    border: 1px solid #bfdbfe;
+    border: 1px solid #fff1ed;
     text-transform: capitalize;
 }
 
@@ -339,7 +339,7 @@ foreach (($items ?? []) as $acc) {
     <!-- Stats Strip -->
     <div class="bu-stats-strip">
         <div class="bu-stat-mini">
-            <div class="bu-stat-mini-icon" style="background:#EFF6FF; color:#2563EB;">
+            <div class="bu-stat-mini-icon" style="background:#fff1ed; color:#f05537;">
                 <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
             <div>
@@ -366,7 +366,7 @@ foreach (($items ?? []) as $acc) {
             </div>
         </div>
         <div class="bu-stat-mini">
-            <div class="bu-stat-mini-icon" style="background:#F5F3FF; color:#7C3AED;">
+            <div class="bu-stat-mini-icon" style="background:#fff5f2; color:#f05537;">
                 <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div>
@@ -554,3 +554,13 @@ foreach (($items ?? []) as $acc) {
     </div>
 
 </div>
+
+
+
+
+
+
+
+
+
+

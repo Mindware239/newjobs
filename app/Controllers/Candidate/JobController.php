@@ -13,8 +13,10 @@ use App\Models\Job;
 use App\Models\JobBookmark;
 use App\Models\JobView;
 use App\Models\Application;
+use App\Repositories\BlogRepository;
 use App\Services\JobMatchService;
 use App\Services\NotificationService;
+use App\Services\JobService;
 
 class JobController extends BaseController
 {
@@ -133,10 +135,37 @@ class JobController extends BaseController
         
         // Keyword filter - only if user searches
         if ($keyword) {
-            $whereConditions[] = "(j.title LIKE :keyword OR j.description LIKE :keyword_desc OR j.short_description LIKE :keyword_short)";
-            $params['keyword'] = "%{$keyword}%";
-            $params['keyword_desc'] = "%{$keyword}%";
-            $params['keyword_short'] = "%{$keyword}%";
+            $keywordLike = "%{$keyword}%";
+            $keywordConditions = [
+                "j.title LIKE :keyword_title",
+                "j.description LIKE :keyword_desc",
+                "j.short_description LIKE :keyword_short",
+                "j.category LIKE :keyword_category",
+                "e.company_name LIKE :keyword_company",
+                "EXISTS (
+                    SELECT 1 FROM job_skills js_kw
+                    INNER JOIN skills s_kw ON s_kw.id = js_kw.skill_id
+                    WHERE js_kw.job_id = j.id AND s_kw.name LIKE :keyword_skill
+                )"
+            ];
+            $params['keyword_title'] = $keywordLike;
+            $params['keyword_desc'] = $keywordLike;
+            $params['keyword_short'] = $keywordLike;
+            $params['keyword_category'] = $keywordLike;
+            $params['keyword_company'] = $keywordLike;
+            $params['keyword_skill'] = $keywordLike;
+
+            $terms = preg_split('/\s+/', strtolower(trim((string)$keyword))) ?: [];
+            $terms = array_values(array_unique(array_filter($terms, fn($term) => strlen($term) >= 2 && !in_array($term, ['job', 'jobs', 'for', 'and', 'or', 'in'], true))));
+            foreach ($terms as $idx => $term) {
+                $titleParam = "keyword_term_title_{$idx}";
+                $categoryParam = "keyword_term_category_{$idx}";
+                $keywordConditions[] = "(j.title LIKE :{$titleParam} OR j.category LIKE :{$categoryParam})";
+                $params[$titleParam] = "%{$term}%";
+                $params[$categoryParam] = "%{$term}%";
+            }
+
+            $whereConditions[] = '(' . implode(' OR ', $keywordConditions) . ')';
         }
         
         // Location filter - from search bar
@@ -160,35 +189,59 @@ class JobController extends BaseController
                 if ($locEntity) {
                     $paramId = "loc_id_{$idx}";
                     $pJson = "loc_part_json_{$idx}";
+                    $pRawCity = "loc_part_raw_city_{$idx}";
+                    $pRawState = "loc_part_raw_state_{$idx}";
+                    $pRawCountry = "loc_part_raw_country_{$idx}";
+                    $pAddress = "loc_part_address_{$idx}";
                     if ($locEntity['type'] === 'city') {
-                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND jl.city_id = :{$paramId})";
+                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND (jl.city_id = :{$paramId} OR jl.city LIKE :{$pRawCity} OR jl.state LIKE :{$pRawState} OR jl.country LIKE :{$pRawCountry}))";
                     } elseif ($locEntity['type'] === 'state') {
-                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND jl.state_id = :{$paramId})";
+                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND (jl.state_id = :{$paramId} OR jl.city LIKE :{$pRawCity} OR jl.state LIKE :{$pRawState} OR jl.country LIKE :{$pRawCountry}))";
                     } else {
-                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND jl.country_id = :{$paramId})";
+                        $partConditions[] = "EXISTS (SELECT 1 FROM job_locations jl WHERE jl.job_id = j.id AND (jl.country_id = :{$paramId} OR jl.city LIKE :{$pRawCity} OR jl.state LIKE :{$pRawState} OR jl.country LIKE :{$pRawCountry}))";
                     }
-                    // Also include fallback match on jobs.locations JSON/string
+                    // Also include fallback match on jobs.locations JSON/string and job address.
                     $partConditions[] = "j.locations LIKE :{$pJson}";
+                    $partConditions[] = "j.job_address LIKE :{$pAddress}";
                     $params[$paramId] = $locEntity['id'];
+                    $params[$pRawCity] = '%' . $part . '%';
+                    $params[$pRawState] = '%' . $part . '%';
+                    $params[$pRawCountry] = '%' . $part . '%';
                     $params[$pJson] = '%' . $part . '%';
+                    $params[$pAddress] = '%' . $part . '%';
                 } else {
                     $pCity = "loc_part_city_{$idx}";
                     $pState = "loc_part_state_{$idx}";
                     $pCountry = "loc_part_country_{$idx}";
+                    $pRawCity = "loc_part_raw_city_{$idx}";
+                    $pRawState = "loc_part_raw_state_{$idx}";
+                    $pRawCountry = "loc_part_raw_country_{$idx}";
                     $pJson = "loc_part_json_{$idx}";
+                    $pAddress = "loc_part_address_{$idx}";
                     $partConditions[] = "(EXISTS (
                         SELECT 1 FROM job_locations jl 
                         LEFT JOIN cities c ON jl.city_id = c.id
                         LEFT JOIN states s ON jl.state_id = s.id
                         LEFT JOIN countries co ON jl.country_id = co.id
                         WHERE jl.job_id = j.id 
-                        AND (c.name LIKE :{$pCity} OR s.name LIKE :{$pState} OR co.name LIKE :{$pCountry})
-                    ) OR j.locations LIKE :{$pJson})";
+                        AND (
+                            c.name LIKE :{$pCity}
+                            OR s.name LIKE :{$pState}
+                            OR co.name LIKE :{$pCountry}
+                            OR jl.city LIKE :{$pRawCity}
+                            OR jl.state LIKE :{$pRawState}
+                            OR jl.country LIKE :{$pRawCountry}
+                        )
+                    ) OR j.locations LIKE :{$pJson} OR j.job_address LIKE :{$pAddress})";
                     $likeVal = "%{$part}%";
                     $params[$pCity] = $likeVal;
                     $params[$pState] = $likeVal;
                     $params[$pCountry] = $likeVal;
+                    $params[$pRawCity] = $likeVal;
+                    $params[$pRawState] = $likeVal;
+                    $params[$pRawCountry] = $likeVal;
                     $params[$pJson] = $likeVal;
+                    $params[$pAddress] = $likeVal;
                 }
             }
             if (!empty($partConditions)) {
@@ -476,7 +529,7 @@ class JobController extends BaseController
         $whereClause = implode(' AND ', $whereConditions);
         
         // Get total count - include join for industry filter
-        $countJoin = $industry ? "LEFT JOIN employers e ON e.id = j.employer_id" : "";
+        $countJoin = ($industry || $keyword) ? "LEFT JOIN employers e ON e.id = j.employer_id" : "";
         $countSql = "SELECT COUNT(DISTINCT j.id) as total FROM jobs j {$countJoin} WHERE {$whereClause}";
         // Ensure only used params are passed to avoid PDO errors
         $countParams = $this->cleanParams($countSql, $params);
@@ -513,12 +566,13 @@ class JobController extends BaseController
                 
                 // 1. Keyword Relevance: Title starts with > Title contains > Description contains
                 if ($keyword) {
-                    // Note: :keyword is already set to %keyword% in params
+                    $params['keyword_order_starts'] = "{$keyword}%";
+                    $params['keyword_order_contains'] = "%{$keyword}%";
                     $params['keyword_starts'] = "{$keyword}%";
-                    $sortParts[] = "(CASE 
-                        WHEN j.title LIKE :keyword_starts THEN 0 
-                        WHEN j.title LIKE :keyword THEN 1 
-                        ELSE 2 
+                    $sortParts[] = "(CASE
+                        WHEN j.title LIKE :keyword_order_starts THEN 0
+                        WHEN j.title LIKE :keyword_order_contains THEN 1
+                        ELSE 2
                     END) ASC";
                 }
                 
@@ -544,7 +598,9 @@ class JobController extends BaseController
         }
         
         // Build SQL - include company logo for display
-        $sql = "SELECT DISTINCT j.*, e.company_name, e.logo_url as company_logo, j.slug
+        $sql = "SELECT DISTINCT j.*, e.company_name AS employer_company_name, 
+                       COALESCE(NULLIF(j.company_logo, ''), e.logo_url) as company_logo, 
+                       j.slug
                 FROM jobs j
                 LEFT JOIN employers e ON j.employer_id = e.id
                 WHERE {$whereClause}
@@ -603,6 +659,9 @@ class JobController extends BaseController
                 $jobData['company_logo'] = $row['company_logo'] ?? null;
                 
                 // If company_name still not found, get it from employer relationship
+                if (empty($jobData['company_name'])) {
+                    $jobData['company_name'] = $row['employer_company_name'] ?? null;
+                }
                 if (empty($jobData['company_name'])) {
                     $employer = $job->employer();
                     if ($employer && isset($employer->attributes['company_name'])) {
@@ -684,7 +743,7 @@ class JobController extends BaseController
                 }
                 $jobData['location_display'] = !empty($locationStrings) 
                     ? implode(' | ', $locationStrings) 
-                    : 'Location not specified';
+                    : (!empty($jobData['locations']) ? $jobData['locations'] : 'Location not specified');
                 
                 // Format employment type for display
                 $employmentType = $jobData['employment_type'] ?? 'full_time';
@@ -694,6 +753,7 @@ class JobController extends BaseController
                     'contract' => 'Contract',
                     'internship' => 'Internship',
                     'freelance' => 'Freelance',
+                    'one_time' => 'One-time Job',
                     'temporary' => 'Temporary'
                 ];
                 $jobData['employment_type_display'] = $employmentTypeMap[$employmentType] ?? ucfirst(str_replace('_', ' ', $employmentType));
@@ -742,7 +802,7 @@ class JobController extends BaseController
                 $jobData['match_score'] = (int)($jobData['match_score'] ?? 0);
                 $jobData['is_bookmarked'] = (bool)($jobData['is_bookmarked'] ?? false);
                 $jobData['employment_type_display'] = $jobData['employment_type_display'] ?? 'Full-time';
-                $jobData['location_display'] = $jobData['location_display'] ?? 'Location not specified';
+                $jobData['location_display'] = $jobData['location_display'] ?? (!empty($jobData['locations']) ? $jobData['locations'] : 'Location not specified');
                 $jobData['job_timings'] = $jobData['job_timings'] ?? '';
                 $jobData['interview_timings'] = $jobData['interview_timings'] ?? '';
                 
@@ -761,27 +821,88 @@ class JobController extends BaseController
             });
         }
 
+        $searchNotice = null;
+        $canUseKeywordFallback = $totalJobs === 0
+            && $keyword !== ''
+            && $location !== ''
+            && !$salaryMin
+            && !$salaryMax
+            && empty($salaryRange)
+            && empty($workModeArray)
+            && empty($jobTypeArray)
+            && empty($locationFilterArray)
+            && empty($industryFilterArray)
+            && empty($companyFilterArray)
+            && !$industry
+            && !$isRemote
+            && empty($datePostedArray);
+
+        if ($canUseKeywordFallback) {
+            try {
+                $fallback = (new JobService())->searchJobs([
+                    'keyword' => $keyword,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+
+                if ((int)($fallback['pagination']['total'] ?? 0) > 0) {
+                    $enrichedJobs = array_map(function(array $job): array {
+                        $job['match_score'] = (int)($job['match_score'] ?? 0);
+                        $job['is_bookmarked'] = (bool)($job['is_bookmarked'] ?? false);
+                        $job['employment_type_display'] = $job['employment_type_display']
+                            ?? ucfirst(str_replace('_', ' ', (string)($job['employment_type'] ?? 'full_time')));
+                        $job['created_at_formatted'] = !empty($job['created_at'])
+                            ? date('M d, Y', strtotime((string)$job['created_at']))
+                            : 'Recently';
+                        return $job;
+                    }, $fallback['jobs'] ?? []);
+                    $totalJobs = (int)($fallback['pagination']['total'] ?? count($enrichedJobs));
+                    $searchNotice = "No exact jobs found in {$location}. Showing matching jobs from other locations.";
+                }
+            } catch (\Throwable $e) {
+                error_log("Keyword fallback search failed: " . $e->getMessage());
+            }
+        }
+
         // Fetch top companies (employers with most jobs)
         $topCompanies = [];
         try {
-            $topCompaniesSql = "SELECT 
-                e.id,
+            // Grouped by name so one company with several employer accounts shows once.
+            $topCompaniesSql = "SELECT
                 e.company_name,
-                e.logo_url as company_logo,
-                e.company_slug,
+                MAX(e.logo_url) as company_logo,
                 COUNT(DISTINCT j.id) as job_count
             FROM employers e
             INNER JOIN jobs j ON j.employer_id = e.id
             WHERE j.status = 'published'
-                AND e.company_name IS NOT NULL 
+                AND e.company_name IS NOT NULL
                 AND e.company_name != ''
-            GROUP BY e.id, e.company_name, e.logo_url, e.company_slug
+            GROUP BY e.company_name
             HAVING job_count > 0
             ORDER BY job_count DESC
             LIMIT 8";
-            $topCompanies = $db->fetchAll($topCompaniesSql);
+            foreach ($db->fetchAll($topCompaniesSql) as $c) {
+                $c['url'] = '/candidate/jobs?company=' . urlencode((string)$c['company_name']);
+                $topCompanies[] = $c;
+            }
         } catch (\Exception $e) {
             error_log("Error fetching top companies: " . $e->getMessage());
+        }
+        // Govt, PSU, police, university, hospital… organisations from "Jobs in India".
+        try {
+            $orgTypes = \App\Services\Registration\FormRegistry::INDIA_JOB_TYPES;
+            foreach (\App\Models\ExternalJob::topOrganisations(16) as $o) {
+                $topCompanies[] = [
+                    'company_name' => $o['org_name'],
+                    'company_logo' => null,
+                    'job_count' => (int)$o['job_count'],
+                    'org_label' => $orgTypes[$o['org_type']][1] ?? null,
+                    'url' => '/india-jobs?q=' . urlencode((string)$o['org_name']),
+                ];
+            }
+            usort($topCompanies, static fn($a, $b) => (int)$b['job_count'] <=> (int)$a['job_count']);
+        } catch (\Throwable $e) {
+            error_log("Error fetching India job organisations: " . $e->getMessage());
         }
 
         // Featured companies (admin-curated, ordered)
@@ -805,12 +926,13 @@ class JobController extends BaseController
         $filterCompanies = [];
         try {
             $filterCompanies = $db->fetchAll(
-                "SELECT DISTINCT e.id, e.company_name 
-                 FROM employers e 
-                 INNER JOIN jobs j ON j.employer_id = e.id 
-                 WHERE j.status = 'published' 
-                   AND e.company_name IS NOT NULL 
+                "SELECT MIN(e.id) AS id, e.company_name
+                 FROM employers e
+                 INNER JOIN jobs j ON j.employer_id = e.id
+                 WHERE j.status = 'published'
+                   AND e.company_name IS NOT NULL
                    AND e.company_name != ''
+                 GROUP BY e.company_name
                  ORDER BY e.company_name ASC"
             );
         } catch (\Exception $e) {
@@ -825,6 +947,7 @@ class JobController extends BaseController
             'featuredCompanies' => $featuredCompanies,
             'filterCompanies' => $filterCompanies,
             'isLoggedIn' => $candidate !== null,
+            'searchNotice' => $searchNotice,
             'filters' => [
                 'keyword' => $keyword,
                 'location' => $location,
@@ -847,7 +970,7 @@ class JobController extends BaseController
                 'total' => $totalJobs,
                 'total_pages' => ceil($totalJobs / $perPage)
             ]
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     /**
@@ -874,8 +997,9 @@ class JobController extends BaseController
         
         // Use SQL JOIN to get job with company_name directly (same approach as index method)
         $db = \App\Core\Database::getInstance();
-        $sql = "SELECT j.*, e.company_name, e.description as company_description, 
-                       e.logo_url as company_logo, e.website as company_website, 
+        $sql = "SELECT j.*, e.company_name AS employer_company_name, e.description as company_description, 
+                       COALESCE(NULLIF(j.company_logo, ''), e.logo_url) as company_logo, 
+                       e.website as company_website, 
                        e.company_slug
                 FROM jobs j
                 LEFT JOIN employers e ON j.employer_id = e.id
@@ -929,6 +1053,9 @@ class JobController extends BaseController
         $jobData['company_slug'] = $row['company_slug'] ?? null;
         
         // If company_name not in JOIN result, try employer relationship as fallback
+        if (empty($jobData['company_name'])) {
+            $jobData['company_name'] = $row['employer_company_name'] ?? null;
+        }
         if (empty($jobData['company_name'])) {
             $employer = $job->employer();
             if ($employer && isset($employer->attributes)) {
@@ -1010,6 +1137,7 @@ class JobController extends BaseController
             'contract' => 'Contract',
             'internship' => 'Internship',
             'freelance' => 'Freelance',
+            'one_time' => 'One-time Job',
             'temporary' => 'Temporary'
         ];
         $jobData['employment_type_display'] = $employmentTypeMap[$employmentType] ?? ucfirst(str_replace('_', ' ', $employmentType));
@@ -1023,7 +1151,7 @@ class JobController extends BaseController
             $employerId = $jobData['employer_id'] ?? 0;
             
             // Build query with proper parameter binding
-            $relatedSql = "SELECT j.*, e.company_name, e.logo_url as company_logo
+            $relatedSql = "SELECT j.*, e.company_name AS employer_company_name, e.logo_url as company_logo
                           FROM jobs j
                           LEFT JOIN employers e ON j.employer_id = e.id
                           WHERE j.status = 'published'
@@ -1048,6 +1176,9 @@ class JobController extends BaseController
             
                 // Format related jobs
                 foreach ($relatedJobs as &$relatedJob) {
+                    if (empty($relatedJob['company_name'])) {
+                        $relatedJob['company_name'] = $relatedJob['employer_company_name'] ?? 'Company Name Not Available';
+                    }
                     // Format location with coordinates
                     $relatedLocations = $db->fetchAll(
                         "SELECT 
@@ -1074,6 +1205,23 @@ class JobController extends BaseController
                         $relatedLocationStrings[] = implode(', ', $locParts);
                     }
                 }
+                
+                // Fallback to jobs.locations if job_locations table is empty
+                if (empty($relatedLocationStrings) && !empty($relatedJob['locations'])) {
+                    $locData = json_decode($relatedJob['locations'], true);
+                    if (is_array($locData)) {
+                        foreach ($locData as $loc) {
+                            if (is_string($loc)) {
+                                $relatedLocationStrings[] = $loc;
+                            } elseif (is_array($loc)) {
+                                $relatedLocationStrings[] = implode(', ', array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']));
+                            }
+                        }
+                    } else {
+                        $relatedLocationStrings[] = $relatedJob['locations'];
+                    }
+                }
+                
                 $relatedJob['location_display'] = !empty($relatedLocationStrings) ? implode(' | ', $relatedLocationStrings) : 'Location not specified';
                 
                 // Format employment type
@@ -1193,53 +1341,44 @@ class JobController extends BaseController
             ? date('M d, Y', strtotime($jobData['created_at'])) 
             : 'Recently';
 
-        // Fetch interview blogs from blog_category_map (interview category)
+        // Fetch interview-focused blogs via repository.
         $interviewBlogs = [];
         try {
-            $interviewBlogs = $db->fetchAll(
-                "SELECT DISTINCT b.* FROM blogs b
-                 INNER JOIN blog_category_map bcm ON bcm.blog_id = b.id
-                 INNER JOIN blog_categories bc ON bc.id = bcm.category_id
-                 WHERE (bc.slug = 'interview' OR bc.name LIKE '%interview%' OR bc.name LIKE '%Interview%')
-                   AND b.published_at IS NOT NULL
-                   AND b.status_id = 1
-                 ORDER BY b.published_at DESC
-                 LIMIT 10"
-            );
-            
-            // If no blogs found with 'interview' category, try to get any published blogs
-            if (empty($interviewBlogs)) {
-                $interviewBlogs = $db->fetchAll(
-                    "SELECT b.* FROM blogs b
-                     WHERE b.published_at IS NOT NULL
-                       AND b.status_id = 1
-                     ORDER BY b.published_at DESC
-                     LIMIT 10"
-                );
-            }
+            $interviewBlogs = (new BlogRepository())->getInterviewSidebarBlogs(10);
         } catch (\Exception $e) {
             error_log("Error fetching interview blogs: " . $e->getMessage());
-            // Fallback: try to get any published blogs
-            try {
-                $interviewBlogs = $db->fetchAll(
-                    "SELECT b.* FROM blogs b
-                     WHERE b.published_at IS NOT NULL
-                       AND b.status_id = 1
-                     ORDER BY b.created_at DESC
-                     LIMIT 10"
-                );
-            } catch (\Exception $e2) {
-                error_log("Error fetching fallback blogs: " . $e2->getMessage());
-            }
         }
 
-        $response->view('candidate/jobs/show', [
-            'relatedJobs' => $relatedJobs,
-            'mapLocation' => $mapLocation,
+        $company = [
+            'id' => (int)($jobData['company_id'] ?? 0),
+            'name' => (string)($jobData['company_name'] ?? 'Company'),
+            'slug' => (string)($jobData['company_slug'] ?? ''),
+            'logo_url' => (string)($jobData['company_logo'] ?? ''),
+            'banner_url' => (string)($jobData['company_banner'] ?? ''),
+            'description' => (string)($jobData['company_description'] ?? ''),
+            'website' => (string)($jobData['company_website'] ?? '')
+        ];
+
+        $companyStats = [
+            'rating' => 0,
+            'reviews_count' => 0,
+            'followers_count' => 0
+        ];
+
+        $response->view('front/job/show', [
+            'title' => ($jobData['title'] ?? 'Job') . ' - ' . ($jobData['company_name'] ?? 'Company'),
+            'job' => $jobData,
+            'locationRows' => $locationRows,
+            'company' => $company,
+            'companyStats' => $companyStats,
+            // Use interview-focused blog feed on public job detail sidebar.
             'interviewBlogs' => $interviewBlogs,
-            'title' => $jobData['title'],
-            'candidate' => $candidate,
-            'job' => $jobData
+            'companyBlogs' => $interviewBlogs,
+            'otherJobs' => $relatedJobs,
+            'isLoggedIn' => true,
+            'isFollowing' => false,
+            'userId' => (int)($_SESSION['user_id'] ?? 0),
+            'candidateId' => (int)($candidate->attributes['id'] ?? 0)
         ]);
     }
 
@@ -1251,7 +1390,7 @@ class JobController extends BaseController
         $candidate = $this->ensureCandidate($request, $response);
         if (!$candidate) return;
 
-        // Get user ID from session (more reliable than candidate attributes)
+        // Get user ID from session
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
             $response->json(['error' => 'User ID not found. Please login again.'], 401);
@@ -1267,6 +1406,10 @@ class JobController extends BaseController
         }
         
         $job = Job::findBySlug($slug);
+        if (!$job && is_numeric($slug)) {
+            $job = Job::find((int)$slug);
+        }
+
         if (!$job) {
             $response->json(['error' => 'Job not found'], 404);
             return;
@@ -1278,91 +1421,20 @@ class JobController extends BaseController
             return;
         }
 
-        // Check if already applied
-        if ($this->hasApplied($userId, $jobId)) {
-            $response->json(['error' => 'You have already applied for this job'], 400);
+        $applicationService = new \App\Services\ApplicationService();
+        $result = $applicationService->submitApplication($userId, (int)$jobId, $request->all());
+
+        if (!$result['success']) {
+            $response->json([
+                'error' => $result['message'],
+                'incomplete_profile' => $result['incomplete_profile'] ?? false,
+                'missing_fields' => $result['missing_fields'] ?? [],
+                'profile_strength' => $result['profile_strength'] ?? 0
+            ], $result['code'] ?? 400);
             return;
         }
 
-        $data = $request->getJsonBody() ?? $request->all();
-
-        // Create application
-        $application = new Application();
-        $application->fill([
-            'job_id' => $jobId,
-            'candidate_user_id' => $userId,
-            'resume_url' => $data['resume_url'] ?? $candidate->attributes['resume_url'] ?? '',
-            'cover_letter' => $data['cover_letter'] ?? '',
-            'expected_salary' => $data['expected_salary'] ?? $candidate->attributes['expected_salary_min'] ?? null,
-            'status' => 'applied',
-            'score' => $this->calculateMatchScore($candidate, $job),
-            'source' => 'portal'
-        ]);
-
-        if ($application->save()) {
-            // Log application event
-            try {
-                $event = new \App\Models\ApplicationEvent();
-                $event->fill([
-                    'application_id' => $application->attributes['id'] ?? $application->id,
-                    'actor_user_id' => $userId,
-                    'from_status' => null,
-                    'to_status' => 'applied',
-                    'comment' => 'Application submitted'
-                ]);
-                $event->save();
-            } catch (\Exception $e) {
-                error_log("Failed to save application event: " . $e->getMessage());
-            }
-
-            // Send notification to employer
-            $employer = $job->employer();
-            if ($employer && $employerUser = $employer->user()) {
-                try {
-                    NotificationService::send(
-                        (int)$employerUser->id,
-                        'application_received',
-                        'New Application Received',
-                        "New application received for {$job->title} from " . ($candidate->full_name ?? 'a candidate'),
-                        [
-                            'job_id' => $jobId, 
-                            'application_id' => $application->attributes['id'] ?? $application->id,
-                            'email_template' => 'employer_application_received'
-                        ],
-                        "/employer/applications/" . ($application->attributes['id'] ?? $application->id)
-                    );
-                } catch (\Exception $e) {
-                    error_log("Failed to send employer notification: " . $e->getMessage());
-                }
-            }
-
-            // Send notification to candidate
-            try {
-                NotificationService::send(
-                    (int)$userId,
-                    'application_sent',
-                    'Application Submitted',
-                    "You have successfully applied for {$job->title} at " . ($job->company_name ?? 'the company'),
-                    [
-                        'job_id' => $jobId, 
-                        'application_id' => $application->attributes['id'] ?? $application->id,
-                        'email_template' => 'candidate_application_submitted'
-                    ],
-                    "/candidate/applications"
-                );
-            } catch (\Exception $e) {
-                error_log("Failed to send candidate notification: " . $e->getMessage());
-            }
-
-            $response->json([
-                'success' => true,
-                'message' => 'Application submitted successfully!',
-                'application_id' => $application->attributes['id'] ?? $application->id
-            ]);
-        } else {
-            error_log("Failed to save application. Job ID: {$jobId}, User ID: {$userId}");
-            $response->json(['error' => 'Failed to submit application'], 500);
-        }
+        $response->json($result);
     }
 
     /**
@@ -1381,6 +1453,10 @@ class JobController extends BaseController
         }
         
         $job = Job::findBySlug($slug);
+        if (!$job && is_numeric($slug)) {
+            $job = Job::find((int)$slug);
+        }
+
         if (!$job) {
             $response->json(['error' => 'Job not found'], 404);
             return;
@@ -1445,8 +1521,12 @@ class JobController extends BaseController
             $job = Job::find($bookmark->attributes['job_id']);
             if ($job && ($job->attributes['status'] ?? '') === 'published') {
                 $jobData = $job->attributes;
+                $jobData['id'] = $job->attributes['id'] ?? $job->id;
                 $employer = $job->employer();
-                $jobData['company_name'] = $employer ? $employer->attributes['company_name'] : '';
+                $jobData['company_name'] = $jobData['company_name'] ?? '';
+                if (empty($jobData['company_name'])) {
+                    $jobData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                }
                 $jobData['company_logo'] = $employer ? $employer->attributes['logo_url'] : null;
                 
                 // Get location - support both normalized (city_id/state_id) and denormalized (city/state) schemas
@@ -1516,7 +1596,8 @@ class JobController extends BaseController
                     'part_time' => 'Part-time',
                     'contract' => 'Contract',
                     'internship' => 'Internship',
-                    'freelance' => 'Freelance'
+                    'freelance' => 'Freelance',
+                    'one_time' => 'One-time Job'
                 ];
                 $jobData['employment_type_display'] = $empTypeMap[$empType] ?? ucfirst(str_replace('_', ' ', $empType));
                 
@@ -1539,10 +1620,12 @@ class JobController extends BaseController
         // Get applications for status
         $userId = $candidate->attributes['user_id'] ?? null;
         $applications = [];
+        $applicationIds = [];
         if ($userId) {
             $appList = Application::where('candidate_user_id', '=', $userId)->get();
             foreach ($appList as $app) {
                 $applications[$app->attributes['job_id']] = $app->attributes['status'] ?? 'applied';
+                $applicationIds[$app->attributes['job_id']] = $app->attributes['id'] ?? $app->id;
             }
         }
 
@@ -1551,14 +1634,23 @@ class JobController extends BaseController
         if (!empty($applications)) {
             $appliedJobIds = array_keys($applications);
             foreach ($appliedJobIds as $jid) {
+                // Do not show withdrawn applications in the "Applied" tab
+                if (($applications[$jid] ?? '') === 'withdrawn') {
+                    continue;
+                }
+                
                 /** @var \App\Models\Job|null $job */
                 $job = Job::find((int)$jid);
                 if (!$job || ($job->attributes['status'] ?? '') !== 'published') {
                     continue;
                 }
                 $jobData = $job->attributes;
+                $jobData['id'] = $job->attributes['id'] ?? $job->id;
                 $employer = $job->employer();
-                $jobData['company_name'] = $employer ? $employer->attributes['company_name'] : '';
+                $jobData['company_name'] = $jobData['company_name'] ?? '';
+                if (empty($jobData['company_name'])) {
+                    $jobData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                }
                 $jobData['company_logo'] = $employer ? $employer->attributes['logo_url'] : null;
                 $appliedJobs[] = $jobData;
             }
@@ -1578,8 +1670,9 @@ class JobController extends BaseController
             'savedJobs' => $savedJobs,
             'appliedJobs' => $appliedJobs,
             'interviewJobs' => $interviewJobs,
-            'applications' => $applications
-        ]);
+            'applications' => $applications,
+            'application_ids' => $applicationIds
+        ], 200, 'candidate/layout');
     }
 
     private function calculateMatchScore(Candidate $candidate, Job $job): int
@@ -1608,6 +1701,7 @@ class JobController extends BaseController
     {
         $application = Application::where('candidate_user_id', '=', $userId)
             ->where('job_id', '=', $jobId)
+            ->where('status', '!=', 'withdrawn')
             ->first();
         return $application !== null;
     }
@@ -1654,7 +1748,7 @@ class JobController extends BaseController
                 'http' => [
                     'method' => 'GET',
                     'header' => [
-                        'User-Agent: MindwareInfotech/1.0 (Job Portal)',
+                        'User-Agent: Jobsence/1.0 (Job Portal)',
                         'Accept: application/json'
                     ],
                     'timeout' => 5

@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold text-gray-900">Roles & Permissions</h1>
     <p class="text-sm text-gray-500 mt-1">Manage user roles and their access levels</p>
   </div>
-  <a href="/master/roles/create" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors duration-200 flex items-center gap-2">
+  <a href="/master/roles/create" class="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors duration-200 flex items-center gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
     </svg>
@@ -45,12 +45,12 @@
             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
           </svg>
         </div>
-        <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Search by name or slug..." class="pl-9 w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-10 border px-3">
+        <input type="text" name="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Search by name or slug..." class="pl-9 w-full border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm h-10 border px-3">
       </div>
     </div>
     <div>
       <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Per Page</label>
-      <select name="perPage" class="border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-10 border px-3 pr-8">
+      <select name="perPage" class="border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm h-10 border px-3 pr-8">
         <?php foreach ([10,20,30,50] as $pp): ?>
           <option value="<?= $pp ?>" <?= (int)($perPage ?? 10) === $pp ? 'selected' : '' ?>><?= $pp ?></option>
         <?php endforeach; ?>
@@ -93,7 +93,7 @@
           <div class="h-8 w-px bg-gray-200 hidden md:block"></div>
           
           <div class="flex items-center gap-2">
-            <a href="/master/roles/<?= $rid ?>/edit" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit Role">
+            <a href="/master/roles/<?= $rid ?>/edit" class="p-2 text-gray-500 hover:text-primary hover:bg-primary-50 rounded-lg transition-colors" title="Edit Role">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
@@ -147,7 +147,7 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                       <td class="px-4 py-3 whitespace-nowrap">
                         <div class="flex items-center">
-                          <div class="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                          <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-xs">
                             <?= strtoupper(substr($u['email'] ?? 'U', 0, 1)) ?>
                           </div>
                           <div class="ml-3">
@@ -168,7 +168,7 @@
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                         <div x-data="{ open: false }" class="relative inline-block text-left">
-                           <button type="button" onclick="document.getElementById('reset-form-<?= $u['id'] ?>').classList.toggle('hidden');" class="text-indigo-600 hover:text-indigo-900 text-xs border border-indigo-200 rounded px-2 py-1 hover:bg-indigo-50 transition-colors">
+                           <button type="button" onclick="document.getElementById('reset-form-<?= $u['id'] ?>').classList.toggle('hidden');" class="text-primary hover:text-primary-900 text-xs border border-primary-100 rounded px-2 py-1 hover:bg-primary-50 transition-colors">
                              Reset Password
                            </button>
                            
@@ -176,8 +176,8 @@
                               <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                               <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
                               <div class="flex gap-2">
-                                <input type="password" name="new_password" placeholder="min 8 chars" class="block w-full text-xs border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 px-2 py-1 border" minlength="8" required>
-                                <button type="submit" class="bg-indigo-600 text-white text-xs px-2 py-1 rounded hover:bg-indigo-700">Save</button>
+                                <input type="password" name="new_password" placeholder="min 8 chars" class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary px-2 py-1 border" minlength="8" required>
+                                <button type="submit" class="bg-primary text-white text-xs px-2 py-1 rounded hover:bg-primary-600">Save</button>
                               </div>
                               <div class="mt-1 text-right">
                                 <button type="button" onclick="document.getElementById('reset-form-<?= $u['id'] ?>').classList.add('hidden')" class="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
@@ -207,9 +207,19 @@
   </div>
   <div class="flex gap-1">
     <?php for ($p=1; $p<=$pages; $p++): ?>
-      <a href="?search=<?= urlencode($search ?? '') ?>&perPage=<?= (int)($perPage ?? 10) ?>&page=<?= $p ?>" class="px-3 py-1 text-sm font-medium rounded-md transition-colors <?= ($p === (int)($page ?? 1)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' ?>">
+      <a href="?search=<?= urlencode($search ?? '') ?>&perPage=<?= (int)($perPage ?? 10) ?>&page=<?= $p ?>" class="px-3 py-1 text-sm font-medium rounded-md transition-colors <?= ($p === (int)($page ?? 1)) ? 'bg-primary text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300' ?>">
         <?= $p ?>
       </a>
     <?php endfor; ?>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+

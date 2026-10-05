@@ -79,7 +79,7 @@ if (empty($expItems)) {
                                 type="checkbox" 
                                 x-model="getSection('experience').section_data.content.items[index].is_current"
                                 @change="autoSave()"
-                                class="mr-2 w-4 h-4 text-blue-600 rounded">
+                                class="mr-2 w-4 h-4 text-primary rounded">
                             <span class="text-sm" style="color: var(--text-gray); font-size: 14px;">I currently work here</span>
                         </label>
                     </div>
@@ -104,9 +104,20 @@ if (empty($expItems)) {
 
         <button 
             @click="if (!getSection('experience').section_data.content.items) { getSection('experience').section_data.content.items = []; } getSection('experience').section_data.content.items.push({job_title: '', company_name: '', location: '', start_date: '', end_date: '', is_current: false, description: ''});"
-            class="w-full py-4 border-2 border-dashed rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition font-medium"
+            class="w-full py-4 border-2 border-dashed rounded-lg text-gray-600 hover:border-primary hover:text-primary transition font-medium"
             style="border-color: var(--border-gray); font-size: 14px;">
             + Add Experience
         </button>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

@@ -81,6 +81,11 @@ $router->post('/employer/profile', [ProfileController::class, 'update'], [$authM
 
 // Notifications
 $router->get('/employer/notifications', [NotificationsController::class, 'index'], [$authMiddleware]);
+$router->get('/employer/notifications/unread', [NotificationsController::class, 'getUnread'], [$authMiddleware]);
+$router->post('/employer/notifications/read-all', [NotificationsController::class, 'markAllAsRead'], [$authMiddleware]);
+$router->post('/employer/notifications/delete-read', [NotificationsController::class, 'deleteRead'], [$authMiddleware]);
+$router->post('/employer/notifications/{id}/read', [NotificationsController::class, 'markAsRead'], [$authMiddleware]);
+$router->post('/employer/notifications/{id}/delete', [NotificationsController::class, 'delete'], [$authMiddleware]);
 
 // Settings
 $router->get('/employer/settings', [SettingsController::class, 'index'], [$authMiddleware]);
@@ -107,7 +112,7 @@ $router->post('/employer/billing/payment-methods/{id}/default', [BillingControll
 $router->get('/employer/billing/pay/{id}', [BillingController::class, 'pay'], [$authMiddleware]);
 $router->get('/employer/billing/settings', [BillingController::class, 'settings'], [$authMiddleware]);
 // Employer billing result pages
-$router->get('/employer/billing/success', [BillingController::class, 'success'], [$authMiddleware]);
+$router->get('/employer/billing/success', [BillingController::class, 'paymentSuccess'], [$authMiddleware]);
 $router->get('/employer/billing/failed', [BillingController::class, 'failed'], [$authMiddleware]);
 // Invoice download
 $router->get('/employer/billing/invoice/{id}', [InvoiceController::class, 'download'], [$authMiddleware]);
@@ -135,20 +140,27 @@ $spamMiddleware = new AntiSpamMiddleware();
 
 $router->post('/employer/jobs', [JobsController::class, 'store'], [$authMiddleware, $spamMiddleware]);
 $router->post('/employer/jobs/generate-description', [JobsController::class, 'generateDescription'], [$authMiddleware]);
-$router->put('/employer/jobs/{slug}', [JobsController::class, 'update'], [$authMiddleware]);
+$router->put('/employer/jobs/{slug}', [JobsController::class, 'update'], [$authMiddleware, $spamMiddleware]);
 $router->delete('/employer/jobs/{slug}', [JobsController::class, 'destroy'], [$authMiddleware]);
 $router->post('/employer/jobs/{slug}/publish', [JobsController::class, 'publish'], [$authMiddleware]);
+$router->post('/employer/jobs/{slug}/status', [JobsController::class, 'changeStatus'], [$authMiddleware]);
 $router->post('/employer/jobs/bulk-import', [JobsController::class, 'bulkImport'], [$authMiddleware]);
 
 // Applications
 $router->get('/employer/applications', [ApplicationsController::class, 'index'], [$authMiddleware]);
 $router->post('/employer/applications/bulk-status', [ApplicationsController::class, 'bulkStatus'], [$authMiddleware]);
+$router->get('/employer/candidates/{id}', [ApplicationsController::class, 'candidateProfile'], [$authMiddleware]);
 $router->post('/employer/candidates/{id}/view', [ApplicationsController::class, 'recordView'], [$authMiddleware]);
 $router->get('/employer/candidates/{id}/resume', [ApplicationsController::class, 'downloadResume'], [$authMiddleware]);
 $router->get('/employer/applications/{id}', [ApplicationsController::class, 'show'], [$authMiddleware]);
 $router->put('/employer/applications/{id}/status', [ApplicationsController::class, 'updateStatus'], [$authMiddleware]);
 $router->post('/employer/applications/{id}/generate-score', [ApplicationsController::class, 'generateScore'], [$authMiddleware]);
 $router->get('/employer/applications/export', [ApplicationsController::class, 'export'], [$authMiddleware]);
+
+// Messages
+$router->get('/employer/messages', [MessagesController::class, 'index'], [$authMiddleware]);
+$router->get('/employer/messages/chat', [MessagesController::class, 'chat'], [$authMiddleware]);
+$router->get('/employer/messages/conversation/{id}', [MessagesController::class, 'getConversation'], [$authMiddleware]);
 
 // KYC Verification
 $router->get('/employer/kyc', [KycController::class, 'show'], [$authMiddleware]);
@@ -177,7 +189,7 @@ $router->get('/employer/verification', [EmpVerificationController::class, 'index
 $router->get('/employer/verification/unlock/{id}', [EmpVerificationController::class, 'unlock'], [$authMiddleware]);
 $router->get('/employer/verification/checkout/{unlockId}', [EmpVerificationController::class, 'checkout'], [$authMiddleware]);
 $router->post('/employer/verification/mark-paid/{unlockId}', [EmpVerificationController::class, 'markPaid'], [$authMiddleware]);
-$router->get('/employer/verification/success', [EmpVerificationController::class, 'success'], [$authMiddleware]);
+$router->get('/employer/verification/success', [EmpVerificationController::class, 'verificationSuccess'], [$authMiddleware]);
 $router->get('/employer/verification/report/{unlockId}', [EmpVerificationController::class, 'report'], [$authMiddleware]);
 $router->get('/employer/verification/invoice/{unlockId}', [EmpVerificationController::class, 'invoice'], [$authMiddleware]);
 $router->get('/employer/verification/details/{unlockId}', [EmpVerificationController::class, 'details'], [$authMiddleware]);

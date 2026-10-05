@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Candidate Login | Mindware Infotech</title>
+<title>Candidate Login | Jobsence</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
 
@@ -20,7 +20,7 @@
 
 <div class="flex-shrink-0">
 <a href="<?= $base ?>">
-<img src="<?= $base ?>uploads/Mindware-infotech.png"
+<img src="<?= $base ?>uploads/jobsence.png"
 class="h-10 sm:h-12 md:h-14 lg:h-16 w-auto">
 </a>
 </div>
@@ -124,7 +124,7 @@ class="w-full border border-gray-300 rounded-md p-2.5">
 <div class="flex justify-between text-sm">
 
 <button type="submit" :disabled="loading"
-class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
+class="bg-[#f05537] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
 <span x-show="!loading">Login</span>
 <span x-show="loading">Please wait...</span>
 </button>
@@ -132,7 +132,7 @@ class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
 <div class="flex flex-col items-end gap-1">
 
 <button type="button" @click="mode='register'"
-class="text-[#5b6bd5] hover:underline">
+class="text-[#f05537] hover:underline">
 Create account
 </button>
 
@@ -182,13 +182,13 @@ class="w-full border border-gray-300 rounded-md p-2.5">
 
 <div class="mt-6 flex justify-between">
 <button type="submit" :disabled="loading"
-class="bg-[#5b6bd5] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
+class="bg-[#f05537] text-white px-6 py-2.5 rounded-md disabled:opacity-50">
 <span x-show="!loading">Create account</span>
 <span x-show="loading">Processing...</span>
 </button>
 
 <button type="button" @click="mode='login'"
-class="text-[#5b6bd5] hover:underline">
+class="text-[#f05537] hover:underline">
 Login
 </button>
 </div>
@@ -221,7 +221,7 @@ Cancel
 </button>
 
 <button type="submit" :disabled="loading"
-class="px-6 py-2 bg-[#5b6bd5] text-white rounded disabled:opacity-50">
+class="px-6 py-2 bg-[#f05537] text-white rounded disabled:opacity-50">
 <span x-show="!loading">Send Reset Link</span>
 <span x-show="loading">Sending...</span>
 </button>
@@ -347,3 +347,14 @@ function authPage() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

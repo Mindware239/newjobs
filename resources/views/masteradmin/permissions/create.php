@@ -10,15 +10,15 @@ $modules = $modules ?? [];
                 <p class="mt-1 text-sm text-gray-600">
                     Define a new system permission. Permissions control what users can do within the application.
                 </p>
-                <div class="mt-4 bg-blue-50 border-l-4 border-blue-400 p-4">
+                <div class="mt-4 bg-primary-50 border-l-4 border-primary p-4">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm text-blue-700">
+                            <p class="text-sm text-primary-600">
                                 <strong>Naming Convention:</strong><br>
                                 Use <code>resource.action</code> format for slugs (e.g., <code>users.create</code>, <code>reports.view</code>).
                             </p>
@@ -65,7 +65,7 @@ $modules = $modules ?? [];
                                 id="name"
                                 value="<?= htmlspecialchars($old['name'] ?? '') ?>"
                                 placeholder="e.g. Create User"
-                                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                                 x-model="name"
                                 @input="onNameInput($event.target.value)"
                             >
@@ -81,7 +81,7 @@ $modules = $modules ?? [];
                                     id="slug"
                                     value="<?= htmlspecialchars($old['slug'] ?? '') ?>"
                                     placeholder="e.g. users.create"
-                                    class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
+                                    class="focus:ring-primary focus:border-primary flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
                                     x-model="slug"
                                     @input="onSlugInput($event.target.value)"
                                 >
@@ -98,7 +98,7 @@ $modules = $modules ?? [];
                                 id="module"
                                 value="<?= htmlspecialchars($old['module'] ?? '') ?>"
                                 placeholder="e.g. User Management"
-                                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                                 x-model="module"
                                 @input="onModuleInput($event.target.value)"
                             >
@@ -109,7 +109,7 @@ $modules = $modules ?? [];
                                         <template x-for="mod in suggestions" :key="mod">
                                             <button
                                                 type="button"
-                                                class="px-2.5 py-1 rounded-full text-xs border border-gray-300 bg-gray-50 text-gray-700 hover:bg-indigo-50 hover:border-indigo-400"
+                                                class="px-2.5 py-1 rounded-full text-xs border border-gray-300 bg-gray-50 text-gray-700 hover:bg-primary-50 hover:border-primary"
                                                 @click="selectModule(mod)"
                                                 x-text="mod"
                                             ></button>
@@ -122,10 +122,10 @@ $modules = $modules ?? [];
                     </div>
                 </div>
                 <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                    <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                    <a href="/master/permissions" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-3">
                         Cancel
                     </a>
-                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                         Create Permission
                     </button>
                 </div>
@@ -169,3 +169,14 @@ $modules = $modules ?? [];
         };
     }
 </script>
+
+
+
+
+
+
+
+
+
+
+

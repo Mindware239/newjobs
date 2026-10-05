@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Controllers\Api\ApiController;
+use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
+use App\Models\Candidate;
 use App\Models\Review;
 
 class ReviewController extends ApiController
@@ -17,15 +19,14 @@ class ReviewController extends ApiController
      */
     public function companyReviews(Request $request, Response $response, int $id): void
     {
-        $page = (int)$request->query('page', 1);
-        $perPage = (int)$request->query('per_page', 10);
+        $page = max(1, (int)$request->query('page', 1));
+        $perPage = min(50, max(1, (int)$request->query('per_page', 10)));
         $sortBy = $request->query('sort', 'latest'); // latest, helpful, rating_high, rating_low
 
-        $query = Review::where('employer_id', '=', $id)
-            ->where('is_published', '=', true);
+        $query = Review::where('company_id', '=', $id)
+            ->where('status', '=', 'approved');
 
         $query = match($sortBy) {
-            'helpful' => $query->orderBy('helpful_count', 'DESC'),
             'rating_high' => $query->orderBy('rating', 'DESC'),
             'rating_low' => $query->orderBy('rating', 'ASC'),
             default => $query->orderBy('created_at', 'DESC')
@@ -57,11 +58,15 @@ class ReviewController extends ApiController
         }
 
         $errors = $this->validate($request->getJsonBody(), [
-            'employer_id' => 'required|numeric',
             'rating' => 'required|numeric|min:1|max:5',
             'title' => 'required|string',
             'review_text' => 'required|string|min:20'
         ]);
+
+        $companyId = $this->resolveCompanyId($request->getJsonBody());
+        if ($companyId <= 0) {
+            $errors['company_id'] = 'The company_id field is required.';
+        }
 
         if (!empty($errors)) {
             $this->validationError($response, $errors);
@@ -73,13 +78,18 @@ class ReviewController extends ApiController
 
         $review = new Review();
         try {
+            $candidate = Candidate::where('user_id', '=', (int)$user->id)->first();
+            $candidateId = $candidate ? (int)$candidate->id : null;
+
             $review->fill([
-                'employer_id' => (int)$request->input('employer_id'),
-                'candidate_id' => $user->id,
+                'company_id' => $companyId,
+                'user_id' => (int)$user->id,
+                'candidate_id' => $candidateId,
+                'reviewer_name' => (string)($user->name ?: 'Anonymous'),
                 'rating' => (int)$request->input('rating'),
-                'title' => $request->input('title'),
-                'review_text' => $request->input('review_text'),
-                'is_published' => true
+                'title' => trim((string)$request->input('title')),
+                'review_text' => trim((string)$request->input('review_text')),
+                'status' => 'approved'
             ])->save();
         } catch (\Throwable $e) {
             error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
@@ -102,10 +112,10 @@ class ReviewController extends ApiController
             return;
         }
 
-        $page = (int)$request->query('page', 1);
-        $perPage = (int)$request->query('per_page', 10);
+        $page = max(1, (int)$request->query('page', 1));
+        $perPage = min(50, max(1, (int)$request->query('per_page', 10)));
 
-        $reviews = Review::where('candidate_id', '=', $user->id)
+        $reviews = Review::where('user_id', '=', (int)$user->id)
             ->orderBy('created_at', 'DESC')
             ->paginate($perPage, $page);
 
@@ -133,7 +143,7 @@ class ReviewController extends ApiController
         }
 
         $review = Review::find($id);
-        if (!$review || $review->candidate_id !== $user->id) {
+        if (!$review || !$this->canManageReview($review, (int)$user->id)) {
             $this->error($response, 'Review not found', 404);
             return;
         }
@@ -145,7 +155,43 @@ class ReviewController extends ApiController
         }
 
         try {
-            $review->fill($request->getJsonBody())->save();
+            $data = $request->getJsonBody();
+            $updates = [];
+
+            if (array_key_exists('rating', $data)) {
+                $rating = (int)$data['rating'];
+                if ($rating < 1 || $rating > 5) {
+                    $this->validationError($response, ['rating' => 'The rating must be between 1 and 5.']);
+                    return;
+                }
+                $updates['rating'] = $rating;
+            }
+
+            if (array_key_exists('title', $data)) {
+                $title = trim((string)$data['title']);
+                if ($title === '') {
+                    $this->validationError($response, ['title' => 'The title field is required.']);
+                    return;
+                }
+                $updates['title'] = $title;
+            }
+
+            if (array_key_exists('review_text', $data)) {
+                $reviewText = trim((string)$data['review_text']);
+                if (strlen($reviewText) < 20) {
+                    $this->validationError($response, ['review_text' => 'The review_text must be at least 20 characters.']);
+                    return;
+                }
+                $updates['review_text'] = $reviewText;
+            }
+
+            if (empty($updates)) {
+                $this->validationError($response, ['review' => 'No editable review fields provided.']);
+                return;
+            }
+
+            $updates['updated_at'] = date('Y-m-d H:i:s');
+            $review->fill($updates)->save();
         } catch (\Throwable $e) {
             error_log("API Error in " . get_class($this) . ": " . $e->getMessage());
             $this->error($response, 'Database error occurred. Please try again.', 500);
@@ -168,7 +214,7 @@ class ReviewController extends ApiController
         }
 
         $review = Review::find($id);
-        if (!$review || $review->candidate_id !== $user->id) {
+        if (!$review || !$this->canManageReview($review, (int)$user->id)) {
             $this->error($response, 'Review not found', 404);
             return;
         }
@@ -190,11 +236,11 @@ class ReviewController extends ApiController
      */
     public function companyStats(Request $request, Response $response, int $id): void
     {
-        $reviews = Review::where('employer_id', '=', $id)
-            ->where('is_published', '=', true)
+        $reviews = Review::where('company_id', '=', $id)
+            ->where('status', '=', 'approved')
             ->get();
 
-        if ($reviews->isEmpty()) {
+        if (empty($reviews)) {
             $this->success($response, [
                 'total_reviews' => 0,
                 'average_rating' => 0,
@@ -203,7 +249,7 @@ class ReviewController extends ApiController
             return;
         }
 
-        $ratings = $reviews->pluck('rating')->toArray();
+        $ratings = array_map(static fn(Review $review): int => (int)$review->rating, $reviews);
         $avgRating = array_sum($ratings) / count($ratings);
 
         $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
@@ -222,5 +268,35 @@ class ReviewController extends ApiController
                 '1_star' => $distribution[1]
             ]
         ]);
+    }
+
+    private function resolveCompanyId(array $data): int
+    {
+        $companyId = (int)($data['company_id'] ?? 0);
+        if ($companyId > 0) {
+            return $companyId;
+        }
+
+        $employerId = (int)($data['employer_id'] ?? 0);
+        if ($employerId <= 0) {
+            return 0;
+        }
+
+        $row = Database::getInstance()->fetchOne(
+            'SELECT id FROM companies WHERE employer_id = :employer_id LIMIT 1',
+            ['employer_id' => $employerId]
+        );
+
+        return (int)($row['id'] ?? 0);
+    }
+
+    private function canManageReview(Review $review, int $userId): bool
+    {
+        if ((int)$review->user_id === $userId) {
+            return true;
+        }
+
+        $candidate = Candidate::where('user_id', '=', $userId)->first();
+        return $candidate && (int)$review->candidate_id === (int)$candidate->id;
     }
 }

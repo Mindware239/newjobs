@@ -16,7 +16,7 @@
                 <p class="text-gray-600 mt-1">Comprehensive insights into your hiring process and performance</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <button @click="exportReport()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium">
+                <button @click="exportReport()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors shadow-sm font-medium">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Export Report
                 </button>
@@ -24,14 +24,14 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <select x-model="filters.job_id" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select x-model="filters.job_id" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white">
                 <option value="">All Jobs</option>
                 <?php foreach ($jobs ?? [] as $job): ?>
                     <option value="<?= $job->id ?>"><?= htmlspecialchars($job->title) ?></option>
                 <?php endforeach; ?>
             </select>
             
-            <select x-model="filters.timeframe" @change="handleTimeframeChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select x-model="filters.timeframe" @change="handleTimeframeChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white">
                 <option value="7d">Last 7 Days</option>
                 <option value="30d">Last 30 Days</option>
                 <option value="90d">Last 90 Days</option>
@@ -41,8 +41,8 @@
             </select>
 
             <div x-show="filters.timeframe === 'custom'" class="contents">
-                <input type="date" x-model="filters.date_from" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <input type="date" x-model="filters.date_to" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="date" x-model="filters.date_from" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                <input type="date" x-model="filters.date_to" @change="loadAllData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
         </div>
     </div>
@@ -56,7 +56,7 @@
                     <p class="text-sm font-medium text-gray-500">Total Jobs</p>
                     <p class="text-3xl font-bold text-gray-900 mt-1"><?= $stats['jobs']['total'] ?? 0 ?></p>
                 </div>
-                <div class="p-3 rounded-full bg-blue-50 text-blue-600">
+                <div class="p-3 rounded-full bg-primary-50 text-primary">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                 </div>
             </div>
@@ -73,12 +73,12 @@
                     <p class="text-sm font-medium text-gray-500">Total Applications</p>
                     <p class="text-3xl font-bold text-gray-900 mt-1" x-text="funnelData.total || 0">0</p>
                 </div>
-                <div class="p-3 rounded-full bg-purple-50 text-purple-600">
+                <div class="p-3 rounded-full bg-primary-50 text-primary">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
             </div>
             <div class="mt-4 flex items-center text-sm">
-                <span class="text-purple-600 font-medium" x-text="(funnelData.conversion_rate || 0) + '%'">0%</span>
+                <span class="text-primary font-medium" x-text="(funnelData.conversion_rate || 0) + '%'">0%</span>
                 <span class="text-gray-500 ml-2">hire rate</span>
             </div>
         </div>
@@ -90,7 +90,7 @@
                     <p class="text-sm font-medium text-gray-500">Interviews</p>
                     <p class="text-3xl font-bold text-gray-900 mt-1" x-text="funnelData.stages?.interviewed?.count || 0">0</p>
                 </div>
-                <div class="p-3 rounded-full bg-indigo-50 text-indigo-600">
+                <div class="p-3 rounded-full bg-primary-50 text-primary">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
             </div>
@@ -116,7 +116,7 @@
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 h-full">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-900">Hiring Funnel</h2>
-                <button @click="loadFunnelData()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Refresh</button>
+                <button @click="loadFunnelData()" class="text-sm text-primary hover:text-primary-900 font-medium">Refresh</button>
             </div>
             <div class="relative h-80">
                 <canvas id="funnelChart"></canvas>
@@ -124,7 +124,7 @@
             <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-6">
                 <template x-for="(stage, key) in funnelData.stages" :key="key">
                     <div class="text-center p-2 rounded-lg bg-gray-50" x-show="key !== 'rejected'">
-                        <div class="text-lg font-bold text-blue-600" x-text="stage.count || 0"></div>
+                        <div class="text-lg font-bold text-primary" x-text="stage.count || 0"></div>
                         <div class="text-xs text-gray-600 capitalize" x-text="key"></div>
                         <div class="text-xs text-gray-400" x-text="(stage.percentage || 0) + '%'"></div>
                     </div>
@@ -138,13 +138,13 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex-1">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Time to Hire</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <div class="p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
                         <div class="text-sm text-gray-600">Posted to Application</div>
-                        <div class="text-2xl font-bold text-blue-700" x-text="(timeToHireData.avg_days_posted_to_application || 0) + ' days'"></div>
+                        <div class="text-2xl font-bold text-primary-600" x-text="(timeToHireData.avg_days_posted_to_application || 0) + ' days'"></div>
                     </div>
-                    <div class="p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
+                    <div class="p-4 bg-primary-50 rounded-lg border-l-4 border-primary">
                         <div class="text-sm text-gray-600">Total Time to Hire</div>
-                        <div class="text-2xl font-bold text-indigo-700" x-text="(timeToHireData.avg_days_total_time_to_hire || 0) + ' days'"></div>
+                        <div class="text-2xl font-bold text-primary-600" x-text="(timeToHireData.avg_days_total_time_to_hire || 0) + ' days'"></div>
                     </div>
                 </div>
                 <div class="relative h-48">
@@ -285,7 +285,7 @@
                                 <td class="px-4 py-3 text-center" x-text="getQualityScore(job.id, 'skill') + '%'"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="bg-blue-600 h-2.5 rounded-full" :style="'width: ' + (job.engagement_score || 0) + '%'"></div>
+                                        <div class="bg-primary h-2.5 rounded-full" :style="'width: ' + (job.engagement_score || 0) + '%'"></div>
                                     </div>
                                 </td>
                             </tr>
@@ -305,9 +305,9 @@
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h2 class="text-xl font-bold text-gray-900 mb-6">Communication Effectiveness</h2>
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="p-4 bg-blue-50 rounded-lg">
+                <div class="p-4 bg-primary-50 rounded-lg">
                     <div class="text-sm text-gray-600">Messages Sent</div>
-                    <div class="text-2xl font-bold text-blue-700" x-text="communicationData.messages_sent || 0">0</div>
+                    <div class="text-2xl font-bold text-primary-600" x-text="communicationData.messages_sent || 0">0</div>
                 </div>
                 <div class="p-4 bg-green-50 rounded-lg">
                     <div class="text-sm text-gray-600">Replies Received</div>
@@ -324,7 +324,7 @@
             </div>
             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <span class="text-gray-700 font-medium">Interview Invites Read Rate</span>
-                <span class="text-blue-600 font-bold" x-text="calculateReadRate() + '%'">0%</span>
+                <span class="text-primary font-bold" x-text="calculateReadRate() + '%'">0%</span>
             </div>
         </div>
 
@@ -341,11 +341,11 @@
                     <div class="text-xs text-gray-500">Delivery Rate</div>
                 </div>
                 <div class="text-center p-3 border border-gray-100 rounded-lg">
-                    <div class="text-2xl font-bold text-blue-600" x-text="(notificationData.open_rate || 0) + '%'">0%</div>
+                    <div class="text-2xl font-bold text-primary" x-text="(notificationData.open_rate || 0) + '%'">0%</div>
                     <div class="text-xs text-gray-500">Open Rate</div>
                 </div>
                 <div class="text-center p-3 border border-gray-100 rounded-lg">
-                    <div class="text-2xl font-bold text-purple-600" x-text="(notificationData.reminder_success_rate || 0) + '%'">0%</div>
+                    <div class="text-2xl font-bold text-primary" x-text="(notificationData.reminder_success_rate || 0) + '%'">0%</div>
                     <div class="text-xs text-gray-500">Reminder Success</div>
                 </div>
             </div>
@@ -384,14 +384,14 @@
             <h2 class="text-xl font-bold text-gray-900 mb-6">System & Security</h2>
             <div class="mb-6">
                 <h3 class="text-sm font-semibold text-gray-700 mb-2">Subscription ROI</h3>
-                <div class="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white">
+                <div class="p-4 bg-gradient-to-r from-[#f05537] to-[#f05537] rounded-lg text-white">
                     <div class="flex justify-between items-center">
                         <div>
-                            <p class="text-blue-100 text-sm">Cost Per Hire</p>
+                            <p class="text-primary-50 text-sm">Cost Per Hire</p>
                             <p class="text-2xl font-bold" x-text="'$' + (subscriptionData.cost_per_hire || 0)">$0</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-blue-100 text-sm">Value Provided</p>
+                            <p class="text-primary-50 text-sm">Value Provided</p>
                             <p class="text-2xl font-bold" x-text="'$' + (subscriptionData.value_provided || 0)">$0</p>
                         </div>
                     </div>
@@ -432,6 +432,8 @@
 })();
 </script>
 <script>
+// Chart.js instances must NOT live in Alpine's reactive state (the proxy causes infinite recursion).
+const __analyticsCharts = {};
 function analyticsDashboard() {
     return {
         filters: {
@@ -456,15 +458,6 @@ function analyticsDashboard() {
         securityLogs: {},
         offerData: {},
         acceptanceLoaded: false,
-        charts: {
-            funnel: null,
-            timeToHire: null,
-            location: null,
-            activity: null,
-            sources: null,
-            outcomes: null,
-            notification: null
-        },
         chartsRendered: {
             funnel: false,
             timeToHire: false,
@@ -533,16 +526,16 @@ function analyticsDashboard() {
 
         _renderFunnelChartInternal() {
             const ctx = document.getElementById('funnelChart');
-            if (!ctx || this.charts.funnel) {
-                if(this.charts.funnel) {
-                     this.charts.funnel.data.datasets[0].data = Object.values(this.funnelData.stages || {}).map(s => s.count || 0).slice(0, 5);
-                     this.charts.funnel.update();
+            if (!ctx || __analyticsCharts.funnel) {
+                if(__analyticsCharts.funnel) {
+                     __analyticsCharts.funnel.data.datasets[0].data = Object.values(this.funnelData.stages || {}).map(s => s.count || 0).slice(0, 5);
+                     __analyticsCharts.funnel.update();
                 }
                 return; 
             }
             
             const stages = this.funnelData.stages || {};
-            this.charts.funnel = new Chart(ctx, {
+            __analyticsCharts.funnel = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Applied', 'Shortlisted', 'Interviewed', 'Offered', 'Hired'],
@@ -585,9 +578,9 @@ function analyticsDashboard() {
 
         renderTimeToHireChart() {
             const ctx = document.getElementById('timeToHireChart');
-            if (!ctx || this.charts.timeToHire) return;
+            if (!ctx || __analyticsCharts.timeToHire) return;
 
-            this.charts.timeToHire = new Chart(ctx, {
+            __analyticsCharts.timeToHire = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['App', 'Shortlist', 'Interview', 'Offer', 'Hire'],
@@ -626,10 +619,10 @@ function analyticsDashboard() {
 
         renderLocationChart() {
             const ctx = document.getElementById('locationChart');
-            if (!ctx || this.charts.location) return;
+            if (!ctx || __analyticsCharts.location) return;
 
             const cities = (this.locationData.top_cities || []).slice(0, 5);
-            this.charts.location = new Chart(ctx, {
+            __analyticsCharts.location = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: cities.map(c => c.city),
@@ -659,10 +652,10 @@ function analyticsDashboard() {
 
         renderActivityChart() {
             const ctx = document.getElementById('activityChart');
-            if (!ctx || this.charts.activity) return;
+            if (!ctx || __analyticsCharts.activity) return;
 
             const daily = (this.activityData.daily_activity || []).reverse();
-            this.charts.activity = new Chart(ctx, {
+            __analyticsCharts.activity = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: daily.map(d => new Date(d.date).toLocaleDateString(undefined, {month:'short', day:'numeric'})),
@@ -700,16 +693,16 @@ function analyticsDashboard() {
 
         renderSourcesChart() {
             const ctx = document.getElementById('sourcesChart');
-            if (!ctx || this.charts.sources) return;
+            if (!ctx || __analyticsCharts.sources) return;
 
             const data = this.sourcesData.counts || {};
-            this.charts.sources = new Chart(ctx, {
+            __analyticsCharts.sources = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(data).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
                     datasets: [{
                         data: Object.values(data),
-                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#6B7280'],
+                        backgroundColor: ['#FF6A3D', '#10B981', '#F59E0B', '#f05537', '#6B7280'],
                         borderWidth: 0
                     }]
                 },
@@ -738,11 +731,11 @@ function analyticsDashboard() {
             const ctx = document.getElementById('outcomesChart');
             if (!ctx) return;
 
-            if (this.charts.outcomes) {
-                this.charts.outcomes.destroy();
+            if (__analyticsCharts.outcomes) {
+                __analyticsCharts.outcomes.destroy();
             }
 
-            this.charts.outcomes = new Chart(ctx, {
+            __analyticsCharts.outcomes = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Passed', 'Failed', 'No-show'],
@@ -814,9 +807,9 @@ function analyticsDashboard() {
 
         renderNotificationChart() {
             const ctx = document.getElementById('notificationChart');
-            if (!ctx || this.charts.notification) return;
+            if (!ctx || __analyticsCharts.notification) return;
 
-            this.charts.notification = new Chart(ctx, {
+            __analyticsCharts.notification = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Sent', 'Delivered', 'Opened'],
@@ -827,7 +820,7 @@ function analyticsDashboard() {
                             this.notificationData.delivered || 0,
                             this.notificationData.opened || 0
                         ],
-                        backgroundColor: ['#E5E7EB', '#10B981', '#3B82F6'],
+                        backgroundColor: ['#E5E7EB', '#10B981', '#FF6A3D'],
                         barPercentage: 0.6
                     }]
                 },
@@ -874,10 +867,21 @@ function analyticsDashboard() {
         },
 
         resizeCharts() {
-            Object.values(this.charts).forEach(chart => {
+            Object.values(__analyticsCharts).forEach(chart => {
                 if (chart) chart.resize();
             });
         }
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\Storage;
 use PDO;
 
 class CompanyBlog
 {
     protected Database $db;
+    protected Storage $storage;
 
     public function __construct()
     {
         // Use Database proxy which forwards to PDO
         $this->db = Database::getInstance();
+        $this->storage = new Storage();
     }
 
     // Fetch blogs for company
@@ -69,15 +72,11 @@ class CompanyBlog
         // Handle image upload
         $imageUrl = null;
         if ($imageFile && isset($imageFile['tmp_name']) && is_uploaded_file($imageFile['tmp_name'])) {
-            $uploadDir = __DIR__ . '/../../public/uploads/company-blogs/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $extension = pathinfo($imageFile['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '.' . $extension;
-            $filepath = $uploadDir . $filename;
-            if (move_uploaded_file($imageFile['tmp_name'], $filepath)) {
-                $imageUrl = '/uploads/company-blogs/' . $filename;
+            try {
+                $path = $this->storage->store($imageFile, 'uploads/companies/blogs');
+                $imageUrl = $this->storage->url($path);
+            } catch (\Exception $e) {
+                error_log('Blog image upload failed: ' . $e->getMessage());
             }
         }
 
@@ -159,25 +158,12 @@ class CompanyBlog
 
         // Handle image upload
         if ($imageFile && isset($imageFile['tmp_name']) && is_uploaded_file($imageFile['tmp_name'])) {
-            // Delete old image
-            $blog = $this->find($id);
-            if ($blog && !empty($blog['image'])) {
-                $oldImagePath = __DIR__ . '/../../public' . $blog['image'];
-                if (file_exists($oldImagePath)) {
-                    @unlink($oldImagePath);
-                }
-            }
-
-            $uploadDir = __DIR__ . '/../../public/uploads/company-blogs/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-            $extension = pathinfo($imageFile['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '.' . $extension;
-            $filepath = $uploadDir . $filename;
-            if (move_uploaded_file($imageFile['tmp_name'], $filepath)) {
+            try {
+                $path = $this->storage->store($imageFile, 'uploads/companies/blogs');
                 $updates[] = 'image = :image';
-                $params['image'] = '/uploads/company-blogs/' . $filename;
+                $params['image'] = $this->storage->url($path);
+            } catch (\Exception $e) {
+                error_log('Blog image upload update failed: ' . $e->getMessage());
             }
         }
 

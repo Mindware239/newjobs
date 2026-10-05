@@ -1,560 +1,390 @@
-<?php
-// Login Page - Mindware Infotech
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <title>Login | Mindware Jobs</title>
+    <title>Login | Jobsence Jobs</title>
     <link href="/css/output.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        [x-cloak]{display:none}
-        *,*::before,*::after{box-sizing:border-box;}
-        html,body{margin:0;padding:0;height:100%;overflow:hidden;}
-        body{font-family:'Plus Jakarta Sans', -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        [x-cloak] { display: none !important; }
 
-        .dot-grid{background-image:radial-gradient(circle,rgba(99,102,241,.18) 1px,transparent 1px);background-size:24px 24px;}
-        .grad-text{background:linear-gradient(135deg,#4f46e5,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-
-        .f-input{
-            width:100%;padding:10px 14px;font-size:13.5px;color:#111827;
-            background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;
-            outline:none;transition:all .2s;font-family:inherit;
+        :root {
+            --primary:    #f05537;
+            --primary-hover: #d94426;
+            --slate-50:   #f8fafc;
+            --slate-100:  #f1f5f9;
+            --slate-200:  #e2e8f0;
+            --slate-400:  #94a3b8;
+            --slate-500:  #64748b;
+            --slate-600:  #475569;
+            --slate-700:  #334155;
+            --slate-900:  #0f172a;
+            --font-body:  'Plus Jakarta Sans', sans-serif;
+            --font-head:  'Outfit', sans-serif;
         }
-        .f-input::placeholder{color:#9ca3af;}
-        .f-input:focus{border-color:#4f46e5;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.1);}
-        .f-input:hover:not(:focus){border-color:#d1d5db;}
 
-        .btn-main{
-            width:100%;padding:11px;display:flex;align-items:center;justify-content:center;gap:7px;
-            background:linear-gradient(135deg,#4f46e5,#3b82f6);color:white;font-weight:700;
-            font-size:13.5px;border:none;border-radius:10px;cursor:pointer;
-            transition:all .2s;box-shadow:0 4px 14px rgba(79,70,229,.28);font-family:inherit;
+        html, body {
+            width: 100%; min-height: 100vh;
+            font-family: var(--font-body);
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-900);
         }
-        .btn-main:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.38);}
-        .btn-main:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
 
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--slate-200);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Brand */
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-logo {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .brand-logo span {
+            font-family: var(--font-head);
+            font-size: 22px; font-weight: 800; color: #fff;
+        }
+
+        .brand-name {
+            font-family: var(--font-head);
+            font-size: 20px; font-weight: 700;
+            color: var(--slate-900);
+            letter-spacing: -0.5px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .title {
+            font-family: var(--font-head);
+            font-size: 24px; font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 14px; color: var(--slate-500);
+        }
+
+        /* Alert */
+        .alert {
+            display: flex; align-items: flex-start; gap: 10px;
+            border-radius: 10px; padding: 12px; margin-bottom: 20px;
+            font-size: 13px; line-height: 1.5;
+        }
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+        .alert-error   { background: #fef2f2; border: 1px solid #fee2e2; color: #b91c1c; }
+
+        /* Auth Mode Toggle */
+        .auth-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--slate-100);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
         .auth-toggle-btn {
             flex: 1;
-            padding: 9px 12px;
+            padding: 8px;
             border: none;
-            border-radius: 9px;
-            font-size: 12px;
-            font-weight: 700;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            font-family: inherit;
-        }
-        .auth-toggle-active {
-            background: #ffffff;
-            color: #111827;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
-        }
-        .auth-toggle-inactive {
             background: transparent;
-            color: #6b7280;
+            color: var(--slate-500);
+        }
+        .auth-toggle-btn.active {
+            background: #fff;
+            color: var(--slate-900);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .soc-btn{
-            display:flex;align-items:center;justify-content:center;padding:9px;
-            border:1.5px solid #e5e7eb;border-radius:9px;background:white;
-            text-decoration:none;transition:all .18s;
-        }
-        .soc-btn:hover{border-color:#c7d2fe;background:#f5f3ff;transform:translateY(-1px);box-shadow:0 3px 10px rgba(79,70,229,.1);}
-        .soc-btn img{width:19px;height:19px;}
+        /* Form */
+        .fields { display: flex; flex-direction: column; gap: 16px; }
 
-        .stat-c{
-            flex:1;background:rgba(255,255,255,.85);border:1px solid rgba(199,210,254,.8);
-            border-radius:11px;padding:11px 13px;backdrop-filter:blur(4px);
+        .f-label {
+            font-size: 13px; font-weight: 600;
+            color: var(--slate-700); margin-bottom: 6px;
+            display: block;
         }
 
-        .avatar{width:26px;height:26px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;margin-left:-6px;}
-        .avatar:first-child{margin-left:0;}
+        .f-wrap { position: relative; }
 
-        @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
-        .pulse-dot{animation:pulse-dot 2s ease-in-out infinite;}
-        @keyframes spin{to{transform:rotate(360deg);}}
-        .spin{animation:spin .7s linear infinite;}
+        .f-icon {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400); pointer-events: none;
+            display: flex;
+        }
+
+        .f-input {
+            width: 100%; padding: 11px 12px 11px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px; background: #fff;
+            font-size: 14px; color: var(--slate-900);
+            font-family: var(--font-body);
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .f-input::placeholder { color: #9ca3af; }
+        .f-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(240, 85, 55, 0.1);
+        }
+
+        .pass-eye {
+            position: absolute; right: 10px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--slate-400); padding: 4px;
+            display: flex;
+        }
+
+        /* Options */
+        .options-row {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .rem-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .rem-check { width: 15px; height: 15px; accent-color: var(--primary); }
+        .rem-text { font-size: 13px; color: var(--slate-600); }
+
+        .forgot {
+            font-size: 13px; font-weight: 600; color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Submit */
+        .submit-btn {
+            width: 100%; padding: 12px;
+            background: var(--primary);
+            color: #fff; border: none; border-radius: 10px;
+            font-family: var(--font-body);
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 4px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover:not(:disabled) { background: var(--primary-hover); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Social */
+        .social-header {
+            display: flex; align-items: center; gap: 10px; margin: 20px 0;
+        }
+        .social-line { flex: 1; height: 1px; background: var(--slate-200); }
+        .social-text { font-size: 12px; color: var(--slate-400); font-weight: 500; }
+
+        .social-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px; border: 1px solid var(--slate-200); border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .social-btn:hover { background: var(--slate-50); border-color: var(--slate-400); }
+        .social-btn img { width: 20px; height: 20px; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--slate-100);
+        }
+
+        .footer-text { font-size: 13px; color: var(--slate-500); }
+        .footer-link { font-weight: 700; color: var(--primary); text-decoration: none; }
+
+        .back-home {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 500; color: var(--slate-500);
+            text-decoration: none; margin-top: 16px;
+        }
+        .back-home:hover { color: var(--primary); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.7s linear infinite; }
     </style>
 </head>
-<body>
+<body x-data="loginForm()">
 
-<div x-data="loginForm()" x-init="init()" x-cloak
-     class="flex" style="height:100vh;overflow:hidden;">
+<div class="login-card">
 
-    <!-- ══════════════ LEFT PANEL ══════════════ -->
-    <div class="hidden md:flex flex-col" style="width:50%;height:100vh;position:relative;overflow:hidden;
-         background:linear-gradient(145deg,#eef2ff 0%,#e0e7ff 40%,#dbeafe 75%,#eff6ff 100%);">
-
-        <div class="dot-grid" style="position:absolute;inset:0;opacity:.55;"></div>
-        <div style="position:absolute;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;
-                    background:rgba(99,102,241,.22);filter:blur(65px);"></div>
-        <div style="position:absolute;top:45%;right:-60px;width:240px;height:240px;border-radius:50%;
-                    background:rgba(59,130,246,.18);filter:blur(55px);"></div>
-        <div style="position:absolute;bottom:-30px;left:25%;width:200px;height:200px;border-radius:50%;
-                    background:rgba(139,92,246,.15);filter:blur(50px);"></div>
-
-        <div style="position:relative;z-index:10;display:flex;flex-direction:column;height:100%;padding:32px 40px;">
-
-            <!-- Logo -->
-            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-                <div style="width:36px;height:36px;border-radius:10px;
-                            background:linear-gradient(135deg,#4f46e5,#3b82f6);
-                            display:flex;align-items:center;justify-content:center;
-                            color:white;font-weight:800;font-size:16px;
-                            box-shadow:0 4px 12px rgba(79,70,229,.35);">M</div>
-                <span style="font-size:15px;font-weight:700;color:#1e1b4b;letter-spacing:-.3px;">Mindware</span>
-            </div>
-
-            <!-- Main content fills space -->
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:20px 0;">
-
-                <!-- Badge -->
-                <div style="display:inline-flex;align-items:center;gap:7px;width:fit-content;
-                            padding:5px 13px;border-radius:100px;
-                            background:rgba(79,70,229,.1);border:1px solid rgba(79,70,229,.2);">
-                    <span class="pulse-dot" style="width:6px;height:6px;border-radius:50%;background:#4f46e5;"></span>
-                    <span style="font-size:11px;font-weight:600;color:#4338ca;letter-spacing:.5px;text-transform:uppercase;">For Candidates &amp; Employers</span>
-                </div>
-
-                <!-- Headings -->
-                <div style="line-height:1.2;">
-                    <div style="font-size:clamp(24px,2.8vw,36px);font-weight:800;color:#1e1b4b;letter-spacing:-1px;">Hire Smarter.</div>
-                    <div class="grad-text" style="font-size:clamp(24px,2.8vw,36px);font-weight:800;letter-spacing:-1px;">Grow Faster.</div>
-                </div>
-
-                <!-- Desc -->
-                <p style="font-size:13.5px;color:#4b5563;line-height:1.65;max-width:300px;margin:0;">
-                    Modern SaaS recruitment platform connecting top talent with verified employers across India.
-                </p>
-
-                <!-- Features -->
-                <div style="border-top:1px solid rgba(199,210,254,.6);padding-top:12px;display:flex;flex-direction:column;gap:2px;">
-                    <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#374151;">
-                        <div style="width:28px;height:28px;border-radius:7px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🎯</div>
-                        AI-powered job matching
-                    </div>
-                    <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#374151;">
-                        <div style="width:28px;height:28px;border-radius:7px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">✅</div>
-                        Verified employer listings
-                    </div>
-                    <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#374151;">
-                        <div style="width:28px;height:28px;border-radius:7px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">📊</div>
-                        Real-time application tracking
-                    </div>
-                    <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#374151;">
-                        <div style="width:28px;height:28px;border-radius:7px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🔒</div>
-                        Full privacy controls
-                    </div>
-                </div>
-
-                <!-- Stats -->
-                <div style="display:flex;gap:10px;">
-                    <div class="stat-c">
-                        <div style="font-size:19px;font-weight:800;color:#1e1b4b;">12<span style="color:#4f46e5;">K+</span></div>
-                        <div style="font-size:11px;color:#9ca3af;margin-top:1px;">Active Jobs</div>
-                    </div>
-                    <div class="stat-c">
-                        <div style="font-size:19px;font-weight:800;color:#1e1b4b;">98<span style="color:#4f46e5;">%</span></div>
-                        <div style="font-size:11px;color:#9ca3af;margin-top:1px;">Verified</div>
-                    </div>
-                    <div class="stat-c">
-                        <div style="font-size:19px;font-weight:800;color:#1e1b4b;">4.9<span style="color:#4f46e5;">★</span></div>
-                        <div style="font-size:11px;color:#9ca3af;margin-top:1px;">Avg Rating</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Trust strip pinned bottom -->
-            <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;
-                        background:rgba(255,255,255,.82);backdrop-filter:blur(8px);
-                        border:1px solid rgba(199,210,254,.6);border-radius:14px;
-                        padding:11px 15px;">
-                <div style="display:flex;">
-                    <div class="avatar" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">P</div>
-                    <div class="avatar" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);">R</div>
-                    <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">A</div>
-                </div>
-                <div style="font-size:12px;color:#4b5563;">
-                    <span style="font-weight:600;color:#1e1b4b;">2,400+ candidates</span> hired this month
-                </div>
-                <span style="margin-left:auto;font-size:10.5px;font-weight:700;
-                             background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;
-                             border-radius:100px;padding:3px 9px;white-space:nowrap;">✓ Live</span>
-            </div>
-
-        </div>
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-logo"><span>JS</span></div>
+        <h1 class="brand-name">Jobsence</h1>
     </div>
 
-    <!-- ══════════════ RIGHT PANEL ══════════════ -->
-    <div style="flex:1;height:100vh;overflow-y:auto;background:#ffffff;
-                display:flex;align-items:center;justify-content:center;
-                padding:32px 48px;">
+    <!-- Header -->
+    <div class="header">
+        <h2 class="title">Welcome Back</h2>
+        <p class="subtitle">Login to your candidate or employer account</p>
+    </div>
 
-        <div style="width:100%;max-width:368px;">
+    <!-- Alerts -->
+    <div x-show="registrationSuccess" x-cloak class="alert alert-success">
+        <span x-text="registrationMessage"></span>
+    </div>
+    <div x-show="success" x-cloak class="alert alert-success">
+        <span x-text="success"></span>
+    </div>
+    <div x-show="error" x-cloak class="alert alert-error">
+        <span x-text="error"></span>
+    </div>
 
-            <!-- Back link -->
-            <a href="/" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;
-                               font-weight:500;color:#9ca3af;text-decoration:none;margin-bottom:24px;
-                               transition:color .2s;"
-               onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#9ca3af'">
-                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Back to Home
-            </a>
+    <!-- Mode Toggle -->
+    <div class="auth-toggle">
+        <button type="button" @click="authMode = 'password'" :class="authMode === 'password' ? 'active' : ''" class="auth-toggle-btn">Email Password</button>
+        <button type="button" @click="authMode = 'otp'" :class="authMode === 'otp' ? 'active' : ''" class="auth-toggle-btn" disabled style="opacity:0.5;cursor:not-allowed;">Mobile OTP</button>
+    </div>
 
-            <!-- Brand -->
-            <div style="display:flex;align-items:center;gap:11px;margin-bottom:20px;">
-                <div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;
-                            background:linear-gradient(135deg,#4f46e5,#3b82f6);
-                            display:flex;align-items:center;justify-content:center;
-                            color:white;font-weight:800;font-size:18px;
-                            box-shadow:0 4px 14px rgba(79,70,229,.22);">M</div>
-                <div>
-                    <div style="font-size:14px;font-weight:700;color:#111827;">Mindware</div>
-                    <div style="font-size:11.5px;color:#9ca3af;">Recruitment Platform</div>
+    <form @submit.prevent="submitLogin">
+        <div class="fields">
+            <!-- Email -->
+            <div>
+                <label for="email" class="f-label">Email Address</label>
+                <div class="f-wrap">
+                    <span class="f-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </span>
+                    <input id="email" type="email" required x-model="formData.email" class="f-input" placeholder="you@example.com">
                 </div>
             </div>
 
-            <!-- Heading -->
-            <h2 style="font-size:22px;font-weight:800;color:#111827;letter-spacing:-.5px;margin:0 0 3px;">Welcome Back</h2>
-            <p style="font-size:13px;color:#9ca3af;margin:0 0 22px;">Login to your candidate or employer account</p>
-
-            <!-- Registration success -->
-            <div x-show="registrationSuccess"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 style="display:flex;align-items:flex-start;gap:9px;margin-bottom:14px;
-                        padding:11px 13px;background:#f0fdf4;border:1px solid #bbf7d0;
-                        border-radius:10px;font-size:13px;font-weight:500;color:#166534;">
-                <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20" style="flex-shrink:0;margin-top:1px;">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span x-text="registrationMessage"></span>
-            </div>
-
-            <!-- Success message -->
-            <div x-show="success"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 style="display:flex;align-items:flex-start;gap:9px;margin-bottom:14px;
-                        padding:11px 13px;background:#f0fdf4;border:1px solid #bbf7d0;
-                        border-radius:10px;font-size:13px;font-weight:500;color:#166534;">
-                <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20" style="flex-shrink:0;margin-top:1px;">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <span x-text="success"></span>
-            </div>
-
-            <!-- Error -->
-            <div x-show="error"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 style="display:flex;align-items:flex-start;gap:9px;margin-bottom:14px;
-                        padding:11px 13px;background:#fef2f2;border:1px solid #fecaca;
-                        border-radius:10px;font-size:13px;font-weight:500;color:#b91c1c;">
-                <svg width="15" height="15" fill="currentColor" viewBox="0 0 20 20" style="flex-shrink:0;margin-top:1px;">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                </svg>
-                <span x-text="error"></span>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-bottom:16px;padding:4px;background:#f3f4f6;border-radius:12px;">
-                <button type="button" @click="authMode = 'password'; error=''; success=''"
-                        :class="authMode === 'password' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
-                        class="auth-toggle-btn">
-                    Email Password
-                </button>
-                <button type="button" @click="authMode = 'otp'; error=''; success=''"
-                        :class="authMode === 'otp' ? 'auth-toggle-active' : 'auth-toggle-inactive'"
-                        class="auth-toggle-btn">
-                    Mobile OTP
-                </button>
-            </div>
-
-            <form @submit.prevent="authMode === 'otp' ? submitOtpLogin() : submitLogin()">
-
-                <div x-show="authMode === 'password'" x-cloak>
-                <!-- Email -->
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
-                        Email Address <span style="color:#ef4444;">*</span>
-                    </label>
-                    <input type="email"
-                           x-model="formData.email"
-                           @input="validateEmail()"
-                           @blur="validateEmail()"
-                           placeholder="you@example.com"
-                           class="f-input">
-                    <p x-show="emailError" x-text="emailError"
-                       style="font-size:11.5px;color:#ef4444;margin-top:4px;"></p>
-                </div>
-
-                <!-- Password -->
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
-                        Password <span style="color:#ef4444;">*</span>
-                    </label>
-                    <div style="position:relative;">
-                        <input :type="showPassword ? 'text' : 'password'"
-                               x-model="formData.password"
-                               placeholder="••••••••"
-                               class="f-input"
-                               style="padding-right:40px;">
-                        <button type="button" @click="showPassword = !showPassword"
-                                style="position:absolute;right:11px;top:50%;transform:translateY(-50%);
-                                       background:none;border:none;cursor:pointer;color:#9ca3af;
-                                       display:flex;padding:3px;transition:color .2s;"
-                                onmouseover="this.style.color='#6b7280'" onmouseout="this.style.color='#9ca3af'">
-                            <svg x-show="!showPassword" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            <svg x-show="showPassword" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.717m0 0L21 21"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Remember + Forgot -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-                    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;">
-                        <input type="checkbox" x-model="formData.remember"
-                               style="width:13px;height:13px;accent-color:#4f46e5;cursor:pointer;">
-                        <span style="font-size:12px;font-weight:500;color:#6b7280;">Remember me</span>
-                    </label>
-                    <a x-show="!hideForgot" href="/forgot-password"
-                       style="font-size:12px;font-weight:600;color:#4f46e5;text-decoration:none;transition:color .2s;"
-                       onmouseover="this.style.color='#4338ca';this.style.textDecoration='underline'"
-                       onmouseout="this.style.color='#4f46e5';this.style.textDecoration='none'">
-                        Forgot Password?
-                    </a>
-                </div>
-
-                <!-- Sign In -->
-                <button type="submit" :disabled="isSubmitting || !emailValid" class="btn-main" style="margin-bottom:14px;">
-                    <template x-if="!isSubmitting">
-                        <span style="display:flex;align-items:center;gap:7px;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                            </svg>
-                            Sign In
-                        </span>
-                    </template>
-                    <template x-if="isSubmitting">
-                        <span style="display:flex;align-items:center;gap:7px;">
-                            <svg class="spin" width="14" height="14" fill="none" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.25;"/>
-                                <path fill="currentColor" style="opacity:.75;" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                            </svg>
-                            Signing in...
-                        </span>
-                    </template>
-                </button>
-                </div>
-
-                <div x-show="authMode === 'otp'" x-cloak>
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
-                            Mobile Number <span style="color:#ef4444;">*</span>
-                        </label>
-                        <input type="tel"
-                               x-model="otpForm.phone"
-                               placeholder="Enter mobile number"
-                               class="f-input">
-                    </div>
-
-                    <div style="margin-bottom:14px;">
-                        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
-                            OTP <span style="color:#ef4444;">*</span>
-                        </label>
-                        <div style="display:flex;gap:8px;">
-                            <input type="text"
-                                   x-model="otpForm.otp"
-                                   maxlength="6"
-                                   placeholder="6-digit OTP"
-                                   class="f-input"
-                                   style="flex:1;">
-                            <button type="button"
-                                    @click="sendOtp()"
-                                    :disabled="isSendingOtp || !otpForm.phone"
-                                    style="padding:0 14px;border:none;border-radius:10px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;cursor:pointer;min-width:112px;">
-                                <span x-show="!isSendingOtp && otpCooldown === 0">Send OTP</span>
-                                <span x-show="isSendingOtp">Sending...</span>
-                                <span x-show="!isSendingOtp && otpCooldown > 0" x-text="otpCooldown + 's'"></span>
-                            </button>
-                        </div>
-                        <p x-show="otpPreview" style="font-size:11.5px;color:#2563eb;margin-top:5px;">
-                            Test OTP: <span x-text="otpPreview"></span>
-                        </p>
-                    </div>
-
-                    <button type="submit" :disabled="isSubmitting || !otpForm.phone || !otpForm.otp" class="btn-main" style="margin-bottom:14px;">
-                        <template x-if="!isSubmitting">
-                            <span style="display:flex;align-items:center;gap:7px;">Login With OTP</span>
-                        </template>
-                        <template x-if="isSubmitting">
-                            <span style="display:flex;align-items:center;gap:7px;">
-                                <svg class="spin" width="14" height="14" fill="none" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.25;"/>
-                                    <path fill="currentColor" style="opacity:.75;" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                </svg>
-                                Verifying...
-                            </span>
-                        </template>
+            <!-- Password -->
+            <div>
+                <label for="password" class="f-label">Password</label>
+                <div class="f-wrap">
+                    <span class="f-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </span>
+                    <input id="password" :type="showPassword ? 'text' : 'password'" required x-model="formData.password" class="f-input" placeholder="••••••••">
+                    <button type="button" class="pass-eye" @click="showPassword = !showPassword">
+                        <svg x-show="!showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg x-show="showPassword" x-cloak width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
                     </button>
                 </div>
+            </div>
 
-                <!-- Divider -->
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <div style="flex:1;height:1px;background:#f1f5f9;"></div>
-                    <span style="font-size:11.5px;color:#d1d5db;font-weight:500;">or continue with</span>
-                    <div style="flex:1;height:1px;background:#f1f5f9;"></div>
-                </div>
+            <!-- Options -->
+            <div class="options-row">
+                <label class="rem-label" for="remember">
+                    <input id="remember" type="checkbox" x-model="formData.remember" class="rem-check">
+                    <span class="rem-text">Remember me</span>
+                </label>
+                <a href="/forgot-password" class="forgot">Forgot?</a>
+            </div>
 
-                <!-- Social -->
-                <?php
-                    $roleParam = $_GET['role'] ?? null;
-                    $redirectParam = $redirect ?? '';
-                    $isEmployerContext = ($roleParam === 'employer') || (is_string($redirectParam) && strpos($redirectParam, '/employer/') === 0);
-                    $oauthRedirect = $isEmployerContext ? '/employer/dashboard' : '/candidate/dashboard';
-                ?>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px;">
-                    <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="soc-btn" aria-label="Google">
-                        <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google">
-                    </a>
-                    <a href="/auth/facebook?redirect=<?= $oauthRedirect ?>" class="soc-btn" aria-label="Facebook">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook">
-                    </a>
-                    <a href="/auth/linkedin?redirect=<?= $oauthRedirect ?>" class="soc-btn" aria-label="LinkedIn">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn">
-                    </a>
-                    <a href="/auth/microsoft?redirect=<?= $oauthRedirect ?>" class="soc-btn" aria-label="Microsoft">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
-                    </a>
-                </div>
-
-                <!-- Sign up -->
-                <?php
-                $signupUrl  = $isEmployerContext ? '/register-employer' : '/register-candidate';
-                $signupText = $isEmployerContext ? 'Create employer account' : 'Create candidate account';
-                ?>
-                <p style="text-align:center;font-size:12.5px;color:#6b7280;margin:0;">
-                    Don't have an account?
-                    <a href="<?= $signupUrl ?>"
-                       style="font-weight:700;color:#4f46e5;text-decoration:none;transition:color .2s;"
-                       onmouseover="this.style.color='#4338ca';this.style.textDecoration='underline'"
-                       onmouseout="this.style.color='#4f46e5';this.style.textDecoration='none'">
-                        <?= $signupText ?>
-                    </a>
-                </p>
-
-            </form>
+            <!-- Submit -->
+            <button type="submit" class="submit-btn" :disabled="isSubmitting">
+                <svg x-show="isSubmitting" x-cloak class="spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+                    <path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <span x-show="!isSubmitting">Sign In</span>
+                <span x-show="isSubmitting" x-cloak>Signing in...</span>
+            </button>
         </div>
+    </form>
+
+    <!-- Social -->
+    <div class="social-header">
+        <div class="social-line"></div>
+        <span class="social-text">or continue with</span>
+        <div class="social-line"></div>
+    </div>
+
+    <?php
+        $roleParam = $_GET['role'] ?? null;
+        $redirectParam = $redirect ?? '';
+        $isEmployerContext = ($roleParam === 'employer') || (is_string($redirectParam) && strpos($redirectParam, '/employer/') === 0);
+        $oauthRedirect = $isEmployerContext ? '/employer/dashboard' : '/candidate/dashboard';
+    ?>
+    <div class="social-grid">
+        <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="Google"></a>
+        <a href="/auth/facebook?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"></a>
+        <a href="/auth/linkedin?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn"></a>
+        <a href="/auth/microsoft?redirect=<?= $oauthRedirect ?>" class="social-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft"></a>
+    </div>
+
+    <!-- Sign Up -->
+    <div class="footer">
+        <?php
+            $signupUrl  = $isEmployerContext ? '/register-employer' : '/register-candidate';
+            $signupText = $isEmployerContext ? 'Create employer account' : 'Create candidate account';
+        ?>
+        <p class="footer-text">
+            Don't have an account? <br>
+            <a href="<?= $signupUrl ?>" class="footer-link"><?= $signupText ?></a>
+        </p>
+        <a href="/" class="back-home">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Home
+        </a>
     </div>
 
 </div>
 
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
     function loginForm() {
         const urlParams = new URLSearchParams(window.location.search);
-        const registered = urlParams.get('registered');
-        const registeredEmail = urlParams.get('email');
-        const messageParam = urlParams.get('message');
         return {
             isSubmitting: false,
             showPassword: false,
             authMode: 'password',
             error: '<?= $error ?? '' ?>',
-            success: messageParam ? decodeURIComponent(messageParam) : '',
-            redirect: '<?= $redirect ?? '' ?>',
-            emailValid: true,
-            emailError: '',
-            isSendingOtp: false,
-            otpCooldown: 0,
-            otpPreview: '',
-            otpTimer: null,
-            registrationSuccess: registered === '1',
-            registrationMessage: registeredEmail ? `Account created for ${registeredEmail}. Please login.` : 'Account created successfully. Please login.',
-            hideForgot: false,
-            formData: { email: registeredEmail || '', password: '', remember: false },
-            otpForm: { phone: '', otp: '', purpose: 'auth' },
-            init() {
-                if (this.registrationSuccess) {
-                    try { if (window.MWMarketing) { window.MWMarketing.trackCompleteRegistration({ content_type: 'candidate', candidate_type: 'candidate', value: 0, currency: 'INR' }); } } catch(_){}
-                    setTimeout(() => {
-                        this.registrationSuccess = false;
-                        const url = new URL(window.location);
-                        url.searchParams.delete('registered');
-                        url.searchParams.delete('email');
-                        window.history.replaceState({}, '', url);
-                    }, 8000);
-                }
-                if (this.success) {
-                    setTimeout(() => {
-                        this.success = '';
-                        const url = new URL(window.location);
-                        url.searchParams.delete('message');
-                        window.history.replaceState({}, '', url);
-                    }, 5000);
-                }
-            },
-            startOtpCooldown() {
-                clearInterval(this.otpTimer);
-                this.otpCooldown = 30;
-                this.otpTimer = setInterval(() => {
-                    if (this.otpCooldown > 0) {
-                        this.otpCooldown--;
-                        return;
-                    }
-                    clearInterval(this.otpTimer);
-                }, 1000);
-            },
-            validateEmail() {
-                const email = this.formData.email;
-                if (!email) { this.emailValid = true; this.emailError = ''; return; }
-                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!regex.test(email)) { this.emailValid = false; this.emailError = 'Please enter a valid email address'; }
-                else { this.emailValid = true; this.emailError = ''; }
-            },
-            async sendOtp() {
-                if (!this.otpForm.phone || this.isSendingOtp || this.otpCooldown > 0) return;
-                this.error = '';
-                this.success = '';
-                this.otpPreview = '';
-                this.isSendingOtp = true;
-                try {
-                    const res = await fetch('/auth/phone/send-otp', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
-                        body: JSON.stringify({ phone: this.otpForm.phone, purpose: 'auth' })
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.success) {
-                        this.success = data.message || 'OTP sent successfully';
-                        this.otpPreview = data.otp_preview || '';
-                        this.startOtpCooldown();
-                    } else {
-                        this.error = data.error || data.message || 'Failed to send OTP';
-                    }
-                } catch (e) {
-                    this.error = 'Failed to send OTP';
-                } finally {
-                    this.isSendingOtp = false;
-                }
-            },
+            success: urlParams.get('message') || '',
+            registrationSuccess: urlParams.get('registered') === '1',
+            registrationMessage: urlParams.get('email') ? `Account created for ${urlParams.get('email')}. Please login.` : 'Account created successfully.',
+            formData: { email: urlParams.get('email') || '', password: '', remember: false },
             async submitLogin() {
-                this.validateEmail();
-                if (!this.emailValid) return;
                 this.isSubmitting = true; this.error = '';
                 try {
                     const res = await fetch('/login', {
@@ -563,51 +393,12 @@
                         body: JSON.stringify(this.formData)
                     });
                     const data = await res.json();
-                    if (res.status === 403 && data && data.refresh_csrf && data.csrf_token) {
-                        const meta = document.querySelector('meta[name="csrf-token"]');
-                        if (meta) { meta.setAttribute('content', data.csrf_token); }
-                        const res2 = await fetch('/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': data.csrf_token },
-                            body: JSON.stringify(this.formData)
-                        });
-                        const data2 = await res2.json();
-                        const payload2 = data2.data || data2;
-                        const loginSuccess2 = res2.ok && (data2.status === true || payload2.success === true || payload2.message === 'Login successful' || data2.message === 'Login successful');
-                        if (loginSuccess2) {
-                            let r = payload2.redirect_to || payload2.redirect || this.redirect;
-                            if (!r) { r = (payload2.user && payload2.user.role === 'employer') ? '/employer/dashboard' : '/'; }
-                            window.location.href = r; this.isSubmitting = false; return;
-                        } else { this.error = payload2.error || payload2.message || data2.message || 'Please try again'; this.isSubmitting = false; return; }
-                    }
-                    const payload = data.data || data;
-                    const loginSuccess = res.ok && (data.status === true || payload.success === true || payload.message === 'Login successful' || data.message === 'Login successful');
-                    if (loginSuccess) {
-                        let r = payload.redirect_to || payload.redirect || this.redirect;
-                        if (!r) { r = (payload.user && payload.user.role === 'employer') ? '/employer/dashboard' : '/'; }
-                        window.location.href = r;
-                    } else { this.error = payload.error || payload.message || data.error || data.message || 'Please try again'; }
-                } catch (e) { this.error = 'Please try again'; }
-                this.isSubmitting = false;
-            },
-            async submitOtpLogin() {
-                this.isSubmitting = true;
-                this.error = '';
-                try {
-                    const res = await fetch('/auth/phone/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
-                        body: JSON.stringify(this.otpForm)
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.success) {
-                        window.location.href = data.redirect || this.redirect || '/';
+                    if (res.ok && (data.success || data.status)) {
+                        window.location.href = data.redirect || data.redirect_to || '/';
                     } else {
-                        this.error = data.error || data.message || 'OTP login failed';
+                        this.error = data.error || data.message || 'Login failed. Please try again.';
                     }
-                } catch (e) {
-                    this.error = 'OTP login failed';
-                }
+                } catch (e) { this.error = 'An error occurred. Please try again.'; }
                 this.isSubmitting = false;
             },
             getCsrfToken() { return document.querySelector('meta[name="csrf-token"]')?.content || ''; }

@@ -12,15 +12,15 @@
         <!-- Upgrade Message Alert -->
         <?php if (!empty($upgradeMessage)): ?>
         <div class="max-w-4xl mx-auto mb-5">
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <div class="bg-primary-50 border border-primary-100 rounded-md p-3">
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <svg class="h-4 w-4 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-4 w-4 text-primary mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
                     </div>
                     <div class="ml-2 flex-1">
-                        <p class="text-sm text-blue-900"><?= htmlspecialchars($upgradeMessage) ?></p>
+                        <p class="text-sm text-primary"><?= htmlspecialchars($upgradeMessage) ?></p>
                     </div>
                 </div>
             </div>
@@ -52,18 +52,18 @@
                 <div class="flex gap-2 max-w-lg mx-auto">
                     <button @click="selectedCycle = 'monthly'" 
                             class="flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors"
-                            :class="selectedCycle === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
+                            :class="selectedCycle === 'monthly' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
                         Monthly
                     </button>
                     <button @click="selectedCycle = 'quarterly'" 
                             class="flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors"
-                            :class="selectedCycle === 'quarterly' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
+                            :class="selectedCycle === 'quarterly' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
                         <span class="block leading-tight">Quarterly</span>
                         <span class="block text-xs font-normal opacity-75">Save 10%</span>
                     </button>
                     <button @click="selectedCycle = 'annual'" 
                             class="flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors"
-                            :class="selectedCycle === 'annual' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
+                            :class="selectedCycle === 'annual' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'">
                         <span class="block leading-tight">Annual</span>
                         <span class="block text-xs font-normal opacity-75">Save 20%</span>
                     </button>
@@ -76,12 +76,12 @@
             <div class="bg-white rounded-md shadow-sm border border-gray-200 p-4">
                 <label class="block text-xs font-medium text-gray-700 mb-3 text-center uppercase tracking-wider">Select Payment Gateway</label>
                 <div class="flex gap-4 justify-center">
-                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'">
+                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'razorpay' ? 'border-primary bg-primary-50' : 'border-gray-200'">
                         <input type="radio" x-model="selectedGateway" value="razorpay" class="hidden">
                         <img src="https://razorpay.com/favicon.png" class="w-5 h-5" alt="Razorpay">
                         <span class="text-sm font-medium">Razorpay</span>
                     </label>
-                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'cashfree' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'">
+                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-md" :class="selectedGateway === 'cashfree' ? 'border-primary bg-primary-50' : 'border-gray-200'">
                         <input type="radio" x-model="selectedGateway" value="cashfree" class="hidden">
                         <img src="https://www.cashfree.com/favicon.ico" class="w-5 h-5" alt="Cashfree">
                         <span class="text-sm font-medium">Cashfree</span>
@@ -92,9 +92,9 @@
 
         <!-- Discount Code Input -->
         <div class="max-w-md mx-auto mb-5">
-            <div class="bg-blue-50 rounded-md border border-blue-200 p-3">
+            <div class="bg-primary-50 rounded-md border border-primary-100 p-3">
                 <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <label class="block text-sm font-medium text-gray-700">Have a discount code?</label>
@@ -106,11 +106,11 @@
                            @keyup.enter="applyDiscount()"
                            placeholder="Enter promo code"
                            :disabled="validatingDiscount"
-                           class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                            :class="discountApplied ? 'border-green-400 bg-green-50' : (discountError ? 'border-red-400 bg-red-50' : '')">
                     <button @click="applyDiscount()" 
                             :disabled="validatingDiscount || !discountCode || discountError"
-                            class="px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="px-4 py-1.5 bg-primary text-white rounded-md hover:bg-primary-600 font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <span x-show="!validatingDiscount">Apply</span>
                         <span x-show="validatingDiscount" class="flex items-center">
                             <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
@@ -168,55 +168,70 @@
             </div>
         </div>
         <?php else: ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 max-w-7xl mx-auto items-stretch">
             <template x-for="plan in plans" :key="plan.id">
-                <div class="bg-white rounded-lg shadow border relative transition-shadow hover:shadow-md" 
-                     :class="plan.is_featured == 1 ? 'border-blue-500 ring-1 ring-blue-100' : 'border-gray-200'">
-                    <div x-show="plan.is_featured == 1" class="absolute -top-2.5 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-medium px-3 py-0.5 rounded-full">
-                        MOST POPULAR
+                <div class="bg-white rounded-2xl shadow-sm border-2 relative transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col h-full" 
+                     :class="plan.is_featured == 1 ? 'border-primary ring-4 ring-primary/5' : 'border-gray-100'">
+                    
+                    <div x-show="plan.is_featured == 1" class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-orange-600 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg z-10">
+                        Most Popular
                     </div>
-                    <div x-show="isCurrentPlan(plan)" class="absolute top-2 left-2 bg-green-600 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow">
-                        <span>Current plan</span>
+
+                    <div x-show="isCurrentPlan(plan)" class="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg shadow-sm">
+                        Current Plan
                     </div>
                     
-                    <div class="p-5">
-                        <div class="mb-4">
-                            <h3 class="text-xl font-semibold text-gray-900 mb-1" x-text="plan.name"></h3>
-                            <p class="text-gray-600 text-sm" x-text="plan.description"></p>
+                    <div class="p-8 flex flex-col h-full">
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-extrabold text-gray-900 mb-2" x-text="plan.name"></h3>
+                            <p class="text-gray-500 text-sm leading-relaxed min-h-[40px]" x-text="plan.description"></p>
                         </div>
                         
-                        <div class="mb-4 pb-4 border-b border-gray-200 text-center">
-                            <div class="flex items-baseline justify-center mb-1">
-                                <span class="text-3xl font-semibold text-gray-900" x-text="'₹' + formatPrice(getFinalPrice(plan, selectedCycle))"></span>
-                                <span class="text-gray-500 ml-1.5 text-sm" x-text="'/' + selectedCycle"></span>
+                        <div class="mb-8 p-6 bg-gray-50 rounded-2xl text-center relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="flex items-baseline justify-center mb-1 relative z-10">
+                                <span class="text-gray-500 text-lg mr-1">₹</span>
+                                <span class="text-5xl font-black text-gray-900 tracking-tight" x-text="formatPrice(getFinalPrice(plan, selectedCycle))"></span>
+                                <span class="text-gray-400 ml-2 text-sm font-medium" x-text="'/' + selectedCycle"></span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">*GST as applicable</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider relative z-10">* Exclusive of GST</p>
                         </div>
 
-                        <ul class="space-y-2 mb-5">
-                            <template x-for="feat in (plan.features_list || [])" :key="feat">
-                                <li class="flex items-start">
-                                    <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-sm text-gray-700" x-text="feat"></span>
-                                </li>
-                            </template>
-                        </ul>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">What's Included</h4>
+                            <div class="max-h-[320px] overflow-y-auto pr-2 custom-scrollbar mb-8">
+                                <ul class="space-y-4">
+                                    <template x-for="feat in (plan.features_list || [])" :key="feat">
+                                        <li class="flex items-start group">
+                                            <div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-0.5 transition-colors group-hover:bg-primary/20">
+                                                <svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-sm text-gray-600 font-medium group-hover:text-gray-900 transition-colors" x-text="feat"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
 
-                        <button @click="subscribe(plan.slug)" 
-                                :disabled="loadingPlan"
-                                class="w-full py-2 rounded-md font-medium text-sm transition-colors shadow-sm hover:shadow disabled:opacity-50"
-                                :class="plan.is_featured == 1 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-900 text-white hover:bg-gray-800'">
-                            <span x-show="loadingPlan !== plan.slug" x-text="isCurrentPlan(plan) ? 'Renew / Manage' : 'Get Started'"></span>
-                            <span x-show="loadingPlan === plan.slug" class="flex items-center justify-center gap-2">
-                                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Processing...</span>
-                            </span>
-                        </button>
+                        <div class="mt-auto">
+                            <button @click="subscribe(plan.slug)" 
+                                    :disabled="loadingPlan"
+                                    class="w-full py-4 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-xl active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                                    :class="plan.is_featured == 1 ? 'bg-primary text-white hover:bg-primary-600' : 'bg-gray-900 text-white hover:bg-black'">
+                                <span x-show="loadingPlan !== plan.slug" x-text="isCurrentPlan(plan) ? 'Manage Subscription' : 'Upgrade Now'"></span>
+                                <template x-if="loadingPlan === plan.slug">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>Processing...</span>
+                                    </div>
+                                </template>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -449,3 +464,14 @@
         }));
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 <div>
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Create Notification Template</h1>
-        <a href="/admin/notification-templates" class="text-blue-600 hover:text-blue-800">&larr; Back to Templates</a>
+        <a href="/admin/notification-templates" class="text-primary hover:text-primary-900">&larr; Back to Templates</a>
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
@@ -52,10 +52,21 @@
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                     Create Template
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

@@ -5,7 +5,7 @@
             <p class="text-sm text-gray-500">Manage your sales pipeline and track revenue.</p>
         </div>
         <div class="flex space-x-2">
-            <a href="/master/sales/leads/create" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <a href="/master/sales/leads/create" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -25,11 +25,11 @@
         <form method="get" action="/master/sales/leads" class="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div class="col-span-1 md:col-span-2">
                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                <input type="text" name="search" id="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Company, Email, Name" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                <input type="text" name="search" id="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Company, Email, Name" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
             </div>
             <div>
                 <label for="stage" class="block text-sm font-medium text-gray-700">Stage</label>
-                <select name="stage" id="stage" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <select name="stage" id="stage" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
                     <option value="">All Stages</option>
                     <?php foreach (['new','contacted','demo_done','follow_up','payment_pending','converted','lost'] as $opt): ?>
                         <option value="<?= $opt ?>" <?= (($filters['stage'] ?? '') === $opt) ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $opt)) ?></option>
@@ -38,7 +38,7 @@
             </div>
             <div>
                 <label for="assigned_to" class="block text-sm font-medium text-gray-700">Assigned To</label>
-                <select name="assigned_to" id="assigned_to" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <select name="assigned_to" id="assigned_to" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
                     <option value="0">All Staff</option>
                     <?php if (!empty($salesTeam)): ?>
                         <?php foreach ($salesTeam as $staff): ?>
@@ -51,7 +51,7 @@
             </div>
             <div>
                 <label for="source" class="block text-sm font-medium text-gray-700">Source</label>
-                <select name="source" id="source" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <select name="source" id="source" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
                     <option value="">All Sources</option>
                     <?php foreach (['import','form','referral','cold_call'] as $src): ?>
                         <option value="<?= $src ?>" <?= (($filters['source'] ?? '') === $src) ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $src)) ?></option>
@@ -73,7 +73,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deal Value</th>
@@ -89,7 +89,7 @@
                         <?php foreach ($leads as $lead): ?>
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <input type="checkbox" name="selected_leads[]" value="<?= $lead['id'] ?>" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <input type="checkbox" name="selected_leads[]" value="<?= $lead['id'] ?>" class="rounded border-gray-300 text-primary focus:ring-primary">
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
@@ -137,9 +137,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <?php 
                                     $stageColors = [
-                                        'new' => 'bg-blue-100 text-blue-800',
-                                        'contacted' => 'bg-indigo-100 text-indigo-800',
-                                        'demo_done' => 'bg-purple-100 text-purple-800',
+                                        'new' => 'bg-primary-50 text-primary-900',
+                                        'contacted' => 'bg-primary-50 text-primary',
+                                        'demo_done' => 'bg-primary-50 text-primary-900',
                                         'follow_up' => 'bg-yellow-100 text-yellow-800',
                                         'payment_pending' => 'bg-orange-100 text-orange-800',
                                         'converted' => 'bg-green-100 text-green-800',
@@ -179,7 +179,7 @@
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="/master/sales/leads/<?= $lead['id'] ?>" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                    <a href="/master/sales/leads/<?= $lead['id'] ?>" class="text-primary hover:text-primary-900">View</a>
                                     <span class="mx-1 text-gray-300">|</span>
                                     <a href="#" class="text-gray-400 hover:text-gray-600 cursor-not-allowed">Edit</a>
                                 </td>
@@ -227,3 +227,14 @@
         }
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+

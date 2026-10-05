@@ -95,6 +95,211 @@ class JobsController extends BaseController
         }
         return $text;
     }
+    // ------------------------------------------------------------------
+    // Validation / status helpers (shared by store, update, publish)
+    // ------------------------------------------------------------------
+
+    private const ENUMS = [
+        'employment_type' => ['full_time', 'part_time', 'contract', 'internship', 'freelance', 'one_time'],
+        'seniority' => ['entry', 'mid', 'senior', 'lead', 'manager'],
+        'visibility' => ['public', 'private', 'internal'],
+        'experience_type' => ['any', 'fresher', 'experienced'],
+        'offers_bonus' => ['yes', 'no'],
+        'call_availability' => ['everyday', 'weekdays', 'weekdays_saturday', 'custom'],
+        'hiring_urgency' => ['immediate', 'can_wait'],
+    ];
+
+    /**
+     * Server-side validation of employer job input. Drafts only need a title.
+     * @return array<string,string> field => message
+     */
+    private function validateJobInput(array $data, bool $isDraft, bool $partial = false): array
+    {
+        $errors = [];
+        $has = static fn(string $k) => array_key_exists($k, $data);
+        $text = static fn($v) => trim(html_entity_decode(strip_tags((string)$v), ENT_QUOTES, 'UTF-8'));
+
+        if (!$partial || $has('title')) {
+            $title = trim((string)($data['title'] ?? ''));
+            if ($title === '') {
+                $errors['title'] = 'Job title is required.';
+            } elseif (mb_strlen($title) < 3 || mb_strlen($title) > 150) {
+                $errors['title'] = 'Job title must be between 3 and 150 characters.';
+            }
+        }
+
+        if (!$isDraft && (!$partial || $has('description'))) {
+            if (mb_strlen($text($data['description'] ?? '')) < 30) {
+                $errors['description'] = 'Please write a job description of at least 30 characters.';
+            }
+        }
+
+        if ($has('employment_type') && $data['employment_type'] !== '' && !in_array($data['employment_type'], self::ENUMS['employment_type'], true)) {
+            $errors['employment_type'] = 'Choose a valid employment type.';
+        }
+
+        $num = static fn($v) => ($v === null || $v === '') ? null : (is_numeric($v) ? (float)$v : false);
+        $payType = (string)($data['pay_type'] ?? 'range');
+        $min = $num($data['salary_min'] ?? null);
+        $max = $num($data['salary_max'] ?? null);
+        $fixed = $num($data['pay_fixed_amount'] ?? null);
+        foreach (['salary_min' => $min, 'salary_max' => $max, 'pay_fixed_amount' => $fixed] as $k => $v) {
+            if ($v === false || ($v !== null && ($v < 0 || $v > 100000000))) {
+                $errors[$k] = 'Enter a valid amount.';
+            }
+        }
+        if (!$isDraft && !$partial) {
+            if ($payType === 'range' && (!$min || !$max)) {
+                $errors['salary_min'] = 'Enter the minimum and maximum salary.';
+            } elseif ($payType === 'fixed' && !$fixed) {
+                $errors['pay_fixed_amount'] = 'Enter the salary amount.';
+            }
+        }
+        if (is_float($min) && is_float($max) && $min > 0 && $max > 0 && $max < $min) {
+            $errors['salary_max'] = 'Maximum salary cannot be less than the minimum salary.';
+        }
+
+        // Paid internships in India: stipend between ₹8,000 and ₹5,00,000 per month (unpaid internships send no amount).
+        if (($data['employment_type'] ?? '') === 'internship') {
+            $lo = \App\Services\Registration\FormRegistry::STIPEND_MIN;
+            $hi = \App\Services\Registration\FormRegistry::STIPEND_MAX;
+            $msg = 'Internship stipend must be between ₹' . \App\Services\Registration\RegistrationValidator::inr($lo) . ' and ₹' . \App\Services\Registration\RegistrationValidator::inr($hi) . ' per month (or post it as unpaid).';
+            foreach (['salary_min' => $min, 'salary_max' => $max, 'pay_fixed_amount' => $fixed, 'stipend' => $num($data['stipend'] ?? null)] as $k => $v) {
+                if (is_float($v) && $v > 0 && ($v < $lo || $v > $hi)) {
+                    $errors[$k] = $msg;
+                }
+            }
+        }
+
+        $minExp = $num($data['min_experience'] ?? null);
+        $maxExp = $num($data['max_experience'] ?? null);
+        if ($minExp === false || $maxExp === false || ($minExp !== null && ($minExp < 0 || $minExp > 50)) || ($maxExp !== null && ($maxExp < 0 || $maxExp > 50))) {
+            $errors['min_experience'] = 'Experience must be between 0 and 50 years.';
+        } elseif ($minExp !== null && $maxExp !== null && $maxExp < $minExp) {
+            $errors['max_experience'] = 'Maximum experience cannot be less than the minimum.';
+        }
+
+        if ($has('vacancies') && $data['vacancies'] !== '' && $data['vacancies'] !== null) {
+            $v = $num($data['vacancies']);
+            if ($v === false || $v < 1 || $v > 10000) {
+                $errors['vacancies'] = 'Number of openings must be between 1 and 10,000.';
+            }
+        }
+
+        if (!empty($data['email']) && !filter_var((string)$data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Enter a valid contact email.';
+        }
+
+        return $errors;
+    }
+
+    /** Replace enum values the DB would reject (MySQL non-strict mode stores '' for unknown enum values). */
+    private function normalizeEnums(array $fields): array
+    {
+        $defaults = ['employment_type' => 'full_time', 'seniority' => 'mid', 'visibility' => 'public', 'experience_type' => 'any',
+            'offers_bonus' => 'no', 'call_availability' => 'everyday', 'hiring_urgency' => 'immediate'];
+        foreach (self::ENUMS as $k => $allowed) {
+            if (array_key_exists($k, $fields) && !in_array($fields[$k], $allowed, true)) {
+                $fields[$k] = $defaults[$k];
+            }
+        }
+        return $fields;
+    }
+
+    private function wantsJson(Request $request): bool
+    {
+        return str_contains((string)($request->header('Accept') ?? ''), 'application/json')
+            || str_contains((string)($request->header('Content-Type') ?? ''), 'application/json');
+    }
+
+    private function validationFailed(Request $request, Response $response, array $errors): void
+    {
+        $response->json([
+            'error' => 'validation_failed',
+            'message' => reset($errors) ?: 'Please check the highlighted fields.',
+            'errors' => $errors,
+        ], 422);
+    }
+
+    /**
+     * Free-job / subscription gate for submitting a job for publication.
+     * Returns null when allowed, otherwise the 402 payload to send.
+     */
+    private function postingGate(Employer $employer): ?array
+    {
+        $publishedCount = Job::where('employer_id', '=', $employer->id)->where('status', '=', 'published')->count();
+        if (!$employer->hasConsumedFreeJob() && $publishedCount === 0) {
+            return null;
+        }
+
+        $redirect = '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1';
+        $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
+        if (!$subscription) {
+            return ['error' => 'subscription_required', 'message' => 'You have used your free job posting. Please subscribe to a plan to post more jobs.', 'redirect' => $redirect, 'subscription_required' => true];
+        }
+        if (!$subscription->isActive() && !$subscription->isInGracePeriod()) {
+            return ['error' => 'subscription_expired', 'message' => 'Your subscription has expired. Please renew your subscription to post more jobs.', 'redirect' => $redirect, 'subscription_expired' => true];
+        }
+        if (!$subscription->canUseFeature('max_job_posts')) {
+            $plan = $subscription->plan();
+            $used = (int)($subscription->attributes['job_posts_used'] ?? 0);
+            $limit = $plan ? $plan->getLimit('max_job_posts') : 0;
+            return ['error' => 'limit_reached', 'message' => "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan to post more jobs.", 'redirect' => $redirect, 'limit_reached' => true, 'used' => $used, 'limit' => $limit];
+        }
+        return null;
+    }
+
+    /**
+     * Submit a job for publication: consume the free job or a subscription credit, then
+     * auto-publish (trusted employer) or queue for admin review. Returns the new status.
+     */
+    private function submitForPublication(Job $job, Employer $employer): string
+    {
+        $jobId = (int)($job->attributes['id'] ?? $job->id ?? 0);
+        $publishedCount = Job::where('employer_id', '=', $employer->id)->where('status', '=', 'published')->count();
+
+        if (!$employer->hasConsumedFreeJob() && $publishedCount === 0) {
+            try {
+                \App\Models\SubscriptionUsageLog::logUsage(null, (int)$employer->id, 'free_job_used', null, $jobId, null, ['source' => 'first_free']);
+            } catch (\Throwable $t) {
+                error_log('JobsController: failed to log free job usage: ' . $t->getMessage());
+            }
+        } else {
+            try {
+                $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
+                if ($subscription) {
+                    $subscription->incrementUsage('max_job_posts');
+                }
+            } catch (\Throwable $t) {
+                error_log('JobsController: failed to increment job post usage: ' . $t->getMessage());
+            }
+        }
+
+        $status = (new JobApprovalService())->handle($job, $employer);
+
+        if ($status === 'published') {
+            try {
+                (new JobMatchService())->findAndNotifyCandidates($job);
+            } catch (\Throwable $e) {
+                error_log('Job Matching failed: ' . $e->getMessage());
+            }
+        }
+
+        return $status;
+    }
+
+    private static function statusMessage(string $status): string
+    {
+        return match ($status) {
+            'published' => 'Your job is live and visible to candidates.',
+            'pending_review' => 'Your job has been submitted and will go live after our team reviews it (usually within 24 hours).',
+            'draft' => 'Draft saved. You can finish and publish it any time from My Jobs.',
+            'paused' => 'Job paused. It is hidden from candidates until you resume it.',
+            'closed' => 'Job closed. It no longer accepts applications.',
+            default => 'Job saved.',
+        };
+    }
+
     public function create(Request $request, Response $response): void
     {
         // Check if user is logged in
@@ -140,43 +345,13 @@ class JobsController extends BaseController
         $postedJobsCount = Job::where('employer_id', '=', $employer->id)
             ->where('status', '=', 'published')
             ->count();
-        // Check if free job was already consumed (persistent, even if job deleted)
-        $hasConsumedFree = false;
-        try {
-            $row = \App\Core\Database::getInstance()->fetchOne(
-                "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
-                ['eid' => (int)$employer->id]
-            );
-            $hasConsumedFree = $row !== null;
-        } catch (\Throwable $t) {}
-        // Identity-based consumption: match by email/phone across employers
-        $hasConsumedByIdentity = false;
-        try {
-            $email = (string)($this->currentUser->attributes['email'] ?? '');
-            $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
-            $phone = preg_replace('/\D+/', '', $phoneRaw);
-            if ($email !== '' || $phone !== '') {
-                $db = \App\Core\Database::getInstance();
-                $params = [];
-                $where = [];
-                if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
-                if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
-                if (!empty($where)) {
-                    $sql = "SELECT l.id 
-                            FROM subscription_usage_logs l 
-                            INNER JOIN employers e ON e.id = l.employer_id 
-                            INNER JOIN users u ON u.id = e.user_id 
-                            WHERE l.action_type = 'free_job_used' 
-                            AND (" . implode(' OR ', $where) . ")
-                            LIMIT 1";
-                    $exists = $db->fetchOne($sql, $params);
-                    $hasConsumedByIdentity = $exists !== null;
-                }
-            }
-        } catch (\Throwable $t) {}
+            
+        // Check if free job was already consumed (using model method)
+        $hasConsumedFree = $employer->hasConsumedFreeJob();
+        $hasConsumedByIdentity = false; // Model method handles both direct and identity-based
         
         // After first job OR once free job consumed, subscription is required
-        if ($postedJobsCount > 0 || $hasConsumedFree || $hasConsumedByIdentity) {
+        if ($postedJobsCount > 0 || $hasConsumedFree) {
             $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
             
             if (!$subscription) {
@@ -219,14 +394,11 @@ class JobsController extends BaseController
             ? \App\Models\Application::whereIn('job_id', $jobIds)->count()
             : 0;
 
+        // Check if free job was already consumed
+        $hasConsumedFree = $employer->hasConsumedFreeJob();
+
         // Get all available benefits for job perks section
-        try {
-            $db = \App\Core\Database::getInstance();
-            $benefits = $db->fetchAll("SELECT * FROM benefits ORDER BY name ASC");
-        } catch (\Exception $e) {
-            error_log("JobsController::create - Failed to load benefits: " . $e->getMessage());
-            $benefits = [];
-        }
+        $benefits = Job::getAllBenefits();
 
         // Check subscription and job posting limits for display
         $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
@@ -254,16 +426,12 @@ class JobsController extends BaseController
         }
 
         // Get all available categories
-        try {
-            $categories = $db->fetchAll("SELECT name as label, name as value FROM job_categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
-        } catch (\Exception $e) {
-            error_log("JobsController::create - Failed to load categories: " . $e->getMessage());
-            $categories = [];
-        }
+        $categories = Job::getAllCategories();
 
         $response->view('employer/post-job', [
             'title' => 'Post a Job',
             'employer' => $employer,
+            'user' => $this->currentUser,
             'jobCount' => $activeJobsCount,
             'applicationCount' => $totalApplications,
             'subscription' => $subscriptionInfo,
@@ -321,36 +489,19 @@ class JobsController extends BaseController
             $jobArray['shortlisted_count'] = \App\Models\Application::where('job_id', '=', $jobId)
                 ->where('status', '=', 'shortlisted')->count();
             
-            // Get job locations directly from database
+            // Get job locations using model method
             $jobLocations = [];
             if ($jobId) {
-                try {
-                    $db = \App\Core\Database::getInstance();
-                    $locationRows = $db->fetchAll(
-                        "SELECT 
-                            COALESCE(c.name, jl.city) as city, 
-                            COALESCE(s.name, jl.state) as state, 
-                            COALESCE(co.name, jl.country) as country
-                         FROM job_locations jl
-                         LEFT JOIN cities c ON jl.city_id = c.id
-                         LEFT JOIN states s ON jl.state_id = s.id
-                         LEFT JOIN countries co ON jl.country_id = co.id
-                         WHERE jl.job_id = :job_id",
-                        ['job_id' => $jobId]
-                    );
-                    
-                    foreach ($locationRows as $locRow) {
-                        $locParts = array_filter([
-                            trim($locRow['city'] ?? ''),
-                            trim($locRow['state'] ?? ''),
-                            trim($locRow['country'] ?? '')
-                        ]);
-                        if (!empty($locParts)) {
-                            $jobLocations[] = implode(', ', $locParts);
-                        }
+                $locationRows = JobLocation::getForJob((int)$jobId);
+                foreach ($locationRows as $locRow) {
+                    $locParts = array_filter([
+                        trim($locRow['city'] ?? ''),
+                        trim($locRow['state'] ?? ''),
+                        trim($locRow['country'] ?? '')
+                    ]);
+                    if (!empty($locParts)) {
+                        $jobLocations[] = implode(', ', $locParts);
                     }
-                } catch (\Exception $e) {
-                    error_log("Error getting job locations for job ID {$jobId}: " . $e->getMessage());
                 }
             }
             
@@ -599,27 +750,7 @@ class JobsController extends BaseController
         // Load human-readable location names for the edit wizard
         $locations = [];
         if ($jobId) {
-            try {
-                $db = \App\Core\Database::getInstance();
-                $locationRows = $db->fetchAll(
-                    "SELECT c.name AS city, s.name AS state, co.name AS country
-                     FROM job_locations jl
-                     LEFT JOIN cities c ON jl.city_id = c.id
-                     LEFT JOIN states s ON jl.state_id = s.id
-                     LEFT JOIN countries co ON jl.country_id = co.id
-                     WHERE jl.job_id = :job_id",
-                    ['job_id' => $jobId]
-                );
-                foreach ($locationRows as $row) {
-                    $locations[] = [
-                        'city' => $row['city'] ?? '',
-                        'state' => $row['state'] ?? '',
-                        'country' => $row['country'] ?? ''
-                    ];
-                }
-            } catch (\Exception $e) {
-                error_log("JobsController::edit - Failed to load location names: " . $e->getMessage());
-            }
+            $locations = JobLocation::getForJob((int)$jobId);
         }
         if (empty($locations)) {
             $rawLocations = $job->locations();
@@ -646,14 +777,7 @@ class JobsController extends BaseController
         }
 
         // Get job benefits and all available benefits
-        try {
-            $db = \App\Core\Database::getInstance();
-            $allBenefits = $db->fetchAll("SELECT * FROM benefits ORDER BY name ASC");
-        } catch (\Exception $e) {
-            error_log("JobsController::edit - Failed to load benefits: " . $e->getMessage());
-            $allBenefits = [];
-        }
-
+        $allBenefits = Job::getAllBenefits();
         $jobBenefits = [];
         try {
             $jobBenefits = $job->benefits();
@@ -672,130 +796,66 @@ class JobsController extends BaseController
             if (strip_tags($rawDescription) !== $rawDescription) {
                 $jobArray['description_html'] = $rawDescription;
             } else {
+                // Formatting logic for plain text to HTML
                 $plain = preg_replace('/[ \t]+/', ' ', $rawDescription);
                 $plain = preg_replace('/\n\s*\n\s*\n+/', "\n\n", $plain);
                 $plain = trim($plain);
-
                 $desc = preg_replace('/([a-z\)\]\d])(?=[A-Z])/', "$1\n", $plain);
                 $lines = preg_split('/\r\n|\r|\n/', $desc);
-
                 $pendingList = [];
                 $html = '';
-
                 foreach ($lines as $line) {
                     $t = trim($line);
-                    if ($t === '') {
-                        continue;
-                    }
-
+                    if ($t === '') continue;
                     if (preg_match('/^[\-\*•]\s+(.*)$/u', $t, $m)) {
                         $pendingList[] = htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8');
                         continue;
                     }
-
                     if (preg_match('/^\d+[\.)]\s+(.*)$/', $t, $m)) {
                         $pendingList[] = htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8');
                         continue;
                     }
-
                     if (mb_strlen($t) <= 120 && !preg_match('/[\.?!]$/', $t)) {
                         $pendingList[] = htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
                         continue;
                     }
-
                     if (!empty($pendingList)) {
                         $html .= '<ul class="list-disc list-inside space-y-1">';
-                        foreach ($pendingList as $li) {
-                            $html .= '<li>' . $li . '</li>';
-                        }
+                        foreach ($pendingList as $li) { $html .= '<li>' . $li . '</li>'; }
                         $html .= '</ul>';
                         $pendingList = [];
                     }
-
                     $html .= '<p class="mb-2">' . htmlspecialchars($t, ENT_QUOTES, 'UTF-8') . '</p>';
                 }
-
                 if (!empty($pendingList)) {
                     $html .= '<ul class="list-disc list-inside space-y-1">';
-                    foreach ($pendingList as $li) {
-                        $html .= '<li>' . $li . '</li>';
-                    }
+                    foreach ($pendingList as $li) { $html .= '<li>' . $li . '</li>'; }
                     $html .= '</ul>';
                 }
-
                 $jobArray['description_html'] = $html;
             }
         }
         
-        // Ensure slug is included (critical for edit form submission)
-        if (empty($jobArray['slug']) && !empty($jobArray['title'])) {
-            $jobArray['slug'] = $job->generateSlug($jobArray['title']);
-        }
-        
         // Auto-fill from employer profile if job field is empty
-        if (empty($jobArray['company_name']) && !empty($employer->attributes['company_name'])) {
-            $jobArray['company_name'] = $employer->attributes['company_name'];
-        }
-        if (empty($jobArray['company_size']) && !empty($employer->attributes['size'])) {
-            $jobArray['company_size'] = $employer->attributes['size'];
-        }
-        if (empty($jobArray['phone']) && !empty($user->attributes['phone'])) {
-            $jobArray['phone'] = $user->attributes['phone'];
-        }
-        if (empty($jobArray['email']) && !empty($user->attributes['email'])) {
-            $jobArray['email'] = $user->attributes['email'];
-        }
+        if (empty($jobArray['company_name'])) $jobArray['company_name'] = $employer->attributes['company_name'] ?? '';
+        if (empty($jobArray['company_size'])) $jobArray['company_size'] = $employer->attributes['size'] ?? '';
+        if (empty($jobArray['phone'])) $jobArray['phone'] = $user->attributes['phone'] ?? '';
+        if (empty($jobArray['email'])) $jobArray['email'] = $user->attributes['email'] ?? '';
         
-        // Ensure all fields have default values - preserve existing values, only set defaults if missing
+        // Ensure all fields have values for the frontend
         $jobArray['experience_type'] = $jobArray['experience_type'] ?? 'any';
         $jobArray['min_experience'] = $jobArray['min_experience'] ?? null;
         $jobArray['max_experience'] = $jobArray['max_experience'] ?? null;
-        $jobArray['offers_bonus'] = $jobArray['offers_bonus'] ?? 'no';
-        $jobArray['call_availability'] = $jobArray['call_availability'] ?? 'everyday';
-        $jobArray['contact_person'] = $jobArray['contact_person'] ?? '';
-        $jobArray['contact_profile'] = $jobArray['contact_profile'] ?? '';
-        $jobArray['hiring_urgency'] = $jobArray['hiring_urgency'] ?? 'immediate';
-        $jobArray['job_timings'] = $jobArray['job_timings'] ?? '';
-        $jobArray['interview_timings'] = $jobArray['interview_timings'] ?? '';
-        $jobArray['job_address'] = $jobArray['job_address'] ?? '';
-        $jobArray['seniority'] = $jobArray['seniority'] ?? 'mid';
-        $jobArray['employment_type'] = $jobArray['employment_type'] ?? 'full_time';
-        $jobArray['vacancies'] = $jobArray['vacancies'] ?? 1;
-        
-        // Ensure pay-related fields are set
         $jobArray['pay_type'] = $jobArray['pay_type'] ?? 'range';
-        $jobArray['pay_frequency'] = $jobArray['pay_frequency'] ?? 'monthly';
         $jobArray['pay_fixed_amount'] = $jobArray['pay_fixed_amount'] ?? null;
-        $jobArray['hours_per_week'] = $jobArray['hours_per_week'] ?? null;
-        $jobArray['shift'] = $jobArray['shift'] ?? null;
-        $jobArray['contract_length'] = $jobArray['contract_length'] ?? null;
-        $jobArray['contract_period'] = $jobArray['contract_period'] ?? null;
-        $jobArray['commission_percent'] = $jobArray['commission_percent'] ?? null;
-        $jobArray['incentive_rules'] = $jobArray['incentive_rules'] ?? null;
-        $jobArray['stipend'] = $jobArray['stipend'] ?? null;
-        $jobArray['internship_length'] = $jobArray['internship_length'] ?? null;
-        $jobArray['season_duration'] = $jobArray['season_duration'] ?? null;
-        $jobArray['flexible_hours'] = $jobArray['flexible_hours'] ?? 0;
-        $jobArray['remote_policy'] = $jobArray['remote_policy'] ?? null;
-        $jobArray['remote_tools'] = $jobArray['remote_tools'] ?? null;
-        $jobArray['is_remote'] = $jobArray['is_remote'] ?? 0;
-        $jobArray['language'] = $jobArray['language'] ?? 'English';
-        $jobArray['currency'] = $jobArray['currency'] ?? 'INR';
-        $jobArray['salary_min'] = $jobArray['salary_min'] ?? null;
-        $jobArray['salary_max'] = $jobArray['salary_max'] ?? null;
+        $jobArray['category'] = $jobArray['category'] ?? $employer->attributes['industry'] ?? '';
         
-        // Set category from job or employer industry - ensure it matches job_categories.name exactly
-        if (empty($jobArray['category']) && !empty($employer->attributes['industry'])) {
-            $jobArray['category'] = $employer->attributes['industry'];
+        // Set qualifications (formerly education_requirements in UI)
+        $jobQualifications = [];
+        if (!empty($jobArray['qualifications'])) {
+            $jobQualifications = is_string($jobArray['qualifications']) ? json_decode($jobArray['qualifications'], true) : $jobArray['qualifications'];
         }
-        $jobArray['category'] = $jobArray['category'] ?? '';
-        
-        $jobArray['education_requirements'] = $job->education_requirements ?? '';
-
-        // Log for debugging
-        error_log("Edit Job - Category: " . ($jobArray['category'] ?? 'NOT SET'));
-        error_log("Edit Job - Pay Type: " . ($jobArray['pay_type'] ?? 'NOT SET'));
-        error_log("Edit Job - Stipend: " . ($jobArray['stipend'] ?? 'NOT SET'));
+        $jobArray['qualifications_array'] = $jobQualifications;
 
         // Get counts for sidebar
         $activeJobsCount = Job::where('employer_id', '=', $employer->id)
@@ -806,18 +866,13 @@ class JobsController extends BaseController
             : 0;
 
         // Get all available categories
-        try {
-            $categories = $db->fetchAll("SELECT name as label, name as value FROM job_categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
-        } catch (\Exception $e) {
-            error_log("JobsController::edit - Failed to load categories: " . $e->getMessage());
-            $categories = [];
-        }
+        $categories = Job::getAllCategories();
 
         $response->view('employer/post-job', [
             'title' => 'Edit Job - ' . $job->title,
-            'job' => $jobArray, // Enhanced job array with all fields and defaults
+            'job' => $jobArray, 
             'locations' => $locations,
-            'skills' => $skills, // Already an array of arrays
+            'skills' => $skills,
             'employer' => $employer,
             'user' => $user,
             'jobCount' => $activeJobsCount,
@@ -827,9 +882,8 @@ class JobsController extends BaseController
             'jobBenefits' => $jobBenefits,
             'jobQualifications' => $jobQualifications,
             'categories' => $categories
-        ], 200, 'employer/layout');
-    }
-
+            ], 200, 'employer/layout');
+            }
     public function store(Request $request, Response $response): void
     {
         if (!$this->requireRole('employer', $request, $response)) {
@@ -841,11 +895,10 @@ class JobsController extends BaseController
             $response->json(['error' => 'Employer profile not found'], 404);
             return;
         }
+
         if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
-            $isAjax = strpos($request->header('Accept') ?? '', 'application/json') !== false ||
-                      strpos($request->header('Content-Type') ?? '', 'application/json') !== false;
             $msg = 'Admin verification required before posting jobs. Please submit KYC.';
-            if ($isAjax) {
+            if ($this->wantsJson($request)) {
                 $response->json(['error' => 'kyc_required', 'message' => $msg, 'redirect' => '/employer/kyc'], 403);
             } else {
                 $_SESSION['profile_required_message'] = $msg;
@@ -854,128 +907,36 @@ class JobsController extends BaseController
             return;
         }
 
-        // Check if employer has posted any published jobs before
-        $postedJobsCount = Job::where('employer_id', '=', $employer->id)
-            ->where('status', '=', 'published')
-            ->count();
-        // Persistent free job consumption flag
-        $hasConsumedFree = false;
-        try {
-            $row = \App\Core\Database::getInstance()->fetchOne(
-                "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
-                ['eid' => (int)$employer->id]
-            );
-            $hasConsumedFree = $row !== null;
-        } catch (\Throwable $t) {}
-        // Identity-based consumption: match by email/phone across employers
-        $hasConsumedByIdentity = false;
-        try {
-            $email = (string)($this->currentUser->attributes['email'] ?? '');
-            $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
-            $phone = preg_replace('/\D+/', '', $phoneRaw);
-            if ($email !== '' || $phone !== '') {
-                $db = \App\Core\Database::getInstance();
-                $params = [];
-                $where = [];
-                if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
-                if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
-                if (!empty($where)) {
-                    $sql = "SELECT l.id 
-                            FROM subscription_usage_logs l 
-                            INNER JOIN employers e ON e.id = l.employer_id 
-                            INNER JOIN users u ON u.id = e.user_id 
-                            WHERE l.action_type = 'free_job_used' 
-                            AND (" . implode(' OR ', $where) . ")
-                            LIMIT 1";
-                    $exists = $db->fetchOne($sql, $params);
-                    $hasConsumedByIdentity = $exists !== null;
-                }
-            }
-        } catch (\Throwable $t) {}
-        
-        // First job is free only if not consumed and count is zero and identity not consumed
-        if (!$hasConsumedFree && !$hasConsumedByIdentity && $postedJobsCount === 0) {
-            // Allow first job posting without subscription
-            // Continue to job creation below
-        } else {
-            // After first job, subscription is required
-            $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
-            
-            if (!$subscription) {
-                // No subscription - redirect to plans (hide free plan)
-                $isAjax = $request->header('Content-Type') === 'application/json' || 
-                         strpos($request->header('Accept') ?? '', 'application/json') !== false;
-                
-                if ($isAjax) {
-                    $response->json([
-                        'error' => 'Subscription required',
-                        'message' => 'You have used your free job posting. Please subscribe to a plan to post more jobs.',
-                        'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
-                        'subscription_required' => true
-                    ], 402);
-                } else {
-                    $_SESSION['upgrade_message'] = 'You have used your free job posting. Please subscribe to a plan to post more jobs.';
-                    $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                }
-                return;
-            }
-
-            // Verify subscription is actually active (not expired)
-            if (!$subscription->isActive() && !$subscription->isInGracePeriod()) {
-                $isAjax = $request->header('Content-Type') === 'application/json' || 
-                         strpos($request->header('Accept') ?? '', 'application/json') !== false;
-                
-                if ($isAjax) {
-                    $response->json([
-                        'error' => 'Subscription expired',
-                        'message' => 'Your subscription has expired. Please renew your subscription to post more jobs.',
-                        'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
-                        'subscription_expired' => true
-                    ], 402);
-                } else {
-                    $_SESSION['upgrade_message'] = 'Your subscription has expired. Please renew your subscription to post more jobs.';
-                    $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                }
-                return;
-            }
-
-            // Check if can post more jobs
-            if (!$subscription->canUseFeature('max_job_posts')) {
-                $plan = $subscription->plan();
-                $used = (int)($subscription->attributes['job_posts_used'] ?? 0);
-                $limit = $plan ? $plan->getLimit('max_job_posts') : 1;
-                
-                $isAjax = $request->header('Content-Type') === 'application/json' || 
-                         strpos($request->header('Accept') ?? '', 'application/json') !== false;
-                
-                if ($isAjax) {
-                    $response->json([
-                        'error' => 'Job posting limit reached',
-                        'message' => "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan to post more jobs.",
-                        'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
-                        'limit_reached' => true,
-                        'used' => $used,
-                        'limit' => $limit
-                    ], 402);
-                } else {
-                    $_SESSION['upgrade_message'] = "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan to post more jobs.";
-                    $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                }
-                return;
-            }
-        }
-
         // Handle both JSON and form data
-        $data = $request->getMethod() === 'POST' && $request->header('Content-Type') === 'application/json' 
-            ? $request->getJsonBody() 
+        $data = str_contains((string)($request->header('Content-Type') ?? ''), 'application/json')
+            ? $request->getJsonBody()
             : array_merge($request->all(), $request->getJsonBody());
 
+        // The employer only chooses "save as draft" or "submit"; moderation decides the real status.
+        $isDraft = ($data['status'] ?? '') === 'draft';
+
+        $errors = $this->validateJobInput($data, $isDraft);
+        if ($errors) {
+            $this->validationFailed($request, $response, $errors);
+            return;
+        }
+
+        if (!$isDraft && ($gate = $this->postingGate($employer))) {
+            if ($this->wantsJson($request)) {
+                $response->json($gate, 402);
+            } else {
+                $_SESSION['upgrade_message'] = $gate['message'];
+                $response->redirect($gate['redirect']);
+            }
+            return;
+        }
+
+        JobApprovalService::ensureStatusEnum();
+
         $job = new Job();
-        $title = $data['title'] ?? '';
-        
-        // Generate slug from title
+        $title = trim((string)($data['title'] ?? ''));
         $slug = $job->generateSlug($title);
-        
+
         // Auto-fill company info from employer profile if not provided
         $companyName = $data['company_name'] ?? $employer->attributes['company_name'] ?? '';
         $companySize = $data['company_size'] ?? $employer->attributes['size'] ?? '';
@@ -993,35 +954,30 @@ class JobsController extends BaseController
             if (!empty($data['description'] ?? '')) { $data['description'] = $this->translateText(strip_tags((string)$data['description']), $targetCode); }
         }
 
-        // Normalize incoming location for JSON fallback on jobs.locations
-        $normalizedLocations = [];
-        if (isset($data['location'])) {
-            if (is_array($data['location'])) {
-                if (isset($data['location'][0]) && is_array($data['location'][0])) {
-                    foreach ($data['location'] as $loc) {
-                        $normalizedLocations[] = [
-                            'city' => $loc['city'] ?? '',
-                            'state' => $loc['state'] ?? '',
-                            'country' => $loc['country'] ?? ''
-                        ];
-                    }
-                } elseif (isset($data['location']['city']) || isset($data['location']['state']) || isset($data['location']['country'])) {
-                    $normalizedLocations[] = [
-                        'city' => $data['location']['city'] ?? '',
-                        'state' => $data['location']['state'] ?? '',
-                        'country' => $data['location']['country'] ?? ''
-                    ];
-                }
+        // Normalize incoming location(s)
+        $locations = [];
+        if (isset($data['location']) && is_array($data['location'])) {
+            if (isset($data['location'][0]) && is_array($data['location'][0])) {
+                $locations = $data['location'];
+            } elseif (isset($data['location']['city']) || isset($data['location']['state']) || isset($data['location']['country'])) {
+                $locations = [$data['location']];
             }
         }
-        $locationsJson = !empty($normalizedLocations) ? json_encode($normalizedLocations) : null;
+        $normalizedLocations = array_values(array_filter(array_map(static fn($loc) => [
+            'city' => trim((string)($loc['city'] ?? '')),
+            'state' => trim((string)($loc['state'] ?? '')),
+            'country' => trim((string)($loc['country'] ?? '')),
+        ], $locations), static fn($l) => $l['city'] !== '' || $l['state'] !== '' || $l['country'] !== ''));
+        $locationsJson = $normalizedLocations ? json_encode($normalizedLocations) : null;
 
-        $job->fill([
+        $plainDescription = trim(html_entity_decode(strip_tags((string)($data['description'] ?? '')), ENT_QUOTES, 'UTF-8'));
+
+        $job->fill($this->normalizeEnums([
             'employer_id' => $employer->id,
             'title' => $title,
             'slug' => $slug,
             'description' => $data['description'] ?? '',
-            'short_description' => $data['short_description'] ?? substr($data['description'] ?? '', 0, 1000),
+            'short_description' => $data['short_description'] ?? mb_substr($plainDescription, 0, 1000),
             'employment_type' => $data['employment_type'] ?? $data['job_type'] ?? 'full_time',
             'seniority' => $data['seniority'] ?? 'mid',
             'salary_min' => !empty($data['salary_min']) ? (int)$data['salary_min'] : null,
@@ -1043,15 +999,15 @@ class JobsController extends BaseController
             'remote_policy' => $data['remote_policy'] ?? null,
             'remote_tools' => $data['remote_tools'] ?? null,
             'is_remote' => isset($data['is_remote']) ? (int)$data['is_remote'] : 0,
-            'status' => $data['status'] ?? 'draft',
+            'status' => 'draft',
             'vacancies' => !empty($data['vacancies']) ? (int)$data['vacancies'] : (!empty($data['openings']) ? (int)$data['openings'] : 1),
             'visibility' => $data['visibility'] ?? 'public',
             'job_timings' => $data['job_timings'] ?? '',
             'interview_timings' => $data['interview_timings'] ?? '',
             'job_address' => $data['job_address'] ?? '',
             'experience_type' => $data['experience_type'] ?? 'any',
-            'min_experience' => !empty($data['min_experience']) ? (int)$data['min_experience'] : null,
-            'max_experience' => !empty($data['max_experience']) ? (int)$data['max_experience'] : null,
+            'min_experience' => isset($data['min_experience']) && $data['min_experience'] !== '' ? (int)$data['min_experience'] : null,
+            'max_experience' => isset($data['max_experience']) && $data['max_experience'] !== '' ? (int)$data['max_experience'] : null,
             'offers_bonus' => $data['offers_bonus'] ?? 'no',
             'call_availability' => $data['call_availability'] ?? 'everyday',
             'company_name' => $companyName,
@@ -1063,182 +1019,62 @@ class JobsController extends BaseController
             'hiring_urgency' => $data['hiring_urgency'] ?? 'immediate',
             'language' => $data['language'] ?? 'English',
             'category' => $data['category'] ?? $employer->attributes['industry'] ?? null,
-            'education_requirements' => $data['education_requirements'] ?? null,
-            'qualifications' => isset($data['qualifications']) ? json_encode($data['qualifications']) : null,
-        ]);
+            'qualifications' => isset($data['qualifications']) ? (is_array($data['qualifications']) ? json_encode($data['qualifications']) : $data['qualifications']) : null,
+            'locations' => $locationsJson,
+        ]));
 
-        if ($job->save()) {
-            // Increment job post usage
-            if (($subscription ?? null)) {
-                try { $subscription->incrementUsage('max_job_posts'); } catch (\Throwable $t) {}
-            }
-            // If free job path was used, mark as consumed for this employer (persist even after deletion)
-            if (!$hasConsumedFree) {
-                try {
-                    \App\Models\SubscriptionUsageLog::logUsage(
-                        null,
-                        (int)$employer->id,
-                        'free_job_used',
-                        null,
-                        (int)($job->attributes['id'] ?? $job->id ?? 0),
-                        null,
-                        ['source' => 'first_free']
-                    );
-                } catch (\Throwable $t) {
-                    error_log('JobsController::store - Failed to log free job usage: ' . $t->getMessage());
-                }
-            }
-            // Auto-approval based on employer trust score
-            $approvalService = new JobApprovalService();
-            $approvalService->handle($job, $employer);
-            // Re-fetch job to ensure we have a valid ID before saving children
-            $jobRecord = Job::findBySlug($slug) ?: $job;
-            $jobId = (int)($jobRecord->attributes['id'] ?? $jobRecord->id ?? 0);
-            error_log("Job Store - Verified Job ID after insert: " . ($jobId ?: 'NULL'));
+        try {
+            $saved = $job->save();
+        } catch (\Throwable $e) {
+            error_log('JobsController::store save failed: ' . $e->getMessage());
+            $saved = false;
+        }
+        if (!$saved) {
+            $response->json(['error' => 'save_failed', 'message' => 'We could not save your job. Please try again.'], 500);
+            return;
+        }
 
-            // Save locations - handle both array format and object format
-            if (isset($data['location'])) {
-                $locations = [];
-                if (is_array($data['location'])) {
-                    // Check if it's an array of location objects or a single object
-                    if (isset($data['location'][0]) && is_array($data['location'][0])) {
-                        // Array of location objects
-                        $locations = $data['location'];
-                    } elseif (isset($data['location']['city']) || isset($data['location']['state'])) {
-                        // Single location object
-                        $locations = [$data['location']];
-                    }
-                }
-                
-                // Save locations
-                if ($jobId > 0) {
-                    foreach ($locations as $locData) {
-                        if (!empty($locData['city']) || !empty($locData['state']) || !empty($locData['country'])) {
-                            try {
-                                $location = new JobLocation();
-                                $location->fill([
-                                    'job_id' => $jobId,
-                                    'city' => $locData['city'] ?? null,
-                                    'state' => $locData['state'] ?? null,
-                                    'country' => $locData['country'] ?? 'India',
-                                    'city_id' => null,
-                                    'state_id' => null,
-                                    'country_id' => null,
-                                    'latitude' => $locData['latitude'] ?? null,
-                                    'longitude' => $locData['longitude'] ?? null,
-                                ]);
-                                $location->save();
-                            } catch (\Exception $e) {
-                                error_log("JobsController::store - Failed to save location for job {$jobId}: " . $e->getMessage());
-                            }
-                        }
-                    }
-                } else {
-                    error_log("JobsController::store - Skipping location save, invalid job ID");
-                }
-            }
+        $jobRecord = Job::findBySlug($slug) ?: $job;
+        $jobId = (int)($jobRecord->attributes['id'] ?? $jobRecord->id ?? 0);
 
-            // Save skills - delete existing first, then add new ones
+        if ($jobId > 0) {
+            if ($normalizedLocations) {
+                // keep latitude/longitude etc. from the raw input, dropping empty rows
+                $jobRecord->syncLocations(array_values(array_filter($locations, static fn($l) => is_array($l)
+                    && trim(($l['city'] ?? '') . ($l['state'] ?? '') . ($l['country'] ?? '')) !== '')));
+            }
             if (isset($data['skills']) && is_array($data['skills'])) {
-                if ($jobId) {
-                    // Delete existing skills for this job
-                    \App\Core\Database::getInstance()->query(
-                        "DELETE FROM job_skills WHERE job_id = :job_id",
-                        ['job_id' => $jobId]
-                    );
-                    
-                    // Add new skills
-                    foreach ($data['skills'] as $skillName) {
-                        if (empty(trim($skillName))) continue;
-                        
-                        $skillName = trim($skillName);
-                        $skill = Skill::where('name', '=', $skillName)->first();
-                        if (!$skill) {
-                            $skill = new Skill();
-                            $slug = $skill->generateSlug($skillName);
-                            $skill->fill([
-                                'name' => $skillName,
-                                'slug' => $slug
-                            ]);
-                            if (!$skill->save()) {
-                                error_log("Job Store - Failed to create skill: " . $skillName);
-                                continue;
-                            }
-                        }
-                        \App\Core\Database::getInstance()->query(
-                            "INSERT INTO job_skills (job_id, skill_id, importance) VALUES (:job_id, :skill_id, :importance) 
-                             ON DUPLICATE KEY UPDATE importance = VALUES(importance)",
-                            ['job_id' => $jobId, 'skill_id' => $skill->id, 'importance' => 5]
-                        );
-                    }
-                }
+                $jobRecord->syncSkills($data['skills']);
             }
-
-            // Save benefits / perks
             if (isset($data['benefit_ids']) && is_array($data['benefit_ids'])) {
-                $benefitIds = array_values(array_unique(array_filter(array_map('intval', $data['benefit_ids']))));
-                $jobId = $job->attributes['id'] ?? $job->id ?? null;
-                
-                if ($jobId) {
-                    try {
-                        // Delete existing benefits for this job
-                        \App\Core\Database::getInstance()->query(
-                            "DELETE FROM job_benefits WHERE job_id = :job_id",
-                            ['job_id' => $jobId]
-                        );
-                        
-                        // Insert new benefits
-                        if (!empty($benefitIds)) {
-                            foreach ($benefitIds as $benefitId) {
-                                if ($benefitId > 0) {
-                                    \App\Core\Database::getInstance()->query(
-                                        "INSERT INTO job_benefits (job_id, benefit_id) VALUES (:job_id, :benefit_id)
-                                         ON DUPLICATE KEY UPDATE job_id = VALUES(job_id), benefit_id = VALUES(benefit_id)",
-                                        ['job_id' => $jobId, 'benefit_id' => $benefitId]
-                                    );
-                                }
-                            }
-                        }
-                    } catch (\Exception $e) {
-                        error_log("JobsController::store - Failed to assign benefits: " . $e->getMessage());
-                    }
-                }
+                $jobRecord->syncBenefits($data['benefit_ids']);
             }
+        }
 
-            // Queue for Elasticsearch indexing (if worker exists)
-            try {
-                if (class_exists('\App\Workers\IndexJobWorker')) {
-                    \App\Workers\IndexJobWorker::enqueue(['job_id' => $job->id]);
-                }
-            } catch (\Exception $e) {
-                // Worker not available, continue without indexing
-                error_log("IndexJobWorker not available: " . $e->getMessage());
-            }
+        $status = $isDraft ? 'draft' : $this->submitForPublication($jobRecord, $employer);
 
-            // Trigger Job Matching Notifications
-            try {
-                if ($job->status === 'published') {
-                    $matchService = new JobMatchService();
-                    $matchService->findAndNotifyCandidates($job);
-                }
-            } catch (\Exception $e) {
-                error_log("Job Matching failed: " . $e->getMessage());
+        try {
+            if (class_exists('\App\Workers\IndexJobWorker')) {
+                \App\Workers\IndexJobWorker::enqueue(['job_id' => $jobId]);
             }
+        } catch (\Throwable $e) {
+            error_log('IndexJobWorker not available: ' . $e->getMessage());
+        }
 
-            // Return JSON for API calls, redirect for form submissions
-            $acceptHeader = $request->header('Accept') ?? '';
-            if (strpos($acceptHeader, 'application/json') !== false || $request->header('Content-Type') === 'application/json') {
-                $response->json([
-                    'success' => true,
-                    'job' => $job->toArray(),
-                    'job_id' => (int)($job->attributes['id'] ?? $job->id ?? 0),
-                    'message' => 'Job created successfully'
-                ], 201);
-            } else {
-                $response->redirect('/employer/jobs');
-            }
+        $message = self::statusMessage($status);
+        if ($this->wantsJson($request)) {
+            $response->json([
+                'success' => true,
+                'job' => $jobRecord->toArray(),
+                'job_id' => $jobId,
+                'slug' => $slug,
+                'status' => $status,
+                'message' => $message,
+                'redirect' => '/employer/jobs?saved=' . urlencode($status),
+            ], 201);
         } else {
-            $response->json(['error' => 'Failed to create job'], 500);
+            $_SESSION['flash_success'] = $message;
+            $response->redirect('/employer/jobs?saved=' . urlencode($status));
         }
     }
 
@@ -1259,7 +1095,7 @@ class JobsController extends BaseController
         }
 
         $jobEmployerId = $job->attributes['employer_id'] ?? $job->employer_id ?? null;
-        if ($jobEmployerId !== $employer->id) {
+        if (!$employer || (int)$jobEmployerId !== (int)$employer->id) {
             $response->json(['error' => 'Job not found'], 404);
             return;
         }
@@ -1269,13 +1105,18 @@ class JobsController extends BaseController
             ? $request->getJsonBody() 
             : array_merge($request->all(), $request->getJsonBody());
         
-        // Debug: Log received data
-        error_log("Job Update - Received data keys: " . implode(', ', array_keys($data)));
-        error_log("Job Update - Skills data: " . (isset($data['skills']) ? json_encode($data['skills']) : 'NOT SET'));
+        $requestedStatus = isset($data['status']) ? (string)$data['status'] : null;
+        unset($data['status']);
+        $errors = $this->validateJobInput($data, true, true);
+        if ($errors) {
+            $this->validationFailed($request, $response, $errors);
+            return;
+        }
+        JobApprovalService::ensureStatusEnum();
 
-        // Update job
-        $title = $data['title'] ?? $job->title;
-        $slug = $job->generateSlug($title);
+        // Update job – keep the existing URL unless the title actually changed
+        $title = trim((string)($data['title'] ?? $job->title));
+        $slug = $title !== (string)$job->title ? $job->generateSlug($title, (int)$id) : (string)$job->attributes['slug'];
         
         // Server-side translation when non-English selected
         $selectedLangUpd = (string)($data['language'] ?? ($job->language ?? 'English'));
@@ -1316,7 +1157,7 @@ class JobsController extends BaseController
             }
         }
 
-        $job->fill([
+        $job->fill($this->normalizeEnums([
             'title' => $title,
             'slug' => $slug,
             'description' => $data['description'] ?? $job->description,
@@ -1342,7 +1183,6 @@ class JobsController extends BaseController
             'remote_policy' => $data['remote_policy'] ?? $job->remote_policy ?? null,
             'remote_tools' => $data['remote_tools'] ?? $job->remote_tools ?? null,
             'is_remote' => isset($data['is_remote']) ? (int)$data['is_remote'] : $job->is_remote,
-            'status' => $data['status'] ?? $job->status,
             'vacancies' => isset($data['vacancies']) ? (int)$data['vacancies'] : (isset($data['openings']) ? (int)$data['openings'] : $job->vacancies),
             'visibility' => $data['visibility'] ?? $job->visibility,
             'job_timings' => $data['job_timings'] ?? $job->job_timings ?? '',
@@ -1362,84 +1202,9 @@ class JobsController extends BaseController
             'hiring_urgency' => $data['hiring_urgency'] ?? $job->hiring_urgency ?? 'immediate',
             'language' => $data['language'] ?? $job->language ?? 'English',
             'education_requirements' => $data['education_requirements'] ?? $job->education_requirements ?? null,
-            'qualifications' => isset($data['qualifications']) ? json_encode($data['qualifications']) : $job->qualifications,
-        ]);
-        
-        // Update status if provided
-        if (isset($data['status'])) {
-            $desiredStatus = (string)$data['status'];
-            if ($desiredStatus === 'published') {
-                // Enforce free-job gating before allowing publish
-                $postedJobsCount = Job::where('employer_id', '=', $employer->id)
-                    ->where('status', '=', 'published')
-                    ->count();
-                $hasConsumedFree = false;
-                try {
-                    $row = \App\Core\Database::getInstance()->fetchOne(
-                        "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
-                        ['eid' => (int)$employer->id]
-                    );
-                    $hasConsumedFree = $row !== null;
-                } catch (\Throwable $t) {}
-                // Identity-based consumption: match by email/phone across employers
-                $hasConsumedByIdentity = false;
-                try {
-                    $email = (string)($this->currentUser->attributes['email'] ?? '');
-                    $phoneRaw = (string)($this->currentUser->attributes['phone'] ?? '');
-                    $phone = preg_replace('/\D+/', '', $phoneRaw);
-                    if ($email !== '' || $phone !== '') {
-                        $db = \App\Core\Database::getInstance();
-                        $params = [];
-                        $where = [];
-                        if ($email !== '') { $where[] = 'u.email = :email'; $params['email'] = $email; }
-                        if ($phone !== '') { $where[] = 'REPLACE(REPLACE(REPLACE(u.phone, "-", ""), " ", ""), "+", "") LIKE :phone'; $params['phone'] = '%' . $phone . '%'; }
-                        if (!empty($where)) {
-                            $sql = "SELECT l.id 
-                                    FROM subscription_usage_logs l 
-                                    INNER JOIN employers e ON e.id = l.employer_id 
-                                    INNER JOIN users u ON u.id = e.user_id 
-                                    WHERE l.action_type = 'free_job_used' 
-                                    AND (" . implode(' OR ', $where) . ")
-                                    LIMIT 1";
-                            $exists = $db->fetchOne($sql, $params);
-                            $hasConsumedByIdentity = $exists !== null;
-                        }
-                    }
-                } catch (\Throwable $t) {}
-                
-                if (!$hasConsumedFree && !$hasConsumedByIdentity && $postedJobsCount === 0) {
-                    // First publish is free; proceed
-                    $job->status = 'published';
-                } else {
-                    // Require active subscription with available job posts
-                    $subscription = \App\Models\EmployerSubscription::getCurrentForEmployer($employer->id);
-                    if (!$subscription || (!$subscription->isActive() && !$subscription->isInGracePeriod())) {
-                        $response->json([
-                            'error' => 'subscription_required',
-                            'message' => 'You have used your free job posting. Please subscribe to a plan to publish more jobs.',
-                            'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
-                            'subscription_required' => true
-                        ], 402);
-                        return;
-                    }
-                    if (!$subscription->canUseFeature('max_job_posts')) {
-                        $plan = $subscription->plan();
-                        $used = (int)($subscription->attributes['job_posts_used'] ?? 0);
-                        $limit = $plan ? $plan->getLimit('max_job_posts') : 0;
-                        $response->json([
-                            'error' => 'limit_reached',
-                            'message' => "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan.",
-                            'redirect' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1',
-                            'subscription_required' => true
-                        ], 402);
-                        return;
-                    }
-                    $job->status = 'published';
-                }
-            } else {
-                $job->status = $desiredStatus;
-            }
-        }
+            'qualifications' => isset($data['qualifications']) ? (is_array($data['qualifications']) ? json_encode($data['qualifications']) : $data['qualifications']) : $job->qualifications,
+            'locations' => isset($normLocsUpd) ? json_encode($normLocsUpd) : $job->locations,
+        ]));
         
         if (!$job->save()) {
             error_log("Job Update - Failed to save job. ID: " . ($id ?? 'UNKNOWN'));
@@ -1450,188 +1215,58 @@ class JobsController extends BaseController
         
         error_log("Job Update - Job saved successfully. ID: " . ($job->attributes['id'] ?? $job->id));
 
-        // Usage logging and matching when published
-        try {
-            if ($job->status === 'published') {
-                 // Increment subscription usage or mark free consumed
-                 $postedJobsCount = Job::where('employer_id', '=', $employer->id)
-                     ->where('status', '=', 'published')
-                     ->count();
-                 $hasConsumedFree = false;
-                 try {
-                     $row = \App\Core\Database::getInstance()->fetchOne(
-                         "SELECT id FROM subscription_usage_logs WHERE employer_id = :eid AND action_type = 'free_job_used' LIMIT 1",
-                         ['eid' => (int)$employer->id]
-                     );
-                     $hasConsumedFree = $row !== null;
-                 } catch (\Throwable $t) {}
-                 if (!$hasConsumedFree && $postedJobsCount === 1) {
-                     // First publish path: mark free consumed for persistence
-                     try {
-                         \App\Models\SubscriptionUsageLog::logUsage(
-                             null,
-                             (int)$employer->id,
-                             'free_job_used',
-                             null,
-                             (int)($job->attributes['id'] ?? $job->id ?? 0),
-                             null,
-                             ['source' => 'first_free']
-                         );
-                     } catch (\Throwable $t) {
-                         error_log('JobsController::update - Failed to log free job usage: ' . $t->getMessage());
-                     }
-                 } else {
-                     // Subscription path: increment usage if subscription exists
-                     try {
-                         $subscription = \App\Models\EmployerSubscription::getCurrentForEmployer($employer->id);
-                         if ($subscription) {
-                             $subscription->incrementUsage('max_job_posts');
-                         }
-                     } catch (\Throwable $t) {}
-                 }
-                 $matchService = new \App\Services\JobMatchService();
-                 $matchService->findAndNotifyCandidates($job);
+        // Optional status change (pause / resume / close / submit) – moderation rules apply
+        $statusResult = null;
+        if ($requestedStatus !== null && $requestedStatus !== '' && $requestedStatus !== (string)($job->attributes['status'] ?? '')) {
+            $statusResult = $this->transitionStatus($job, $employer, $requestedStatus);
+            if (isset($statusResult['error'])) {
+                $response->json($statusResult, $statusResult['http'] ?? 422);
+                return;
             }
-        } catch (\Exception $e) {
-            error_log("Job Matching failed in update: " . $e->getMessage());
         }
 
-        // Update locations - handle both array format and object format
+        // Update locations using model method
         if (isset($data['location'])) {
-            // Delete existing locations first
             $jobId = $job->attributes['id'] ?? $job->id ?? null;
             if ($jobId) {
-                try {
-                    \App\Core\Database::getInstance()->query(
-                        "DELETE FROM job_locations WHERE job_id = :job_id",
-                        ['job_id' => $jobId]
-                    );
-                } catch (\Exception $e) {
-                    error_log("Job Update - Failed to delete existing locations for job {$jobId}: " . $e->getMessage());
-                }
-            }
-            
-            $locations = [];
-            if (is_array($data['location'])) {
-                // Check if it's an array of location objects or a single object
-                if (isset($data['location'][0]) && is_array($data['location'][0])) {
-                    // Array of location objects
-                    $locations = $data['location'];
-                } elseif (isset($data['location']['city']) || isset($data['location']['state'])) {
-                    // Single location object
-                    $locations = [$data['location']];
-                }
-            }
-            
-            // Save locations
-                foreach ($locations as $locData) {
-                    if (!empty($locData['city']) || !empty($locData['state'])) {
-                        $location = new JobLocation();
-                        $location->fill([
-                            'job_id' => $jobId,
-                            'city' => $locData['city'] ?? null,
-                            'state' => $locData['state'] ?? null,
-                            'country' => $locData['country'] ?? 'India',
-                            'city_id' => null, // We are using text fields now
-                            'state_id' => null,
-                            'country_id' => null,
-                            'latitude' => $locData['latitude'] ?? null,
-                            'longitude' => $locData['longitude'] ?? null,
-                        ]);
-                        $location->save();
+                $locations = [];
+                if (is_array($data['location'])) {
+                    if (isset($data['location'][0]) && is_array($data['location'][0])) {
+                        $locations = $data['location'];
+                    } elseif (isset($data['location']['city']) || isset($data['location']['state'])) {
+                        $locations = [$data['location']];
                     }
                 }
+                $job->syncLocations($locations);
+            }
         }
 
-        // Update skills - delete existing first, then add new ones
+        // Update skills using model method
         if (isset($data['skills']) && is_array($data['skills'])) {
             $jobId = $job->attributes['id'] ?? $job->id ?? null;
             if ($jobId) {
-                // Delete existing skills for this job
-                \App\Core\Database::getInstance()->query(
-                    "DELETE FROM job_skills WHERE job_id = :job_id",
-                    ['job_id' => $jobId]
-                );
-                
-                // Add new skills (filter out empty values)
-                $skills = array_filter(array_map('trim', $data['skills']), function($s) {
-                    return !empty($s);
-                });
-                
-                error_log("Job Update - Saving skills: " . json_encode($skills));
-                
-                foreach ($skills as $skillName) {
-                    if (empty($skillName)) continue;
-                    
-                    $skillName = trim($skillName);
-                    $skill = Skill::where('name', '=', $skillName)->first();
-                    if (!$skill) {
-                        $skill = new Skill();
-                        $slug = $skill->generateSlug($skillName);
-                        $skill->fill([
-                            'name' => $skillName,
-                            'slug' => $slug
-                        ]);
-                        if (!$skill->save()) {
-                            error_log("Job Update - Failed to create skill: " . $skillName);
-                            error_log("Job Update - Skill attributes: " . json_encode($skill->attributes));
-                            continue;
-                        }
-                        error_log("Job Update - Created new skill: {$skillName} (ID: {$skill->id}, Slug: {$slug})");
-                    }
-                    
-                    try {
-                        \App\Core\Database::getInstance()->query(
-                            "INSERT INTO job_skills (job_id, skill_id, importance) VALUES (:job_id, :skill_id, :importance) 
-                             ON DUPLICATE KEY UPDATE importance = VALUES(importance)",
-                            ['job_id' => $jobId, 'skill_id' => $skill->id, 'importance' => 5]
-                        );
-                        error_log("Job Update - Skill linked: {$skillName} (Skill ID: {$skill->id})");
-                    } catch (\Exception $e) {
-                        error_log("Job Update - Error linking skill {$skillName}: " . $e->getMessage());
-                    }
-                }
-            } else {
-                error_log("Job Update - No job ID available for saving skills");
+                $job->syncSkills($data['skills']);
             }
-        } else {
-            error_log("Job Update - No skills data provided or not an array");
         }
 
-        // Update benefits / perks
+        // Update benefits using model method
         if (isset($data['benefit_ids']) && is_array($data['benefit_ids'])) {
-            $benefitIds = array_values(array_unique(array_filter(array_map('intval', $data['benefit_ids']))));
             $jobId = $job->attributes['id'] ?? $job->id ?? null;
-            
             if ($jobId) {
-                try {
-                    // Delete existing benefits for this job
-                    \App\Core\Database::getInstance()->query(
-                        "DELETE FROM job_benefits WHERE job_id = :job_id",
-                        ['job_id' => $jobId]
-                    );
-                    
-                    // Insert new benefits
-                    if (!empty($benefitIds)) {
-                        foreach ($benefitIds as $benefitId) {
-                            if ($benefitId > 0) {
-                                \App\Core\Database::getInstance()->query(
-                                    "INSERT INTO job_benefits (job_id, benefit_id) VALUES (:job_id, :benefit_id)
-                                     ON DUPLICATE KEY UPDATE job_id = VALUES(job_id), benefit_id = VALUES(benefit_id)",
-                                    ['job_id' => $jobId, 'benefit_id' => $benefitId]
-                                );
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    error_log("JobsController::update - Failed to assign benefits: " . $e->getMessage());
-                }
+                $job->syncBenefits($data['benefit_ids']);
             }
         }
 
-        $acceptHeader = $request->header('Accept') ?? '';
-        if (strpos($acceptHeader, 'application/json') !== false || $request->header('Content-Type') === 'application/json') {
-            $response->json(['success' => true, 'job' => $job->toArray()]);
+        if ($this->wantsJson($request)) {
+            $finalStatus = (string)($job->attributes['status'] ?? '');
+            $response->json([
+                'success' => true,
+                'job' => $job->toArray(),
+                'slug' => $job->attributes['slug'] ?? $slug,
+                'status' => $finalStatus,
+                'message' => $statusResult ? self::statusMessage($finalStatus) : 'Job updated successfully.',
+                'redirect' => '/employer/jobs?saved=updated',
+            ]);
         } else {
             // Use slug for redirect, fallback to ID if slug is missing
             $redirectSlug = $job->attributes['slug'] ?? $job->slug ?? $job->id;
@@ -1649,7 +1284,7 @@ class JobsController extends BaseController
         $job = Job::findBySlug($slug);
         $employer = $this->currentUser->employer();
 
-        if (!$job || $job->attributes['employer_id'] !== $employer->id) {
+        if (!$job || !$employer || (int)$job->attributes['employer_id'] !== (int)$employer->id) {
             $response->json(['error' => 'Job not found'], 404);
             return;
         }
@@ -1678,34 +1313,118 @@ class JobsController extends BaseController
             return;
         }
 
-        $slug = $request->param('slug');
-        $job = Job::findBySlug($slug);
-
-        if (!$job || $job->attributes['employer_id'] !== $employer->id) {
+        $job = Job::findBySlug((string)$request->param('slug'));
+        if (!$job || (int)($job->attributes['employer_id'] ?? 0) !== (int)$employer->id) {
             $response->json(['error' => 'Job not found or unauthorized'], 404);
             return;
         }
         if (method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
-            $response->json(['error' => 'kyc_required', 'message' => 'Admin verification required to publish jobs'], 403);
+            $response->json(['error' => 'kyc_required', 'message' => 'Admin verification required to publish jobs', 'redirect' => '/employer/kyc'], 403);
             return;
         }
 
-        $job->status = 'published';
-        if ($job->save()) {
-            // Trigger Job Matching
-            try {
-                 $matchService = new \App\Services\JobMatchService();
-                 $matchService->findAndNotifyCandidates($job);
-            } catch (\Exception $e) {
-                error_log("Job Matching failed in publish: " . $e->getMessage());
-            }
-
-            // Re-index in Elasticsearch
-            // IndexJobWorker::push(['job_id' => $job->id, 'action' => 'index']);
-            $response->json(['success' => true, 'message' => 'Job published successfully']);
-        } else {
-            $response->json(['error' => 'Failed to publish job'], 500);
+        JobApprovalService::ensureStatusEnum();
+        $result = $this->transitionStatus($job, $employer, 'published');
+        if (isset($result['error'])) {
+            $response->json($result, $result['http'] ?? 422);
+            return;
         }
+
+        $response->json(['success' => true, 'status' => $result['status'], 'message' => self::statusMessage($result['status'])]);
+    }
+
+    /** POST /employer/jobs/{slug}/status  {status: submit|paused|published|closed|draft} – used by My Jobs actions. */
+    public function changeStatus(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) {
+            return;
+        }
+        $employer = $this->currentUser->employer();
+        $slug = (string)$request->param('slug');
+        $job = Job::findBySlug($slug) ?: (ctype_digit($slug) ? Job::find((int)$slug) : null);
+        if (!$employer || !$job || (int)($job->attributes['employer_id'] ?? 0) !== (int)$employer->id) {
+            $response->json(['error' => 'not_found', 'message' => 'Job not found.'], 404);
+            return;
+        }
+
+        $desired = (string)($request->getJsonBody()['status'] ?? $request->post('status', ''));
+        if (in_array($desired, ['submit', 'published'], true) && method_exists($employer, 'isKycApproved') && !$employer->isKycApproved()) {
+            $response->json(['error' => 'kyc_required', 'message' => 'Admin verification required to publish jobs.', 'redirect' => '/employer/kyc'], 403);
+            return;
+        }
+
+        JobApprovalService::ensureStatusEnum();
+        $result = $this->transitionStatus($job, $employer, $desired);
+        if (isset($result['error'])) {
+            $response->json($result, $result['http'] ?? 422);
+            return;
+        }
+        $response->json(['success' => true, 'status' => $result['status'], 'message' => self::statusMessage($result['status'])]);
+    }
+
+    /**
+     * Employer-driven status change. Employers may: save a draft, submit a draft/rejected job (moderation decides),
+     * pause/resume a live job, and close it. They can never set 'published', 'rejected' or 'taken_down' directly.
+     * @return array{status?: string, error?: string, message?: string, http?: int}
+     */
+    private function transitionStatus(Job $job, Employer $employer, string $desired): array
+    {
+        $current = (string)($job->attributes['status'] ?? 'draft');
+        if ($current === '') {
+            $current = 'draft';
+        }
+        if ($desired === $current) {
+            return ['status' => $current];
+        }
+
+        switch ($desired) {
+            case 'published':
+            case 'submit':
+                if ($current === 'paused') {
+                    $job->status = 'published';
+                    $job->save();
+                    return ['status' => 'published'];
+                }
+                if ($current === 'pending_review') {
+                    return ['status' => 'pending_review'];
+                }
+                if (in_array($current, ['draft', 'rejected', 'closed'], true)) {
+                    $errors = $this->validateJobInput($job->attributes + ['description' => $job->attributes['description'] ?? ''], false);
+                    if ($errors) {
+                        return ['error' => 'validation_failed', 'message' => 'Complete the job before publishing: ' . reset($errors), 'errors' => $errors, 'http' => 422];
+                    }
+                    if ($gate = $this->postingGate($employer)) {
+                        return $gate + ['http' => 402];
+                    }
+                    return ['status' => $this->submitForPublication($job, $employer)];
+                }
+                return ['error' => 'not_allowed', 'message' => 'This job was taken down by our team and cannot be republished. Please contact support.', 'http' => 403];
+
+            case 'paused':
+                if ($current !== 'published') {
+                    return ['error' => 'not_allowed', 'message' => 'Only live jobs can be paused.', 'http' => 422];
+                }
+                break;
+
+            case 'closed':
+                if (!in_array($current, ['published', 'paused', 'pending_review', 'draft'], true)) {
+                    return ['error' => 'not_allowed', 'message' => 'This job cannot be closed.', 'http' => 422];
+                }
+                break;
+
+            case 'draft':
+                if (!in_array($current, ['draft', 'pending_review', 'rejected'], true)) {
+                    return ['error' => 'not_allowed', 'message' => 'Live jobs can be paused or closed, not moved back to draft.', 'http' => 422];
+                }
+                break;
+
+            default:
+                return ['error' => 'invalid_status', 'message' => 'Unknown status.', 'http' => 422];
+        }
+
+        $job->status = $desired;
+        $job->save();
+        return ['status' => $desired];
     }
 
     public function bulkImport(Request $request, Response $response): void

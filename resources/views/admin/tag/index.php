@@ -21,7 +21,7 @@
             <td class="p-3">#<?= htmlspecialchars($t['name'] ?? '') ?></td>
             <td class="p-3"><?= htmlspecialchars($t['slug'] ?? '') ?></td>
             <td class="p-3 text-center space-x-2">
-              <a class="text-blue-600" href="/admin/blog-tags/<?= (int)$t['id'] ?>/edit">Edit</a>
+              <a class="text-primary" href="/admin/blog-tags/<?= (int)$t['id'] ?>/edit">Edit</a>
               <form class="inline" method="post" action="/admin/blog-tags/<?= (int)$t['id'] ?>/delete">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                 <button class="text-red-600" onclick="return confirm('Delete this tag?')">Delete</button>
@@ -33,3 +33,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

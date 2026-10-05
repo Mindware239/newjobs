@@ -25,93 +25,150 @@ class CandidatesController extends BaseController
 
         $db = Database::getInstance();
         $page = (int)($request->get('page', 1));
-        $perPage = 20;
+        $perPage = (int)($request->get('per_page', 20));
         $offset = ($page - 1) * $perPage;
 
+        // Basic Filters
         $search = $request->get('search', '');
         $status = $request->get('status', 'all');
-        $filter = $request->get('filter', ''); // suspicious, blocked, etc.
-        $location = $request->get('location', '');
-        $skill = strtolower(trim((string)$request->get('skill', '')));
-        $category = strtolower(trim((string)$request->get('category', '')));
         $source = $request->get('source', '');
+        $gender = $request->get('gender', '');
+        $verification_status = $request->get('verification_status', '');
+        
+        // Advanced Filters
+        $role = $request->get('role', '');
+        $min_exp = $request->get('min_experience', '');
+        $max_exp = $request->get('max_experience', '');
+        $min_salary = $request->get('min_salary', '');
+        $max_salary = $request->get('max_salary', '');
+        $notice_period = $request->get('notice_period', '');
+        $work_preference = $request->get('work_preference', '');
+        $qualification = $request->get('qualification', '');
+        
+        // Location Filters
+        $country = $request->get('country', '');
+        $state = $request->get('state', '');
+        $city = $request->get('city', '');
+        
+        // Date Filters
+        $date_type = $request->get('date_type', 'created_at'); // created_at, updated_at, last_login
+        $date_range = $request->get('date_range', ''); // today, yesterday, last_7_days, last_30_days, custom
+        $start_date = $request->get('start_date', '');
+        $end_date = $request->get('end_date', '');
 
-        // Filter by user status; candidates table does not have a status column
+        // Document Filters
+        $has_resume = $request->get('has_resume', '');
+        $has_photo = $request->get('has_photo', '');
+        
+        // Build Query
         $where = ["u.status != 'deleted'"];
         $params = [];
-        $hasQualityScores = false;
-        try {
-            $db->query("SELECT 1 FROM candidate_quality_scores LIMIT 1");
-            $hasQualityScores = true;
-        } catch (\Exception $e) {
-            $hasQualityScores = false;
-        }
 
         if ($search) {
-            $where[] = "(c.full_name LIKE :search1 OR u.email LIKE :search2)";
-            $params['search1'] = "%{$search}%";
-            $params['search2'] = "%{$search}%";
+            $where[] = "(c.full_name LIKE :s1 OR u.email LIKE :s2 OR u.phone LIKE :s3 OR c.mobile LIKE :s4 OR c.id = :search_id)";
+            $params['s1'] = "%{$search}%";
+            $params['s2'] = "%{$search}%";
+            $params['s3'] = "%{$search}%";
+            $params['s4'] = "%{$search}%";
+            $params['search_id'] = is_numeric($search) ? $search : 0;
         }
 
-        if ($status !== 'all') {
-            if ($status === 'not_verified') {
-                $where[] = "COALESCE(u.is_email_verified, 0) = 0";
-            } else {
-                $where[] = "u.status = :status";
-                $params['status'] = $status;
-            }
+        if ($status !== 'all' && $status !== '') {
+            $where[] = "u.status = :status";
+            $params['status'] = $status;
         }
 
-        if ($filter === 'suspicious' && $hasQualityScores) {
-            $where[] = "EXISTS (
-                SELECT 1 
-                FROM candidate_quality_scores cqs 
-                INNER JOIN applications a ON a.id = cqs.application_id 
-                WHERE a.candidate_user_id = c.user_id 
-                AND cqs.fraud_score > 70
-            )";
-        } elseif ($filter === 'blocked') {
-            $where[] = "u.status = 'blocked'";
-        }
-
-        if (!empty($location)) {
-            $where[] = "(c.city LIKE :loc1 OR c.state LIKE :loc2 OR c.country LIKE :loc3 OR c.preferred_job_location LIKE :loc4)";
-            $params['loc1'] = "%{$location}%";
-            $params['loc2'] = "%{$location}%";
-            $params['loc3'] = "%{$location}%";
-            $params['loc4'] = "%{$location}%";
-        }
-
-        if (!empty($skill)) {
-            $where[] = "EXISTS (
-                SELECT 1 
-                FROM candidate_skills cs 
-                INNER JOIN skills s ON s.id = cs.skill_id 
-                WHERE cs.candidate_id = c.id 
-                  AND LOWER(s.name) LIKE :skill_name
-            )";
-            $params['skill_name'] = "%{$skill}%";
-        }
-
-        if (!empty($category)) {
-            $where[] = "EXISTS (
-                SELECT 1 
-                FROM applications a 
-                INNER JOIN jobs j ON j.id = a.job_id 
-                WHERE a.candidate_user_id = c.user_id 
-                AND LOWER(j.category) = :cat
-            )";
-            $params['cat'] = $category;
-        }
-
-        if (!empty($source)) {
+        if ($source !== '') {
             $where[] = "c.source = :source";
             $params['source'] = $source;
         }
 
+        if ($gender !== '') {
+            $where[] = "c.gender = :gender";
+            $params['gender'] = $gender;
+        }
+
+        if ($verification_status === 'verified') {
+            $where[] = "u.is_email_verified = 1";
+        } elseif ($verification_status === 'not_verified') {
+            $where[] = "u.is_email_verified = 0";
+        }
+
+        if ($role !== '') {
+            $where[] = "(c.professional_title LIKE :role1 OR EXISTS (SELECT 1 FROM applications a INNER JOIN jobs j ON j.id = a.job_id WHERE a.candidate_user_id = c.user_id AND j.title LIKE :role2))";
+            $params['role1'] = "%{$role}%";
+            $params['role2'] = "%{$role}%";
+        }
+
+        // Experience logic
+        if ($min_exp !== '') {
+            // This is simplified; real logic would sum candidate_experience or parse experience_data
+            $where[] = "JSON_EXTRACT(c.experience_data, '$') IS NOT NULL"; // Placeholder for more complex JSON logic
+        }
+
+        if ($min_salary !== '') {
+            $where[] = "c.expected_salary_min >= :min_salary";
+            $params['min_salary'] = $min_salary;
+        }
+        if ($max_salary !== '') {
+            $where[] = "c.expected_salary_max <= :max_salary";
+            $params['max_salary'] = $max_salary;
+        }
+
+        if ($country !== '') {
+            $where[] = "c.country = :country";
+            $params['country'] = $country;
+        }
+        if ($state !== '') {
+            $where[] = "c.state = :state";
+            $params['state'] = $state;
+        }
+        if ($city !== '') {
+            $where[] = "c.city = :city";
+            $params['city'] = $city;
+        }
+
+        // Date range logic
+        if ($date_range !== '') {
+            $column = in_array($date_type, ['created_at', 'updated_at', 'last_login']) ? ($date_type === 'last_login' ? 'u.last_login' : "c.{$date_type}") : "c.created_at";
+            
+            if ($date_range === 'today') {
+                $where[] = "DATE({$column}) = CURDATE()";
+            } elseif ($date_range === 'yesterday') {
+                $where[] = "DATE({$column}) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+            } elseif ($date_range === 'last_7_days') {
+                $where[] = "{$column} >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            } elseif ($date_range === 'last_30_days') {
+                $where[] = "{$column} >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+            } elseif ($date_range === 'custom' && $start_date && $end_date) {
+                $where[] = "DATE({$column}) BETWEEN :start_date AND :end_date";
+                $params['start_date'] = $start_date;
+                $params['end_date'] = $end_date;
+            }
+        }
+
+        if ($has_resume === '1') {
+            $where[] = "c.resume_url IS NOT NULL AND c.resume_url != ''";
+        } elseif ($has_resume === '0') {
+            $where[] = "(c.resume_url IS NULL OR c.resume_url = '')";
+        }
+
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        // Get total count
+        // Handle AJAX requests for counts or specific data
+        if ($request->isAjax()) {
+            $total = (int)($db->fetchOne("SELECT COUNT(*) as count FROM candidates c INNER JOIN users u ON u.id = c.user_id {$whereClause}", $params)['count'] ?? 0);
+            $response->json(['total' => $total]);
+            return;
+        }
+
+        // Export logic
+        if ($request->get('export') === 'csv') {
+            $this->handleExport($whereClause, $params);
+            return;
+        }
+
+        // Get total count for pagination
         $total = (int)($db->fetchOne(
             "SELECT COUNT(*) as count 
              FROM candidates c
@@ -120,17 +177,10 @@ class CandidatesController extends BaseController
             $params
         )['count'] ?? 0);
 
-        // Get candidates; use overall_score from candidate_quality_scores as quality metric
-        $qualitySelect = $hasQualityScores
-            ? "(SELECT MAX(cqs.overall_score) FROM candidate_quality_scores cqs
-                        INNER JOIN applications a2 ON a2.id = cqs.application_id
-                        WHERE a2.candidate_user_id = c.user_id) as max_quality_score"
-            : "NULL as max_quality_score";
         $candidates = $db->fetchAll(
             "SELECT c.*, u.email, u.status as user_status, u.last_login, COALESCE(u.is_email_verified, 0) as email_verified,
                     (SELECT COUNT(*) FROM applications a WHERE a.candidate_user_id = c.user_id) as applications_count,
-                    (SELECT COUNT(*) FROM job_bookmarks jb WHERE jb.candidate_id = c.id) as saved_jobs_count,
-                    {$qualitySelect}
+                    (SELECT MAX(applied_at) FROM applications a WHERE a.candidate_user_id = c.user_id) as last_applied_at
              FROM candidates c
              INNER JOIN users u ON u.id = c.user_id
              {$whereClause}
@@ -141,15 +191,23 @@ class CandidatesController extends BaseController
 
         $totalPages = ceil($total / $perPage);
 
-        $categoriesRows = $db->fetchAll("SELECT DISTINCT category FROM jobs WHERE category IS NOT NULL AND category != '' ORDER BY category");
-        $categories = array_values(array_filter(array_map(fn($r) => $r['category'] ?? '', $categoriesRows)));
+        // Stats for Header
+        $statsData = $db->fetchOne(
+            "SELECT 
+                SUM(CASE WHEN u.is_email_verified = 1 THEN 1 ELSE 0 END) as verified,
+                SUM(CASE WHEN c.is_premium = 1 THEN 1 ELSE 0 END) as premium,
+                SUM(CASE WHEN DATE(c.created_at) = CURDATE() THEN 1 ELSE 0 END) as new_today
+             FROM candidates c
+             INNER JOIN users u ON u.id = c.user_id
+             {$whereClause}",
+            $params
+        );
 
-        // Get Statistics
         $stats = [
-            'total' => $db->fetchOne("SELECT COUNT(*) as count FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.status != 'deleted'")['count'] ?? 0,
-            'admin' => $db->fetchOne("SELECT COUNT(*) as count FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.status != 'deleted' AND c.source = 'admin_manual'")['count'] ?? 0,
-            'website' => $db->fetchOne("SELECT COUNT(*) as count FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.status != 'deleted' AND (c.source IS NULL OR c.source IN ('website', 'registration'))")['count'] ?? 0,
-            'excel' => $db->fetchOne("SELECT COUNT(*) as count FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.status != 'deleted' AND c.source = 'excel'")['count'] ?? 0
+            'total' => $total,
+            'verified' => (int)($statsData['verified'] ?? 0),
+            'premium' => (int)($statsData['premium'] ?? 0),
+            'new_today' => (int)($statsData['new_today'] ?? 0),
         ];
 
         $response->view('admin/candidates/index', [
@@ -161,19 +219,89 @@ class CandidatesController extends BaseController
                 'total' => $total,
                 'totalPages' => $totalPages
             ],
-            'filters' => [
-                'search' => $search,
-                'status' => $status,
-                'filter' => $filter,
-                'location' => $location,
-                'skill' => $skill,
-                'category' => $category,
-                'source' => $source
-            ],
-            'categories' => $categories,
+            'filters' => array_merge($request->all(), ['date_range' => $date_range]),
             'stats' => $stats,
             'user' => $this->currentUser
         ], 200, 'admin/layout');
+    }
+
+    public function exportSelected(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $ids = $request->post('ids', []);
+        if (empty($ids)) {
+            $response->redirect('/admin/candidates?error=no_selection');
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $whereClause = "WHERE c.id IN ($placeholders)";
+        $this->handleExport($whereClause, $ids);
+    }
+
+    public function bulkAction(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $ids = $request->post('ids', []);
+        $action = $request->post('action', '');
+
+        if (empty($ids)) {
+            $response->redirect('/admin/candidates?error=no_selection');
+            return;
+        }
+
+        $db = Database::getInstance();
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        switch ($action) {
+            case 'activate':
+                $db->query("UPDATE users u INNER JOIN candidates c ON u.id = c.user_id SET u.status = 'active' WHERE c.id IN ($placeholders)", $ids);
+                break;
+            case 'block':
+                $db->query("UPDATE users u INNER JOIN candidates c ON u.id = c.user_id SET u.status = 'blocked' WHERE c.id IN ($placeholders)", $ids);
+                break;
+            case 'delete':
+                $db->query("UPDATE users u INNER JOIN candidates c ON u.id = c.user_id SET u.status = 'deleted' WHERE c.id IN ($placeholders)", $ids);
+                break;
+        }
+
+        $response->redirect('/admin/candidates?success=bulk_action_completed');
+    }
+
+    private function handleExport(string $whereClause, array $params): void
+    {
+        $db = Database::getInstance();
+        $candidates = $db->fetchAll(
+            "SELECT c.id, c.full_name, u.email, 
+                    COALESCE(NULLIF(c.mobile, ''), NULLIF(u.phone, ''), 'N/A') as contact_number,
+                    c.city, c.state, c.country, 
+                    c.professional_title, c.current_salary, c.expected_salary_min, c.expected_salary_max,
+                    c.resume_url, c.created_at, u.status as user_status
+             FROM candidates c
+             INNER JOIN users u ON u.id = c.user_id
+             {$whereClause}
+             ORDER BY c.created_at DESC",
+            $params
+        );
+
+        $filename = 'candidates_export_' . date('Y-m-d_His') . '.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['ID', 'Name', 'Email', 'Contact Number', 'City', 'State', 'Country', 'Role', 'Curr Salary', 'Exp Salary Min', 'Exp Salary Max', 'Resume URL', 'Joined At', 'Status']);
+        
+        foreach ($candidates as $row) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+        exit;
     }
 
     public function show(Request $request, Response $response): void

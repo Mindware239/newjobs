@@ -27,6 +27,24 @@ class SubscriptionPlan extends Model
         return $result ? new self($result) : null;
     }
 
+    public static function findFor($id, string $for): ?self
+    {
+        $id = (int)$id;
+        $for = strtolower(trim($for));
+
+        $instance = new self();
+        $db = $instance->getDb();
+        $sql = "SELECT * FROM subscription_plans WHERE id = :id AND plan_for = :pf AND (is_active = 1 OR is_active IS NULL) LIMIT 1";
+        $result = $db->fetchOne($sql, ['id' => $id, 'pf' => $for]);
+
+        if (!$result) {
+            $sql = "SELECT * FROM subscription_plans WHERE id = :id AND plan_for = :pf LIMIT 1";
+            $result = $db->fetchOne($sql, ['id' => $id, 'pf' => $for]);
+        }
+
+        return $result ? new self($result) : null;
+    }
+
     public static function getActivePlans(): array
     {
         $instance = new self();

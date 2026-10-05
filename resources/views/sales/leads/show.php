@@ -13,11 +13,11 @@
                             <option value="<?= $s ?>" <?= ($lead['stage'] ?? '')===$s?'selected':'' ?>><?= $s ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <button class="px-3 py-2 border border-purple-600 text-purple-600 rounded">Update Stage</button>
+                    <button class="px-3 py-2 border border-primary text-primary rounded">Update Stage</button>
                 </form>
                 <form action="/sales/leads/<?= (int)($lead['id'] ?? 0) ?>/assign" method="post" class="flex gap-2">
                     <input name="executive_id" placeholder="Executive ID" class="border rounded px-2">
-                    <button class="px-3 py-2 bg-purple-600 text-white rounded">Assign</button>
+                    <button class="px-3 py-2 bg-primary text-white rounded">Assign</button>
                 </form>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 <div class="p-4 border-t space-y-3">
                     <form action="/sales/leads/<?= (int)($lead['id'] ?? 0) ?>/note" method="post" class="flex gap-2">
                         <input name="content" placeholder="Add note" class="flex-1 border rounded px-3 py-2">
-                        <button class="px-3 py-2 bg-purple-600 text-white rounded">Add</button>
+                        <button class="px-3 py-2 bg-primary text-white rounded">Add</button>
                     </form>
                     <?php foreach ($notes as $n): ?>
                         <div class="border rounded p-3 flex items-start justify-between">
@@ -51,7 +51,7 @@
                 <div class="p-4 border-t space-y-3">
                     <?php foreach ($activities as $a): ?>
                         <div class="flex gap-3 items-start">
-                            <div class="h-2 w-2 rounded-full bg-purple-600 mt-2"></div>
+                            <div class="h-2 w-2 rounded-full bg-primary mt-2"></div>
                             <div>
                                 <div class="text-sm font-medium capitalize"><?= htmlspecialchars($a['type'] ?? 'activity') ?></div>
                                 <div class="text-xs text-gray-500"><?= htmlspecialchars($a['created_at'] ?? '') ?></div>
@@ -68,14 +68,14 @@
                 <div class="font-semibold mb-2">Follow-up Scheduler</div>
                 <div class="space-y-2">
                     <input type="datetime-local" x-model="follow" class="border rounded px-3 py-2 w-full">
-                    <button class="px-3 py-2 bg-purple-600 text-white rounded w-full" @click="scheduleFollow()">Schedule</button>
+                    <button class="px-3 py-2 bg-primary text-white rounded w-full" @click="scheduleFollow()">Schedule</button>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow p-4">
                 <div class="font-semibold mb-2">Demo Scheduling</div>
                 <div class="space-y-2">
                     <input type="datetime-local" x-model="demo" class="border rounded px-3 py-2 w-full">
-                    <button class="px-3 py-2 border border-purple-600 text-purple-600 rounded w-full" @click="scheduleDemo()">Schedule Demo</button>
+                    <button class="px-3 py-2 border border-primary text-primary rounded w-full" @click="scheduleDemo()">Schedule Demo</button>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow p-4">
@@ -88,7 +88,7 @@
                         </div>
                         <div class="flex gap-2">
                             <form action="/sales/payments/<?= (int)$p['id'] ?>/mark-paid" method="post"><button class="px-3 py-2 bg-green-600 text-white rounded">Mark Paid</button></form>
-                            <form action="/sales/payments/<?= (int)$p['id'] ?>/generate-link" method="post"><button class="px-3 py-2 border border-purple-600 text-purple-600 rounded">Generate Link</button></form>
+                            <form action="/sales/payments/<?= (int)$p['id'] ?>/generate-link" method="post"><button class="px-3 py-2 border border-primary text-primary rounded">Generate Link</button></form>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -106,3 +106,14 @@ function leadPage(){
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

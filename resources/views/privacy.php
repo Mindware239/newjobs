@@ -5,7 +5,7 @@ $base = $base ?? '/';
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Privacy Policy | Mindware Infotech</title>
+    <title>Privacy Policy | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CSS -->
@@ -16,9 +16,9 @@ $base = $base ?? '/';
             theme: {
                 extend: {
                     colors: {
-                        primary: '#7e3aecff', // indigo-600
-                        secondary: '#eef2ff', // indigo-50
-                        accent: '#6c6ed8ff', // indigo-500
+                        primary: '#f05537',   // Jobsence brand orange
+                        secondary: '#fff1ed', // brand tint
+                        accent: '#FF6A3D',    // brand hover
                     }
                 }
             }
@@ -111,7 +111,7 @@ $base = $base ?? '/';
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">5. Contact Us</h3>
             <p class="mb-6">
-                If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at <a href="mailto:gm@mindwareinfotech.com" class="text-indigo-600 hover:underline">gm@mindwareinfotech.com</a>.
+                If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at <a href="mailto:gm@jobsence.com" class="text-primary hover:underline">gm@jobsence.com</a>.
             </p>
         </div>
     </main>
@@ -119,3 +119,14 @@ $base = $base ?? '/';
     <?php require 'include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

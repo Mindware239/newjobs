@@ -53,10 +53,15 @@ class ReportsController extends BaseController
                 $data = $db->fetchAll("SELECT * FROM jobs ORDER BY created_at DESC");
                 $filename = 'jobs_' . date('Y-m-d') . '.csv';
                 break;
-            case 'payments':
-                $data = $db->fetchAll("SELECT * FROM employer_payments ORDER BY created_at DESC");
-                $filename = 'payments_' . date('Y-m-d') . '.csv';
+            case 'incomplete_profiles':
+                $data = $db->fetchAll("SELECT c.id, c.full_name, u.email, c.profile_strength, c.created_at 
+                                      FROM candidates c 
+                                      JOIN users u ON c.user_id = u.id 
+                                      WHERE c.profile_strength < 100 AND u.status = 'active' 
+                                      ORDER BY c.profile_strength ASC");
+                $filename = 'incomplete_profiles_' . date('Y-m-d') . '.csv';
                 break;
+            case 'payments':
         }
 
         if ($format === 'csv' && !empty($data)) {

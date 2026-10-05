@@ -24,7 +24,7 @@
 <header class="border-b">
   <div class="container-wf mx-auto px-6 py-4 flex items-center justify-between">
     <div class="text-3xl font-serif font-bold">
-      Mindware Infotech
+      Jobsence
     </div>
 
     <nav class="flex items-center gap-6 text-sm text-gray-700">
@@ -140,7 +140,7 @@
                 </div>
             </div>
             <div class="flex gap-2">
-                <a href="/employer/social-jobs/<?= $job['id'] ?>/edit" class="text-blue-600 hover:underline text-sm">Edit</a>
+                <a href="/employer/social-jobs/<?= $job['id'] ?>/edit" class="text-primary hover:underline text-sm">Edit</a>
                 <form action="/employer/social-jobs/<?= $job['id'] ?>/delete" method="POST" onsubmit="return confirm('Are you sure?');">
                     <button type="submit" class="text-red-500 hover:underline text-sm">Delete</button>
                 </form>
@@ -155,3 +155,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

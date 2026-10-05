@@ -32,13 +32,13 @@ function __fmt_phone($number, $country) {
 ?>
 <div>
     <div class="mb-8">
-        <a href="/admin/employers" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Back to Employers</a>
+        <a href="/admin/employers" class="text-primary hover:text-primary-900 mb-4 inline-block">← Back to Employers</a>
         <h1 class="text-3xl font-bold text-gray-900"><?= htmlspecialchars($employer['company_name'] ?? 'Unknown Company') ?></h1>
         <div class="mt-2 flex flex-wrap gap-2">
             <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
                 Last Login: <?= !empty($employer['last_login']) ? date('M d, Y H:i', strtotime($employer['last_login'])) : 'Never' ?>
             </span>
-            <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+            <span class="px-2 py-1 text-xs rounded-full bg-primary-50 text-primary-900">
                 Plan: <?= htmlspecialchars(($subscription['plan_name'] ?? 'N/A')) ?>
             </span>
         </div>
@@ -103,7 +103,7 @@ function __fmt_phone($number, $country) {
                 <div class="space-y-3">
                     <?php foreach (array_slice($jobs, 0, 10) as $job): ?>
                     <div class="border-b pb-3">
-                        <a href="/admin/jobs/<?= $job['id'] ?>" class="text-blue-600 hover:text-blue-800 font-medium">
+                        <a href="/admin/jobs/<?= $job['id'] ?>" class="text-primary hover:text-primary-900 font-medium">
                             <?= htmlspecialchars($job['title'] ?? 'N/A') ?>
                         </a>
                         <p class="text-sm text-gray-500">Posted on <?= date('M d, Y', strtotime($job['created_at'] ?? 'now')) ?></p>
@@ -140,7 +140,7 @@ function __fmt_phone($number, $country) {
                             </div>
                             <div class="ml-4">
                                 <?php if (!empty($doc['file_url'])): ?>
-                                <a href="<?= htmlspecialchars($doc['file_url']) ?>" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View</a>
+                                <a href="<?= htmlspecialchars($doc['file_url']) ?>" target="_blank" class="text-primary hover:text-primary-900 text-sm font-medium">View</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -218,4 +218,15 @@ function __fmt_phone($number, $country) {
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

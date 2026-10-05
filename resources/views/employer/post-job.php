@@ -8,10 +8,10 @@ $scripts = ($scripts ?? '') . '
     [x-cloak] { display: none !important; }
 
     :root {
-        --primary: #0A65CC;
-        --primary-dark: #084fa0;
-        --primary-light: #EAF3FF;
-        --primary-mid: #b8d6f5;
+        --brand: #0A65CC;
+        --brand-dark: #084fa0;
+        --brand-light: #EAF3FF;
+        --brand-mid: #b8d6f5;
         --accent: #00A36C;
         --danger: #E53E3E;
         --warning: #F6AD55;
@@ -38,7 +38,7 @@ $scripts = ($scripts ?? '') . '
 
     /* Loading */
     .jwiz-loader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .jwiz-spinner { width: 44px; height: 44px; border: 3px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .jwiz-spinner { width: 44px; height: 44px; border: 3px solid var(--brand-light); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .jwiz-loader-text { margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--neutral-400); letter-spacing: 0.04em; }
 
@@ -65,13 +65,13 @@ $scripts = ($scripts ?? '') . '
     .jwiz-stepper-card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--neutral-200); padding: 20px 28px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
     .jwiz-stepper-track { position: relative; display: flex; align-items: center; justify-content: space-between; }
     .jwiz-stepper-line { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 3px; background: var(--neutral-100); border-radius: 99px; z-index: 0; }
-    .jwiz-stepper-line-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; background: var(--primary); border-radius: 99px; z-index: 1; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+    .jwiz-stepper-line-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; background: var(--brand); border-radius: 99px; z-index: 1; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
     .jwiz-step-item { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; cursor: pointer; }
     .jwiz-step-circle { width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid var(--neutral-200); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--neutral-400); transition: all 0.25s; box-shadow: var(--shadow-sm); }
-    .jwiz-step-circle.active { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); transform: scale(1.1); }
-    .jwiz-step-circle.done { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .jwiz-step-circle.active { border-color: var(--brand); color: var(--brand); box-shadow: 0 0 0 4px var(--brand-light); transform: scale(1.1); }
+    .jwiz-step-circle.done { border-color: var(--brand); background: var(--brand); color: #fff; }
     .jwiz-step-label { font-size: 11px; font-weight: 600; color: var(--neutral-400); margin-top: 8px; white-space: nowrap; letter-spacing: 0.02em; text-transform: uppercase; transition: color 0.2s; }
-    .jwiz-step-label.active, .jwiz-step-label.done { color: var(--primary); }
+    .jwiz-step-label.active, .jwiz-step-label.done { color: var(--brand); }
 
     /* Main card */
     .jwiz-card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--neutral-200); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
@@ -80,7 +80,7 @@ $scripts = ($scripts ?? '') . '
 
     /* Step header */
     .jwiz-step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--neutral-100); }
-    .jwiz-step-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; }
+    .jwiz-step-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--brand-light); display: flex; align-items: center; justify-content: center; color: var(--brand); flex-shrink: 0; }
     .jwiz-step-title { font-size: 18px; font-weight: 800; color: var(--neutral-900); letter-spacing: -0.3px; }
     .jwiz-step-desc { font-size: 13px; color: var(--neutral-400); margin-top: 2px; }
 
@@ -103,7 +103,7 @@ $scripts = ($scripts ?? '') . '
     }
     .jwiz-input::placeholder, .jwiz-textarea::placeholder { color: var(--neutral-400); }
     .jwiz-input:focus, .jwiz-select:focus, .jwiz-textarea:focus {
-        border-color: var(--primary);
+        border-color: var(--brand);
         box-shadow: 0 0 0 3px rgba(10,101,204,0.1);
     }
     .jwiz-input:disabled, .jwiz-select:disabled { background: var(--neutral-50); color: var(--neutral-400); cursor: not-allowed; }
@@ -122,29 +122,30 @@ $scripts = ($scripts ?? '') . '
     @media(max-width: 640px){ .jwiz-grid-2, .jwiz-grid-3 { grid-template-columns: 1fr; gap: 14px; } }
 
     /* Info banner */
-    .jwiz-info-banner { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); border: 1px solid var(--primary-mid); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 24px; gap: 12px; }
+    .jwiz-info-banner { display: flex; align-items: center; justify-content: space-between; background: var(--brand-light); border: 1px solid var(--brand-mid); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 24px; gap: 12px; }
     .jwiz-info-banner-left { display: flex; align-items: center; gap: 11px; }
-    .jwiz-info-banner-icon { color: var(--primary); flex-shrink: 0; }
+    .jwiz-info-banner-icon { color: var(--brand); flex-shrink: 0; }
     .jwiz-info-banner-text { font-size: 13px; color: #1a3a6e; font-weight: 600; }
-    .jwiz-info-banner-sub { font-size: 12px; color: var(--primary); margin-top: 1px; }
-    .jwiz-info-banner-btn { font-size: 12px; font-weight: 700; color: var(--primary); background: #fff; border: 1px solid var(--primary-mid); border-radius: 7px; padding: 6px 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-    .jwiz-info-banner-btn:hover { background: var(--primary); color: #fff; }
+    .jwiz-info-banner-sub { font-size: 12px; color: var(--brand); margin-top: 1px; }
+    .jwiz-info-banner-btn { font-size: 12px; font-weight: 700; color: var(--brand); background: #fff; border: 1px solid var(--brand-mid); border-radius: 7px; padding: 6px 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .jwiz-info-banner-btn:hover { background: var(--brand); color: #fff; }
 
     /* Chip selectors */
     .jwiz-chip-group { display: flex; flex-wrap: wrap; gap: 9px; }
-    .jwiz-chip { padding: 8px 16px; border: 1.5px solid var(--neutral-200); border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--neutral-700); cursor: pointer; background: #fff; transition: all 0.15s; user-select: none; }
-    .jwiz-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-    .jwiz-chip.selected { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .jwiz-chip { min-height: 38px; padding: 8px 14px; border: 1.5px solid var(--neutral-200); border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--neutral-700); cursor: pointer; background: #fff; transition: all 0.15s; user-select: none; display: inline-flex; align-items: center; gap: 8px; }
+    .jwiz-chip:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+    .jwiz-chip.selected { border-color: var(--brand); color: #fff; background: var(--brand); box-shadow: 0 4px 12px rgba(10,101,204,0.22); }
+    .jwiz-chip-check { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
     /* Radio cards */
     .jwiz-radio-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media(max-width: 640px){ .jwiz-radio-cards { grid-template-columns: 1fr; } }
     .jwiz-radio-card { border: 1.5px solid var(--neutral-200); border-radius: var(--radius); padding: 15px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: all 0.18s; background: #fff; }
-    .jwiz-radio-card:hover { border-color: var(--primary); background: var(--primary-light); }
-    .jwiz-radio-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    .jwiz-radio-card:hover { border-color: var(--brand); background: var(--brand-light); }
+    .jwiz-radio-card.selected { border-color: var(--brand); background: var(--brand-light); }
     .jwiz-radio-dot-wrap { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--neutral-300); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: border-color 0.18s; }
-    .jwiz-radio-card.selected .jwiz-radio-dot-wrap { border-color: var(--primary); }
-    .jwiz-radio-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); transform: scale(0); transition: transform 0.18s; }
+    .jwiz-radio-card.selected .jwiz-radio-dot-wrap { border-color: var(--brand); }
+    .jwiz-radio-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--brand); transform: scale(0); transition: transform 0.18s; }
     .jwiz-radio-card.selected .jwiz-radio-dot { transform: scale(1); }
     .jwiz-radio-label { font-size: 13px; font-weight: 700; color: var(--neutral-900); }
     .jwiz-radio-desc { font-size: 12px; color: var(--neutral-400); margin-top: 3px; line-height: 1.5; }
@@ -153,44 +154,44 @@ $scripts = ($scripts ?? '') . '
     .jwiz-pay-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 22px; }
     @media(max-width: 640px){ .jwiz-pay-cards { grid-template-columns: 1fr; } }
     .jwiz-pay-card { border: 1.5px solid var(--neutral-200); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; text-align: center; transition: all 0.18s; background: #fff; }
-    .jwiz-pay-card:hover { border-color: var(--primary); }
-    .jwiz-pay-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    .jwiz-pay-card:hover { border-color: var(--brand); }
+    .jwiz-pay-card.selected { border-color: var(--brand); background: var(--brand-light); }
     .jwiz-pay-card-title { font-size: 13px; font-weight: 700; color: var(--neutral-900); }
     .jwiz-pay-card-sub { font-size: 11px; color: var(--neutral-400); margin-top: 2px; }
 
     /* Experience pills */
     .jwiz-exp-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .jwiz-exp-pill { padding: 8px 18px; border-radius: 7px; border: 1.5px solid var(--neutral-200); font-size: 13px; font-weight: 600; color: var(--neutral-500); cursor: pointer; background: #fff; transition: all 0.15s; }
-    .jwiz-exp-pill:hover { border-color: var(--primary); color: var(--primary); }
-    .jwiz-exp-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .jwiz-exp-pill:hover { border-color: var(--brand); color: var(--brand); }
+    .jwiz-exp-pill.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
     /* Benefits */
     .jwiz-benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     @media(max-width: 640px){ .jwiz-benefit-grid { grid-template-columns: 1fr 1fr; } }
     .jwiz-benefit-item { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--neutral-200); border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: all 0.15s; background: #fff; }
-    .jwiz-benefit-item:hover { border-color: var(--primary-mid); }
-    .jwiz-benefit-item.selected { border-color: var(--primary); background: var(--primary-light); }
+    .jwiz-benefit-item:hover { border-color: var(--brand-mid); }
+    .jwiz-benefit-item.selected { border-color: var(--brand); background: var(--brand-light); }
     .jwiz-benefit-item label { font-size: 12.5px; font-weight: 600; color: var(--neutral-700); cursor: pointer; }
-    .jwiz-benefit-item.selected label { color: var(--primary); }
-    .jwiz-benefit-item input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; }
+    .jwiz-benefit-item.selected label { color: var(--brand); }
+    .jwiz-benefit-item input[type="checkbox"] { accent-color: var(--brand); width: 15px; height: 15px; flex-shrink: 0; }
 
     /* Call availability */
     .jwiz-call-pills { display: flex; gap: 8px; flex-wrap: wrap; }
     .jwiz-call-pill { padding: 8px 16px; border: 1.5px solid var(--neutral-200); border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--neutral-500); cursor: pointer; background: #fff; transition: all 0.15s; }
-    .jwiz-call-pill:hover { border-color: var(--primary); }
-    .jwiz-call-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .jwiz-call-pill:hover { border-color: var(--brand); }
+    .jwiz-call-pill.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
     /* Skills tags */
     .jwiz-skills-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; min-height: 10px; }
-    .jwiz-skill-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-mid); border-radius: 6px; padding: 5px 11px; font-size: 13px; font-weight: 600; }
-    .jwiz-skill-tag-remove { background: none; border: none; cursor: pointer; color: var(--primary); opacity: 0.6; display: flex; align-items: center; padding: 0; transition: opacity 0.15s; }
+    .jwiz-skill-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-mid); border-radius: 6px; padding: 5px 11px; font-size: 13px; font-weight: 600; }
+    .jwiz-skill-tag-remove { background: none; border: none; cursor: pointer; color: var(--brand); opacity: 0.6; display: flex; align-items: center; padding: 0; transition: opacity 0.15s; }
     .jwiz-skill-tag-remove:hover { opacity: 1; color: var(--danger); }
 
     /* Dropdown suggest */
     .jwiz-dropdown { position: absolute; z-index: 100; width: 100%; margin-top: 6px; background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-height: 220px; overflow-y: auto; }
     .jwiz-dropdown-item { padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--neutral-100); transition: background 0.1s; }
     .jwiz-dropdown-item:last-child { border-bottom: none; }
-    .jwiz-dropdown-item:hover, .jwiz-dropdown-item.highlighted { background: var(--primary-light); }
+    .jwiz-dropdown-item:hover, .jwiz-dropdown-item.highlighted { background: var(--brand-light); }
     .jwiz-dropdown-item-title { font-size: 13.5px; font-weight: 600; color: var(--neutral-900); }
     .jwiz-dropdown-item-sub { font-size: 11.5px; color: var(--neutral-400); margin-top: 1px; }
 
@@ -201,9 +202,9 @@ $scripts = ($scripts ?? '') . '
     .jwiz-note { display: inline-flex; align-items: center; gap: 6px; background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: 7px; padding: 7px 12px; font-size: 12px; color: var(--neutral-500); margin-top: 8px; }
 
     /* Salary section */
-    .jwiz-salary-box { background: linear-gradient(135deg, #f0f7ff 0%, #e8f2fd 100%); border: 1px solid var(--primary-mid); border-radius: var(--radius-lg); padding: 26px 28px; }
+    .jwiz-salary-box { background: linear-gradient(135deg, #f0f7ff 0%, #e8f2fd 100%); border: 1px solid var(--brand-mid); border-radius: var(--radius-lg); padding: 26px 28px; }
     .jwiz-salary-box-header { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-    .jwiz-salary-box-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+    .jwiz-salary-box-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--brand); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
     .jwiz-salary-box-title { font-size: 16px; font-weight: 800; color: #0f2a5e; }
     .jwiz-currency-input { position: relative; }
     .jwiz-currency-symbol { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 700; color: var(--neutral-500); pointer-events: none; }
@@ -213,7 +214,7 @@ $scripts = ($scripts ?? '') . '
     /* Bonus radios */
     .jwiz-radio-row { display: flex; gap: 24px; }
     .jwiz-radio-option { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--neutral-700); }
-    .jwiz-radio-option input { accent-color: var(--primary); width: 16px; height: 16px; }
+    .jwiz-radio-option input { accent-color: var(--brand); width: 16px; height: 16px; }
 
     /* Quill editor overrides */
     .ql-editor { min-height: 260px; font-size: 14px; line-height: 1.7; color: var(--neutral-700); font-family: \'Plus Jakarta Sans\', sans-serif; }
@@ -221,7 +222,7 @@ $scripts = ($scripts ?? '') . '
     .ql-container.ql-snow { border-radius: 0 0 var(--radius) var(--radius); border-color: var(--neutral-200); background: #fff; }
 
     /* AI btn */
-    .jwiz-ai-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.18s; box-shadow: 0 3px 10px rgba(79,70,229,0.3); font-family: \'Plus Jakarta Sans\', sans-serif; }
+    .jwiz-ai-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: linear-gradient(135deg, #f05537, #f05537); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.18s; box-shadow: 0 3px 10px rgba(79,70,229,0.3); font-family: \'Plus Jakarta Sans\', sans-serif; }
     .jwiz-ai-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(79,70,229,0.4); }
     .jwiz-desc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 
@@ -233,7 +234,7 @@ $scripts = ($scripts ?? '') . '
     .jwiz-preview-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--neutral-500); }
     .jwiz-preview-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
     .jwiz-preview-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .jwiz-preview-badge-blue { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-mid); }
+    .jwiz-preview-badge-blue { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-mid); }
     .jwiz-preview-badge-red { background: #fff0f0; color: var(--danger); border: 1px solid #ffc9c9; }
     .jwiz-preview-body { display: grid; grid-template-columns: 1fr 300px; }
     @media(max-width: 700px){ .jwiz-preview-body { grid-template-columns: 1fr; } }
@@ -250,7 +251,7 @@ $scripts = ($scripts ?? '') . '
     .jwiz-perk-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--neutral-700); margin-bottom: 9px; font-weight: 500; }
     .jwiz-perk-check { color: var(--accent); flex-shrink: 0; }
     .jwiz-contact-card { display: flex; align-items: center; gap: 11px; background: #fff; border: 1px solid var(--neutral-200); border-radius: var(--radius); padding: 12px 14px; margin-top: 12px; }
-    .jwiz-contact-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .jwiz-contact-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--brand-light); color: var(--brand); font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .jwiz-contact-name { font-size: 13px; font-weight: 700; color: var(--neutral-900); }
     .jwiz-contact-detail { font-size: 12px; color: var(--neutral-400); }
 
@@ -268,8 +269,8 @@ $scripts = ($scripts ?? '') . '
     .jwiz-btn-outline:hover { background: var(--neutral-50); border-color: var(--neutral-300); }
     .jwiz-btn-ghost { background: none; border: none; color: var(--neutral-500); padding: 10px 14px; }
     .jwiz-btn-ghost:hover { color: var(--neutral-900); background: var(--neutral-50); border-radius: var(--radius); }
-    .jwiz-btn-primary { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(10,101,204,0.25); }
-    .jwiz-btn-primary:hover:not(:disabled) { background: var(--primary-dark); box-shadow: 0 5px 14px rgba(10,101,204,0.35); transform: translateY(-1px); }
+    .jwiz-btn-primary { background: var(--brand); color: #fff; box-shadow: 0 3px 10px rgba(10,101,204,0.25); }
+    .jwiz-btn-primary:hover:not(:disabled) { background: var(--brand-dark); box-shadow: 0 5px 14px rgba(10,101,204,0.35); transform: translateY(-1px); }
     .jwiz-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .jwiz-btn-success { background: #15803d; color: #fff; box-shadow: 0 3px 10px rgba(21,128,61,0.25); }
     .jwiz-btn-success:hover:not(:disabled) { background: #166534; transform: translateY(-1px); }
@@ -278,17 +279,23 @@ $scripts = ($scripts ?? '') . '
     /* Animations */
     @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .jwiz-step-content { animation: fadeSlideIn 0.3s ease-out both; }
+    .jwiz-notice { display: flex; gap: 12px; align-items: flex-start; border-radius: 12px; padding: 14px 16px; margin-bottom: 22px; font-size: 14px; line-height: 1.5; }
+    .jwiz-notice-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .jwiz-notice-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+    .jwiz-notice-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .jwiz-notice-link { display: inline-block; margin-top: 8px; font-weight: 700; text-decoration: underline; color: inherit; }
+    .jwiz-notice-close { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: inherit; opacity: .7; }
 
     /* custom scrollbar */
     .jwiz-dropdown::-webkit-scrollbar { width: 5px; }
     .jwiz-dropdown::-webkit-scrollbar-thumb { background: var(--neutral-200); border-radius: 99px; }
 
     /* Detect location btn */
-    .jwiz-locate-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--primary); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.15s; font-family: \'Plus Jakarta Sans\', sans-serif; }
-    .jwiz-locate-btn:hover { background: var(--primary-light); }
+    .jwiz-locate-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--brand); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.15s; font-family: \'Plus Jakarta Sans\', sans-serif; }
+    .jwiz-locate-btn:hover { background: var(--brand-light); }
 
     /* Spinner inline */
-    .jwiz-spin-sm { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .jwiz-spin-sm { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--brand-light); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
     /* Section box */
     .jwiz-section-box { background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-lg); padding: 22px 24px; }
@@ -420,6 +427,19 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
         <div class="jwiz-card">
             <div class="jwiz-card-body">
 
+                <div x-show="notice.text" x-cloak class="jwiz-notice" :class="'jwiz-notice-' + notice.type" role="alert" aria-live="assertive">
+                    <div style="flex:1;min-width:0">
+                        <div style="font-weight:700" x-text="notice.text"></div>
+                        <template x-if="notice.errors && Object.keys(notice.errors).length > 1">
+                            <ul style="margin:6px 0 0;padding-left:18px">
+                                <template x-for="msg in Object.values(notice.errors)" :key="msg"><li x-text="msg"></li></template>
+                            </ul>
+                        </template>
+                        <a x-show="notice.link" :href="notice.link" class="jwiz-notice-link" x-text="notice.linkText || 'Continue'"></a>
+                    </div>
+                    <button type="button" @click="notice.text = ''" class="jwiz-notice-close" aria-label="Dismiss">&times;</button>
+                </div>
+
                 <!-- ===================== STEP 0: JOB BASICS ===================== -->
                 <div x-show="currentStep === 0" class="jwiz-step-content">
                     <div class="jwiz-step-header">
@@ -496,8 +516,14 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                             <template x-for="type in jobTypes" :key="type.value">
                                 <div @click="formData.employment_type = type.value"
                                      class="jwiz-chip"
-                                     :class="formData.employment_type === type.value ? 'selected' : ''"
-                                     x-text="type.label"></div>
+                                     role="button"
+                                     :aria-pressed="formData.employment_type === type.value"
+                                     :class="formData.employment_type === type.value ? 'selected' : ''">
+                                    <span x-text="type.label"></span>
+                                    <span x-show="formData.employment_type === type.value" class="jwiz-chip-check" x-cloak>
+                                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    </span>
+                                </div>
                             </template>
                         </div>
                     </div>
@@ -856,15 +882,30 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
 
                     <div class="jwiz-field">
                         <label class="jwiz-label">Education & Qualifications</label>
-                        <div x-data="tagInput({ initialTags: formData.qualifications })" x-init="$watch('tags', value => formData.qualifications = value)" class="relative">
-                            <div @click="$refs.input.focus()" class="form-input w-full px-4 py-3 rounded-xl border-gray-300 focus-within:border-blue-500 focus-within:ring focus-within:ring-blue-200 focus-within:ring-opacity-50 flex flex-wrap items-center gap-2">
+                        <div x-data="tagInput({ 
+                            initialTags: formData.qualifications,
+                            suggestions: ['B.Tech', 'M.Tech', 'BCA', 'MCA', 'B.Sc', 'M.Sc', 'B.Com', 'M.Com', 'MBA', 'Diploma', '10th Pass', '12th Pass', 'Any Graduate', 'Post Graduate', 'Ph.D']
+                        })" x-init="$watch('tags', value => formData.qualifications = value)" class="relative">
+                            <div @click="$refs.input.focus()" class="form-input w-full px-4 py-3 rounded-xl border-gray-300 focus-within:border-primary focus-within:ring focus-within:ring-primary-100 focus-within:ring-opacity-50 flex flex-wrap items-center gap-2">
                                 <template x-for="(tag, index) in tags" :key="index">
-                                    <div class="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full flex items-center gap-2">
+                                    <div class="bg-primary-50 text-primary-900 text-sm font-medium px-2.5 py-1 rounded-full flex items-center gap-2">
                                         <span x-text="tag"></span>
-                                        <button @click.stop="removeTag(index)" class="text-blue-500 hover:text-blue-700">&times;</button>
+                                        <button @click.stop="removeTag(index)" class="text-primary hover:text-primary-600">&times;</button>
                                     </div>
                                 </template>
                                 <input type="text" x-ref="input" x-model="newTag" @keydown.enter.prevent="addTag()" @keydown.backspace="if (newTag === '') removeLastTag()" class="flex-1 bg-transparent border-none focus:ring-0 p-0" placeholder="Add a qualification and press Enter">
+                            </div>
+                            
+                            <!-- Suggestions -->
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="text-xs text-gray-500 w-full mb-1 font-semibold">Suggestions:</span>
+                                <template x-for="s in suggestions" :key="s">
+                                    <button type="button" 
+                                            @click="newTag = s; addTag()" 
+                                            x-show="!tags.includes(s)"
+                                            class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-primary hover:text-primary transition-colors"
+                                            x-text="s"></button>
+                                </template>
                             </div>
                         </div>
                         <div class="jwiz-note">
@@ -922,11 +963,11 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                                     <div class="jwiz-preview-section-title">Job Description</div>
                                     <div class="jwiz-preview-text" x-html="formData.description || '<em style=\'color:#94a3b8\'>No description provided.</em>'"></div>
                                 </div>
-                                <div x-show="(formData.education_requirements || '').trim().length > 0" style="margin-bottom:28px;">
+                                <div x-show="formData.qualifications.length > 0" style="margin-bottom:28px;">
                                     <div class="jwiz-preview-section-title">Education & Qualifications</div>
                                     <ul style="padding-left:18px; margin:0;">
-                                        <template x-for="(line, idx) in formData.education_requirements.split('\n').map(s => s.trim()).filter(s => s.length > 0)" :key="idx">
-                                            <li class="jwiz-preview-text" style="margin-bottom:5px;" x-text="line"></li>
+                                        <template x-for="(q, idx) in formData.qualifications" :key="idx">
+                                            <li class="jwiz-preview-text" style="margin-bottom:5px;" x-text="q"></li>
                                         </template>
                                     </ul>
                                 </div>
@@ -1023,9 +1064,10 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
                 <div class="jwiz-footer-right">
                     <?php if (!isset($isEdit) || !$isEdit): ?>
                     <button @click="saveDraft()"
-                            x-show="currentStep > 0 && currentStep < 4"
+                            x-show="formData.title"
+                            :disabled="isSubmitting"
                             class="jwiz-btn jwiz-btn-ghost">
-                        Save Draft
+                        <span x-text="isSavingDraft ? 'Saving…' : 'Save Draft'"></span>
                     </button>
                     <?php endif; ?>
 
@@ -1064,7 +1106,7 @@ window.quillEditor = null;
 const isEditMode = <?= json_encode($isEdit ?? false) ?>;
 const existingJobData = <?= json_encode($job ?? null, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
 const existingLocations = <?= json_encode($locations ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
-const existingSkills = <?= json_encode($skills ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+const existingSkills = <?= json_encode($existingSkills ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
 const allBenefits = <?= json_encode($benefits ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
 const existingBenefits = <?= json_encode($jobBenefits ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
 const employerData = <?= json_encode($employer ?? null, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
@@ -1073,6 +1115,7 @@ const userData = <?= json_encode($user ?? null, JSON_HEX_TAG | JSON_HEX_APOS | J
 document.addEventListener('alpine:init', () => {
     Alpine.data('tagInput', (config) => ({
         tags: config.initialTags || [],
+        suggestions: config.suggestions || [],
         newTag: '',
         addTag() {
             const val = this.newTag.trim();
@@ -1093,11 +1136,65 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('jobPostWizard', () => {
     const job = existingJobData || {};
-    const locs = Array.isArray(existingLocations) ? existingLocations : [];
-    const skills = Array.isArray(existingSkills) ? existingSkills : [];
-    const benefitIds = (Array.isArray(existingBenefits) ? existingBenefits : []).map(b => (typeof b === 'object' && b !== null) ? (b.id ?? b.benefit_id ?? null) : null).filter(id => Number.isInteger(id));
+    const parseJsonArray = (value) => {
+        if (Array.isArray(value)) return value;
+        if (typeof value !== 'string' || value.trim() === '') return [];
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    };
+    const normalizeLocation = (loc) => {
+        if (typeof loc === 'string') {
+            const parts = loc.split(',').map(part => part.trim()).filter(Boolean);
+            return {
+                city: parts[0] || '',
+                state: parts[1] || '',
+                country: parts[2] || ''
+            };
+        }
+        if (!loc || typeof loc !== 'object') return {};
+        return {
+            country: loc.country || loc.country_name || '',
+            state: loc.state || loc.state_name || '',
+            city: loc.city || loc.city_name || '',
+            latitude: loc.latitude || loc.lat || null,
+            longitude: loc.longitude || loc.lng || null
+        };
+    };
+    const normalizeSkills = (items) => (Array.isArray(items) ? items : [])
+        .map(skill => {
+            if (typeof skill === 'string') return skill;
+            if (skill && typeof skill === 'object') return skill.name || skill.skill_name || '';
+            return '';
+        })
+        .map(skill => String(skill).trim())
+        .filter(Boolean);
+    const locs = Array.isArray(existingLocations) ? existingLocations.map(normalizeLocation).filter(loc => loc.country || loc.state || loc.city) : [];
+    const jobLocations = parseJsonArray(job.locations).map(normalizeLocation).filter(loc => loc.country || loc.state || loc.city);
+    const skills = normalizeSkills(existingSkills);
     const emp = employerData || {};
     const usr = userData || {};
+    let empAddress = {};
+    try {
+        empAddress = typeof emp.address === 'string' ? JSON.parse(emp.address || '{}') : (emp.address || {});
+    } catch (e) {
+        empAddress = {};
+    }
+    const primaryLocation = (locs.length > 0 && locs[0]) ? locs[0] : ((jobLocations.length > 0 && jobLocations[0]) ? jobLocations[0] : {});
+    const benefitIds = (Array.isArray(existingBenefits) ? existingBenefits : [])
+        .map(b => (typeof b === 'object' && b !== null) ? (b.id ?? b.benefit_id ?? null) : b)
+        .filter(id => id !== null && id !== undefined && id !== '')
+        .map(id => Number(id))
+        .filter(id => Number.isInteger(id));
+    const defaultJobAddress = [
+        empAddress.street || '',
+        primaryLocation.city || emp.city || empAddress.city || '',
+        primaryLocation.state || emp.state || empAddress.state || '',
+        primaryLocation.country || emp.country || empAddress.country || ''
+    ].filter(Boolean).join(', ');
 
     let payType = 'range';
     if (job.pay_type) {
@@ -1109,6 +1206,9 @@ document.addEventListener('alpine:init', () => {
     }
 
     return {
+        isEditMode,
+        existingJobData: job,
+        existingLocations: locs,
         isLoading: true,
         currentStep: 0,
         totalSteps: 5,
@@ -1135,69 +1235,150 @@ document.addEventListener('alpine:init', () => {
             { value: 'contract', label: 'Contract' },
             { value: 'freelance', label: 'Freelance' },
             { value: 'internship', label: 'Internship' },
-            { value: 'remote', label: 'Remote' }
+            { value: 'one_time', label: 'One-time job' }
         ],
         languages: ['English','Spanish','French','German','Hindi','Arabic','Chinese','Japanese'],
         categories: <?= json_encode($categoriesList) ?>,
         availableBenefits: allBenefits,
         formData: {
             title: job.title || '',
-            work_address_type: job.job_address ? 'specific' : 'specific',
-            job_address: job.job_address || '',
+            work_address_type: (job.is_remote == 1 || (isEditMode && !job.job_address)) ? 'none' : 'specific',
+            job_address: job.job_address || defaultJobAddress,
             location: {
-                country: (locs.length > 0 && locs[0] && locs[0].country) ? locs[0].country : '',
-                state: (locs.length > 0 && locs[0] && locs[0].state) ? locs[0].state : '',
-                city: (locs.length > 0 && locs[0] && locs[0].city) ? locs[0].city : ''
+                country: primaryLocation.country || emp.country || empAddress.country || 'India',
+                state: primaryLocation.state || emp.state || empAddress.state || '',
+                city: primaryLocation.city || emp.city || empAddress.city || '',
+                latitude: primaryLocation.latitude || primaryLocation.lat || null,
+                longitude: primaryLocation.longitude || primaryLocation.lng || null
             },
-            employment_type: job.employment_type || job.job_type || '',
-            category: job.category || job.industry || emp.industry || '',
-            vacancies: job.vacancies || job.openings || 1,
-            pay_type: payType,
-            pay_min: job.salary_min !== undefined ? job.salary_min : '',
-            pay_amount: (payType === 'fixed' && job.salary_min) ? job.salary_min : (job.salary_max !== undefined ? job.salary_max : ''),
+            employment_type: job.employment_type || (['full_time', 'part_time', 'one_time', 'internship', 'contract', 'freelance'].includes(new URLSearchParams(location.search).get('type')) ? new URLSearchParams(location.search).get('type') : 'full_time'),
+            category: job.category || emp.industry || '',
+            vacancies: (job.vacancies !== undefined && job.vacancies !== null) ? job.vacancies : 1,
+            pay_type: job.pay_type || payType,
+            pay_min: (job.salary_min !== undefined && job.salary_min !== null) ? job.salary_min : '',
+            pay_amount: (job.pay_type === 'fixed') ? (job.pay_fixed_amount || job.salary_min || '') : ((job.salary_max !== undefined && job.salary_max !== null) ? job.salary_max : ''),
             pay_frequency: job.pay_frequency || 'monthly',
             currency: job.currency || 'INR',
             language: job.language || 'English',
             description: (job.description_html || job.description || ''),
-            education_requirements: '',
-            qualifications: job.qualifications || [],
+            qualifications: (function() {
+                if (job.qualifications_array && Array.isArray(job.qualifications_array)) return job.qualifications_array;
+                if (!job.qualifications) return [];
+                if (Array.isArray(job.qualifications)) return job.qualifications;
+                try {
+                    const parsed = JSON.parse(job.qualifications);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch(e) { return []; }
+            })(),
             skills: skills,
             benefit_ids: benefitIds,
-            min_experience: job.min_experience || '',
-            max_experience: job.max_experience || '',
-            experience_type: (job.min_experience == 0 && job.max_experience == 0) ? 'fresher' : ((job.min_experience || job.max_experience) ? 'experienced' : 'any'),
+            min_experience: (job.min_experience !== undefined && job.min_experience !== null) ? job.min_experience : '',
+            max_experience: (job.max_experience !== undefined && job.max_experience !== null) ? job.max_experience : '',
+            experience_type: job.experience_type || ((job.min_experience == 0 && job.max_experience == 0) ? 'fresher' : ((job.min_experience || job.max_experience) ? 'experienced' : 'any')),
             offers_bonus: job.offers_bonus || 'no',
             hiring_urgency: job.hiring_urgency || 'immediate',
             job_timings: job.job_timings || '',
             interview_timings: job.interview_timings || '',
             call_availability: job.call_availability || 'everyday',
-            company_name: job.company_name || emp.company_name || '<?= $employer->attributes['company_name'] ?? '' ?>',
-            contact_person: job.contact_person || '<?= $employer->attributes['contact_person'] ?? $user->attributes['name'] ?? '' ?>',
-            phone: job.phone || '<?= $employer->attributes['phone'] ?? $user->attributes['phone'] ?? '' ?>',
-            email: job.email || '<?= $employer->attributes['email'] ?? $user->attributes['email'] ?? '' ?>',
+            company_name: job.company_name || emp.company_name || '',
+            contact_person: job.contact_person || emp.contact_person || usr.name || '',
+            phone: job.phone || usr.phone || '',
+            email: job.email || usr.email || '',
             contact_profile: job.contact_profile || '',
-            company_size: job.company_size || ''
+            company_size: job.company_size || emp.size || ''
         },
         isSubmitting: false,
+        isSavingDraft: false,
+        notice: { text: '', type: 'error', errors: null, link: '', linkText: '' },
+
+        get selectedBenefits() {
+            return (this.formData.benefit_ids || []).map(id => Number(id)).filter(id => Number.isInteger(id));
+        },
 
         async init() {
             setTimeout(() => this.isLoading = false, 600);
             await this.loadCountries();
-            this.loadCategories();
+            await this.loadCategories();
+            await this.hydrateEditData();
             this.updateCurrencySymbol();
 
             this.$nextTick(() => {
                 setTimeout(() => this.initQuill(), 100);
             });
 
-            if (isEditMode && this.formData.location.country) {
-                // Pass true to preserve existing values during initialization
-                await this.onCountryChange(true);
-                if (this.formData.location.state) {
-                    await this.onStateChange(true);
+        },
+
+        async hydrateEditData() {
+            if (!this.isEditMode || !this.existingJobData) return;
+
+            const currentLocation = { ...(this.formData.location || {}) };
+            this.formData = {
+                ...this.formData,
+                ...this.existingJobData,
+                location: currentLocation
+            };
+
+            this.formData.employment_type = this.existingJobData.employment_type || this.existingJobData.job_type || this.formData.employment_type || 'full_time';
+            this.formData.category = this.existingJobData.category || this.existingJobData.work_category || this.formData.category || '';
+            if (this.formData.category && !this.categories.some(cat => cat.value === this.formData.category)) {
+                this.categories = [
+                    ...this.categories,
+                    { label: this.formData.category, value: this.formData.category }
+                ];
+            }
+            this.formData.skills = normalizeSkills(this.formData.skills.length ? this.formData.skills : existingSkills);
+            this.formData.benefit_ids = (this.formData.benefit_ids || []).map(id => Number(id)).filter(id => Number.isInteger(id));
+            this.formData.description = this.existingJobData.description_html || this.existingJobData.description || this.formData.description || '';
+            this.formData.qualifications = (() => {
+                const qualifications = this.existingJobData.qualifications_array || this.existingJobData.qualifications || this.formData.qualifications || [];
+                if (Array.isArray(qualifications)) return qualifications;
+                try {
+                    const parsed = JSON.parse(qualifications);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch(e) {
+                    return [];
                 }
-            } else if (!isEditMode) {
-                this.getCurrentLocation();
+            })();
+
+            const loc = this.existingLocations.length > 0
+                ? this.existingLocations[0]
+                : (jobLocations.length > 0 ? jobLocations[0] : null);
+
+            if (loc) {
+                const country = loc.country || '';
+                const state = loc.state || '';
+                const city = loc.city || '';
+
+                if (country && !this.countries.some(item => item.name === country)) {
+                    this.countries = [{ name: country }, ...this.countries];
+                }
+
+                this.formData.location = {
+                    ...this.formData.location,
+                    country,
+                    state: '',
+                    city: '',
+                    latitude: loc.latitude || null,
+                    longitude: loc.longitude || null
+                };
+
+                if (country) {
+                    await this.onCountryChange();
+                }
+
+                if (state && !this.states.includes(state)) {
+                    this.states = [state, ...this.states];
+                }
+                this.formData.location.state = state;
+
+                if (state) {
+                    await this.onStateChange();
+                }
+
+                if (city && !this.cities.includes(city)) {
+                    this.cities = [city, ...this.cities];
+                }
+                this.formData.location.city = city;
             }
         },
 
@@ -1388,6 +1569,8 @@ document.addEventListener('alpine:init', () => {
             const done = () => { this.locationLoading = false; };
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
+                    this.formData.location.latitude = pos.coords.latitude;
+                    this.formData.location.longitude = pos.coords.longitude;
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
                     const data = await res.json();
                     const addr = data.address || {};
@@ -1485,69 +1668,125 @@ document.addEventListener('alpine:init', () => {
             } catch(e) { alert('AI generation failed. Please try again.'); }
         },
 
-        async submitJob() {
-            if (window.quillEditor) this.formData.description = window.quillEditor.root.innerHTML;
-            
-            // Append qualifications to description for backward compatibility/rendering
-            if (this.formData.qualifications && this.formData.qualifications.length > 0) {
-                const safeItems = this.formData.qualifications.map(l => this.escapeHtml(l));
-                const eduHtml = '<h5>Education &amp; Qualifications</h5><ul>' + safeItems.map(i => '<li>' + i + '</li>').join('') + '</ul>';
-                this.formData.description = (this.formData.description || '') + eduHtml;
+        showNotice(text, type = 'error', extra = {}) {
+            this.notice = { text, type, errors: extra.errors || null, link: extra.link || '', linkText: extra.linkText || '' };
+            this.$nextTick(() => { const el = this.$root.querySelector('.jwiz-notice'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+        },
+
+        stepForField(field) {
+            const map = { title: 0, category: 0, employment_type: 0, location: 0, job_address: 0, vacancies: 0,
+                          interview_timings: 1, hiring_urgency: 1, min_experience: 1, max_experience: 1, experience_type: 1,
+                          salary_min: 2, salary_max: 2, pay_fixed_amount: 2, pay_amount: 2, skills: 2,
+                          description: 3, email: 4, phone: 4 };
+            return map[field] ?? null;
+        },
+
+        buildPayload(status) {
+            let description = window.quillEditor ? window.quillEditor.root.innerHTML : (this.formData.description || '');
+            if (window.quillEditor && window.quillEditor.root.textContent.trim() === '') description = '';
+            this.formData.description = description;
+
+            // Qualifications are rendered as a list after the description (built fresh each time – never appended twice)
+            let fullDescription = description;
+            if (this.formData.qualifications && this.formData.qualifications.length > 0 && !description.includes('<h5>Education &amp; Qualifications</h5>')) {
+                const items = this.formData.qualifications.map(l => '<li>' + this.escapeHtml(l) + '</li>').join('');
+                fullDescription += '<h5>Education &amp; Qualifications</h5><ul>' + items + '</ul>';
             }
 
-            const submitData = {
+            const payload = {
                 ...this.formData,
-                location: [{ city: this.formData.location.city, state: this.formData.location.state, country: this.formData.location.country }],
+                description: fullDescription,
+                location: [{
+                    city: this.formData.location.city,
+                    state: this.formData.location.state,
+                    country: this.formData.location.country,
+                    latitude: this.formData.location.latitude,
+                    longitude: this.formData.location.longitude
+                }],
                 benefit_ids: this.selectedBenefits,
                 skills: this.formData.skills.map(s => typeof s === 'object' ? s.name : s),
                 salary_min: this.formData.pay_type === 'range' ? Number(this.formData.pay_min || 0) : null,
                 salary_max: this.formData.pay_type === 'range' ? Number(this.formData.pay_amount || 0) : null,
                 pay_fixed_amount: this.formData.pay_type === 'fixed' ? Number(this.formData.pay_amount || 0) : null
             };
+            delete payload.status;
+            if (status) payload.status = status;
+            return payload;
+        },
 
+        async sendJob(status) {
+            this.notice.text = '';
+            const url = isEditMode ? `/employer/jobs/${existingJobData.slug || existingJobData.id}` : '/employer/jobs';
+            let res, data = {};
+            try {
+                res = await fetch(url, {
+                    method: isEditMode ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify(this.buildPayload(status))
+                });
+                data = await res.json().catch(() => ({}));
+            } catch (e) {
+                this.showNotice('Could not reach the server. Please check your internet connection and try again.');
+                return null;
+            }
+
+            if (res.ok) return data;
+
+            if (res.status === 422 && data.errors) {
+                const first = Object.keys(data.errors)[0];
+                const step = this.stepForField(first);
+                if (step !== null && step < this.currentStep) this.currentStep = step;
+                this.showNotice(data.message || 'Please fix the highlighted fields.', 'error', { errors: data.errors });
+            } else if ((res.status === 402 || res.status === 403) && data.redirect) {
+                this.showNotice(data.message || 'Action required before you can post this job.', 'warning',
+                    { link: data.redirect, linkText: res.status === 402 ? 'View subscription plans →' : 'Continue →' });
+            } else if (res.status === 401 || res.status === 419) {
+                this.showNotice('Your session has expired. Please log in again – your form will need to be re-submitted.', 'warning', { link: '/login?redirect=/employer/jobs/create', linkText: 'Log in →' });
+            } else {
+                this.showNotice(data.message || data.error || 'Something went wrong while saving the job. Please try again.');
+            }
+            return null;
+        },
+
+        async submitJob() {
+            if (this.isSubmitting) return;
             this.isSubmitting = true;
             try {
-                const url = isEditMode ? `/employer/jobs/${existingJobData.slug || existingJobData.id}` : '/employer/jobs';
-                const method = isEditMode ? 'PUT' : 'POST';
-                const res = await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
-                    body: JSON.stringify(submitData)
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    try {
-                        if(window.MWMarketing){
-                            var loc = [this.formData.location.city, this.formData.location.state, this.formData.location.country].filter(Boolean).join(', ');
-                            var jid = (data && (data.job_id || (data.job && (data.job.id || (data.job.attributes && data.job.attributes.id))))) ? (data.job_id || data.job.id || (data.job.attributes && data.job.attributes.id)) : null;
-                            var ids = jid ? [parseInt(jid,10)] : [];
-                            var jtitle = (data && (data.job && (data.job.title || (data.job.attributes && data.job.attributes.title)))) ? (data.job.title || (data.job.attributes && data.job.attributes.title)) : '';
-                            var jslug = (data && (data.job && (data.job.slug || (data.job.attributes && data.job.attributes.slug)))) ? (data.job.slug || (data.job.attributes && data.job.attributes.slug)) : '';
-                            window.MWMarketing.trackEmployerPostJob({
-                                content_type: 'job_post',
-                                content_ids: ids,
-                                content_name: jtitle || '',
-                                content_category: this.formData.work_category || '',
-                                content_slug: jslug || '',
-                                location: loc || '',
-                                value: 0,
-                                currency: 'INR'
-                            });
-                        }
-                    } catch(_) {}
-                    window.location.href = '/employer/jobs';
-                } else {
-                    alert(data.message || 'Error posting job');
-                }
-            } catch (e) {
-                alert('Network error occurred');
+                const submitStatus = isEditMode ? (['draft', 'rejected', 'closed'].includes(existingJobData.status) ? 'submit' : undefined) : 'submit';
+                const data = await this.sendJob(submitStatus);
+                if (!data) return;
+                try {
+                    if (window.MWMarketing) {
+                        const loc = [this.formData.location.city, this.formData.location.state, this.formData.location.country].filter(Boolean).join(', ');
+                        window.MWMarketing.trackEmployerPostJob({
+                            content_type: 'job_post', content_ids: data.job_id ? [parseInt(data.job_id, 10)] : [],
+                            content_name: this.formData.title || '', content_category: this.formData.category || '',
+                            content_slug: data.slug || '', location: loc, value: 0, currency: 'INR'
+                        });
+                    }
+                } catch (_) {}
+                window.location.href = data.redirect || '/employer/jobs';
             } finally {
                 this.isSubmitting = false;
             }
         },
 
         async saveDraft() {
-            alert('Draft saved!');
+            if (this.isSubmitting) return;
+            if (!this.formData.title || this.formData.title.trim().length < 3) {
+                this.currentStep = 0;
+                this.showNotice('Add a job title (at least 3 characters) before saving a draft.');
+                return;
+            }
+            this.isSubmitting = true;
+            this.isSavingDraft = true;
+            try {
+                const data = await this.sendJob(isEditMode ? undefined : 'draft');
+                if (data) window.location.href = data.redirect || '/employer/jobs?saved=draft';
+            } finally {
+                this.isSubmitting = false;
+                this.isSavingDraft = false;
+            }
         }
     };
     });
@@ -1556,3 +1795,13 @@ document.addEventListener('alpine:init', () => {
 <?php
 $scripts = ($scripts ?? '') . ob_get_clean();
 ?>
+
+
+
+
+
+
+
+
+
+

@@ -136,6 +136,59 @@ class MessagesController extends BaseController
     }
 
     /**
+     * Redirect to chat with candidate - creates conversation if not exists
+     */
+    public function chat(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) {
+            return;
+        }
+
+        $employer = $this->currentUser->employer();
+        $candidateId = (int)$request->get('candidate_id');
+
+        if (!$candidateId) {
+            $response->redirect('/employer/messages');
+            return;
+        }
+
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            $response->redirect('/employer/messages?error=candidate_not_found');
+            return;
+        }
+
+        $candidateUserId = (int)$candidate->user_id;
+
+        // Check if conversation exists
+        $existing = Conversation::where('employer_id', '=', $employer->id)
+            ->where('candidate_user_id', '=', $candidateUserId)
+            ->first();
+
+        if ($existing) {
+            $response->redirect('/employer/messages?conversation=' . $existing->id);
+            return;
+        }
+
+        // Auto-create conversation
+        $conversation = new Conversation();
+        $conversation->fill([
+            'employer_id' => $employer->id,
+            'candidate_user_id' => $candidateUserId,
+            'unread_employer' => 0,
+            'unread_candidate' => 0,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if ($conversation->save()) {
+            $response->redirect('/employer/messages?conversation=' . $conversation->id);
+        } else {
+            $response->redirect('/employer/messages?error=failed_to_start_chat');
+        }
+    }
+
+    /**
      * Get conversation details with messages
      */
     public function getConversation(Request $request, Response $response): void
@@ -146,7 +199,7 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
@@ -154,7 +207,7 @@ class MessagesController extends BaseController
         $conversation = Conversation::find($conversationId);
 
         if (!$conversation || $conversation->attributes['employer_id'] !== $employer->id) {
-            $response->json(['error' => 'Conversation not found'], 404);
+            $this->error($response, 'Conversation not found', 404);
             return;
         }
 
@@ -178,7 +231,7 @@ class MessagesController extends BaseController
             }
         }
 
-        $response->json([
+        $this->success($response, [
             'conversation' => $conversation->attributes,
             'messages' => array_map(fn($m) => $this->formatMessage($m), $messages),
             'candidate' => $candidate ? [
@@ -205,7 +258,7 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
@@ -243,19 +296,9 @@ class MessagesController extends BaseController
                 }
             }
         }
-        
-        // Debug: Log file detection
-        error_log("Message Send - Body: " . ($body ?: 'empty'));
-        error_log("Message Send - Has files: " . ($hasFiles ? 'YES' : 'NO'));
-        error_log("Message Send - \$_FILES keys: " . implode(', ', array_keys($_FILES ?? [])));
-        if (!empty($_FILES)) {
-            foreach ($_FILES as $key => $file) {
-                error_log("Message Send - File '$key': error=" . ($file['error'] ?? 'N/A') . ", name=" . ($file['name'] ?? 'N/A') . ", size=" . ($file['size'] ?? 'N/A'));
-            }
-        }
 
         if (empty($body) && !$hasFiles) {
-            $response->json(['error' => 'Message body or attachment is required'], 422);
+            $this->error($response, 'Message body or attachment is required', 422);
             return;
         }
         
@@ -271,13 +314,13 @@ class MessagesController extends BaseController
                 UPLOAD_ERR_EXTENSION => 'File upload stopped by extension'
             ];
             $errorMsg = $errorMessages[$fileError] ?? 'File upload error (code: ' . $fileError . ')';
-            $response->json(['error' => $errorMsg], 422);
+            $this->error($response, $errorMsg, 422);
             return;
         }
 
         $conversation = Conversation::find($conversationId);
         if (!$conversation || $conversation->attributes['employer_id'] !== $employer->id) {
-            $response->json(['error' => 'Conversation not found'], 404);
+            $this->error($response, 'Conversation not found', 404);
             return;
         }
 
@@ -331,8 +374,7 @@ class MessagesController extends BaseController
             $messageId = $message->id ?? $message->attributes['id'] ?? null;
             
             if (!$messageId) {
-                error_log("Message saved but no ID found. Attributes: " . json_encode($message->attributes));
-                $response->json(['error' => 'Message saved but ID not found'], 500);
+                $this->error($response, 'Message saved but ID not found', 500);
                 return;
             }
             
@@ -357,30 +399,21 @@ class MessagesController extends BaseController
                     );
                 } catch (\Exception $e) {
                     error_log("Failed to create notification: " . $e->getMessage());
-                    // Don't fail the request if notification fails
                 }
             }
 
             try {
                 $formattedMessage = $this->formatMessage($message);
-                $response->json([
-                    'success' => true,
-                    'message' => $formattedMessage
-                ], 201);
+                $this->success($response, $formattedMessage, 'Message sent', 201);
             } catch (\Exception $e) {
-                error_log("Error formatting message in response: " . $e->getMessage());
-                $response->json([
-                    'success' => true,
-                    'message' => [
-                        'id' => $messageId,
-                        'body' => $body,
-                        'created_at' => date('Y-m-d H:i:s')
-                    ]
-                ], 201);
+                $this->success($response, [
+                    'id' => $messageId,
+                    'body' => $body,
+                    'created_at' => date('Y-m-d H:i:s')
+                ], 'Message sent', 201);
             }
         } else {
-            error_log("Failed to save message. Attributes: " . json_encode($message->attributes));
-            $response->json(['error' => 'Failed to send message'], 500);
+            $this->error($response, 'Failed to send message', 500);
         }
     }
 
@@ -395,7 +428,7 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
@@ -405,7 +438,7 @@ class MessagesController extends BaseController
         $conversation = Conversation::find($conversationId);
 
         if (!$conversation || $conversation->attributes['employer_id'] !== $employer->id) {
-            $response->json(['error' => 'Conversation not found'], 404);
+            $this->error($response, 'Conversation not found', 404);
             return;
         }
 
@@ -420,7 +453,7 @@ class MessagesController extends BaseController
         
         $messages = $query->orderBy('created_at', 'ASC')->get();
         
-        $response->json([
+        $this->success($response, [
             'messages' => array_map(fn($m) => $this->formatMessage($m), $messages)
         ]);
     }
@@ -436,12 +469,12 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json(['error' => 'Employer profile not found'], 404);
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
         $totalUnread = $this->getTotalUnreadMessages($employer->id);
-        $response->json(['unread_count' => $totalUnread]);
+        $this->success($response, ['unread_count' => $totalUnread]);
     }
 
     /**
@@ -456,7 +489,7 @@ class MessagesController extends BaseController
 
         $employer = $this->currentUser->employer();
         if (!$employer) {
-            $response->json([], 404, 'Employer profile not found', false);
+            $this->error($response, 'Employer profile not found', 404);
             return;
         }
 
@@ -467,10 +500,10 @@ class MessagesController extends BaseController
         $chatEnabled = $plan ? (bool)$plan->hasFeature('chat_enabled') : false;
         $canChat = $active && $chatEnabled && $subscription->canUseFeature('max_chat_messages');
         if (!$canChat) {
-            $response->json([
+            $this->success($response, [
                 'requires_upgrade' => true,
                 'redirect' => '/employer/subscription/plans?upgrade=1&feature=chat'
-            ], 402, 'Messaging requires an active subscription', false);
+            ], 'Messaging requires an active subscription', 402);
             return;
         }
 
@@ -480,7 +513,7 @@ class MessagesController extends BaseController
         $initialMessage = trim($data['initial_message'] ?? '');
 
         if (!$candidateUserId) {
-            $response->json([], 422, 'Candidate user ID is required', false);
+            $this->error($response, 'Candidate user ID is required', 422);
             return;
         }
 
@@ -518,7 +551,7 @@ class MessagesController extends BaseController
                 }
             }
 
-            $response->json([
+            $this->success($response, [
                 'success' => true,
                 'conversation_id' => $existing->id,
                 'message' => 'Conversation already exists'
@@ -577,12 +610,12 @@ class MessagesController extends BaseController
                 }
             }
 
-            $response->json([
+            $this->success($response, [
                 'success' => true,
                 'conversation_id' => $conversation->id
-            ], 201);
+            ], 'Conversation started', 201);
         } else {
-            $response->json(['error' => 'Failed to create conversation'], 500);
+            $this->error($response, 'Failed to create conversation', 500);
         }
     }
 

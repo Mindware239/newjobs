@@ -21,8 +21,8 @@
     .blog-preview table{width:100%;border-collapse:collapse;margin:1rem 0}
     .blog-preview th,.blog-preview td{border:1px solid #e5e7eb;padding:.6rem .9rem}
     .blog-preview tr:nth-child(odd){background:#fafafa}
-    .blog-preview a{color:#2563eb;text-decoration:none;border-bottom:1px solid #bfdbfe}
-    .blog-preview a:hover{color:#1d4ed8;border-bottom-color:#93c5fd}
+    .blog-preview a{color:#f05537;text-decoration:none;border-bottom:1px solid #fff1ed}
+    .blog-preview a:hover{color:#FF6A3D;border-bottom-color:#93c5fd}
     .blog-preview hr{border:0;border-top:1px solid #e5e7eb;margin:1.5rem 0}
     .blog-preview img{max-width:100%;height:auto;border-radius:.5rem;margin:1rem 0}
     .blog-preview code{background:#f3f4f6;border:1px solid #e5e7eb;padding:.15rem .35rem;border-radius:.3rem}
@@ -37,6 +37,17 @@
     <?= $blog['content'] ?? '' ?>
   </div>
   <div class="mt-6">
-    <a href="/blog/<?= htmlspecialchars($blog['slug'] ?? '') ?>" class="text-blue-600 hover:underline" target="_blank">View public page</a>
+    <a href="/blog/<?= htmlspecialchars($blog['slug'] ?? '') ?>" class="text-primary hover:underline" target="_blank">View public page</a>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

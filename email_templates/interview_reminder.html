@@ -1,0 +1,16 @@
+<h1 style="color: #111827; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Interview Reminder</h1>
+<p>Hello {{user_name}},</p>
+<p>This is a friendly reminder for your upcoming interview with <strong>{{company_name}}</strong> for the <strong>{{job_title}}</strong> role.</p>
+<div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 25px; margin: 30px 0; border-radius: 8px; text-align: center;">
+    <p style="font-size: 20px; font-weight: 700; color: #92400e; margin-bottom: 10px;">{{time_remaining}}</p>
+    <p style="margin: 0; color: #b45309;">{{interview_date}} at {{interview_time}}</p>
+</div>
+<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+    <p style="margin: 5px 0;"><strong>Mode:</strong> {{interview_mode}}</p>
+    {{meeting_link_display}}
+</div>
+<div style="text-align: center; margin: 35px 0;">
+    <a href="{{cta_link}}" class="btn" style="display: inline-block; background-color: #ff5a36; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 16px;">Join Interview</a>
+</div>
+<p>Make sure you have a stable internet connection and are in a quiet environment. All the best!</p>
+<p>Best Regards,<br />Team Jobsence</p>

@@ -29,8 +29,9 @@ class JobController
         
         // Get job with company information
         $sql = "SELECT j.*, 
-                       e.company_name, e.description as company_description, 
-                       e.logo_url as company_logo, e.website as company_website, 
+                       COALESCE(j.company_name, e.company_name) as resolved_company_name,
+                       e.description as company_description, 
+                       COALESCE(j.company_logo, e.logo_url) as resolved_company_logo, e.website as company_website, 
                        e.company_slug, e.id as employer_id,
                        c.id as company_id, c.name as company_full_name, c.slug as company_slug_from_companies,
                        c.banner_url, c.logo_url as company_logo_from_companies,
@@ -124,10 +125,10 @@ class JobController
         if (empty($company) || !is_array($company)) {
             $company = [
                 'id' => $companyId,
-                'name' => $row['company_full_name'] ?? $row['company_name'] ?? 'Company',
+                'name' => $row['company_full_name'] ?? $row['resolved_company_name'] ?? 'Company',
                 'slug' => $row['company_slug_from_companies'] ?? $row['company_slug'] ?? '',
                 'banner_url' => $row['banner_url'] ?? null,
-                'logo_url' => $row['company_logo_from_companies'] ?? $row['company_logo'] ?? null,
+                'logo_url' => $row['company_logo_from_companies'] ?? $row['resolved_company_logo'] ?? null,
                 'description' => $row['company_about'] ?? $row['company_description'] ?? '',
                 'ceo_name' => $row['ceo_name'] ?? null,
                 'ceo_photo' => $row['ceo_photo'] ?? null,
@@ -138,6 +139,23 @@ class JobController
                 'website' => $row['company_website'] ?? null
             ];
         }
+
+        // External jobs posted by admin should display the job's own company branding,
+        // not the admin employer/company profile identity.
+        $isExternalJob = (($row['job_type'] ?? 'internal') === 'external');
+        $jobCompanyName = trim((string)($row['resolved_company_name'] ?? ''));
+        $jobCompanyLogo = trim((string)($row['resolved_company_logo'] ?? ''));
+        if ($isExternalJob) {
+            if ($jobCompanyName !== '') {
+                $company['name'] = $jobCompanyName;
+            }
+            if ($jobCompanyLogo !== '') {
+                $company['logo_url'] = $jobCompanyLogo;
+            }
+            // External listings may not map to an internal public company profile.
+            $company['id'] = 0;
+            $company['slug'] = '';
+        }
         
         // Get company stats (rating, reviews, followers)
         $companyStats = [
@@ -145,7 +163,7 @@ class JobController
             'reviews_count' => 0,
             'followers_count' => 0
         ];
-        if ($companyId > 0) {
+        if (!$isExternalJob && $companyId > 0) {
             try {
                 $companyModel = new Company();
                 $stats = $companyModel->getStats($companyId);
@@ -159,7 +177,7 @@ class JobController
         
         // Get company blogs (published only)
         $companyBlogs = [];
-        if ($companyId > 0) {
+        if (!$isExternalJob && $companyId > 0) {
             try {
                 $blogModel = new CompanyBlog();
                 $blogs = $blogModel->getByCompanyId($companyId);
@@ -176,11 +194,19 @@ class JobController
         
         // Get other jobs from same company
         $otherJobs = [];
-        if ($employerId > 0) {
+        if (!$isExternalJob && $employerId > 0) {
             try {
                 $otherJobs = $db->fetchAll(
                     "SELECT j.*, 
-                     GROUP_CONCAT(DISTINCT CONCAT_WS(', ', NULLIF(TRIM(c.name), ''), NULLIF(TRIM(s.name), ''), NULLIF(TRIM(cnt.name), '')) SEPARATOR ' | ') as location_display
+                     COALESCE(
+                        GROUP_CONCAT(DISTINCT TRIM(CONCAT_WS(', ', 
+                            NULLIF(TRIM(COALESCE(c.name, jl.city)), ''), 
+                            NULLIF(TRIM(COALESCE(s.name, jl.state)), ''), 
+                            NULLIF(TRIM(COALESCE(cnt.name, jl.country)), '')
+                        )) SEPARATOR ' | '),
+                        j.locations,
+                        'Location not specified'
+                     ) as location_display
                      FROM jobs j
                      LEFT JOIN job_locations jl ON jl.job_id = j.id
                      LEFT JOIN cities c ON jl.city_id = c.id
@@ -222,6 +248,7 @@ class JobController
                     // Check application
                     $hasApplied = \App\Models\Application::where('candidate_user_id', '=', (int)$userId)
                         ->where('job_id', '=', $jobId)
+                        ->where('status', '!=', 'withdrawn')
                         ->first() !== null;
                     
                     // Check if following company
@@ -254,13 +281,69 @@ class JobController
                 $view->save();
             }
         }
+
+        // Track public job views (guest + logged-in) once per session/day
+        try {
+            $sessionKey = 'job_view_logged_' . $jobId . '_' . date('Ymd');
+            if (empty($_SESSION[$sessionKey])) {
+                $db->execute(
+                    "INSERT INTO job_views_log (job_id, user_id, ip_address, user_agent, viewed_at)
+                     VALUES (:job_id, :user_id, :ip_address, :user_agent, NOW())",
+                    [
+                        'job_id' => $jobId,
+                        'user_id' => isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
+                        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+                        'user_agent' => substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 1000),
+                    ]
+                );
+                $_SESSION[$sessionKey] = 1;
+            }
+        } catch (\Throwable $e) {
+            // Graceful fallback if analytics table is missing
+            error_log("Job view log insert skipped: " . $e->getMessage());
+        }
+
+        // Dynamic sidebar metrics
+        $viewsCount = 0;
+        $applicationsCount = 0;
+        $shortlistedCount = 0;
+        try {
+            $counts = $db->fetchOne(
+                "SELECT 
+                    COUNT(*) AS applications_count,
+                    SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) AS shortlisted_count
+                 FROM applications
+                 WHERE job_id = :job_id",
+                ['job_id' => $jobId]
+            ) ?? [];
+            $applicationsCount = (int)($counts['applications_count'] ?? 0);
+            $shortlistedCount = (int)($counts['shortlisted_count'] ?? 0);
+        } catch (\Throwable $e) {
+            error_log("Applications metrics fetch failed: " . $e->getMessage());
+        }
+        try {
+            $viewsCount = (int)(($db->fetchOne(
+                "SELECT COUNT(*) AS total FROM job_views_log WHERE job_id = :job_id",
+                ['job_id' => $jobId]
+            )['total'] ?? 0));
+        } catch (\Throwable $e) {
+            // Fallback to legacy table
+            try {
+                $viewsCount = (int) JobView::where('job_id', '=', $jobId)->count();
+            } catch (\Throwable $ignored) {
+                $viewsCount = 0;
+            }
+        }
         
         // Format job data
         $jobData = $row;
-        $jobData['location_display'] = !empty($locationStrings) ? implode(' | ', $locationStrings) : 'Location not specified';
+        $jobData['location_display'] = !empty($locationStrings) ? implode(' | ', $locationStrings) : (!empty($row['locations']) ? $row['locations'] : 'Location not specified');
         $jobData['skills'] = $skills;
         $jobData['is_bookmarked'] = $isBookmarked;
         $jobData['has_applied'] = $hasApplied;
+        $jobData['views_count'] = $viewsCount;
+        $jobData['applications_count'] = $applicationsCount;
+        $jobData['shortlisted_count'] = $shortlistedCount;
         
         // Format employment type
         $employmentType = $jobData['employment_type'] ?? 'full_time';

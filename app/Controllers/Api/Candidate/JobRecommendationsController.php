@@ -8,9 +8,17 @@ use App\Controllers\Api\ApiController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Candidate;
+use App\Repositories\CandidateRecommendationRepository;
 
 class JobRecommendationsController extends ApiController
 {
+    private CandidateRecommendationRepository $recommendationRepository;
+
+    public function __construct()
+    {
+        $this->recommendationRepository = new CandidateRecommendationRepository();
+    }
+
     public function getRecommendedJobs(Request $request, Response $response): void
     {
         $user = $this->user($request);
@@ -26,20 +34,7 @@ class JobRecommendationsController extends ApiController
         }
 
         $candidateId = $candidate->attributes['id'];
-        $db = \App\Core\Database::getInstance();
-        
-        $sql = "SELECT
-                    j.id, j.title, j.slug, j.short_description,
-                    j.salary_min, j.salary_max, j.currency,
-                    j.employment_type, j.is_remote, j.company_name, j.location,
-                    cjs.overall_match_score, cjs.recommendation
-                FROM candidate_job_scores cjs
-                JOIN jobs j ON cjs.job_id = j.id
-                WHERE cjs.candidate_id = :candidate_id AND j.status = 'published'
-                ORDER BY cjs.overall_match_score DESC
-                LIMIT 20";
-
-        $recommendedJobs = $db->fetchAll($sql, ['candidate_id' => $candidateId]);
+        $recommendedJobs = $this->recommendationRepository->getRecommendedJobs((int)$candidateId, 20);
         
         $this->success($response, [
             'recommended_jobs' => $recommendedJobs ?: []

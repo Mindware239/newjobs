@@ -11,10 +11,10 @@
   <div class="mb-6">
     <form method="GET" action="/blog" class="flex gap-2">
       <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search articles..." class="flex-1 px-4 py-2 border rounded">
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Search</button>
+      <button type="submit" class="px-4 py-2 bg-primary text-white rounded">Search</button>
     </form>
   </div>
-  <!-- <h1 class="text-3xl font-extrabold mb-6">Mindware Infotech Blog</h1> -->
+  <!-- <h1 class="text-3xl font-extrabold mb-6">Jobsence Blog</h1> -->
   <?php if (!empty($featured)): ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
       <?php foreach ($featured as $f): ?>

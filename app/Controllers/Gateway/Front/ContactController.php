@@ -54,7 +54,7 @@ class ContactController
         
         // Use ADMIN_MAIL from .env as the primary recipient
         $to = $_ENV['ADMIN_MAIL'] ?? $_ENV['MAIL_RECIPIENT'] ?? "gm@indianbarcode.com";
-        $site_name = $_ENV['APP_NAME'] ?? "Mind Infotech";
+        $site_name = $_ENV['APP_NAME'] ?? "Jobsence";
 
         $email_subject = "New Contact Submission from {$site_name}: " . $subject;
         

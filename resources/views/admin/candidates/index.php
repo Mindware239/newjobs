@@ -1,302 +1,401 @@
+<?php
+/** @var array $candidates */
+/** @var array $pagination */
+/** @var array $filters */
+/** @var array $stats */
+/** @var \App\Models\User $user */
+?>
 <div>
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Manage Candidates</h1>
-            <p class="mt-2 text-sm text-gray-600">View, search, and manage all candidate profiles.</p>
+            <p class="mt-2 text-sm text-gray-600">Advanced recruitment CRM for candidate management.</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-            <a href="/admin/candidates/add" class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+        <div class="flex flex-wrap gap-3">
+            <div class="relative inline-block text-left" x-data="{ open: false }">
+                <button @click="open = !open" type="button" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                    <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Export Data
+                </button>
+                <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                    <div class="py-1">
+                        <a href="?export=csv&<?= http_build_query($filters) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as CSV</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as Excel</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export as PDF</a>
+                    </div>
+                </div>
+            </div>
+            <a href="/admin/candidates/add" class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 Add Candidate
             </a>
-            <a href="/admin/candidates/import" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                </svg>
-                Import
-            </a>
-            <a href="/admin/candidates/import-history" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                History
-            </a>
         </div>
     </div>
 
-    <!-- Stats -->
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center">
-            <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Candidates</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900"><?= number_format($stats['total'] ?? 0) ?></p>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
             </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Total Candidates</p>
-                <p class="text-2xl font-bold text-gray-900"><?= number_format($stats['total'] ?? 0) ?></p>
-            </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center">
-            <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Admin Created</p>
-                <p class="text-2xl font-bold text-gray-900"><?= number_format($stats['admin'] ?? 0) ?></p>
-            </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center">
-            <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Website</p>
-                <p class="text-2xl font-bold text-gray-900"><?= number_format($stats['website'] ?? 0) ?></p>
+            <div class="mt-3 flex items-center text-sm">
+                <span class="text-green-600 font-medium flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    +<?= $stats['new_today'] ?? 0 ?>
+                </span>
+                <span class="text-gray-500 ml-2">since today</span>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center">
-            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Verified Profiles</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900"><?= number_format($stats['verified'] ?? 0) ?></p>
+                </div>
+                <div class="p-3 bg-green-50 text-green-600 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
             </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Imported</p>
-                <p class="text-2xl font-bold text-gray-900"><?= number_format($stats['excel'] ?? 0) ?></p>
+            <div class="mt-3">
+                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                    <div class="bg-green-500 h-1.5 rounded-full" style="width: <?= $stats['total'] > 0 ? ($stats['verified'] / $stats['total'] * 100) : 0 ?>%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Premium Members</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900"><?= number_format($stats['premium'] ?? 0) ?></p>
+                </div>
+                <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-gray-500">
+                <span class="font-medium text-gray-900"><?= number_format($stats['premium'] ?? 0) ?></span> active premium subscriptions
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Immediate Joiners</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">0</p>
+                </div>
+                <div class="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+            <div class="mt-3 text-sm text-gray-500">
+                Based on notice period data
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-        <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-semibold text-gray-900">Filter Candidates</h2>
-            <a href="/admin/candidates" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">Clear All</a>
-        </div>
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
-            <div class="lg:col-span-4">
-                <label for="search" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Search</label>
+    <!-- Advanced Filters -->
+    <div x-data="{ showAdvanced: false, dateRange: '<?= $filters['date_range'] ?? '' ?>' }" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 transition-all duration-300">
+        <form method="GET" id="filterForm">
+            <!-- Global Search & Basic Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                    </div>
-                    <input type="text" name="search" id="search" value="<?= htmlspecialchars($filters['search'] ?? '') ?>" 
-                           placeholder="Search by name, email, or phone..." 
-                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow">
+                    </span>
+                    <input type="text" name="search" value="<?= htmlspecialchars($filters['search'] ?? '') ?>" 
+                           placeholder="Global search (Name, Email, Phone, ID)..." 
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm">
                 </div>
-            </div>
 
-            <div class="lg:col-span-2">
-                <label for="status" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Status</label>
-                <select name="status" id="status" class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow">
-                    <option value="all" <?= ($filters['status'] ?? 'all') === 'all' ? 'selected' : '' ?>>All Status</option>
+                <select name="status" class="block w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm">
+                    <option value="all">All Status</option>
                     <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
                     <option value="blocked" <?= ($filters['status'] ?? '') === 'blocked' ? 'selected' : '' ?>>Blocked</option>
                     <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
                 </select>
-            </div>
 
-            <div class="lg:col-span-2">
-                <label for="filter" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Type</label>
-                <select name="filter" id="filter" class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow">
-                    <option value="">All Types</option>
-                    <option value="suspicious" <?= ($filters['filter'] ?? '') === 'suspicious' ? 'selected' : '' ?>>Suspicious</option>
-                    <option value="premium" <?= ($filters['filter'] ?? '') === 'premium' ? 'selected' : '' ?>>Premium</option>
+                <select name="role" class="block w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary sm:text-sm">
+                    <option value="">All Job Roles</option>
+                    <option value="Software Developer" <?= ($filters['role'] ?? '') === 'Software Developer' ? 'selected' : '' ?>>Software Developer</option>
+                    <option value="UI/UX Designer" <?= ($filters['role'] ?? '') === 'UI/UX Designer' ? 'selected' : '' ?>>UI/UX Designer</option>
+                    <option value="HR Manager" <?= ($filters['role'] ?? '') === 'HR Manager' ? 'selected' : '' ?>>HR Manager</option>
+                    <option value="Sales Executive" <?= ($filters['role'] ?? '') === 'Sales Executive' ? 'selected' : '' ?>>Sales Executive</option>
                 </select>
-            </div>
-            
-            <div class="lg:col-span-2">
-                <label for="source" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Source</label>
-                <select name="source" id="source" class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow">
-                    <option value="" <?= ($filters['source'] ?? '') === '' ? 'selected' : '' ?>>All Sources</option>
-                    <option value="admin_manual" <?= ($filters['source'] ?? '') === 'admin_manual' ? 'selected' : '' ?>>Manual (Admin)</option>
-                    <option value="walk_in" <?= ($filters['source'] ?? '') === 'walk_in' ? 'selected' : '' ?>>Walk-in</option>
-                    <option value="referral" <?= ($filters['source'] ?? '') === 'referral' ? 'selected' : '' ?>>Referral</option>
-                    <option value="social_media" <?= ($filters['source'] ?? '') === 'social_media' ? 'selected' : '' ?>>Social Media</option>
-                    <option value="job_fair" <?= ($filters['source'] ?? '') === 'job_fair' ? 'selected' : '' ?>>Job Fair</option>
-                    <option value="excel" <?= ($filters['source'] ?? '') === 'excel' ? 'selected' : '' ?>>Imported (Excel)</option>
-                </select>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">Apply</button>
+                    <button @click.prevent="showAdvanced = !showAdvanced" class="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium flex items-center">
+                        <svg :class="{'rotate-180': showAdvanced}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <a href="/admin/candidates" class="py-2 px-3 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </a>
+                </div>
             </div>
 
-            <div class="lg:col-span-2">
-                <label for="location" class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Location</label>
-                <input type="text" name="location" id="location" value="<?= htmlspecialchars($filters['location'] ?? '') ?>"
-                       placeholder="City or State"
-                       class="block w-full py-2.5 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow">
-            </div>
+            <!-- Advanced Filters Section (Collapsible) -->
+            <div x-show="showAdvanced" x-collapse x-cloak class="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Location Group -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Location & Region</h4>
+                    <div class="space-y-3">
+                        <input type="text" name="country" placeholder="Country" value="<?= htmlspecialchars($filters['country'] ?? '') ?>" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                        <input type="text" name="state" placeholder="State" value="<?= htmlspecialchars($filters['state'] ?? '') ?>" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                        <input type="text" name="city" placeholder="City" value="<?= htmlspecialchars($filters['city'] ?? '') ?>" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                    </div>
+                </div>
 
-            <div class="lg:col-span-2">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">&nbsp;</label>
-                <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    Apply Filters
-                </button>
+                <!-- Experience & Salary -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Experience & Salary</h4>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input type="number" name="min_experience" placeholder="Min Exp" value="<?= htmlspecialchars($filters['min_experience'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <input type="number" name="max_experience" placeholder="Max Exp" value="<?= htmlspecialchars($filters['max_experience'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="number" name="min_salary" placeholder="Min Salary" value="<?= htmlspecialchars($filters['min_salary'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <input type="number" name="max_salary" placeholder="Max Salary" value="<?= htmlspecialchars($filters['max_salary'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                        </div>
+                        <select name="notice_period" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">Any Notice Period</option>
+                            <option value="0">Immediate</option>
+                            <option value="15">15 Days</option>
+                            <option value="30">30 Days</option>
+                            <option value="60">60+ Days</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Profile & Verification -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Verification & Documents</h4>
+                    <div class="space-y-3">
+                        <select name="verification_status" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">Verification Status</option>
+                            <option value="verified" <?= ($filters['verification_status'] ?? '') === 'verified' ? 'selected' : '' ?>>Verified</option>
+                            <option value="not_verified" <?= ($filters['verification_status'] ?? '') === 'not_verified' ? 'selected' : '' ?>>Not Verified</option>
+                        </select>
+                        <select name="has_resume" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">Resume Status</option>
+                            <option value="1" <?= ($filters['has_resume'] ?? '') === '1' ? 'selected' : '' ?>>Resume Uploaded</option>
+                            <option value="0" <?= ($filters['has_resume'] ?? '') === '0' ? 'selected' : '' ?>>No Resume</option>
+                        </select>
+                        <select name="gender" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">Any Gender</option>
+                            <option value="male" <?= ($filters['gender'] ?? '') === 'male' ? 'selected' : '' ?>>Male</option>
+                            <option value="female" <?= ($filters['gender'] ?? '') === 'female' ? 'selected' : '' ?>>Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date Ranges -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Date Filter</h4>
+                    <div class="space-y-3">
+                        <select name="date_type" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="created_at" <?= ($filters['date_type'] ?? '') === 'created_at' ? 'selected' : '' ?>>Registration Date</option>
+                            <option value="last_login" <?= ($filters['date_type'] ?? '') === 'last_login' ? 'selected' : '' ?>>Last Login</option>
+                            <option value="updated_at" <?= ($filters['date_type'] ?? '') === 'updated_at' ? 'selected' : '' ?>>Profile Update</option>
+                        </select>
+                        <select name="date_range" x-model="dateRange" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">All Time</option>
+                            <option value="today" <?= ($filters['date_range'] ?? '') === 'today' ? 'selected' : '' ?>>Today</option>
+                            <option value="yesterday" <?= ($filters['date_range'] ?? '') === 'yesterday' ? 'selected' : '' ?>>Yesterday</option>
+                            <option value="last_7_days" <?= ($filters['date_range'] ?? '') === 'last_7_days' ? 'selected' : '' ?>>Last 7 Days</option>
+                            <option value="last_30_days" <?= ($filters['date_range'] ?? '') === 'last_30_days' ? 'selected' : '' ?>>Last 30 Days</option>
+                            <option value="custom" <?= ($filters['date_range'] ?? '') === 'custom' ? 'selected' : '' ?>>Custom Range</option>
+                        </select>
+                        <div x-show="dateRange === 'custom'" class="flex gap-2">
+                            <input type="date" name="start_date" value="<?= htmlspecialchars($filters['start_date'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <input type="date" name="end_date" value="<?= htmlspecialchars($filters['end_date'] ?? '') ?>" class="w-1/2 py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Candidates Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Active Filter Chips -->
+    <?php if(!empty($filters)): ?>
+    <div class="flex flex-wrap gap-2 mb-6">
+        <?php foreach($filters as $key => $value): if(empty($value) || in_array($key, ['page', 'per_page'])) continue; ?>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-50 text-primary text-xs font-medium border border-primary-100">
+                <?= ucfirst(str_replace('_', ' ', $key)) ?>: <?= htmlspecialchars((string)$value) ?>
+                <a href="<?= '?' . http_build_query(array_diff_key($filters, [$key => ''])) ?>" class="ml-2 hover:text-primary-700">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </a>
+            </span>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Candidate CRM Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ selected: [] }">
+        <!-- Table Actions Bar -->
+        <form method="POST" action="/admin/candidates/bulk-action" id="bulkForm" class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+            <div class="flex items-center gap-4">
+                <input type="checkbox" @change="if($el.checked) { selected = Array.from(document.querySelectorAll('.cand-check')).map(el => el.value) } else { selected = [] }" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                <div x-show="selected.length > 0" class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-gray-700"><span x-text="selected.length"></span> selected</span>
+                    <select name="action" @change="if($el.value === 'export') { $el.closest('form').action = '/admin/candidates/export-selected'; $el.closest('form').submit(); } else { $el.closest('form').submit(); }" class="py-1 px-3 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        <option value="">Bulk Actions</option>
+                        <option value="activate">Activate Selected</option>
+                        <option value="block">Block Selected</option>
+                        <option value="export">Export Selected</option>
+                        <option value="delete">Delete Selected</option>
+                    </select>
+                    <template x-for="id in selected">
+                        <input type="hidden" name="ids[]" :value="id">
+                    </template>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-medium text-gray-400">View:</span>
+                <button type="button" class="p-1.5 text-primary bg-primary-50 rounded"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg></button>
+                <button type="button" class="p-1.5 text-gray-400 hover:text-gray-600 rounded"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></button>
+            </div>
+        </form>
+
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Candidate</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact Info</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stats & Premium</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Verification</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4"></th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Candidate Profile</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Applied Role & Exp</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Contact & Social</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Activity</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-100">
+                    <?php if(empty($candidates)): ?>
+                        <tr>
+                            <td colspan="7" class="px-6 py-24 text-center">
+                                <div class="max-w-xs mx-auto">
+                                    <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No candidates found</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filters to find what you're looking for.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                     <?php foreach ($candidates as $candidate): ?>
-                    <tr class="hover:bg-gray-50 transition-colors duration-150 group">
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4">
+                            <input type="checkbox" value="<?= $candidate['id'] ?>" x-model="selected" class="cand-check h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="flex-shrink-0 h-12 w-12">
+                                <div class="flex-shrink-0 h-10 w-10 relative">
+                                    <?php 
+                                        $initials = strtoupper(substr($candidate['full_name'] ?? 'U', 0, 1));
+                                        $colors = [
+                                            'bg-blue-100 text-blue-700',
+                                            'bg-green-100 text-green-700',
+                                            'bg-purple-100 text-purple-700',
+                                            'bg-pink-100 text-pink-700',
+                                            'bg-indigo-100 text-indigo-700',
+                                            'bg-yellow-100 text-yellow-700',
+                                            'bg-orange-100 text-orange-700',
+                                            'bg-teal-100 text-teal-700'
+                                        ];
+                                        $colorClass = $colors[$candidate['id'] % count($colors)];
+                                    ?>
                                     <?php if (!empty($candidate['profile_picture'])): ?>
-                                        <img class="h-12 w-12 rounded-full object-cover border border-gray-200 shadow-sm" src="<?= htmlspecialchars($candidate['profile_picture']) ?>" alt="">
+                                        <img class="h-10 w-10 rounded-lg object-cover border border-gray-100" 
+                                             src="<?= htmlspecialchars($candidate['profile_picture']) ?>" 
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                             alt="">
+                                        <span class="hidden items-center justify-center h-10 w-10 rounded-lg font-bold <?= $colorClass ?>">
+                                            <?= $initials ?>
+                                        </span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 shadow-sm">
-                                            <span class="text-sm font-bold leading-none text-white"><?= strtoupper(substr($candidate['full_name'] ?? 'U', 0, 2)) ?></span>
+                                        <span class="inline-flex items-center justify-center h-10 w-10 rounded-lg font-bold <?= $colorClass ?>">
+                                            <?= $initials ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if($candidate['is_premium']): ?>
+                                        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
                                         </span>
                                     <?php endif; ?>
                                 </div>
                                 <div class="ml-4">
-                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                        <?= htmlspecialchars($candidate['full_name'] ?? 'Unknown') ?>
-                                    </div>
-                                    <div class="text-xs text-gray-500 mt-0.5">
-                                        <div class="flex items-center">
-                                            <svg class="flex-shrink-0 h-3.5 w-3.5 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            </svg>
-                                            <?= htmlspecialchars($candidate['city'] ?? '') ?><?= !empty($candidate['city']) && !empty($candidate['country']) ? ', ' : '' ?><?= htmlspecialchars($candidate['country'] ?? '') ?>
-                                        </div>
+                                    <div class="text-sm font-bold text-gray-900"><?= htmlspecialchars($candidate['full_name'] ?? 'Unknown') ?></div>
+                                    <div class="text-xs text-gray-500 flex items-center">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        <?= htmlspecialchars($candidate['city'] ?? 'Location not set') ?>
                                     </div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <?php 
-                                $sourceRaw = (string)($candidate['source'] ?? '');
-                                $sourceVal = strtolower(trim($sourceRaw));
-                                if ($sourceVal === '' || $sourceVal === 'null') { $sourceVal = 'unknown'; }
-                                if ($sourceVal === 'walk-in') { $sourceVal = 'walk_in'; }
-                                if ($sourceVal === 'registration') { $sourceVal = 'website'; }
-                                $sourceClass = 'bg-gray-100 text-gray-800';
-                                if ($sourceVal === 'excel') $sourceClass = 'bg-purple-100 text-purple-800';
-                                elseif ($sourceVal === 'admin_manual') $sourceClass = 'bg-blue-100 text-blue-800';
-                                elseif ($sourceVal === 'website') $sourceClass = 'bg-pink-100 text-pink-800';
-                                elseif ($sourceVal === 'walk_in' || $sourceVal === 'walk-in') $sourceClass = 'bg-green-100 text-green-800';
-                                elseif ($sourceVal === 'referral') $sourceClass = 'bg-amber-100 text-amber-800';
-                                elseif ($sourceVal === 'social_media') $sourceClass = 'bg-indigo-100 text-indigo-800';
-                                elseif ($sourceVal === 'job_fair') $sourceClass = 'bg-teal-100 text-teal-800';
-                            ?>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $sourceClass ?>">
-                                <?= $sourceVal === 'unknown' ? 'No Info' : ucfirst(str_replace('_', ' ', $sourceVal)) ?>
-                            </span>
+                            <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($candidate['professional_title'] ?? 'Role not specified') ?></div>
+                            <div class="text-xs text-gray-500 mt-1">Exp: <?= $candidate['total_experience'] ?? 'Fresher' ?> • Salary: <?= $candidate['current_salary'] ?? 'N/A' ?></div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <?php $verified = (int)($candidate['email_verified'] ?? 0) === 1; ?>
-                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full <?= $verified ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-yellow-100 text-yellow-800 border border-yellow-200' ?>">
-                                <?= $verified ? 'Verified' : 'Not Verified' ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900 flex items-center">
-                                <svg class="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 01-2 2z"/>
-                                </svg>
-                                <?= htmlspecialchars($candidate['email'] ?? '') ?>
-                            </div>
-                            <div class="text-sm text-gray-500 flex items-center mt-1">
-                                <svg class="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                                <?= htmlspecialchars($candidate['mobile'] ?? '') ?>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
-                                    <?= number_format($candidate['applications_count'] ?? 0) ?> Apps
-                                </span>
-                            </div>
-                            <?php 
-                                $isPremium = ((int)($candidate['is_premium'] ?? 0) === 1) && !empty($candidate['premium_expires_at']) && strtotime($candidate['premium_expires_at']) > time(); 
-                            ?>
-                            <?php if($isPremium): ?>
-                                <div class="mt-1">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-yellow-200 to-yellow-400 text-yellow-800 shadow-sm">
-                                        <svg class="w-3 h-3 mr-1 self-center" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                        Premium
-                                    </span>
+                            <div class="flex flex-col gap-1">
+                                <div class="text-xs text-gray-700 flex items-center">
+                                    <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 01-2 2z"/></svg>
+                                    <?= htmlspecialchars($candidate['email'] ?? '') ?>
                                 </div>
-                            <?php endif; ?>
+                                <div class="text-xs text-gray-700 flex items-center">
+                                    <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                    <?= htmlspecialchars($candidate['mobile'] ?? '') ?>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <?php 
-                                $statusClass = match($candidate['user_status'] ?? '') {
-                                    'active' => 'bg-green-100 text-green-800 border border-green-200',
-                                    'blocked' => 'bg-red-100 text-red-800 border border-red-200',
-                                    'pending' => 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-                                    default => 'bg-gray-100 text-gray-800 border border-gray-200'
-                                };
-                            ?>
-                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full <?= $statusClass ?>">
-                                <?= ucfirst($candidate['user_status'] ?? 'unknown') ?>
+                            <div class="text-xs text-gray-600">Joined: <?= date('M d, Y', strtotime($candidate['created_at'])) ?></div>
+                            <div class="text-xs text-gray-400 mt-1">Last Login: <?= $candidate['last_login'] ? date('M d, H:i', strtotime($candidate['last_login'])) : 'Never' ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                <?= $candidate['user_status'] === 'active' ? 'bg-green-50 text-green-700 border border-green-100' : 
+                                   ($candidate['user_status'] === 'blocked' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-yellow-50 text-yellow-700 border border-yellow-100') ?>">
+                                <?= ucfirst($candidate['user_status'] ?? 'pending') ?>
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div x-data="{ open: false }" class="relative inline-block text-left">
-                                <div>
-                                    <button @click="open = !open" @click.away="open = false" type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-3 py-1.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" id="menu-button-<?= $candidate['id'] ?>" aria-expanded="true" aria-haspopup="true">
-                                        Actions
-                                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/admin/candidates/<?= $candidate['id'] ?>" class="p-1.5 text-gray-400 hover:text-primary transition-colors" title="View Profile">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                <?php if(!empty($candidate['resume_url'])): ?>
+                                    <a href="<?= $candidate['resume_url'] ?>" target="_blank" class="p-1.5 text-gray-400 hover:text-green-600 transition-colors" title="Download Resume">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </a>
+                                <?php endif; ?>
+                                <div class="relative" x-data="{ menu: false }">
+                                    <button @click="menu = !menu" @click.away="menu = false" class="p-1.5 text-gray-400 hover:text-gray-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/></svg>
                                     </button>
-                                </div>
-                                <div x-show="open" 
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50" role="menu" aria-orientation="vertical" aria-labelledby="menu-button-<?= $candidate['id'] ?>" tabindex="-1" style="display: none;">
-                                    <div class="py-1" role="none">
-                                        <a href="/admin/candidates/<?= $candidate['id'] ?>" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">View Profile</a>
-                                        <a href="/admin/candidates/<?= $candidate['id'] ?>/payments" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Payment History</a>
-                                        
-                                        <?php if (($candidate['user_status'] ?? '') === 'active'): ?>
-                                            <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/block" class="block w-full text-left">
-                                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                                                <button type="submit" class="text-red-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Block User</button>
+                                    <div x-show="menu" x-cloak class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                        <div class="py-1">
+                                            <a href="/admin/candidates/<?= $candidate['id'] ?>/edit" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit Details</a>
+                                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Assign Recruiter</a>
+                                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Add Internal Note</a>
+                                            <hr class="my-1 border-gray-100">
+                                            <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/block">
+                                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Block Candidate</button>
                                             </form>
-                                        <?php else: ?>
-                                            <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/unblock" class="block w-full text-left">
-                                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                                                <button type="submit" class="text-green-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Unblock User</button>
-                                            </form>
-                                        <?php endif; ?>
-
-                                        <?php if (!$isPremium): ?>
-                                            <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/premium/enable" class="block w-full text-left">
-                                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                                                <input type="hidden" name="days" value="30">
-                                                <button type="submit" class="text-yellow-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Make Premium</button>
-                                            </form>
-                                        <?php else: ?>
-                                            <form method="POST" action="/admin/candidates/<?= $candidate['id'] ?>/premium/disable" class="block w-full text-left">
-                                                <input type="hidden" name="_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                                                <button type="submit" class="text-gray-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Remove Premium</button>
-                                            </form>
-                                        <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -306,84 +405,50 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- Pagination -->
-    <?php if ($pagination['totalPages'] > 1): ?>
-    <div class="mt-5 px-4 flex items-center justify-between sm:px-0">
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm text-gray-700">
-                    Showing
-                    <span class="font-semibold text-gray-900"><?= (($pagination['page'] - 1) * $pagination['perPage']) + 1 ?></span>
-                    to
-                    <span class="font-semibold text-gray-900"><?= min($pagination['page'] * $pagination['perPage'], $pagination['total']) ?></span>
-                    of
-                    <span class="font-semibold text-gray-900"><?= $pagination['total'] ?></span>
-                    results
-                </p>
+        <!-- Pagination Bar -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
+                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
             </div>
-            <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <!-- Previous Page Link -->
-                    <?php if ($pagination['page'] > 1): ?>
-                        <a href="?page=<?= $pagination['page'] - 1 ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&location=<?= urlencode($filters['location'] ?? '') ?>&filter=<?= urlencode($filters['filter'] ?? '') ?>" 
-                           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Previous</span>
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    <?php else: ?>
-                        <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
-                            <span class="sr-only">Previous</span>
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
-                    <?php endif; ?>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium"><?= (($pagination['page'] - 1) * $pagination['perPage']) + 1 ?></span> to <span class="font-medium"><?= min($pagination['page'] * $pagination['perPage'], $pagination['total']) ?></span> of <span class="font-medium"><?= $pagination['total'] ?></span> results
+                    </p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <select name="per_page" onchange="window.location.href = '?<?= http_build_query(array_merge($filters, ['page' => 1])) ?>&per_page=' + this.value" class="py-1 px-2 border border-gray-300 rounded text-xs bg-white">
+                        <option value="20" <?= $pagination['perPage'] == 20 ? 'selected' : '' ?>>20 per page</option>
+                        <option value="50" <?= $pagination['perPage'] == 50 ? 'selected' : '' ?>>50 per page</option>
+                        <option value="100" <?= $pagination['perPage'] == 100 ? 'selected' : '' ?>>100 per page</option>
+                    </select>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <?php if($pagination['page'] > 1): ?>
+                            <a href="?<?= http_build_query(array_merge($filters, ['page' => $pagination['page'] - 1])) ?>" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php for($i = max(1, $pagination['page'] - 2); $i <= min($pagination['totalPages'], $pagination['page'] + 2); $i++): ?>
+                            <a href="?<?= http_build_query(array_merge($filters, ['page' => $i])) ?>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <?= $i == $pagination['page'] ? 'text-primary bg-primary-50 border-primary-100 z-10' : 'text-gray-700 hover:bg-gray-50' ?>"><?= $i ?></a>
+                        <?php endfor; ?>
 
-                    <!-- Page Numbers -->
-                    <?php 
-                    $start = max(1, $pagination['page'] - 2);
-                    $end = min($pagination['totalPages'], $pagination['page'] + 2);
-                    
-                    if ($start > 1) {
-                        echo '<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>';
-                    }
-
-                    for ($i = $start; $i <= $end; $i++): 
-                    ?>
-                        <a href="?page=<?= $i ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&location=<?= urlencode($filters['location'] ?? '') ?>&filter=<?= urlencode($filters['filter'] ?? '') ?>" 
-                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <?= $i === $pagination['page'] ? 'text-blue-600 bg-blue-50 z-10' : 'text-gray-700 hover:bg-gray-50' ?>">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-
-                    <?php if ($end < $pagination['totalPages']): ?>
-                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
-                    <?php endif; ?>
-
-                    <!-- Next Page Link -->
-                    <?php if ($pagination['page'] < $pagination['totalPages']): ?>
-                        <a href="?page=<?= $pagination['page'] + 1 ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&location=<?= urlencode($filters['location'] ?? '') ?>&filter=<?= urlencode($filters['filter'] ?? '') ?>" 
-                           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                            <span class="sr-only">Next</span>
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    <?php else: ?>
-                        <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
-                            <span class="sr-only">Next</span>
-                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
-                    <?php endif; ?>
-                </nav>
+                        <?php if($pagination['page'] < $pagination['totalPages']): ?>
+                            <a href="?<?= http_build_query(array_merge($filters, ['page' => $pagination['page'] + 1])) ?>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        <?php endif; ?>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
-    <?php endif; ?>
 </div>
+
+<style>
+    [x-cloak] { display: none !important; }
+    .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+</style>

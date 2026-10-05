@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-bold text-gray-900">Job Categories</h1>
             <p class="mt-2 text-sm text-gray-600">Manage job categories and industries</p>
         </div>
-        <a href="/admin/job-categories/create" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <a href="/admin/job-categories/create" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
             + Add New Category
         </a>
     </div> -->
@@ -22,7 +22,7 @@
                 name="search"
                 value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
                 placeholder="Search category..."
-                class="w-64 px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none text-sm"
+                class="w-64 px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-primary-100 focus:outline-none text-sm"
             >
             <button
                 type="submit"
@@ -40,7 +40,7 @@
 
         <!-- Add Button -->
         <a href="/admin/job-categories/create"
-           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+           class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
             + Add New Category
         </a>
     </div>
@@ -77,7 +77,7 @@
                 <?php if (empty($categories)): ?>
                 <tr>
                     <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                        No categories found. <a href="/admin/job-categories/create" class="text-blue-600 hover:underline">Create one</a>
+                        No categories found. <a href="/admin/job-categories/create" class="text-primary hover:underline">Create one</a>
                     </td>
                 </tr>
                 <?php else: ?>
@@ -100,7 +100,7 @@
                         <code class="bg-gray-100 px-2 py-1 rounded text-xs"><?= htmlspecialchars($category['slug']) ?></code>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        <span class="px-2 py-1 bg-primary-50 text-primary-900 rounded-full text-xs font-medium">
                             <?= $category['job_count'] ?? 0 ?> jobs
                         </span>
                     </td>
@@ -113,7 +113,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="/admin/job-categories/<?= $category['id'] ?>/edit" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+                        <a href="/admin/job-categories/<?= $category['id'] ?>/edit" class="text-primary hover:text-primary mr-4">Edit</a>
                         <button onclick="deleteCategory(<?= $category['id'] ?>, '<?= htmlspecialchars($category['name'], ENT_QUOTES) ?>')" 
                                 class="text-red-600 hover:text-red-900">Delete</button>
                     </td>
@@ -153,7 +153,7 @@
             
             <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                 <a href="?page=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>" 
-                   class="px-4 py-2 border rounded-md <?= $i === $pagination['current_page'] ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50' ?>">
+                   class="px-4 py-2 border rounded-md <?= $i === $pagination['current_page'] ? 'bg-primary text-white border-primary' : 'border-gray-300 text-gray-700 hover:bg-gray-50' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
@@ -207,4 +207,15 @@ function deleteCategory(id, name) {
     });
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,6 +1,6 @@
 <div>
     <div class="mb-8">
-        <a href="/admin/payments" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Back to Payments</a>
+        <a href="/admin/payments" class="text-primary hover:text-primary-900 mb-4 inline-block">← Back to Payments</a>
         <h1 class="text-3xl font-bold text-gray-900">Payment Details</h1>
         <p class="mt-2 text-sm text-gray-600">View transaction information</p>
     </div>
@@ -75,3 +75,14 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

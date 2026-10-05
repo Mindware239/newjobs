@@ -6,7 +6,7 @@ $base = $base ?? '/';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refund & Cancellation Policy | Mindware Infotech</title>
+    <title>Refund & Cancellation Policy | Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -25,45 +25,45 @@ $base = $base ?? '/';
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image: radial-gradient(circle, rgba(37,99,235,0.04) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(240,85,55,0.04) 1px, transparent 1px);
             background-size: 34px 34px;
             pointer-events: none; z-index: 0;
         }
 
         /* ── HERO ── */
         .hero-band {
-            background: linear-gradient(145deg, #1a3272 0%, #1e4fd8 50%, #2563eb 100%);
+            background: linear-gradient(180deg, #fff1ed 0%, #fff8f5 100%);
             position: relative; overflow: hidden;
-            padding: 96px 0 80px;
+            padding: 120px 0 100px;
         }
         .hero-band::before {
             content: ''; position: absolute; inset: 0;
-            background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.08) 1px, transparent 0);
+            background-image: radial-gradient(circle at 1.5px 1.5px, rgba(240,85,55,0.05) 1px, transparent 0);
             background-size: 26px 26px; pointer-events: none;
         }
         .hero-glow {
             position: absolute; border-radius: 50%; pointer-events: none;
         }
         .hero-glow-1 { top: -80px; right: -80px; width: 420px; height: 420px;
-            background: radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%); }
+            background: radial-gradient(circle, rgba(240,85,55,0.08) 0%, transparent 70%); }
         .hero-glow-2 { bottom: -80px; left: -60px; width: 360px; height: 360px;
-            background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%); }
+            background: radial-gradient(circle, rgba(240,85,55,0.05) 0%, transparent 70%); }
         .hero-z { position: relative; z-index: 2; }
 
         .hero-chip {
             display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+            background: rgba(240, 85, 55, 0.08); border: 1px solid rgba(240, 85, 55, 0.15);
             border-radius: 100px; padding: 6px 16px;
-            font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.82);
+            font-size: 11px; font-weight: 700; color: #f05537;
             letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;
         }
         .hero-title {
             font-family: 'Outfit', sans-serif;
             font-size: clamp(32px, 5vw, 52px); font-weight: 800;
-            color: #fff; line-height: 1.13; letter-spacing: -1px; margin-bottom: 14px;
+            color: #0f172a; line-height: 1.13; letter-spacing: -1px; margin-bottom: 14px;
         }
-        .hero-title .hi { color: #38bdf8; }
-        .hero-desc { font-size: 15.5px; color: rgba(255,255,255,0.62); line-height: 1.75; max-width: 520px; margin: 0 auto; }
+        .hero-title .hi { color: #f05537; }
+        .hero-desc { font-size: 16px; color: #64748b; line-height: 1.75; max-width: 520px; margin: 0 auto; font-weight: 500; }
 
         /* ── Meta bar ── */
         .meta-bar {
@@ -105,26 +105,26 @@ $base = $base ?? '/';
             font-size: 12.5px; font-weight: 500; color: #64748b;
             text-decoration: none; transition: all 0.15s;
         }
-        .toc-link:hover { background: #eff6ff; color: #2563eb; }
-        .toc-link.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+        .toc-link:hover { background: #fff1ed; color: #f05537; }
+        .toc-link.active { background: #fff1ed; color: #f05537; font-weight: 600; }
         .toc-num {
             width: 20px; height: 20px; min-width: 20px; border-radius: 6px;
             background: #f1f5f9; display: flex; align-items: center; justify-content: center;
             font-size: 10px; font-weight: 700; color: #94a3b8;
         }
         .toc-link:hover .toc-num, .toc-link.active .toc-num {
-            background: #dbeafe; color: #2563eb;
+            background: #fff1ed; color: #f05537;
         }
 
-        /* Contact box in sidebar */
         .contact-box {
-            margin-top: 16px; background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px;
+            margin-top: 16px; background: #ffffff;
+            border: 1.5px solid #f1f5f9; border-radius: 12px; padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .contact-box-title { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 10px; }
-        .contact-line { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #1d4ed8; margin-bottom: 6px; font-weight: 500; }
+        .contact-box-title { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        .contact-line { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #64748b; margin-bottom: 6px; font-weight: 500; }
         .contact-line:last-child { margin-bottom: 0; }
-        .contact-line a { color: #1d4ed8; text-decoration: none; }
+        .contact-line a { color: #f05537; text-decoration: none; font-weight: 600; }
         .contact-line a:hover { text-decoration: underline; }
 
         /* ── MAIN CONTENT ── */
@@ -163,11 +163,11 @@ $base = $base ?? '/';
             padding: 14px 16px; margin-bottom: 16px;
         }
         .note-strip.green { background: #f0fdf4; border-color: #bbf7d0; }
-        .note-strip.blue  { background: #eff6ff; border-color: #bfdbfe; }
+        .note-strip.blue  { background: #fff1ed; border-color: #fff1ed; }
         .note-strip.red   { background: #fef2f2; border-color: #fecaca; }
         .note-strip p { font-size: 13px; color: #64748b; line-height: 1.65; margin: 0; }
         .note-strip.green p { color: #15803d; }
-        .note-strip.blue  p { color: #1d4ed8; }
+        .note-strip.blue  p { color: #FF6A3D; }
         .note-strip.red   p { color: #dc2626; }
 
         /* ── Two-column service grid ── */
@@ -182,7 +182,7 @@ $base = $base ?? '/';
         .service-col-badge {
             font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .badge-blue  { background: #dbeafe; color: #1d4ed8; }
+        .badge-blue  { background: #fff1ed; color: #FF6A3D; }
         .badge-green { background: #dcfce7; color: #15803d; }
 
         /* ── Bullet list ── */
@@ -207,8 +207,8 @@ $base = $base ?? '/';
             width: 36px; height: 36px; min-width: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; color: #fff;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+            background: linear-gradient(135deg, #f05537, #FF6A3D);
+            box-shadow: 0 2px 8px rgba(240,85,55,0.25);
             flex-shrink: 0;
         }
         .tl-line { width: 2px; flex: 1; background: #e2e8f0; margin: 4px 0; min-height: 24px; }
@@ -226,7 +226,7 @@ $base = $base ?? '/';
 
         /* ── Contact card ── */
         .contact-card {
-            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            background: linear-gradient(135deg, #0f172a, #f05537);
             border-radius: 18px; padding: 28px 32px;
             display: flex; align-items: flex-start; justify-content: space-between;
             gap: 24px; flex-wrap: wrap;
@@ -262,7 +262,7 @@ $base = $base ?? '/';
                 <div class="hero-chip">Legal Document</div>
             </div>
             <h1 class="hero-title afu d2">Refund &amp; <span class="hi">Cancellation</span> Policy</h1>
-            <p class="hero-desc afu d3">We believe in transparency. This policy clearly outlines when and how refunds or cancellations are handled for all Mindware Infotech services.</p>
+            <p class="hero-desc afu d3">We believe in transparency. This policy clearly outlines when and how refunds or cancellations are handled for all Jobsence services.</p>
         </div>
     </div>
 
@@ -271,7 +271,7 @@ $base = $base ?? '/';
         <div style="max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
             <span class="meta-pill">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Last Updated: March 07, 2026
+                Last Updated: October 05, 2026
             </span>
             <span class="meta-pill">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -279,7 +279,7 @@ $base = $base ?? '/';
             </span>
             <span class="meta-pill">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
-                Mindware Infotech
+                Jobsence
             </span>
         </div>
     </div>
@@ -303,14 +303,14 @@ $base = $base ?? '/';
             <div class="contact-box" style="margin-top:14px;">
                 <div class="contact-box-title">Need Help?</div>
                 <div class="contact-line">
-                    <svg width="13" height="13" fill="none" stroke="#1d4ed8" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    <a href="mailto:gm@indianbarcode.com">gm@indianbarcode.com</a>
+                    <svg width="13" height="13" fill="none" stroke="#FF6A3D" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <a href="mailto:gm@jobsence.com">gm@jobsence.com</a>
                 </div>
                 <div class="contact-line">
-                    <svg width="13" height="13" fill="none" stroke="#1d4ed8" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <svg width="13" height="13" fill="none" stroke="#FF6A3D" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                     <a href="tel:+919717122688">+91-9717122688</a>
                 </div>
-                <div style="margin-top:12px;padding-top:10px;border-top:1px solid #bfdbfe;font-size:11.5px;color:#1d4ed8;line-height:1.55;">
+                <div style="margin-top:12px;padding-top:10px;border-top:1px solid #fff1ed;font-size:11.5px;color:#FF6A3D;line-height:1.55;">
                     Refund requests must be submitted within <strong>7 days</strong> of the transaction date.
                 </div>
             </div>
@@ -322,8 +322,8 @@ $base = $base ?? '/';
             <!-- ① Paid Services -->
             <div class="policy-card afu d1" id="paid-services">
                 <div class="policy-card-header">
-                    <div class="policy-icon" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;">
-                        <svg width="20" height="20" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    <div class="policy-icon" style="background:linear-gradient(135deg,#fff1ed,#fff1ed);border:1px solid #fff1ed;">
+                        <svg width="20" height="20" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                     </div>
                     <div>
                         <div class="policy-num">Section 01</div>
@@ -336,16 +336,17 @@ $base = $base ?? '/';
                         <!-- Candidate Services -->
                         <div class="service-col">
                             <div class="service-col-title">
-                                <svg width="16" height="16" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                <svg width="16" height="16" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 Candidate Services
                                 <span class="service-col-badge badge-blue">Job Seekers</span>
                             </div>
                             <ul class="policy-list">
-                                <li><div class="li-dot" style="background:#eff6ff;"><svg width="10" height="10" fill="#2563eb" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Profile Boost</li>
-                                <li><div class="li-dot" style="background:#eff6ff;"><svg width="10" height="10" fill="#2563eb" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Featured Profile Visibility</li>
-                                <li><div class="li-dot" style="background:#eff6ff;"><svg width="10" height="10" fill="#2563eb" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Auto Job Apply</li>
-                                <li><div class="li-dot" style="background:#eff6ff;"><svg width="10" height="10" fill="#2563eb" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>AI Job Suggestions</li>
-                                <li><div class="li-dot" style="background:#eff6ff;"><svg width="10" height="10" fill="#2563eb" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Premium Candidate Plans</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Profile Boost</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Featured Profile Visibility</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Auto Job Apply</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>AI Job Suggestions</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Premium Candidate Plans</li>
+                                <li><div class="li-dot" style="background:#fff1ed;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Registration / form fees, Near Me &amp; Jobs passes</li>
                             </ul>
                         </div>
                         <!-- Employer Services -->
@@ -360,6 +361,7 @@ $base = $base ?? '/';
                                 <li><div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Featured Job Listings</li>
                                 <li><div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Resume Database Access</li>
                                 <li><div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Job Promotion Services</li>
+                                <li><div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>Mentor, internship &amp; hiring plans, talent passes</li>
                             </ul>
                         </div>
                     </div>
@@ -380,9 +382,9 @@ $base = $base ?? '/';
                 <div class="policy-body">
                     <div class="note-strip" style="background:#fefce8;border-color:#fde68a;">
                         <svg width="18" height="18" fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <p style="color:#92400e;">Due to the digital and instant nature of our services, <strong>payments are generally non-refundable</strong> once the service has been activated.</p>
+                        <p style="color:#92400e;"><strong>Any amount paid to Jobsence is non-refundable in any condition</strong> – including all registration / form fees (₹155, ₹177, ₹295 and others), Near Me passes and listings, provider and hiring plans, renewals and late fees – whether or not a job, internship, mentor, training or service results, whether or not the plan or pass is used, if a tripartite agreement is ended or a mentor / provider is rejected, or if access is suspended for a breach of our terms.</p>
                     </div>
-                    <p>However, we understand exceptional circumstances arise. Refunds may be considered in the following situations:</p>
+                    <p>The only reversals are payment errors, not refunds. The amount goes back to the original payment method only when:</p>
                     <ul class="policy-list">
                         <li>
                             <div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
@@ -390,15 +392,15 @@ $base = $base ?? '/';
                         </li>
                         <li>
                             <div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
-                            <span><strong>Service not activated</strong> — payment was completed but the service failed to activate due to a technical error on our end.</span>
+                            <span><strong>Payment taken, registration not created</strong> — the amount was debited but no registration / service was created because of a technical error on our end.</span>
                         </li>
                         <li>
                             <div class="li-dot" style="background:#f0fdf4;"><svg width="10" height="10" fill="#10b981" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
-                            <span><strong>Unauthorized transaction</strong> — a fraudulent charge is verified by our security team.</span>
+                            <span><strong>Unauthorized transaction</strong> — the card / account holder did not make the payment, as confirmed by their bank.</span>
                         </li>
                     </ul>
                     <div class="note-strip blue" style="margin-top:16px;margin-bottom:0;">
-                        <svg width="16" height="16" fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg>
                         <p><strong>Important:</strong> All refund requests must be submitted within <strong>7 days</strong> of the original transaction date. Requests beyond this window will not be accepted.</p>
                     </div>
                 </div>
@@ -422,7 +424,7 @@ $base = $base ?? '/';
                             <div class="tl-left"><div class="tl-circle">1</div><div class="tl-line"></div></div>
                             <div class="tl-content">
                                 <div class="tl-label">Submit Refund Request</div>
-                                <div class="tl-desc">Email us at <a href="mailto:gm@indianbarcode.com" style="color:#2563eb;">gm@indianbarcode.com</a> within 7 days of the transaction with your Transaction ID, registered email, and reason.</div>
+                                <div class="tl-desc">Email us at <a href="mailto:gm@jobsence.com" style="color:#f05537;">gm@jobsence.com</a> within 7 days of the transaction with your Transaction ID, registered email, and reason.</div>
                             </div>
                         </div>
                         <div class="tl-item">
@@ -453,8 +455,8 @@ $base = $base ?? '/';
             <!-- ④ Cancellation Policy -->
             <div class="policy-card afu d3" id="cancellation-policy">
                 <div class="policy-card-header">
-                    <div class="policy-icon" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border:1px solid #ddd6fe;">
-                        <svg width="20" height="20" fill="none" stroke="#7c3aed" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    <div class="policy-icon" style="background:linear-gradient(135deg,#faf5ff,#fff1ed);border:1px solid #ddd6fe;">
+                        <svg width="20" height="20" fill="none" stroke="#f05537" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                     </div>
                     <div>
                         <div class="policy-num">Section 04</div>
@@ -465,15 +467,15 @@ $base = $base ?? '/';
                     <p>You may cancel your subscription or premium service at any time from your account settings. Please note the following terms that apply to all cancellations:</p>
                     <ul class="policy-list">
                         <li>
-                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#7c3aed" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
                             <span>Cancellation prevents future renewals or billing cycles.</span>
                         </li>
                         <li>
-                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#7c3aed" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
                             <span><strong>No refund</strong> will be issued for the remaining active subscription period after cancellation.</span>
                         </li>
                         <li>
-                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#7c3aed" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+                            <div class="li-dot" style="background:#faf5ff;"><svg width="10" height="10" fill="#f05537" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
                             <span>Services already activated or consumed cannot be cancelled or refunded retroactively.</span>
                         </li>
                     </ul>
@@ -515,7 +517,7 @@ $base = $base ?? '/';
                     </div>
                 </div>
                 <div class="policy-body">
-                    <p>Mindware Infotech reserves the right to deny refund requests in the following circumstances:</p>
+                    <p>Jobsence reserves the right to deny refund requests in the following circumstances:</p>
                     <ul class="policy-list" style="margin-bottom:16px;">
                         <li>
                             <div class="li-dot" style="background:#fef2f2;"><svg width="10" height="10" fill="#dc2626" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></div>
@@ -546,7 +548,7 @@ $base = $base ?? '/';
                 <div class="contact-info-list">
                     <div class="contact-info-item">
                         <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        <a href="mailto:gm@indianbarcode.com">gm@indianbarcode.com</a>
+                        <a href="mailto:gm@jobsence.com">gm@jobsence.com</a>
                     </div>
                     <div class="contact-info-item">
                         <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
@@ -581,3 +583,13 @@ $base = $base ?? '/';
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

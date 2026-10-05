@@ -23,7 +23,7 @@
     ?>
     <div class="bg-white rounded-2xl shadow p-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <span class="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center">
           <?php if ($c['icon']==='db'): ?>
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3" stroke-width="2"></ellipse><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg>
           <?php elseif ($c['icon']==='redis'): ?>
@@ -52,7 +52,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="bg-white rounded-2xl shadow p-6 lg:col-span-2">
       <div class="flex items-start gap-3 mb-4">
-        <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <span class="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
         </span>
         <div>
@@ -95,7 +95,7 @@
           <textarea name="email_footer" rows="3" class="w-full px-3 py-2 border rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigoMain"><?= htmlspecialchars($settings['email_footer'] ?? '') ?></textarea>
         </div>
         <div class="md:col-span-2 flex justify-end">
-          <button class="px-5 py-2.5 bg-indigo-500 text-white rounded-xl shadow hover:bg-indigo-700">Save Settings</button>
+          <button class="px-5 py-2.5 bg-primary text-white rounded-xl shadow hover:bg-primary-600">Save Settings</button>
         </div>
       </form>
     </div>
@@ -113,8 +113,8 @@
         switch($t){
           case 'success': return 'bg-green-100 text-green-700';
           case 'warning': return 'bg-yellow-100 text-yellow-800';
-          case 'db': return 'bg-purple-100 text-purple-700';
-          case 'mail': return 'bg-indigo-100 text-indigo-700';
+          case 'db': return 'bg-primary-50 text-primary-600';
+          case 'mail': return 'bg-primary-50 text-primary-600';
           default: return 'bg-slate-100 text-slate-700';
         }
       }
@@ -122,7 +122,7 @@
     <div class="bg-white rounded-2xl shadow p-6">
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-start gap-3">
-          <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <span class="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center">
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity h-5 w-5 text-primary"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>          </span>
           <div>
             <div class="text-xl font-semibold">Live Activity</div>
@@ -190,7 +190,7 @@
                   <div class="flex items-center gap-2">
                     <div class="text-sm text-gray-800"><?= htmlspecialchars($ev['title']) ?></div>
                     <?php if (!empty($ev['new'])): ?>
-                      <span class="px-2 py-0.5 rounded-full bg-purple-600 text-white text-xs">New</span>
+                      <span class="px-2 py-0.5 rounded-full bg-primary text-white text-xs">New</span>
                     <?php endif; ?>
                   </div>
                   <div class="text-xs text-gray-500"><?= htmlspecialchars($ev['time']) ?></div>
@@ -328,7 +328,7 @@
           <div class="flex items-center gap-4">
             <div class="text-xs text-gray-600">Max <?= (int)$maxVal ?>/hr</div>
             <div class="inline-flex items-center gap-2 text-sm">
-              <span class="w-3 h-3 rounded bg-indigo-600"></span>
+              <span class="w-3 h-3 rounded bg-primary"></span>
               <span class="text-gray-700">Auto-apply</span>
             </div>
           </div>
@@ -338,8 +338,8 @@
           <svg width="100%" viewBox="0 0 <?= $W ?> <?= $H ?>" preserveAspectRatio="none">
             <defs>
               <linearGradient id="aaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.25"></stop>
-                <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.02"></stop>
+                <stop offset="0%" stop-color="#f05537" stop-opacity="0.25"></stop>
+                <stop offset="100%" stop-color="#f05537" stop-opacity="0.02"></stop>
               </linearGradient>
               <pattern id="gridDots" width="6" height="6" patternUnits="userSpaceOnUse">
                 <circle cx="3" cy="3" r="0.8" fill="#e5e7eb"></circle>
@@ -364,15 +364,15 @@
               <text x="<?= $PL + $chartW ?>" y="<?= $PT + $chartH + 18 ?>" text-anchor="end">23h</text>
             </g>
             <path id="aaArea" d="<?= $area ?>" fill="url(#aaGrad)"></path>
-            <path id="aaLine" d="<?= $path ?>" stroke="#4f46e5" stroke-width="2" fill="none"></path>
+            <path id="aaLine" d="<?= $path ?>" stroke="#f05537" stroke-width="2" fill="none"></path>
             <?php foreach ($points as $pt): ?>
-              <circle class="aa-dot" cx="<?= round($pt[0],2) ?>" cy="<?= round($pt[1],2) ?>" r="3.5" fill="#4f46e5" data-hour="<?= (int)$pt[3] ?>" data-val="<?= (int)$pt[2] ?>"></circle>
+              <circle class="aa-dot" cx="<?= round($pt[0],2) ?>" cy="<?= round($pt[1],2) ?>" r="3.5" fill="#f05537" data-hour="<?= (int)$pt[3] ?>" data-val="<?= (int)$pt[2] ?>"></circle>
             <?php endforeach; ?>
           </svg>
         </div>
         <div class="px-4 py-3 border-t border-gray-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded bg-indigo-600"></span>
+            <span class="w-2 h-2 rounded bg-primary"></span>
             <span>Total <?= (int)($metrics['auto_applies_today'] ?? 0) ?></span>
           </div>
           <div>Failed <?= (int)($metrics['failed_auto_applies_today'] ?? 0) ?></div>
@@ -421,7 +421,7 @@
         <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
         <div class="flex items-center justify-between">
           <label class="text-sm text-gray-700">Enable Auto-Apply</label>
-          <input type="checkbox" name="auto_apply_enabled" value="1" <?= !empty($autoApply['enabled']) ? 'checked' : '' ?> class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded">
+          <input type="checkbox" name="auto_apply_enabled" value="1" <?= !empty($autoApply['enabled']) ? 'checked' : '' ?> class="w-5 h-5 text-primary bg-gray-100 border-gray-300 rounded">
         </div>
         <div>
           <label class="block text-sm text-gray-600 mb-1">Minimum Match Score</label>
@@ -466,9 +466,20 @@
           <input type="text" name="auto_apply_blacklist_employers" value="<?= htmlspecialchars($autoApply['blacklist_employers'] ?? '') ?>" class="w-full px-3 py-2 border rounded" placeholder="5,9,14">
         </div>
         <div>
-          <button class="w-full px-4 py-2 bg-blue-600 text-white rounded">Save Auto-Apply Settings</button>
+          <button class="w-full px-4 py-2 bg-primary text-white rounded">Save Auto-Apply Settings</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

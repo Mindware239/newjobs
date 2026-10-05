@@ -33,8 +33,9 @@ class CandidateCreationService
         return self::CREATED_BY_DEFAULT;
     }
 
-    public function ensureCandidateForUser(int $userId, array $initial = []): Candidate
+    public function ensureCandidateForUser($userId, array $initial = []): Candidate
     {
+        $userId = (int)$userId;
         $existing = Candidate::findByUserId($userId);
         if ($existing) {
             if (!empty($initial)) {

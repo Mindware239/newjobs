@@ -18,6 +18,7 @@ use App\Controllers\Front\BlogController;
 use App\Controllers\Front\JobController;
 use App\Controllers\Front\LegalController;
 use App\Controllers\Front\HRVerificationController;
+use App\Controllers\CareerController;
 use App\Controllers\Candidate\JobController as CandidateJobController;
 use App\Controllers\Candidate\PremiumController;
 use App\Controllers\Company\CompanyController;
@@ -63,6 +64,33 @@ $router->get('/about', [AboutController::class, 'index']);
 $router->get('/contact', [ContactController::class, 'index']);
 $router->post('/contact', [ContactController::class, 'submitForm'], [$formRateLimit, $csrfMiddleware]);
 
+// Jobsence Skill Development Centre – SEO landing pages
+$router->get('/skill-development', [\App\Controllers\Front\SkillDevelopmentController::class, 'index']);
+$router->get('/skill-development/register', [\App\Controllers\Front\SkillDevelopmentController::class, 'legacyRegister']);
+$router->get('/skills', [\App\Controllers\Front\SkillDevelopmentController::class, 'skills']);
+$router->get('/skill-development/{state}', [\App\Controllers\Front\SkillDevelopmentController::class, 'state']);
+
+// Jobsence ₹155 registration forms (skill, internship, full-time, part-time, WFH, mentors)
+$otpRateLimit = new RateLimitMiddleware(10, 60);
+$router->get('/apply', [\App\Controllers\Front\ApplyController::class, 'hub']);
+$router->get('/apply/categories', [\App\Controllers\Front\ApplyController::class, 'categories']);
+$router->post('/apply/check-unique', [\App\Controllers\Front\ApplyController::class, 'checkUnique'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/apply/otp/send', [\App\Controllers\Front\ApplyController::class, 'sendOtp'], [$otpRateLimit, $csrfMiddleware]);
+$router->post('/apply/otp/verify', [\App\Controllers\Front\ApplyController::class, 'verifyOtp'], [$otpRateLimit, $csrfMiddleware]);
+$router->get('/apply/pay/{token}', [\App\Controllers\Front\ApplyController::class, 'pay']);
+$router->post('/apply/verify', [\App\Controllers\Front\ApplyController::class, 'verify'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/apply/status/{token}', [\App\Controllers\Front\ApplyController::class, 'status']);
+$router->get('/apply/mentors/{token}', [\App\Controllers\Front\MentorController::class, 'choose']);
+$router->post('/apply/mentors/{token}', [\App\Controllers\Front\MentorController::class, 'chooseSubmit'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/mentor/respond/{token}', [\App\Controllers\Front\MentorController::class, 'respondForm']);
+$router->post('/mentor/respond/{token}', [\App\Controllers\Front\MentorController::class, 'respond'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/apply/{form}', [\App\Controllers\Front\ApplyController::class, 'form']);
+$router->post('/apply/{form}', [\App\Controllers\Front\ApplyController::class, 'submit'], [$formRateLimit, $csrfMiddleware]);
+
+// Employer Job Posting Landing Page
+$router->get('/employer/job-posting', [\App\Controllers\Employer\JobPostingLandingController::class, 'index']);
+$router->post('/employer/select-plan', [\App\Controllers\Employer\JobPostingLandingController::class, 'selectPlan'], [$csrfMiddleware]);
+
 // ==========================================
 // 2. AUTH ROUTES
 // ==========================================
@@ -91,6 +119,7 @@ $router->post('/auth/apple/callback', [AuthController::class, 'appleCallback']);
 $router->get('/auth/apple/callback', [AuthController::class, 'appleCallback']);
 
 // Auth - Phone OTP
+$router->post('/auth/email/send-otp', [AuthController::class, 'sendEmailOtp'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/auth/phone/send-otp', [AuthController::class, 'sendPhoneOtp'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/auth/phone/login', [AuthController::class, 'loginWithPhoneOtp'], [$loginRateLimit, $csrfMiddleware]);
 $router->post('/auth/phone/register-candidate', [AuthController::class, 'registerCandidateWithPhoneOtp'], [$formRateLimit, $csrfMiddleware]);
@@ -100,8 +129,56 @@ $router->post('/auth/phone/register-employer', [AuthController::class, 'register
 // 3. JOB ROUTES
 // ==========================================
 $router->get('/jobs', [CandidateJobController::class, 'index']);
+
+// See Jobs in India – Govt / Railways / Army / Police / PSU / company notifications (full view needs Jobs Pass)
+$router->get('/india-jobs', [\App\Controllers\Front\IndiaJobsController::class, 'index']);
+$router->get('/india-jobs/{id}', [\App\Controllers\Front\IndiaJobsController::class, 'show']);
+
+// Near Me local services (plumber, electrician, salon…) + paid contact pass links
+$router->get('/near-me', [\App\Controllers\Front\NearMeController::class, 'index']);
+$router->get('/near-me/photo/{id}', [\App\Controllers\Front\NearMeController::class, 'photo']);
+$router->post('/near-me/rate/{id}', [\App\Controllers\Front\NearMeController::class, 'rate'], [$csrfMiddleware]);
+$router->get('/mentoring', [\App\Controllers\Front\MentoringController::class, 'dashboard']);
+$router->get('/mentoring/access/{token}', [\App\Controllers\Front\MentoringController::class, 'access']);
+$router->get('/mentoring/logout', [\App\Controllers\Front\MentoringController::class, 'logout']);
+$router->post('/mentoring/plan', [\App\Controllers\Front\MentoringController::class, 'buyPlan'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/skill-seekers', [\App\Controllers\Front\MentoringController::class, 'skillSeekers']);
+$router->get('/internship-seekers', [\App\Controllers\Front\MentoringController::class, 'internshipSeekers']);
+$router->get('/skill-mentors', [\App\Controllers\Front\MentoringController::class, 'skillMentors']);
+$router->get('/job-seekers', [\App\Controllers\Front\MentoringController::class, 'jobSeekers']);
+$router->get('/hiring-companies', [\App\Controllers\Front\MentoringController::class, 'hiringCompanies']);
+$router->get('/internship-providers', [\App\Controllers\Front\MentoringController::class, 'internshipProviders']);
+$router->post('/mentoring/open/{id}', [\App\Controllers\Front\MentoringController::class, 'open'], [$csrfMiddleware]);
+$router->get('/mentoring/seeker/{id}', [\App\Controllers\Front\MentoringController::class, 'seeker']);
+$router->get('/mentoring/resume/{id}', [\App\Controllers\Front\MentoringController::class, 'resume']);
+$router->post('/mentoring/request/{id}', [\App\Controllers\Front\MentoringController::class, 'requestAgreement'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/mentoring/invite/{id}', [\App\Controllers\Front\MentoringController::class, 'invite'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/agreement-terms/{kind}', [\App\Controllers\Front\MentoringController::class, 'terms']);
+$router->get('/mentoring/agreement/{token}', [\App\Controllers\Front\MentoringController::class, 'agreement']);
+$router->post('/mentoring/agreement/{token}/otp', [\App\Controllers\Front\MentoringController::class, 'agreementOtp'], [$otpRateLimit, $csrfMiddleware]);
+$router->post('/mentoring/agreement/{token}/sign', [\App\Controllers\Front\MentoringController::class, 'agreementSign'], [$otpRateLimit, $csrfMiddleware]);
+$router->post('/mentoring/agreement/{token}/decline', [\App\Controllers\Front\MentoringController::class, 'agreementDecline'], [$csrfMiddleware]);
+$router->post('/mentoring/agreement/{token}/end', [\App\Controllers\Front\MentoringController::class, 'agreementEnd'], [$csrfMiddleware]);
+$router->get('/categories/{mode}', [\App\Controllers\Front\CatalogueController::class, 'index']);
+$router->get('/categories/{mode}/{category}', [\App\Controllers\Front\CatalogueController::class, 'category']);
+$router->get('/categories/{mode}/{category}/{sub}', [\App\Controllers\Front\CatalogueController::class, 'sub']);
+$router->get('/hospital-talent', [\App\Controllers\Front\TalentController::class, 'hospital']);
+$router->get('/talent-search', [\App\Controllers\Front\TalentController::class, 'hirer']);
+$router->get('/talent/resume/{id}', [\App\Controllers\Front\TalentController::class, 'resume']);
+$router->get('/apply/renew/{token}', [\App\Controllers\Front\ApplyController::class, 'renew']);
+$router->get('/pass/{token}', [\App\Controllers\Front\NearMeController::class, 'access']);
+$router->get('/careers', [CareerController::class, 'index']);
+$router->get('/careers/{id}', [CareerController::class, 'details']);
+$router->get('/careers/apply/{id}', [CareerController::class, 'apply']);
+$router->post('/careers/apply/{id}', [CareerController::class, 'submitApplication'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/job-categories', [JobController::class, 'categories']);
 $router->get('/job/{slug}', [JobController::class, 'show']);
+$router->get('/internship-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'internship']);
+$router->get('/mentors-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'mentors']);
+$router->get('/internship-providers-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'internshipProviders']);
+$router->get('/companies-hiring-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'hiring']);
+$router->get('/services-near-me-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'services']);
+$router->get('/skill-development-in-{location}', [\App\Controllers\Front\LocationPagesController::class, 'skill']);
 $router->get('/jobs-in-{location}', [JobController::class, 'jobsByLocation']);
 $router->get('/{role}-jobs-in-{location}', [JobController::class, 'jobsByRoleAndLocation']);
 $router->get('/jobs-in-category/{slug}', [JobController::class, 'jobsByCategory']);
@@ -113,6 +190,7 @@ $router->post('/job-alerts/store', [JobAlertsController::class, 'store'], [$form
 // ==========================================
 $router->get('/company/featured', [CompanyController::class, 'featured']);
 $router->get('/company/{slug}', [CompanyController::class, 'show']);
+$router->get('/company/{company_slug}/blog/{blog_slug}', [CompanyController::class, 'blogDetail']);
 $router->get('/company/{slug}/{tab}', [CompanyController::class, 'show']);
 $router->post('/company/follow', [CompanyFollowController::class, 'toggle'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/company/{id}/review', [CompanyReviewController::class, 'store'], [$formRateLimit, $csrfMiddleware]);
@@ -269,6 +347,41 @@ $router->post('/candidate/premium/cashfree/webhook', [PremiumController::class, 
 // ==========================================
 // 9. SEO & TRACKING ROUTES
 // ==========================================
+// Firebase Cloud Messaging service worker (web push). Must live at the site root; config comes from .env.
+$router->get('/firebase-messaging-sw.js', function ($request, $response) {
+    $cfg = json_encode([
+        'apiKey' => (string)($_ENV['FCM_WEB_API_KEY'] ?? ''),
+        'projectId' => (string)($_ENV['FCM_WEB_PROJECT_ID'] ?? ''),
+        'messagingSenderId' => (string)($_ENV['FCM_WEB_MESSAGING_SENDER_ID'] ?? ''),
+        'appId' => (string)($_ENV['FCM_WEB_APP_ID'] ?? ''),
+    ], JSON_UNESCAPED_SLASHES);
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Cache-Control: no-cache');
+    header('Service-Worker-Allowed: /');
+    echo <<<JS
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+const cfg = {$cfg};
+if (cfg.apiKey && cfg.projectId && cfg.messagingSenderId && cfg.appId) {
+    firebase.initializeApp(cfg);
+    const messaging = firebase.messaging();
+    messaging.onBackgroundMessage((payload) => {
+        const n = payload.notification || {};
+        self.registration.showNotification(n.title || 'Jobsence', {
+            body: n.body || '',
+            icon: n.icon || '/uploads/jobsence.png',
+            data: { link: (payload.data && payload.data.link) || '/' }
+        });
+    });
+}
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const link = (event.notification.data && event.notification.data.link) || '/';
+    event.waitUntil(clients.openWindow(link));
+});
+JS;
+    exit;
+});
 $router->get('/sitemap.xml', [SEOController::class, 'index']);
 $router->get('/sitemap-main.xml', [SEOController::class, 'main']);
 $router->get('/sitemap-jobs.xml', [SEOController::class, 'jobs']);
@@ -278,6 +391,8 @@ $router->get('/sitemap-cities.xml', [SEOController::class, 'cities']);
 $router->get('/sitemap-categories.xml', [SEOController::class, 'categories']);
 $router->get('/sitemap-skills.xml', [SEOController::class, 'skills']);
 $router->get('/sitemap-companies.xml', [SEOController::class, 'companies']);
+$router->get('/sitemap-locations.xml', [SEOController::class, 'locations']);
+$router->get('/sitemap-catalogue.xml', [SEOController::class, 'catalogue']);
 $router->get('/robots.txt', [SEOController::class, 'robots']);
 
 $router->get('/cookie/status', [CookieController::class, 'getConsentStatus'], [$cookieConsentMw]);

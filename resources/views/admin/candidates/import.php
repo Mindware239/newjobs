@@ -9,20 +9,20 @@
     <div class="mb-10">
         <div class="relative">
             <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
-            <div class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-600 rounded-full -z-10 transition-all duration-500 ease-in-out" :style="'width: ' + ((step - 1) / (steps.length - 1) * 100) + '%'"></div>
+            <div class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-primary rounded-full -z-10 transition-all duration-500 ease-in-out" :style="'width: ' + ((step - 1) / (steps.length - 1) * 100) + '%'"></div>
             
             <div class="flex items-center justify-between w-full">
                 <template x-for="(s, index) in steps" :key="index">
                     <div class="flex flex-col items-center group cursor-default">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-4 transition-all duration-300"
-                             :class="step > index + 1 ? 'bg-blue-600 border-blue-600 text-white' : (step === index + 1 ? 'bg-white border-blue-600 text-blue-600 shadow-md transform scale-110' : 'bg-white border-gray-200 text-gray-400')">
+                             :class="step > index + 1 ? 'bg-primary border-primary text-white' : (step === index + 1 ? 'bg-white border-primary text-primary shadow-md transform scale-110' : 'bg-white border-gray-200 text-gray-400')">
                             <span x-show="step <= index + 1" x-text="index + 1"></span>
                             <svg x-show="step > index + 1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                         </div>
                         <span class="mt-3 text-xs font-semibold uppercase tracking-wider transition-colors duration-300" 
-                              :class="step >= index + 1 ? 'text-blue-900' : 'text-gray-400'"
+                              :class="step >= index + 1 ? 'text-primary' : 'text-gray-400'"
                               x-text="s"></span>
                     </div>
                 </template>
@@ -42,14 +42,14 @@
         </div>
         
         <div class="p-8">
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-500 hover:bg-blue-50/30 transition-all duration-200"
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-primary hover:bg-primary-50/30 transition-all duration-200"
                  @dragover.prevent="dragover = true"
                  @dragleave.prevent="dragover = false"
                  @drop.prevent="handleDrop($event)"
-                 :class="{ 'border-blue-500 bg-blue-50': dragover }">
+                 :class="{ 'border-primary bg-primary-50': dragover }">
                 
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
                 </div>
@@ -58,7 +58,7 @@
                 <p class="mt-1 text-sm text-gray-500 mb-6">Drag and drop your file here, or click to browse</p>
                 
                 <div>
-                    <label for="file-upload" class="cursor-pointer inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <label for="file-upload" class="cursor-pointer inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
@@ -81,7 +81,7 @@
                         <p class="text-xs text-gray-500">Download our sample template to ensure correct formatting.</p>
                     </div>
                 </div>
-                <a href="#" @click.prevent="downloadTemplate" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center hover:underline">
+                <a href="#" @click.prevent="downloadTemplate" class="text-primary hover:text-primary-900 text-sm font-medium flex items-center hover:underline">
                     Download Template
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -129,13 +129,13 @@
         </div>
 
         <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-            <button @click="step = 1" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <button @click="step = 1" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 <svg class="-ml-1 mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Upload
             </button>
-            <button @click="confirmUpload" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <button @click="confirmUpload" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 Proceed to Confirmation
                 <svg class="ml-2 -mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -156,16 +156,16 @@
         </div>
         
         <div class="p-8">
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
+            <div class="bg-primary-50 border-l-4 border-primary p-4 mb-6 rounded-r-lg">
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Ready to Import</h3>
-                        <div class="mt-2 text-sm text-blue-700">
+                        <h3 class="text-sm font-medium text-primary-900">Ready to Import</h3>
+                        <div class="mt-2 text-sm text-primary-600">
                             <p>You are about to import data from <span class="font-semibold" x-text="fileName"></span>.</p>
                         </div>
                     </div>
@@ -175,7 +175,7 @@
             <div class="space-y-6">
                 <div class="flex items-start">
                     <div class="flex items-center h-5">
-                        <input id="send_emails" type="checkbox" x-model="sendEmails" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded transition-colors">
+                        <input id="send_emails" type="checkbox" x-model="sendEmails" class="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded transition-colors">
                     </div>
                     <div class="ml-3 text-sm">
                         <label for="send_emails" class="font-medium text-gray-700">Send verification emails</label>
@@ -202,7 +202,7 @@
         </div>
 
         <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-            <button @click="step = 2" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <button @click="step = 2" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
                 <svg class="-ml-1 mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -244,7 +244,7 @@
         </div>
 
         <div class="flex justify-center space-x-4">
-            <a href="/admin/candidates" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors">
+            <a href="/admin/candidates" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary hover:bg-primary-600 shadow-sm transition-colors">
                 Return to Candidates
             </a>
             <button @click="location.reload()" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-colors">
@@ -369,3 +369,14 @@ function importWizard() {
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+

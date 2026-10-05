@@ -1,7 +1,7 @@
 <div>
   <div class="mb-6 flex items-center justify-between">
     <div>
-      <a href="/master/verifications" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Back to Verifications</a>
+      <a href="/master/verifications" class="text-primary hover:text-primary-900 mb-4 inline-block">← Back to Verifications</a>
       <h1 class="text-3xl font-bold text-gray-900">Verify: <?= htmlspecialchars($employer['company_name'] ?? 'Employer') ?></h1>
       <p class="text-sm text-gray-600">Email: <?= htmlspecialchars($employer['employer_email'] ?? '') ?></p>
     </div>
@@ -41,7 +41,7 @@
             <div class="border rounded p-4">
               <div class="font-medium text-gray-900 mb-1">Type: <?= htmlspecialchars($doc['doc_type'] ?? '') ?></div>
               <div class="text-sm text-gray-600 mb-2">Status: <?= htmlspecialchars($doc['review_status'] ?? 'pending') ?></div>
-              <a href="<?= htmlspecialchars($doc['file_url'] ?? '#') ?>" target="_blank" class="text-blue-600 hover:text-blue-800">View Document</a>
+              <a href="<?= htmlspecialchars($doc['file_url'] ?? '#') ?>" target="_blank" class="text-primary hover:text-primary-900">View Document</a>
               <?php if (!empty($doc['ocr'])): ?>
                 <pre class="mt-2 text-xs bg-gray-50 p-2 rounded overflow-x-auto"><?= htmlspecialchars(json_encode($doc['ocr'])) ?></pre>
               <?php endif; ?>
@@ -62,7 +62,7 @@
                   <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                   <input type="hidden" name="document_id" value="<?= (int)($doc['id'] ?? 0) ?>">
                   <input type="file" name="evidence" accept=".pdf,.jpg,.jpeg,.png" class="px-2 py-1 border rounded w-full">
-                  <button class="px-3 py-1 bg-blue-600 text-white rounded">Upload Evidence</button>
+                  <button class="px-3 py-1 bg-primary text-white rounded">Upload Evidence</button>
                 </form>
                 <form method="POST" action="/master/verifications/doc/reverify" class="flex items-center gap-2">
                   <input type="hidden" name="_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
@@ -118,3 +118,14 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

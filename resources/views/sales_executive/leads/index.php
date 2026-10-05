@@ -11,7 +11,7 @@
           <?php endforeach; ?>
         </select>
       </div>
-      <button class="px-4 py-2 bg-blue-600 text-white rounded">Filter</button>
+      <button class="px-4 py-2 bg-primary text-white rounded">Filter</button>
     </form>
   </div>
   <div class="bg-white rounded shadow overflow-hidden">
@@ -58,3 +58,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

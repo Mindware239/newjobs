@@ -21,7 +21,7 @@
                 <label class="block text-sm font-semibold mb-1">Password</label>
                 <input type="password" name="password" x-model="form.password" class="w-full px-4 py-2 border rounded-lg" required>
             </div>
-            <button type="submit" :disabled="loading" class="w-full py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
+            <button type="submit" :disabled="loading" class="w-full py-2 bg-primary text-white rounded-lg disabled:opacity-50">
                 <span x-show="!loading">Login</span>
                 <span x-show="loading">Verifying...</span>
             </button>
@@ -71,3 +71,14 @@ function bulkLogin() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

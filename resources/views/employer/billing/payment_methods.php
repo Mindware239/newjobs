@@ -12,7 +12,7 @@ $title = 'Payment Methods';
         <!-- Sidebar: Saved Methods -->
         <div class="lg:col-span-1">
             <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                 Your Saved Methods
             </h3>
             
@@ -23,14 +23,14 @@ $title = 'Payment Methods';
                     </div>
                 <?php else: ?>
                     <?php foreach ($methods as $m): ?>
-                        <div class="bg-white border rounded-2xl p-4 shadow-sm transition-all hover:shadow-md relative group <?= $m['is_default'] ? 'border-indigo-500 ring-1 ring-indigo-100' : 'border-gray-200' ?>">
+                        <div class="bg-white border rounded-2xl p-4 shadow-sm transition-all hover:shadow-md relative group <?= $m['is_default'] ? 'border-primary ring-1 ring-primary/20' : 'border-gray-200' ?>">
                             <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
                                         <?php if ($m['method_type'] === 'card'): ?>
                                             <span class="text-[10px] font-black text-gray-400"><?= strtoupper($m['brand'] ?? 'CARD') ?></span>
                                         <?php else: ?>
-                                            <span class="text-[10px] font-black text-indigo-600">UPI</span>
+                                            <span class="text-[10px] font-black text-primary">UPI</span>
                                         <?php endif; ?>
                                     </div>
                                     <div>
@@ -40,7 +40,7 @@ $title = 'Payment Methods';
                                 </div>
                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <?php if (!$m['is_default']): ?>
-                                        <button @click="setDefault(<?= $m['id'] ?>)" class="p-1.5 text-gray-400 hover:text-indigo-600" title="Set Default">
+                                        <button @click="setDefault(<?= $m['id'] ?>)" class="p-1.5 text-gray-400 hover:text-primary" title="Set Default">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                         </button>
                                     <?php endif; ?>
@@ -50,7 +50,7 @@ $title = 'Payment Methods';
                                 </div>
                             </div>
                             <?php if ($m['is_default']): ?>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">DEFAULT</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-50 text-primary-600">DEFAULT</span>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -60,14 +60,14 @@ $title = 'Payment Methods';
 
         <!-- Main Content: Add New Method -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-3xl shadow-xl shadow-indigo-100/50 border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-3xl shadow-xl shadow-primary-100/50 border border-gray-100 overflow-hidden">
                 <!-- Tab Headers -->
                 <div class="flex bg-gray-50/50 p-1.5 gap-1">
-                    <button @click="type = 'card'" :class="type === 'card' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
+                    <button @click="type = 'card'" :class="type === 'card' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                         Card
                     </button>
-                    <button @click="type = 'upi'" :class="type === 'upi' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
+                    <button @click="type = 'upi'" :class="type === 'upi' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:bg-gray-100'" class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         UPI ID
                     </button>
@@ -111,7 +111,7 @@ $title = 'Payment Methods';
                                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Card Number</label>
                                     <div class="relative">
                                         <input type="text" x-model="cardNumber" @input="handleCardInput" maxlength="19"
-                                               :class="errors.cardNumber ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                               :class="errors.cardNumber ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-primary/20 focus:border-primary'"
                                                class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono text-lg tracking-wider outline-none focus:ring-4"
                                                placeholder="0000 0000 0000 0000">
                                         <div class="absolute right-5 top-1/2 -translate-y-1/2" x-html="getBrandIcon()"></div>
@@ -125,7 +125,7 @@ $title = 'Payment Methods';
                                 <div class="md:col-span-2">
                                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Expiry Date</label>
                                     <input type="text" x-model="cardExpiry" @input="handleExpiryInput" maxlength="5"
-                                           :class="errors.cardExpiry ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                           :class="errors.cardExpiry ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-primary/20 focus:border-primary'"
                                            class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono outline-none focus:ring-4"
                                            placeholder="MM / YY">
                                 </div>
@@ -133,7 +133,7 @@ $title = 'Payment Methods';
                                 <div class="md:col-span-2">
                                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">CVV / CVC</label>
                                     <input type="password" x-model="cardCvv" maxlength="4" @input="validate('cardCvv')"
-                                           :class="errors.cardCvv ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                           :class="errors.cardCvv ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-primary/20 focus:border-primary'"
                                            class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-mono outline-none focus:ring-4"
                                            placeholder="•••">
                                 </div>
@@ -141,7 +141,7 @@ $title = 'Payment Methods';
                                 <div class="md:col-span-4">
                                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Cardholder Name</label>
                                     <input type="text" x-model="cardName" @input="validate('cardName')"
-                                           class="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all uppercase font-bold outline-none"
+                                           class="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all uppercase font-bold outline-none"
                                            placeholder="AS SHOWN ON CARD">
                                 </div>
                             </div>
@@ -149,20 +149,20 @@ $title = 'Payment Methods';
 
                         <!-- UPI Workflow -->
                         <div x-show="type === 'upi'" x-transition x-cloak class="space-y-6">
-                            <div class="p-6 rounded-3xl bg-indigo-50/50 border border-indigo-100 flex items-center gap-5">
-                                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200">
+                            <div class="p-6 rounded-3xl bg-primary-50/50 border border-primary flex items-center gap-5">
+                                <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-primary-100">
                                     <span class="text-white font-black tracking-tighter text-sm">UPI</span>
                                 </div>
                                 <div>
-                                    <h4 class="text-indigo-900 font-black text-sm uppercase tracking-wide">Instant Verification</h4>
-                                    <p class="text-indigo-700/60 text-xs mt-1 leading-relaxed">Your UPI ID will be verified instantly. Supports all major apps like GPay, PhonePe, and Paytm.</p>
+                                    <h4 class="text-primary-900 font-black text-sm uppercase tracking-wide">Instant Verification</h4>
+                                    <p class="text-primary-600/60 text-xs mt-1 leading-relaxed">Your UPI ID will be verified instantly. Supports all major apps like GPay, PhonePe, and Paytm.</p>
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">UPI ID / VPA</label>
                                 <input type="text" x-model="upiId" @input="validate('upiId')"
-                                       :class="errors.upiId ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-indigo-100 focus:border-indigo-500'"
+                                       :class="errors.upiId ? 'border-red-300 ring-red-50' : 'border-gray-200 focus:ring-primary/20 focus:border-primary'"
                                        class="w-full px-5 py-4 bg-gray-50/50 border rounded-2xl transition-all font-bold outline-none focus:ring-4"
                                        placeholder="username@bank">
                                 <p x-show="errors.upiId" class="text-[11px] text-red-500 mt-2 font-bold" x-text="errors.upiId"></p>
@@ -173,7 +173,7 @@ $title = 'Payment Methods';
                         <div class="mt-10 pt-8 border-t border-gray-50 flex items-center justify-between">
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" x-model="isDefault" class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border-2 border-gray-200 transition-all checked:border-indigo-600 checked:bg-indigo-600">
+                                    <input type="checkbox" x-model="isDefault" class="peer h-5 w-5 cursor-pointer appearance-none rounded-lg border-2 border-gray-200 transition-all checked:border-primary checked:bg-primary">
                                     <svg class="absolute h-5 w-5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 </div>
                                 <span class="text-sm font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Default Method</span>
@@ -181,7 +181,7 @@ $title = 'Payment Methods';
 
                             <button type="submit" 
                                     :disabled="loading || !canSubmit()"
-                                    class="relative px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-indigo-200 flex items-center gap-3">
+                                    class="relative px-10 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary-600 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-primary-100 flex items-center gap-3">
                                 <span x-show="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                 <span x-text="loading ? 'Processing...' : 'Save Method'"></span>
                             </button>
@@ -247,10 +247,10 @@ function paymentMethodsManager() {
 
         getCardTheme() {
             const themes = {
-                'visa': 'bg-gradient-to-br from-blue-600 to-indigo-900',
+                'visa': 'bg-gradient-to-br from-[#f05537] to-primary',
                 'mastercard': 'bg-gradient-to-br from-red-500 to-orange-700',
                 'amex': 'bg-gradient-to-br from-emerald-500 to-teal-800',
-                'rupay': 'bg-gradient-to-br from-indigo-700 to-purple-900'
+                'rupay': 'bg-gradient-to-br from-[#f05537]-600 to-primary'
             };
             return themes[this.brand] || 'bg-gradient-to-br from-gray-700 to-gray-900';
         },
@@ -369,3 +369,14 @@ function paymentMethodsManager() {
 [x-cloak] { display: none !important; }
 .perspective-1000 { perspective: 1000px; }
 </style>
+
+
+
+
+
+
+
+
+
+
+

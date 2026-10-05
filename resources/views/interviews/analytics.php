@@ -62,3 +62,14 @@ $candidateName = (string)($interview['candidate_name'] ?? 'Candidate');
     </div>
 </div>
 
+
+
+
+
+
+
+
+
+
+
+

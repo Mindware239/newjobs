@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Mindware Infotech Job Portal - Complete API",
-    "description": "Comprehensive API documentation for Mindware Infotech Job Portal, supporting Mobile Apps (iOS/Android) and Web. Includes Authentication, Candidate & Employer Portals, Payments, Subscriptions, AI Job Matching, and Real-time Communications.",
+    "title": "Jobsence Job Portal - Complete API",
+    "description": "Comprehensive API documentation for Jobsence Job Portal, supporting Mobile Apps (iOS/Android) and Web. Includes Authentication, Candidate & Employer Portals, Payments, Subscriptions, AI Job Matching, and Real-time Communications.",
     "version": "1.5.0"
   },
   "servers": [
@@ -11,7 +11,7 @@
       "description": "Local Network Server"
     },
     {
-      "url": "https://mindwareinfotech.com",
+      "url": "https://jobsence.com",
       "description": "Production Server"
     }
   ],
@@ -69,7 +69,11 @@
                   "password": {
                     "type": "string"
                   }
-                }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -77,6 +81,68 @@
         "responses": {
           "200": {
             "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/send-email-otp": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Send Email OTP",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "auth",
+                      "register_candidate",
+                      "register_employer",
+                      "login"
+                    ],
+                    "default": "auth"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "candidate",
+                      "employer"
+                    ]
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "example": {
+                  "email": "hr@company.com",
+                  "purpose": "register_employer",
+                  "role": "employer"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent",
             "content": {
               "application/json": {
                 "schema": {
@@ -98,7 +164,7 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
@@ -114,12 +180,76 @@
                   },
                   "mobile": {
                     "type": "string"
+                  },
+                  "email_otp": {
+                    "type": "string",
+                    "description": "6-digit OTP sent to email"
+                  },
+                  "resume": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Resume file (PDF, DOC, DOCX)"
                   }
                 },
                 "required": [
                   "email",
                   "password",
-                  "full_name"
+                  "full_name",
+                  "email_otp"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful"
+          }
+        }
+      }
+    },
+    "/api/v1/register-candidate-phone": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Candidate Registration with Phone OTP",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "resume": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Resume file (PDF, DOC, DOCX)"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "otp",
+                  "full_name",
+                  "email",
+                  "password"
                 ]
               }
             }
@@ -138,6 +268,7 @@
           "Authentication"
         ],
         "summary": "Employer Registration",
+        "description": "Flutter employer registration endpoint matching the web employer form. First call /api/v1/send-email-otp with purpose=register_employer and role=employer, then submit this payload with email_otp.",
         "security": [],
         "requestBody": {
           "required": true,
@@ -146,24 +277,197 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "company_name": {
+                    "type": "string",
+                    "example": "Jobsence"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "hr@company.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "10 digit Indian mobile number",
+                    "example": "9876543210"
+                  },
+                  "full_name": {
+                    "type": "string",
+                    "description": "Contact person name",
+                    "example": "Ravi Sharma"
+                  },
+                  "register_as": {
+                    "type": "string",
+                    "enum": [
+                      "company",
+                      "individual"
+                    ],
+                    "default": "company"
+                  },
+                  "industry": {
+                    "type": "string",
+                    "description": "Required when register_as=company",
+                    "example": "IT / Software"
+                  },
+                  "company_type": {
+                    "type": "string",
+                    "description": "Required when register_as=company",
+                    "example": "private_limited"
+                  },
+                  "company_size": {
+                    "type": "string",
+                    "description": "Required when register_as=company",
+                    "example": "11-50"
+                  },
+                  "profession_type": {
+                    "type": "string",
+                    "description": "Required when register_as=individual",
+                    "example": "Consultant"
+                  },
+                  "service_category": {
+                    "type": "string",
+                    "description": "Required when register_as=individual",
+                    "example": "HR Services"
+                  },
+                  "gstin": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Optional GSTIN. Must be valid if provided.",
+                    "example": "07ABCDE1234F1Z5"
+                  },
+                  "website": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": "https://company.com"
+                  },
+                  "pincode": {
+                    "type": "string",
+                    "description": "6 digit pin code",
+                    "example": "110001"
+                  },
+                  "address": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string",
+                        "example": "India"
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "example": "110001"
+                      }
+                    }
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "password_confirm": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "email_otp": {
+                    "type": "string",
+                    "description": "6 digit OTP sent to email using purpose register_employer",
+                    "example": "123456"
+                  }
+                },
+                "required": [
+                  "company_name",
+                  "email",
+                  "phone",
+                  "full_name",
+                  "pincode",
+                  "password",
+                  "email_otp"
+                ],
+                "example": {
+                  "company_name": "Jobsence",
+                  "email": "hr@company.com",
+                  "phone": "9876543210",
+                  "full_name": "Ravi Sharma",
+                  "register_as": "company",
+                  "industry": "IT / Software",
+                  "company_type": "private_limited",
+                  "company_size": "11-50",
+                  "gstin": "07ABCDE1234F1Z5",
+                  "website": "https://company.com",
+                  "pincode": "110001",
+                  "address": {
+                    "street": "Connaught Place",
+                    "city": "New Delhi",
+                    "state": "Delhi",
+                    "country": "India",
+                    "postal_code": "110001"
+                  },
+                  "password": "StrongPass@123",
+                  "password_confirm": "StrongPass@123",
+                  "email_otp": "123456"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful"
+          },
+          "422": {
+            "description": "Validation failed or OTP invalid"
+          },
+          "400": {
+            "description": "Registration failed or email already exists"
+          }
+        }
+      }
+    },
+    "/api/v1/register-employer-phone": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Employer Registration with Phone OTP",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "company_name": {
+                    "type": "string"
+                  },
                   "email": {
                     "type": "string",
                     "format": "email"
                   },
                   "password": {
                     "type": "string"
-                  },
-                  "company_name": {
-                    "type": "string"
-                  },
-                  "phone": {
-                    "type": "string"
                   }
                 },
                 "required": [
+                  "phone",
+                  "otp",
+                  "company_name",
                   "email",
-                  "password",
-                  "company_name"
+                  "password"
                 ]
               }
             }
@@ -191,14 +495,18 @@
                 "type": "object",
                 "properties": {
                   "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "E.164 formatted phone number"
                   },
                   "purpose": {
                     "type": "string",
                     "enum": [
                       "auth",
                       "verification",
-                      "reset"
+                      "reset",
+                      "login",
+                      "register_candidate",
+                      "register_employer"
                     ],
                     "default": "auth"
                   },
@@ -219,7 +527,14 @@
         },
         "responses": {
           "200": {
-            "description": "OTP sent"
+            "description": "OTP sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -259,7 +574,14 @@
         },
         "responses": {
           "200": {
-            "description": "Login successful"
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -501,6 +823,98 @@
         }
       }
     },
+    "/api/v1/candidate/applications": {
+      "get": {
+        "tags": [
+          "Candidate - Jobs"
+        ],
+        "summary": "List My Applications",
+        "description": "Returns a paginated list of jobs the candidate has applied for, including job and company details.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/applied-jobs": {
+      "get": {
+        "tags": [
+          "Candidate - Jobs"
+        ],
+        "summary": "List Applied Jobs (Alias)",
+        "description": "Alias for /api/v1/candidate/applications. Returns a list of jobs the candidate has applied for.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/candidate/applications/{id}/withdraw": {
       "post": {
         "tags": [
@@ -622,6 +1036,229 @@
         }
       }
     },
+    "/api/v1/candidate/settings": {
+      "get": {
+        "tags": ["Candidate - Settings"],
+        "summary": "Get account settings and notification preferences",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      },
+      "put": {
+        "tags": ["Candidate - Settings"],
+        "summary": "Update account settings and preferences",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/api/v1/candidate/settings/password": {
+      "post": {
+        "tags": ["Candidate - Settings"],
+        "summary": "Change account password",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/api/v1/candidate/activity-logs": {
+      "get": {
+        "tags": ["Candidate - Activity"],
+        "summary": "Get activity logs",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/api/v1/candidate/resumes/{id}/sections": {
+      "get": {
+        "tags": ["Candidate - Resume Builder"],
+        "summary": "List resume sections",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      },
+      "post": {
+        "tags": ["Candidate - Resume Builder"],
+        "summary": "Add resume section",
+        "responses": {
+          "201": { "description": "Created" }
+        }
+      }
+    },
+    "/api/v1/candidate/upgrade": {
+      "get": {
+        "tags": [
+          "Candidate - Premium"
+        ],
+        "summary": "List Upgrade Plans (Alias)",
+        "description": "Alias for /api/v1/candidate/premium/plans. Returns available premium/upgrade plans for candidates.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidate/premium/plans": {
+      "get": {
+        "tags": ["Candidate - Premium"],
+        "summary": "List Candidate Premium Plans",
+        "responses": {
+          "200": { "description": "Plans retrieved successfully" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/candidate/premium/payment": {
+      "post": {
+        "tags": ["Candidate - Premium"],
+        "summary": "Initiate Candidate Premium Payment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "plan_id": { "type": "integer", "example": 58, "description": "Use an id returned by GET /api/v1/candidate/premium/plans. Employer plan ids are not accepted." }
+                },
+                "required": ["plan_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment initiated" },
+          "400": { "description": "Plan ID is required" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate plan not found" }
+        }
+      }
+    },
+    "/api/v1/candidate/premium/verify": {
+      "post": {
+        "tags": ["Candidate - Premium"],
+        "summary": "Verify Candidate Premium Payment",
+        "description": "Verifies payment and activates candidate premium. order_id and payment_id are required.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": { "type": "string", "example": "order_1779263112" },
+                  "payment_id": { "type": "string", "example": "pay_test_123456" },
+                  "plan_id": { "type": "integer", "example": 58 },
+                  "amount": { "type": "number", "example": 499 },
+                  "payment_method": { "type": "string", "example": "razorpay" }
+                },
+                "required": ["order_id", "payment_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment verified and Premium activated" },
+          "401": { "description": "Unauthorized" },
+          "422": { "description": "Validation failed" }
+        }
+      }
+    },
+    "/api/v1/candidate/premium/billing": {
+      "get": {
+        "tags": ["Candidate - Premium"],
+        "summary": "Candidate Premium Billing History",
+        "responses": {
+          "200": { "description": "Billing history retrieved" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate not found" }
+        }
+      }
+    },
+    "/api/v1/candidate/jobs/{id}/bookmark": {
+      "post": {
+        "tags": ["Candidate - Saved Jobs"],
+        "summary": "Save Job",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Job ID" }
+        ],
+        "responses": {
+          "201": { "description": "Job bookmarked" },
+          "200": { "description": "Already bookmarked" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Candidate - Saved Jobs"],
+        "summary": "Remove Saved Job",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Job ID" }
+        ],
+        "responses": {
+          "200": { "description": "Bookmark removed" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate not found" }
+        }
+      }
+    },
+    "/api/v1/candidate/bookmarks": {
+      "get": {
+        "tags": ["Candidate - Saved Jobs"],
+        "summary": "List Saved Jobs",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10, "maximum": 50 } }
+        ],
+        "responses": {
+          "200": { "description": "Saved jobs fetched" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate not found" }
+        }
+      }
+    },
+    "/api/v1/candidate/bookmarks/bulk-delete": {
+      "post": {
+        "tags": ["Candidate - Saved Jobs"],
+        "summary": "Bulk Remove Saved Jobs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "job_ids": {
+                    "type": "array",
+                    "items": { "type": "integer" },
+                    "example": [1, 2, 3]
+                  }
+                },
+                "required": ["job_ids"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Bookmarks deleted" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Candidate not found" },
+          "422": { "description": "Validation failed" }
+        }
+      }
+    },
     "/api/v1/payments/initiate": {
       "post": {
         "tags": [
@@ -639,15 +1276,46 @@
                   },
                   "gateway": {
                     "type": "string",
+                    "enum": [
+                      "razorpay",
+                      "cashfree",
+                      "stripe"
+                    ],
                     "example": "razorpay"
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "enum": [
+                      "checkout",
+                      "card",
+                      "upi",
+                      "netbanking",
+                      "wallet",
+                      "emi",
+                      "paylater"
+                    ],
+                    "example": "card"
+                  },
+                  "billing_cycle": {
+                    "type": "string",
+                    "enum": [
+                      "monthly",
+                      "quarterly",
+                      "annual"
+                    ],
+                    "example": "monthly"
                   }
-                }
+                },
+                "required": [
+                  "plan_id",
+                  "gateway"
+                ]
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment initialized"
           }
         }
@@ -666,15 +1334,33 @@
                 "type": "object",
                 "properties": {
                   "order_id": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Gateway order id. For Razorpay this may also be sent as razorpay_order_id."
                   },
                   "payment_id": {
+                    "type": "integer",
+                    "description": "Internal subscription payment id returned by initiate."
+                  },
+                  "razorpay_payment_id": {
                     "type": "string"
                   },
-                  "signature": {
+                  "razorpay_order_id": {
                     "type": "string"
+                  },
+                  "razorpay_signature": {
+                    "type": "string"
+                  },
+                  "subscription_payment_id": {
+                    "type": "integer"
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Gateway signature. For Razorpay this may also be sent as razorpay_signature."
                   }
-                }
+                },
+                "required": [
+                  "payment_id"
+                ]
               }
             }
           }
@@ -699,12 +1385,302 @@
         }
       }
     },
+    "/api/v1/employer/billing/overview": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Billing Overview",
+        "description": "Mobile billing overview using the same employer billing data as the website: current plan, subscription, balance due, upcoming payment, last payment, recent transactions and alerts.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing overview"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Employer profile not found"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/billing/transactions": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Billing Transactions",
+        "description": "Returns combined subscription and add-on transactions with the same filters and summary used by the website transactions page.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "completed"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "razorpay"
+            }
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "subscription",
+                "addon"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing transactions"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/billing/invoices": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Billing Invoices",
+        "description": "Returns subscription payment invoices using the same filters as the website invoices page.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "completed"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing invoices"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/subscription/dashboard": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Subscription Dashboard",
+        "description": "Returns current subscription, current plan, usage, recent subscription payments and alerts for the mobile subscription dashboard.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription dashboard"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/billing/payment-methods": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Payment Methods",
+        "description": "Returns saved card/UPI payment methods and the default payment method.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment methods"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/billing/settings": {
+      "get": {
+        "tags": [
+          "Employer - Billing"
+        ],
+        "summary": "Employer Billing Settings",
+        "description": "Returns billing profile, subscription, current plan and payment methods for mobile billing settings.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing settings"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/profile": {
+      "get": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "Get Complete Employer Company Profile",
+        "description": "Returns complete employer company details for mobile apps, including account, company, GST/tax, address, logo, banner, KYC documents, profile completion, job stats, subscription and last payment.",
+        "responses": {
+          "200": {
+            "description": "Complete employer profile"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Profile not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "Update Employer Company Profile",
+        "responses": {
+          "200": {
+            "description": "Profile updated"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/profile/logo": {
+      "post": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "Upload Company Logo",
+        "responses": {
+          "200": {
+            "description": "Logo uploaded"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/profile/banner": {
+      "post": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "Upload Company Banner",
+        "responses": {
+          "200": {
+            "description": "Banner uploaded"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/profile/documents": {
+      "get": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "List Employer KYC Documents",
+        "responses": {
+          "200": {
+            "description": "Documents listed"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Employer - Profile"
+        ],
+        "summary": "Upload Employer KYC Document",
+        "responses": {
+          "200": {
+            "description": "Document uploaded"
+          }
+        }
+      }
+    },
     "/api/v1/employer/jobs": {
       "get": {
         "tags": [
           "Employer - Jobs"
         ],
         "summary": "List My Jobs",
+        "description": "Returns all jobs posted by the authenticated employer. Each job includes saved company/contact fields, locations, location_display and publish status.",
         "responses": {
           "200": {
             "description": "Success"
@@ -716,9 +1692,273 @@
           "Employer - Jobs"
         ],
         "summary": "Post New Job",
+        "description": "Create and publish a job for the authenticated employer. Location data is saved in both jobs.locations and job_locations for map/search support.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "description"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Flutter Developer"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Build and maintain Flutter mobile applications."
+                  },
+                  "employment_type": {
+                    "type": "string",
+                    "enum": [
+                      "full_time",
+                      "part_time",
+                      "contract",
+                      "internship",
+                      "freelance"
+                    ],
+                    "example": "full_time"
+                  },
+                  "salary_min": {
+                    "type": "integer",
+                    "example": 30000
+                  },
+                  "salary_max": {
+                    "type": "integer",
+                    "example": 60000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "example": "INR"
+                  },
+                  "vacancies": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "experience_type": {
+                    "type": "string",
+                    "example": "experienced"
+                  },
+                  "min_experience": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "max_experience": {
+                    "type": "integer",
+                    "example": 4
+                  },
+                  "company_name": {
+                    "type": "string",
+                    "example": "Jobsence"
+                  },
+                  "company_size": {
+                    "type": "string",
+                    "example": "11-50"
+                  },
+                  "contact_person": {
+                    "type": "string",
+                    "example": "HR Manager"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+91 9910112688"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "hr@example.com"
+                  },
+                  "job_address": {
+                    "type": "string",
+                    "example": "Gomti Nagar, Lucknow, Uttar Pradesh, India"
+                  },
+                  "location": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "city": {
+                          "type": "string",
+                          "example": "Lucknow"
+                        },
+                        "state": {
+                          "type": "string",
+                          "example": "Uttar Pradesh"
+                        },
+                        "country": {
+                          "type": "string",
+                          "example": "India"
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "format": "double",
+                          "example": 26.8467
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "format": "double",
+                          "example": 80.9462
+                        }
+                      }
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published"
+                    ],
+                    "default": "published"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Created"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Get My Job Detail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Job not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Update My Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Delete My Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/jobs/{id}/publish": {
+      "patch": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Publish My Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/jobs/{id}/unpublish": {
+      "patch": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Unpublish My Job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unpublished"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/jobs/{id}/duplicate": {
+      "post": {
+        "tags": [
+          "Employer - Jobs"
+        ],
+        "summary": "Duplicate My Job As Draft",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Duplicated"
           }
         }
       }
@@ -749,6 +1989,441 @@
         }
       }
     },
+    "/api/v1/employer/interviews/stats": {
+      "get": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Get Interview Statistics",
+        "description": "Returns counts for total, upcoming, today, this week, completed, and cancelled interviews.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/interviews": {
+      "get": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "List Interviews",
+        "description": "Returns a paginated list of interviews for the employer with optional filters.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "upcoming",
+                "today",
+                "week",
+                "completed",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "phone",
+                "video",
+                "onsite"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "date",
+                "candidate",
+                "job"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Schedule Interview",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "application_id": {
+                    "type": "integer"
+                  },
+                  "interview_type": {
+                    "type": "string",
+                    "enum": [
+                      "phone",
+                      "video",
+                      "onsite"
+                    ]
+                  },
+                  "scheduled_start": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "scheduled_end": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "default": "Asia/Kolkata"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "meeting_link": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "application_id",
+                  "interview_type",
+                  "scheduled_start",
+                  "scheduled_end"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/interviews/{id}": {
+      "get": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Get Interview Details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/interviews/{id}/reschedule": {
+      "post": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Reschedule Interview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduled_start": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "scheduled_end": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "scheduled_start",
+                  "scheduled_end"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/interviews/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Cancel Interview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/interviews/{id}/complete": {
+      "post": {
+        "tags": [
+          "Employer - Interviews"
+        ],
+        "summary": "Complete Interview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings": {
+      "get": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Get Employer Settings",
+        "description": "Returns employer account, preferences, and basic company information.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/account": {
+      "put": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Update Account Settings",
+        "description": "Update email, phone, and additional mobile number.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "additional_mobile": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/account/send-otp": {
+      "post": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Send Phone OTP for Verification",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/account/verify-otp": {
+      "post": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Verify Phone OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "otp": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/password": {
+      "post": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Change Password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "current_password": { "type": "string" },
+                  "new_password": { "type": "string" },
+                  "confirm_password": { "type": "string" }
+                },
+                "required": ["current_password", "new_password", "confirm_password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/preferences": {
+      "put": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Update Preferences",
+        "description": "Update timezone and notification preferences.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timezone": { "type": "string" },
+                  "notification_pref": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/employer/settings/company": {
+      "put": {
+        "tags": [
+          "Employer - Settings"
+        ],
+        "summary": "Update Company Information",
+        "description": "Update company name, website, industry, and size.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "company_name": { "type": "string" },
+                  "website": { "type": "string" },
+                  "description": { "type": "string" },
+                  "industry": { "type": "string" },
+                  "company_type": { "type": "string" },
+                  "company_size": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/v1/conversations": {
       "get": {
         "tags": [
@@ -766,9 +2441,33 @@
           "Communication"
         ],
         "summary": "Start Conversation",
+        "description": "Candidates may send employer_id (employers.id) or user_id (employer users.id). Employers may send candidate_id (candidates.id), candidate_user_id, or user_id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": { "type": "integer", "example": 850, "description": "Other user's users.id. For candidates this is employer user_id; for employers this is candidate user_id." },
+                  "employer_id": { "type": "integer", "example": 73, "description": "Use when the authenticated user is a candidate." },
+                  "candidate_id": { "type": "integer", "example": 44, "description": "Use when the authenticated user is an employer." },
+                  "candidate_user_id": { "type": "integer", "example": 99, "description": "Use when the authenticated user is an employer." },
+                  "initial_message": { "type": "string", "example": "Hello, I would like to discuss this opportunity." }
+                }
+              }
+            }
+          }
+        },
         "responses": {
+          "200": {
+            "description": "Existing conversation returned"
+          },
           "201": {
             "description": "Started"
+          },
+          "422": {
+            "description": "Required participant id missing or invalid"
           }
         }
       }
@@ -779,9 +2478,15 @@
           "Communication"
         ],
         "summary": "Get Messages",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Conversation ID" }
+        ],
         "responses": {
           "200": {
             "description": "Success"
+          },
+          "404": {
+            "description": "Conversation not found"
           }
         }
       },
@@ -790,9 +2495,29 @@
           "Communication"
         ],
         "summary": "Send Message",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Conversation ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": { "type": "string", "example": "Thanks for reaching out." }
+                },
+                "required": ["content"]
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Sent"
+          },
+          "422": {
+            "description": "content is required"
           }
         }
       }
@@ -800,13 +2525,164 @@
     "/api/v1/notifications": {
       "get": {
         "tags": [
-          "Communication"
+          "Candidate - Notifications"
         ],
         "summary": "List Notifications",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }
+        ],
         "responses": {
           "200": {
             "description": "Success"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
+        }
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "post": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Mark Notification as Read",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "description": "Notification ID" }
+        ],
+        "responses": {
+          "200": { "description": "Notification marked as read" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Notification not found" }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Mark All Notifications as Read",
+        "responses": {
+          "200": { "description": "All notifications marked as read" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/notifications/fcm-token": {
+      "post": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Register FCM Token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": { "type": "string", "example": "firebase_device_token" },
+                  "device": { "type": "string", "example": "android" },
+                  "browser": { "type": "string", "example": "flutter" }
+                },
+                "required": ["token"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Device registered for push notifications" },
+          "400": { "description": "Token is required" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "delete": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Unregister FCM Token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": { "type": "string", "example": "firebase_device_token" }
+                },
+                "required": ["token"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Unsubscribed successfully" },
+          "400": { "description": "Token is required" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/notifications/preferences": {
+      "get": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Get Notification Preferences",
+        "responses": {
+          "200": { "description": "Success" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "put": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Update Notification Preferences",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "in_app": { "type": "boolean", "example": true },
+                  "email": { "type": "boolean", "example": true },
+                  "push": { "type": "boolean", "example": true },
+                  "whatsapp": { "type": "boolean", "example": false }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Preferences updated" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/notifications/test": {
+      "post": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Create Test Notification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "Test notification" },
+                  "message": { "type": "string", "example": "This is a test notification." },
+                  "link": { "type": "string", "example": "/candidate/dashboard" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Test notification created" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/notifications/history": {
+      "get": {
+        "tags": ["Candidate - Notifications"],
+        "summary": "Notification History",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "401": { "description": "Unauthorized" }
         }
       }
     },
@@ -911,12 +2787,288 @@
         }
       }
     },
+    "/api/v1/reviews/company/{id}": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "List Company Reviews",
+        "description": "Returns approved reviews for a company.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Company ID"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "rating_high",
+                "rating_low"
+              ],
+              "default": "latest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews fetched"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/api/v1/reviews": {
+      "post": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Create Review",
+        "description": "Creates a company review. Candidate login required. Use company_id when available; employer_id is accepted and mapped to company_id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "company_id": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "employer_id": {
+                    "type": "integer",
+                    "example": 33
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "example": 5
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Good company"
+                  },
+                  "review_text": {
+                    "type": "string",
+                    "minLength": 20,
+                    "example": "Good working culture and helpful management."
+                  }
+                },
+                "required": [
+                  "rating",
+                  "title",
+                  "review_text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review created"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/my-reviews": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "My Reviews",
+        "description": "Returns reviews created by the authenticated user.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews fetched"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}": {
+      "put": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Update Review",
+        "description": "Updates a review owned by the authenticated user. Review can be edited within 30 days.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Review ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "example": 5
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Updated review title"
+                  },
+                  "review_text": {
+                    "type": "string",
+                    "minLength": 20,
+                    "example": "Updated review text with minimum required length."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review updated"
+          },
+          "400": {
+            "description": "Cannot edit review after 30 days"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Review not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Delete Review",
+        "description": "Deletes a review owned by the authenticated user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Review ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Review not found"
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/company/{id}/stats": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Company Review Stats",
+        "description": "Returns review count, average rating, and rating distribution for a company.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Company ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review stats fetched"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
     "/api/countries": {
       "get": {
         "tags": [
           "Geo"
         ],
         "summary": "List Countries",
+        "description": "Returns countries from the database. Each item includes id, name, slug and code when known.",
         "responses": {
           "200": {
             "description": "Success"
@@ -930,12 +3082,28 @@
           "Geo"
         ],
         "summary": "List States",
+        "description": "Returns all states, or states filtered by country. Use country_id for exact filtering, or country/country_code for name/code filtering.",
         "parameters": [
+          {
+            "name": "country_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
           {
             "name": "country",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "country_code",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "IN"
             }
           }
         ],
@@ -952,9 +3120,31 @@
           "Geo"
         ],
         "summary": "List Cities",
+        "description": "Returns all cities, or cities filtered by state and country. Use state_id for exact filtering, or state name/slug.",
         "parameters": [
           {
+            "name": "state_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "country",
             "in": "query",
             "schema": {
               "type": "string"

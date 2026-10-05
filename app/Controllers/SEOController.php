@@ -35,7 +35,9 @@ class SEOController
             'sitemap-cities.xml',
             'sitemap-categories.xml',
             'sitemap-skills.xml',
-            'sitemap-companies.xml'
+            'sitemap-companies.xml',
+            'sitemap-locations.xml',
+            'sitemap-catalogue.xml'
         ];
 
         foreach ($sitemaps as $map) {
@@ -60,6 +62,18 @@ class SEOController
         $xml .= $this->urlElement($this->baseUrl . '/about', '0.7', 'monthly');
         $xml .= $this->urlElement($this->baseUrl . '/contact', '0.7', 'monthly');
         $xml .= $this->urlElement($this->baseUrl . '/blog', '0.8', 'weekly');
+        $xml .= $this->urlElement($this->baseUrl . '/skill-development', '0.9', 'weekly');
+        $xml .= $this->urlElement($this->baseUrl . '/apply', '0.9', 'weekly');
+        $xml .= $this->urlElement($this->baseUrl . '/skills', '0.8', 'weekly');
+        foreach (['/agreement-terms/skill', '/agreement-terms/internship', '/agreement-terms/job', '/agreement-terms/nearme', '/mentoring', '/skill-seekers', '/internship-seekers', '/skill-mentors', '/internship-providers', '/talent-search', '/hospital-talent', '/near-me', '/india-jobs'] as $page) {
+            $xml .= $this->urlElement($this->baseUrl . $page, '0.8', 'daily');
+        }
+        foreach (array_keys(array_filter(\App\Services\Registration\FormRegistry::all(), static fn($f) => empty($f['internal']))) as $formSlug) {
+            $xml .= $this->urlElement($this->baseUrl . '/apply/' . $formSlug, '0.8', 'monthly');
+        }
+        foreach (array_keys(\App\Controllers\Front\SkillDevelopmentController::STATES) as $stateSlug) {
+            $xml .= $this->urlElement($this->baseUrl . '/skill-development/' . $stateSlug, '0.7', 'monthly');
+        }
         $xml .= '</urlset>';
         $this->renderXml($response, $xml);
     }
@@ -245,6 +259,43 @@ class SEOController
             }
         }
 
+        $xml .= '</urlset>';
+        $this->renderXml($response, $xml);
+    }
+
+    /** Internship / skill development / jobs pages for every state, district and town of India. */
+    public function locations(Request $request, Response $response): void
+    {
+        $xml = $this->startUrlSet();
+        foreach (\App\Controllers\Front\LocationPagesController::places() as $slug => $p) {
+            $priority = $p['level'] === 'country' ? '0.8' : ($p['level'] === 'state' ? '0.7' : ($p['level'] === 'abroad' ? '0.5' : '0.6'));
+            foreach (\App\Controllers\Front\LocationPagesController::KINDS as $kind => $k) {
+                if ($p['level'] === 'abroad' && \App\Controllers\Front\LocationPagesController::isProviderKind($kind)) {
+                    continue;
+                }
+                if ($kind === 'skill' && $p['level'] === 'state' && isset(\App\Controllers\Front\SkillDevelopmentController::STATES[$slug])) {
+                    continue;
+                }
+                $xml .= $this->urlElement($this->baseUrl . '/' . $k['path'] . $slug, $priority, 'weekly');
+            }
+        }
+        $xml .= '</urlset>';
+        $this->renderXml($response, $xml);
+    }
+
+    /** Skills / internships / jobs / Near Me catalogue: every category and subcategory. */
+    public function catalogue(Request $request, Response $response): void
+    {
+        $xml = $this->startUrlSet();
+        foreach (array_keys(\App\Controllers\Front\CatalogueController::MODES) as $mode) {
+            $xml .= $this->urlElement($this->baseUrl . '/categories/' . $mode, '0.8', 'weekly');
+            foreach (\App\Controllers\Front\CatalogueController::tree($mode) as $sector) {
+                $xml .= $this->urlElement($this->baseUrl . '/categories/' . $mode . '/' . $sector['slug'], '0.7', 'weekly');
+                foreach ($sector['subs'] as $sub) {
+                    $xml .= $this->urlElement($this->baseUrl . '/categories/' . $mode . '/' . $sector['slug'] . '/' . $sub['slug'], '0.6', 'weekly');
+                }
+            }
+        }
         $xml .= '</urlset>';
         $this->renderXml($response, $xml);
     }

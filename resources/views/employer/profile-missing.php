@@ -17,8 +17,8 @@
         </div>
         
         <div class="mt-8">
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <p class="text-sm text-blue-800">
+            <div class="bg-primary-50 border border-primary-100 rounded-md p-4">
+                <p class="text-sm text-primary-900">
                     <strong>User ID:</strong> <?= htmlspecialchars($user->id ?? 'N/A') ?><br>
                     <strong>Email:</strong> <?= htmlspecialchars($user->email ?? 'N/A') ?><br>
                     <strong>Role:</strong> <?= htmlspecialchars($user->role ?? 'N/A') ?>
@@ -27,7 +27,7 @@
         </div>
         
         <div class="mt-8 flex justify-center space-x-4">
-            <a href="/register-employer" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <a href="/register-employer" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 Complete Registration
             </a>
             <a href="/logout" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
@@ -42,4 +42,15 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

@@ -12,6 +12,10 @@ class SwaggerController
     public function ui(Request $request, Response $response): void
     {
         $swaggerPath = __DIR__ . '/../../../public/swagger-ui.html';
+        if (!file_exists($swaggerPath)) {
+            $swaggerPath = __DIR__ . '/../../../swagger-ui.html';
+        }
+
         if (file_exists($swaggerPath)) {
             header('Content-Type: text/html; charset=utf-8');
             echo file_get_contents($swaggerPath);
@@ -28,6 +32,10 @@ class SwaggerController
     public function json(Request $request, Response $response): void
     {
         $swaggerPath = __DIR__ . '/../../../public/swagger.json';
+        if (!file_exists($swaggerPath)) {
+            $swaggerPath = __DIR__ . '/../../../swagger.json';
+        }
+
         if (file_exists($swaggerPath)) {
             header('Content-Type: application/json; charset=utf-8');
             echo file_get_contents($swaggerPath);

@@ -283,7 +283,7 @@ class ResumePDFService
 
         // Add watermark if not premium
         if (!$skipWatermark) {
-            $html .= '<div class="watermark">Created with Mindware Infotech</div>';
+            $html .= '<div class="watermark">Created with Jobsence</div>';
         }
 
         $html .= '

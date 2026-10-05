@@ -27,5 +27,16 @@
       <input type="password" name="user_password" placeholder="Password" class="border px-3 py-2 rounded w-full" />
     </div>
   </div>
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+  <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Save</button>
 </form>
+
+
+
+
+
+
+
+
+
+
+

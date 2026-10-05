@@ -32,10 +32,12 @@ class JobsController extends BaseController
         $params = [];
 
         if ($search) {
-            $where[] = "(j.title LIKE :search OR e.company_name LIKE :search)";
-            $params['search'] = "%{$search}%";
+            $where[] = "(j.title LIKE :s1 OR e.company_name LIKE :s2)";
+            $params['s1'] = "%{$search}%";
+            $params['s2'] = "%{$search}%";
         }
 
+        \App\Services\JobApprovalService::ensureStatusEnum();
         if ($status !== 'all') {
             $where[] = "j.status = :status";
             $params['status'] = $status;
@@ -154,9 +156,10 @@ class JobsController extends BaseController
         if ($job) {
             $id = $job->id ?? $job->attributes['id'] ?? null;
             $oldStatus = $job->status ?? 'pending_review';
+            \App\Services\JobApprovalService::ensureStatusEnum();
             $job->status = 'published';
-            $job->approved_at = date('Y-m-d H:i:s');
             $job->save();
+            \App\Services\JobApprovalService::resolveQueue((int)$id, 'approved', (int)($this->currentUser->id ?? 0) ?: null);
 
             $this->logAction('approve_job', ['job_id' => $id]);
             
@@ -203,8 +206,10 @@ class JobsController extends BaseController
 
         if ($job) {
             $id = $job->id ?? $job->attributes['id'] ?? null;
+            \App\Services\JobApprovalService::ensureStatusEnum();
             $job->status = 'rejected';
             $job->save();
+            \App\Services\JobApprovalService::resolveQueue((int)$id, 'rejected', (int)($this->currentUser->id ?? 0) ?: null, (string)$reason);
 
             $this->logAction('reject_job', ['job_id' => $id, 'reason' => $reason]);
             
@@ -242,6 +247,7 @@ class JobsController extends BaseController
 
         if ($job) {
             $id = $job->id ?? $job->attributes['id'] ?? null;
+            \App\Services\JobApprovalService::ensureStatusEnum();
             $job->status = 'taken_down';
             $job->save();
 
@@ -249,6 +255,192 @@ class JobsController extends BaseController
         }
 
         $response->redirect('/admin/jobs/' . $slug);
+    }
+
+    public function create(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $db = Database::getInstance();
+        $categories = $db->fetchAll("SELECT name FROM job_categories WHERE is_active = 1 ORDER BY name ASC");
+
+        $response->view('admin/jobs/create', [
+            'title' => 'Create Job',
+            'categories' => $categories,
+            'user' => $this->currentUser
+        ], 200, 'admin/layout');
+    }
+
+    public function store(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $db = Database::getInstance();
+        $data = $request->all();
+        $job = new Job();
+        
+        // Find or create Admin Employer ID to satisfy foreign key constraint
+        $adminUser = $db->fetchOne("SELECT id FROM users WHERE role IN ('admin', 'super_admin') LIMIT 1");
+        $adminEmployerId = 0;
+        if ($adminUser) {
+            $adminEmployer = $db->fetchOne("SELECT id FROM employers WHERE user_id = :user_id LIMIT 1", ['user_id' => $adminUser['id']]);
+            if ($adminEmployer) {
+                $adminEmployerId = $adminEmployer['id'];
+            } else {
+                // Create one if not exists (fallback)
+                $db->query("INSERT INTO employers (user_id, company_name, company_slug, verified, kyc_status) 
+                            VALUES (:user_id, 'Jobsence', 'jobsence-admin', 1, 'approved')", 
+                            ['user_id' => $adminUser['id']]);
+                $adminEmployerId = $db->fetchOne("SELECT LAST_INSERT_ID() as id")['id'];
+            }
+        }
+
+        // Handle logo upload
+        $logoPath = null;
+        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = 'uploads/company/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $extension = pathinfo($_FILES['company_logo']['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid('logo_') . '.' . $extension;
+            if (move_uploaded_file($_FILES['company_logo']['tmp_name'], $uploadDir . $fileName)) {
+                $logoPath = '/' . $uploadDir . $fileName;
+            }
+        }
+
+        $title = $data['title'] ?? '';
+        $slug = $job->generateSlug($title);
+
+        $job->fill([
+            'employer_id' => $adminEmployerId, // Admin posted job linked to admin employer account
+            'title' => $title,
+            'slug' => $slug,
+            'description' => $data['description'] ?? '',
+            'company_name' => $data['company_name'] ?? '',
+            'company_logo' => $logoPath,
+            'locations' => json_encode([['city' => $data['location'] ?? '', 'state' => '', 'country' => 'India']]),
+            'experience_type' => 'any',
+            'min_experience' => $data['min_experience'] ?? null,
+            'max_experience' => $data['max_experience'] ?? null,
+            'salary_min' => $data['salary_min'] ?? null,
+            'salary_max' => $data['salary_max'] ?? null,
+            'category' => $data['category'] ?? '',
+            'job_type' => $data['job_type'] ?? 'internal',
+            'apply_link' => $data['job_type'] === 'external' ? ($data['apply_link'] ?? '') : null,
+            'status' => 'published',
+            'visibility' => 'public',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if ($job->save()) {
+            $this->logAction('create_job', ['job_id' => $job->id]);
+            $response->redirect('/admin/jobs');
+        } else {
+            $response->redirect('/admin/jobs/create?error=1');
+        }
+    }
+
+    public function edit(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $slug = (string)$request->param('slug');
+        $job = Job::where('slug', '=', $slug)->first();
+
+        if (!$job) {
+            $response->redirect('/admin/jobs');
+            return;
+        }
+
+        $db = Database::getInstance();
+        $categories = $db->fetchAll("SELECT name FROM job_categories WHERE is_active = 1 ORDER BY name ASC");
+
+        $response->view('admin/jobs/edit', [
+            'title' => 'Edit Job',
+            'job' => $job->toArray(),
+            'categories' => $categories,
+            'user' => $this->currentUser
+        ], 200, 'admin/layout');
+    }
+
+    public function update(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $slug = (string)$request->param('slug');
+        $job = Job::where('slug', '=', $slug)->first();
+
+        if (!$job) {
+            $response->redirect('/admin/jobs');
+            return;
+        }
+
+        $data = $request->all();
+        
+        // Handle logo upload
+        if (isset($_FILES['company_logo']) && $_FILES['company_logo']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = 'uploads/company/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $extension = pathinfo($_FILES['company_logo']['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid('logo_') . '.' . $extension;
+            if (move_uploaded_file($_FILES['company_logo']['tmp_name'], $uploadDir . $fileName)) {
+                $job->company_logo = '/' . $uploadDir . $fileName;
+            }
+        }
+
+        $job->title = $data['title'] ?? $job->title;
+        $job->description = $data['description'] ?? $job->description;
+        $job->company_name = $data['company_name'] ?? $job->company_name;
+        $job->min_experience = $data['min_experience'] ?? $job->min_experience;
+        $job->max_experience = $data['max_experience'] ?? $job->max_experience;
+        $job->salary_min = $data['salary_min'] ?? $job->salary_min;
+        $job->salary_max = $data['salary_max'] ?? $job->salary_max;
+        $job->category = $data['category'] ?? $job->category;
+        $job->job_type = $data['job_type'] ?? $job->job_type;
+        $job->apply_link = $data['job_type'] === 'external' ? ($data['apply_link'] ?? '') : null;
+        $job->updated_at = date('Y-m-d H:i:s');
+
+        // Handle location update
+        if (isset($data['location'])) {
+            $job->locations = json_encode([['city' => $data['location'], 'state' => '', 'country' => 'India']]);
+        }
+
+        if ($job->save()) {
+            $this->logAction('update_job', ['job_id' => $job->id]);
+            $response->redirect('/admin/jobs');
+        } else {
+            $response->redirect('/admin/jobs/edit/' . $slug . '?error=1');
+        }
+    }
+
+    public function delete(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($request, $response)) {
+            return;
+        }
+
+        $slug = (string)$request->param('slug');
+        $job = Job::where('slug', '=', $slug)->first();
+
+        if ($job) {
+            $id = $job->id;
+            $job->delete();
+            $this->logAction('delete_job', ['job_id' => $id]);
+        }
+
+        $response->redirect('/admin/jobs');
     }
 
     private function requireAdmin(Request $request, Response $response): bool

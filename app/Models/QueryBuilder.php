@@ -139,6 +139,11 @@ class QueryBuilder
         $results = $this->get();
         return $results[0] ?? null;
     }
+
+    public function exists(): bool
+    {
+        return $this->count() > 0;
+    }
     
     public function count(): int
     {

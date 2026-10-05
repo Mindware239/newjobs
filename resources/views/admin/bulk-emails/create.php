@@ -94,11 +94,11 @@ $title = $title ?? 'Create Campaign';
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="inline-flex items-center gap-2">
                                     <input type="checkbox" name="channels[]" value="email" checked>
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-500 text-white">Email</span>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary text-white">Email</span>
                                 </label>
                                 <label class="inline-flex items-center gap-2">
                                     <input type="checkbox" name="channels[]" value="push">
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500 text-white">Push</span>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary text-white">Push</span>
                                 </label>
                                 <label class="inline-flex items-center gap-2">
                                     <input type="checkbox" name="channels[]" value="whatsapp">
@@ -283,3 +283,14 @@ document.getElementById('selectAll').addEventListener('change', function(e) {
     document.querySelectorAll('input[name=\"selected_user_ids[]\"]').forEach(cb => cb.checked = checked);
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+

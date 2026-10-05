@@ -30,8 +30,9 @@ class SubscriptionsController extends BaseController
         $where = [];
         $params = [];
         if ($search !== '') {
-            $where[] = "(e.company_name LIKE :q OR u.email LIKE :q)";
-            $params['q'] = "%{$search}%";
+            $where[] = "(e.company_name LIKE :q1 OR u.email LIKE :q2)";
+            $params['q1'] = "%{$search}%";
+            $params['q2'] = "%{$search}%";
         }
         if ($status !== 'all') {
             $where[] = "es.status = :status";
@@ -178,12 +179,12 @@ class SubscriptionsController extends BaseController
         $total = $amount + $tax;
         $invoiceNo = $p['invoice_number'] ?? ('INV-' . date('Ym') . '-' . sprintf('%06d', $paymentId));
         $createdAt = !empty($p['created_at']) ? date('d M Y, h:i A', strtotime($p['created_at'])) : date('d M Y, h:i A');
-        $companyName  = $_ENV['COMPANY_NAME'] ?? 'Mindware Infotech';
-        $companyAddr  = $_ENV['COMPANY_ADDRESS'] ?? 'Mindware, S-4, Pankaj Plaza, Pocket-7, Plot-7, Dwarka Sector-12, Delhi-110078';
+        $companyName  = $_ENV['COMPANY_NAME'] ?? 'Jobsence';
+        $companyAddr  = $_ENV['COMPANY_ADDRESS'] ?? 'Jobsence, S-4, Pankaj Plaza, Pocket-7, Plot-7, Dwarka Sector-12, Delhi-110078';
         $companyCity  = $_ENV['COMPANY_CITY'] ?? 'Dwarka';
         $companyState = $_ENV['COMPANY_STATE'] ?? 'Delhi';
         $companyZip   = $_ENV['COMPANY_ZIP'] ?? '110078';
-        $companyEmail = $_ENV['COMPANY_EMAIL'] ?? 'sales@mindwareinfotech.com';
+        $companyEmail = $_ENV['COMPANY_EMAIL'] ?? 'gm@jobsence.com';
         $companyPhone = $_ENV['COMPANY_PHONE'] ?? '+91-8527522688';
         $gst          = $_ENV['COMPANY_GSTIN'] ?? '07AFDPM9463K1ZY';
         $planName     = $sub['plan_name'] ?? ucfirst((string)($p['billing_cycle'] ?? 'subscription'));
@@ -287,7 +288,7 @@ class SubscriptionsController extends BaseController
         foreach ($featureTexts as $idx => $txt) {
             $txt = trim((string)$txt);
             if ($txt === '') continue;
-            $enabled = isset($featureEnabled[$idx]) ? 1 : 1;
+            $enabled = isset($featureEnabled[$idx]) ? 1 : 0;
             $featuresArray[] = [
                 'feature_text' => $txt,
                 'is_enabled' => $enabled,
@@ -354,19 +355,15 @@ class SubscriptionsController extends BaseController
 
         // Build features JSON
         $featuresArray = [];
-        $featureTexts = (array)($data['features'] ?? []);
-        $featureEnabled = (array)($data['features_enabled'] ?? []);
-        $featureIcons = (array)($data['features_icon'] ?? []);
-        $featureCats = (array)($data['features_category'] ?? []);
-        foreach ($featureTexts as $idx => $txt) {
-            $txt = trim((string)$txt);
+        $rawFeatures = (array)($data['features'] ?? []);
+        foreach ($rawFeatures as $f) {
+            $txt = trim((string)($f['feature_text'] ?? ''));
             if ($txt === '') continue;
-            $enabled = isset($featureEnabled[$idx]) ? 1 : 1;
             $featuresArray[] = [
                 'feature_text' => $txt,
-                'is_enabled' => $enabled,
-                'icon' => trim((string)($featureIcons[$idx] ?? '')),
-                'category' => trim((string)($featureCats[$idx] ?? ''))
+                'is_enabled' => (int)($f['is_enabled'] ?? 1),
+                'icon' => trim((string)($f['icon'] ?? '')),
+                'category' => trim((string)($f['category'] ?? ''))
             ];
         }
         $db->query(
@@ -420,7 +417,7 @@ class SubscriptionsController extends BaseController
         );
 
         $this->logAction('update_plan', array_merge($data, ['plan_id' => $id]));
-        $response->redirect('/admin/subscriptions/plans');
+        $response->redirect('/admin/subscriptions/plans/' . $id . '/edit?success=' . urlencode('Plan updated successfully'));
     }
 
     public function editPlan(Request $request, Response $response): void
@@ -791,16 +788,17 @@ class SubscriptionsController extends BaseController
         try {
             $db = Database::getInstance();
             $db->query(
-                "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, ip_address, created_at)
-                 VALUES (:user_id, :action, :entity_type, :entity_id, :old_value, :new_value, :ip_address, NOW())",
+                "INSERT INTO audit_logs (performed_by, action, entity_type, entity_id, metadata, created_at)
+                 VALUES (:user_id, :action, :entity_type, :entity_id, :metadata, NOW())",
                 [
                     'user_id' => $this->currentUser->id,
                     'action' => $action,
                     'entity_type' => 'subscription_plan',
                     'entity_id' => $data['plan_id'] ?? null,
-                    'old_value' => json_encode($data),
-                    'new_value' => json_encode(['status' => 'changed']),
-                    'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+                    'metadata' => json_encode([
+                        'data' => $data,
+                        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+                    ])
                 ]
             );
         } catch (\Exception $e) {

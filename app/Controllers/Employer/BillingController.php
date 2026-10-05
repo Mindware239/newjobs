@@ -13,6 +13,7 @@ use App\Models\EmployerPayment;
 use App\Models\SubscriptionPlan;
 use App\Models\Employer;
 use App\Models\PaymentMethod;
+use App\Services\EmployerBillingDataService;
 
 class BillingController extends BaseController
 {
@@ -20,54 +21,21 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
-        $subscription = EmployerSubscription::getCurrentForEmployer((int)$employer->id);
-
-        $unpaidRows = SubscriptionPayment::where('employer_id', '=', $employer->id)
-            ->where('status', '!=', 'completed')->get();
-        $unpaid = 0.0;
-        foreach ($unpaidRows as $r) {
-            $unpaid += (float)($r->attributes['amount'] ?? 0);
-        }
-        $lastPayment = SubscriptionPayment::where('employer_id', '=', $employer->id)
-            ->orderBy('created_at', 'DESC')->first();
-
-        $plan = null;
-        $upcomingAmount = null;
-        $upcomingDate = null;
-        if ($subscription) {
-            $plan = $subscription->plan();
-            $upcomingDate = $subscription->attributes['next_billing_date'] ?? null;
-            $upcomingAmount = $plan ? ($plan->attributes['price_monthly'] ?? $plan->attributes['price'] ?? null) : null;
-        }
-
-        $combined = [];
-        try {
-            $subPayments = SubscriptionPayment::where('employer_id', '=', $employer->id)
-                ->orderBy('created_at', 'DESC')->limit(5)->get();
-            $rows = array_map(fn($p) => $p->toArray() + ['kind' => 'subscription'], $subPayments);
-            $addonPayments = EmployerPayment::where('employer_id', '=', $employer->id)
-                ->orderBy('created_at', 'DESC')->limit(5)->get();
-            $rows = array_merge($rows, array_map(fn($p) => $p->toArray() + ['kind' => 'addon'], $addonPayments));
-            usort($rows, function ($a, $b) {
-                $ta = strtotime($a['created_at'] ?? '1970-01-01');
-                $tb = strtotime($b['created_at'] ?? '1970-01-01');
-                return $tb <=> $ta;
-            });
-            $combined = array_slice($rows, 0, 5);
-        } catch (\Throwable $t) {
-            $combined = [];
-        }
+        $billing = (new EmployerBillingDataService())->overview($employer);
+        $subscription = !empty($billing['subscription']) ? new EmployerSubscription($billing['subscription']) : null;
+        $plan = !empty($billing['current_plan']) ? new SubscriptionPlan($billing['current_plan']) : null;
 
         $response->view('employer/billing/overview', [
             'title' => 'Billing Overview',
             'employer' => $employer,
             'subscription' => $subscription,
             'plan' => $plan,
-            'balanceDue' => $unpaid,
-            'upcomingDate' => $upcomingDate,
-            'upcomingAmount' => $upcomingAmount,
-            'lastPayment' => $lastPayment ? $lastPayment->toArray() : null,
-            'recentTransactions' => $combined
+            'balanceDue' => $billing['balance_due'] ?? 0.0,
+            'upcomingDate' => $billing['upcoming_date'] ?? null,
+            'upcomingAmount' => $billing['upcoming_amount'] ?? null,
+            'lastPayment' => $billing['last_payment'] ?? null,
+            'recentTransactions' => $billing['recent_transactions'] ?? [],
+            'alerts' => $billing['alerts'] ?? []
         ], 200, 'employer/layout');
     }
 
@@ -75,74 +43,15 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $status = $request->get('status');
-        $method = $request->get('method');
-        $product = $request->get('product');
-
-        $subQ = SubscriptionPayment::where('employer_id', '=', $employer->id);
-        if ($status && $status !== 'all') { $subQ = $subQ->where('status', '=', $status); }
-        if ($from) { $subQ = $subQ->where('created_at', '>=', $from); }
-        if ($to) { $subQ = $subQ->where('created_at', '<=', $to); }
-        if ($method && $method !== 'all') { $subQ = $subQ->where('gateway', '=', $method); }
-        $subscriptionPayments = $subQ->orderBy('created_at', 'DESC')->limit(300)->get();
-
-        $addQ = EmployerPayment::where('employer_id', '=', $employer->id);
-        if ($status && $status !== 'all') { $addQ = $addQ->where('status', '=', $status); }
-        if ($from) { $addQ = $addQ->where('created_at', '>=', $from); }
-        if ($to) { $addQ = $addQ->where('created_at', '<=', $to); }
-        $employerPayments = $addQ->orderBy('created_at', 'DESC')->limit(300)->get();
-
-        // Summary metrics
-        $subArr = array_map(fn($p) => $p->toArray() + ['kind' => 'subscription'], $subscriptionPayments);
-        $addArr = array_map(fn($p) => $p->toArray() + ['kind' => 'addon'], $employerPayments);
-        $rows = array_merge($subArr, $addArr);
-
-        // Sort by date DESC
-        usort($rows, function ($a, $b) {
-            $ta = strtotime($a['created_at'] ?? 'now');
-            $tb = strtotime($b['created_at'] ?? 'now');
-            return $tb <=> $ta;
-        });
-
-        $totalTransactions = count($rows);
-        $totalPaid = 0.0;
-        $pendingAmount = 0.0;
-        $failedCount = 0;
-        foreach ($rows as $row) {
-            $amt = (float)($row['amount'] ?? 0);
-            $st = strtolower((string)($row['status'] ?? ''));
-            if ($st === 'completed' || $st === 'success') { $totalPaid += $amt; }
-            elseif ($st === 'pending') { $pendingAmount += $amt; }
-            elseif ($st === 'failed' || $st === 'refunded') { $failedCount += 1; }
-        }
-
-        // Pagination (simple client-side style for now, or just pass all since limit is 300)
-        $page = (int)($request->get('page') ?? 1);
-        $perPage = 20;
-        $total = count($rows);
-        $pages = ceil($total / $perPage);
-        $offset = ($page - 1) * $perPage;
-        $pagedRows = array_slice($rows, $offset, $perPage);
+        $billing = (new EmployerBillingDataService())->transactions($employer, $request->get());
 
         $response->view('employer/billing/transactions', [
             'title' => 'Transactions',
             'employer' => $employer,
-            'rows' => $pagedRows,
-            'filters' => [ 'from' => $from, 'to' => $to, 'status' => $status, 'method' => $method, 'product' => $product ],
-            'summary' => [
-                'total' => $totalTransactions,
-                'paid' => $totalPaid,
-                'pending' => $pendingAmount,
-                'failed' => $failedCount
-            ],
-            'pagination' => [
-                'page' => $page,
-                'pages' => $pages,
-                'total' => $total,
-                'per_page' => $perPage
-            ]
+            'rows' => $billing['rows'] ?? [],
+            'filters' => $billing['filters'] ?? [],
+            'summary' => $billing['summary'] ?? [],
+            'pagination' => $billing['pagination'] ?? []
         ], 200, 'employer/layout');
     }
 
@@ -150,21 +59,13 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $status = $request->get('status');
-
-        $query = SubscriptionPayment::where('employer_id', '=', $employer->id);
-        if ($status && $status !== 'all') { $query = $query->where('status', '=', $status); }
-        if ($from) { $query = $query->where('created_at', '>=', $from); }
-        if ($to) { $query = $query->where('created_at', '<=', $to); }
-        $payments = $query->orderBy('created_at', 'DESC')->limit(300)->get();
+        $billing = (new EmployerBillingDataService())->invoices($employer, $request->get());
 
         $response->view('employer/billing/invoices', [
             'title' => 'Invoices',
             'employer' => $employer,
-            'invoices' => array_map(fn($p) => $p->toArray(), $payments),
-            'filters' => [ 'from' => $from, 'to' => $to, 'status' => $status ]
+            'invoices' => $billing['invoices'] ?? [],
+            'filters' => $billing['filters'] ?? []
         ], 200, 'employer/layout');
     }
 
@@ -173,23 +74,14 @@ class BillingController extends BaseController
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
         
-        $savedMethods = PaymentMethod::getForEmployer((int)$employer->id);
-        $methods = array_map(function($m) {
-            $attr = $m->attributes;
-            if ($attr['method_type'] === 'card') {
-                $attr['label'] = ($attr['brand'] ?: 'Card') . ' • • • • ' . $attr['last4'];
-                $attr['details'] = 'Expires ' . $attr['exp_month'] . '/' . $attr['exp_year'];
-            } elseif ($attr['method_type'] === 'upi') {
-                $attr['label'] = 'UPI';
-                $attr['details'] = $attr['token']; // We use token field for VPA in this simple setup
-            }
-            return $attr;
-        }, $savedMethods);
+        $billing = (new EmployerBillingDataService())->paymentMethods($employer);
+        $methods = $billing['methods'] ?? [];
 
         $response->view('employer/billing/payment_methods', [
             'title' => 'Payment Methods',
             'employer' => $employer,
-            'methods' => $methods
+            'methods' => $methods,
+            'defaultMethod' => $billing['default_method'] ?? null
         ], 200, 'employer/layout');
     }
 
@@ -197,9 +89,14 @@ class BillingController extends BaseController
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();
+        $billing = (new EmployerBillingDataService())->settings($employer);
         $response->view('employer/billing/settings', [
             'title' => 'Billing Settings',
-            'employer' => $employer
+            'employer' => $employer,
+            'billingProfile' => $billing['billing_profile'] ?? [],
+            'subscription' => $billing['subscription'] ?? null,
+            'currentPlan' => $billing['current_plan'] ?? null,
+            'paymentMethods' => $billing['payment_methods'] ?? []
         ], 200, 'employer/layout');
     }
 
@@ -334,7 +231,7 @@ class BillingController extends BaseController
         ], 200, 'employer/layout');
     }
 
-    public function success(Request $request, Response $response): void
+    public function paymentSuccess(Request $request, Response $response): void
     {
         if (!$this->requireRole('employer', $request, $response)) { return; }
         $employer = $this->currentUser->employer();

@@ -1,0 +1,6 @@
+# Deny web access to everything in storage/ (logs, cache incl. OTP files, firebase.json, resumes, verification PDFs).
+# storage/uploads/ is re-allowed by its own .htaccess because the app links to it directly.
+Require all denied
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

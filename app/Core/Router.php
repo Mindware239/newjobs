@@ -164,7 +164,7 @@ class Router
         if ($request->isAjax()) {
             $response->json(['error' => 'Not Found', 'path' => $request->getPath()]);
         } else {
-            $response->view('errors/404', ['title' => '404 - Not Found']);
+            $response->view('errors/404', ['title' => '404 - Not Found'], 404);
         }
     }
 

@@ -33,8 +33,7 @@ class MatchEngineService
         $batchSize = 200;
         $lastId = 0;
 
-        $jobTitle = strtolower(trim((string)($job->attributes['title'] ?? '')));
-        $keywords = array_filter(explode(' ', preg_replace('/[^a-z0-9 ]/', '', $jobTitle)), fn($w) => strlen($w) > 2);
+        $keywords = $this->extractJobKeywords($job);
         
         while (true) {
             $candidatesRow = $this->filterRepo->getPotentialCandidatesForJob($job, $keywords, $batchSize, $lastId);
@@ -79,8 +78,7 @@ class MatchEngineService
         $batchSize = 200;
         $lastId = 0;
 
-        $candTitle = strtolower(trim((string)($candidate->attributes['professional_title'] ?? '')));
-        $keywords = array_filter(explode(' ', preg_replace('/[^a-z0-9 ]/', '', $candTitle)), fn($w) => strlen($w) > 2);
+        $keywords = $this->extractCandidateKeywords($candidate);
 
         $user = $candidate->user();
         if (!$user) return 0;
@@ -160,12 +158,55 @@ class MatchEngineService
             'salary_match_score' => (int)round($salMatch),
             'preference_match_score' => (int)round($prefMatch),
             'matched_skills' => $matchedSkills,
-            'missing_skills' => $missingSkills
+            'missing_skills' => $missingSkills,
+            'extra_relevant_skills' => $extraSkills
         ];
 
         $this->storeMatchScore((int)$candidate->id, (int)$job->id, $matchData);
 
         return $matchData;
+    }
+
+    private function extractJobKeywords(Job $job): array
+    {
+        $parts = [
+            (string)($job->attributes['title'] ?? ''),
+            (string)($job->attributes['category'] ?? '')
+        ];
+
+        foreach ($job->skills() as $skill) {
+            $parts[] = (string)($skill['name'] ?? '');
+        }
+
+        return $this->extractKeywords(implode(' ', $parts));
+    }
+
+    private function extractCandidateKeywords(Candidate $candidate): array
+    {
+        $parts = [
+            (string)($candidate->attributes['professional_title'] ?? ''),
+            (string)($candidate->attributes['self_introduction'] ?? '')
+        ];
+
+        foreach ($candidate->skills() as $skill) {
+            $parts[] = (string)($skill['name'] ?? '');
+        }
+
+        foreach ($candidate->experience() as $experience) {
+            $parts[] = (string)($experience['job_title'] ?? '');
+        }
+
+        return $this->extractKeywords(implode(' ', $parts));
+    }
+
+    private function extractKeywords(string $text): array
+    {
+        $words = preg_split('/\s+/', strtolower(preg_replace('/[^a-z0-9+#. ]/i', ' ', $text) ?? '')) ?: [];
+        $stopWords = ['job', 'jobs', 'developer', 'engineer', 'executive', 'manager', 'senior', 'junior', 'and', 'or', 'the', 'for', 'with'];
+
+        return array_values(array_unique(array_filter($words, function(string $word) use ($stopWords): bool {
+            return strlen($word) > 2 && !in_array($word, $stopWords, true);
+        })));
     }
 
     private function storeMatchScore(int $candidateId, int $jobId, array $data): void
@@ -176,29 +217,43 @@ class MatchEngineService
                 ['cid' => $candidateId, 'jid' => $jobId]
             );
 
+            $params = [
+                'cid' => $candidateId,
+                'jid' => $jobId,
+                'overall' => $data['overall_match_score'],
+                'skill' => $data['skill_match_score'],
+                'exp' => $data['experience_match_score'],
+                'edu' => $data['education_match_score'],
+                'matched' => json_encode($data['matched_skills']),
+                'missing' => json_encode($data['missing_skills'])
+            ];
+
             if ($existing) {
                 $this->db->query(
                     "UPDATE candidate_job_scores 
                      SET overall_match_score = :overall, 
-                         match_details = :details, 
+                         skill_score = :skill,
+                         experience_score = :exp,
+                         education_score = :edu,
+                         matched_skills = :matched,
+                         missing_skills = :missing,
                          updated_at = NOW()
                      WHERE id = :id",
                     [
-                        'id' => $existing['id'],
                         'overall' => $data['overall_match_score'],
-                        'details' => json_encode($data)
+                        'skill' => $data['skill_match_score'],
+                        'exp' => $data['experience_match_score'],
+                        'edu' => $data['education_match_score'],
+                        'matched' => json_encode($data['matched_skills']),
+                        'missing' => json_encode($data['missing_skills']),
+                        'id' => $existing['id']
                     ]
                 );
             } else {
                 $this->db->query(
-                    "INSERT INTO candidate_job_scores (candidate_id, job_id, overall_match_score, match_details, created_at, updated_at) 
-                     VALUES (:cid, :jid, :overall, :details, NOW(), NOW())",
-                    [
-                        'cid' => $candidateId,
-                        'jid' => $jobId,
-                        'overall' => $data['overall_match_score'],
-                        'details' => json_encode($data)
-                    ]
+                    "INSERT INTO candidate_job_scores (candidate_id, job_id, overall_match_score, skill_score, experience_score, education_score, matched_skills, missing_skills, created_at, updated_at) 
+                     VALUES (:cid, :jid, :overall, :skill, :exp, :edu, :matched, :missing, NOW(), NOW())",
+                    $params
                 );
             }
         } catch (\Throwable $t) {

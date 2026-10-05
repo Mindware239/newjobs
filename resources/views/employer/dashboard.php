@@ -75,7 +75,7 @@ $currentDate = date('M d, Y');
                 <div class="mt-1 flex items-center gap-2">
                     <h3 class="text-3xl font-bold text-gray-900"><?= $stats['active_jobs'] ?? 0 ?></h3>
                     <?php if (!empty($stats['active_jobs_growth'])): ?>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-primary-50 text-primary">
                         +<?= htmlspecialchars($stats['active_jobs_growth']) ?>%
                     </span>
                     <?php endif; ?>
@@ -89,19 +89,19 @@ $currentDate = date('M d, Y');
         </a>
 
         <!-- Total Applications -->
-        <a href="/employer/applications" class="bg-white rounded-xl p-6 border border-gray-100 hover:border-blue-200 shadow-sm flex items-center justify-between transition-colors group">
+        <a href="/employer/applications" class="bg-white rounded-xl p-6 border border-gray-100 hover:border-primary-100 shadow-sm flex items-center justify-between transition-colors group">
             <div>
                 <p class="text-sm font-medium text-gray-500">Total Applications</p>
                 <div class="mt-1 flex items-center gap-2">
                     <h3 class="text-3xl font-bold text-gray-900"><?= $stats['total_applications'] ?? 0 ?></h3>
                     <?php if (!empty($stats['total_applications_growth'])): ?>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-primary-50 text-primary">
                         +<?= htmlspecialchars($stats['total_applications_growth']) ?>%
                     </span>
                     <?php endif; ?>
                 </div>
             </div>
-            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-400 flex items-center justify-center">
+            <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-6 w-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
         </a>
@@ -113,7 +113,7 @@ $currentDate = date('M d, Y');
                 <div class="mt-1 flex items-center gap-2">
                     <h3 class="text-3xl font-bold text-gray-900"><?= $stats['new_applications'] ?? 0 ?></h3>
                     <?php if (!empty($stats['new_applications_growth'])): ?>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-primary-50 text-primary">
                         +<?= htmlspecialchars($stats['new_applications_growth']) ?>%
                     </span>
                     <?php endif; ?>
@@ -204,7 +204,7 @@ $currentDate = date('M d, Y');
                                     <span class="<?= $badgeClasses ?>">
                                         <?= ucfirst($job['status'] ?? 'Draft') ?>
                                     </span>
-                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-[#3c50ff] hover:bg-blue-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
+                                    <a href="/employer/jobs/<?= htmlspecialchars($job['slug'] ?? $job['id'] ?? '') ?>" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-[#3c50ff] hover:bg-primary-50 hover:shadow-md text-sm font-semibold transition-colors shadow-sm">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         View
                                     </a>
@@ -239,18 +239,18 @@ $currentDate = date('M d, Y');
             <div class="space-y-4">
                 <h2 class="text-lg font-bold text-gray-900">Quick Actions</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <a href="/employer/jobs/create" class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-100 hover:bg-blue-50 hover:shadow-md transition-all duration-200 group h-40">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-[#3c50ff] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <a href="/employer/jobs/create" class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-100 hover:bg-primary-50 hover:shadow-md transition-all duration-200 group h-40">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-[#3c50ff] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </div>
                         <span class="font-bold text-gray-900 text-sm group-hover:text-[#3c50ff] transition-colors">Post a Job</span>
                         <span class="text-xs text-gray-500 mt-1 text-center">Create new listing</span>
                     </a>
-                    <a href="/employer/applications" class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-100 hover:bg-blue-50 hover:shadow-md transition-all duration-200 group h-40">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <a href="/employer/applications" class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-100 hover:bg-primary-50 hover:shadow-md transition-all duration-200 group h-40">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         </div>
-                        <span class="font-bold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">View Applications</span>
+                        <span class="font-bold text-gray-900 text-sm group-hover:text-primary transition-colors">View Applications</span>
                         <span class="text-xs text-gray-500 mt-1 text-center">Review candidates</span>
                     </a>
                     <a href="/employer/interviews" class="flex flex-col items-center justify-center p-6 rounded-xl bg-white border border-gray-100 hover:bg-[#ecfbf6] hover:shadow-md transition-all duration-200 group h-40">
@@ -285,14 +285,14 @@ $currentDate = date('M d, Y');
                                 
                                 switch($type) {
                                     case 'application':
-                                        $iconBg = 'bg-blue-50';
-                                        $iconText = 'text-blue-600';
+                                        $iconBg = 'bg-primary-50';
+                                        $iconText = 'text-primary';
                                         $title = 'New Application';
                                         $icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12h2m-1-1v2"></path></svg>'; // Person with +
                                         break;
                                     case 'job_posted':
-                                        $iconBg = 'bg-purple-50';
-                                        $iconText = 'text-purple-600';
+                                        $iconBg = 'bg-primary-50';
+                                        $iconText = 'text-primary';
                                         $title = 'Job Posted';
                                         $icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>'; // Briefcase
                                         break;
@@ -303,8 +303,8 @@ $currentDate = date('M d, Y');
                                         $icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'; // Clock
                                         break;
                                     default:
-                                        $iconBg = 'bg-blue-50';
-                                        $iconText = 'text-blue-600';
+                                        $iconBg = 'bg-primary-50';
+                                        $iconText = 'text-primary';
                                         $title = 'Notification';
                                         $icon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>'; // Bell
                                 }
@@ -335,7 +335,7 @@ $currentDate = date('M d, Y');
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-900">Shortlisted</h2>
-                    <a href="/employer/applications?status=shortlisted" class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline">View All</a>
+                    <a href="/employer/applications?status=shortlisted" class="text-xs font-semibold text-primary hover:text-primary-600 hover:underline">View All</a>
                 </div>
                  <div class="space-y-3">
                      <?php if (!empty($shortlistedCandidates)): ?>
@@ -514,3 +514,14 @@ $currentDate = date('M d, Y');
         });
     </script>
 </div>
+
+
+
+
+
+
+
+
+
+
+

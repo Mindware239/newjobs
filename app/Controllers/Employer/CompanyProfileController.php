@@ -160,7 +160,7 @@ class CompanyProfileController extends BaseController
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
-                $logoPath = $storage->store($file, 'companies/logos');
+                $logoPath = $storage->store($file, 'uploads/companies/logos');
                 $data['logo_url'] = $storage->url($logoPath);
             }
         }
@@ -168,7 +168,7 @@ class CompanyProfileController extends BaseController
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
             if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
-                $bannerPath = $storage->store($file, 'companies/banners');
+                $bannerPath = $storage->store($file, 'uploads/companies/banners');
                 $data['banner_url'] = $storage->url($bannerPath);
             }
         }
@@ -176,7 +176,7 @@ class CompanyProfileController extends BaseController
         if ($request->hasFile('ceo_photo')) {
             $file = $request->file('ceo_photo');
             if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
-                $ceoPhotoPath = $storage->store($file, 'companies/ceo');
+                $ceoPhotoPath = $storage->store($file, 'uploads/companies/ceo');
                 $data['ceo_photo'] = $storage->url($ceoPhotoPath);
             }
         }
@@ -381,7 +381,7 @@ class CompanyProfileController extends BaseController
     /**
      * Create company for employer if doesn't exist
      */
-    private function createCompanyForEmployer($employer): array
+    private function createCompanyForEmployer(\App\Models\Employer $employer): array
     {
         $db = \App\Core\Database::getInstance();
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $employer->company_name ?? 'company')));

@@ -225,7 +225,12 @@ class CandidateController extends BaseController
                 $appData['job_id'] = $app->attributes['job_id'] ?? null;
                 $appData['job_slug'] = $job ? ($job->attributes['slug'] ?? null) : null;
                 $employer = $job ? $job->employer() : null;
-                $appData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                $jobCompany = $job ? ($job->attributes['company_name'] ?? '') : '';
+                if (!empty($jobCompany)) {
+                    $appData['company_name'] = $jobCompany;
+                } else {
+                    $appData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                }
                 $appData['employer_id'] = $employer ? ($employer->attributes['id'] ?? null) : null;
                 $appData['status_label'] = $statusLabels[$status] ?? ucfirst($app->attributes['status'] ?? 'applied');
                 $appliedAt = $app->attributes['applied_at'] ?? $app->attributes['created_at'] ?? date('Y-m-d H:i:s');
@@ -236,7 +241,7 @@ class CandidateController extends BaseController
                     try {
                         $interviewSql = "SELECT * FROM interviews 
                                         WHERE application_id = :application_id 
-                                        AND status IN ('scheduled', 'rescheduled')
+                                        AND status IN ('scheduled', 'rescheduled', 'live')
                                         ORDER BY scheduled_start DESC 
                                         LIMIT 1";
                         $interview = $db->fetchOne($interviewSql, ['application_id' => $app->attributes['id']]);
@@ -283,7 +288,7 @@ class CandidateController extends BaseController
             'stats' => $stats,
             'unreadMessages' => $unreadCounts['messages'],
             'unreadNotifications' => $unreadCounts['notifications']
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     /**
@@ -364,7 +369,9 @@ class CandidateController extends BaseController
             }
             $interview['platform_label'] = $platformLabel;
             
-            if ($interview['scheduled_start'] > $now) {
+            $status = strtolower((string)($interview['status'] ?? 'scheduled'));
+            $scheduledEnd = (string)($interview['scheduled_end'] ?? '');
+            if ($status === 'live' || (in_array($status, ['scheduled', 'rescheduled'], true) && $scheduledEnd >= $now)) {
                 $upcoming[] = $interview;
             } else {
                 $past[] = $interview;
@@ -386,7 +393,7 @@ class CandidateController extends BaseController
             'past' => $past,
             'unreadMessages' => $unreadCounts['messages'],
             'unreadNotifications' => $unreadCounts['notifications']
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     /**
@@ -472,6 +479,12 @@ class CandidateController extends BaseController
             error_log("View Profile - Verification decoded");
         }
 
+        $preferences = [];
+        if (!empty($candidate->attributes['preferences_data'])) {
+            $preferences = json_decode($candidate->attributes['preferences_data'], true) ?? [];
+            error_log("View Profile - Preferences decoded");
+        }
+
         // Map employment_id => status_overall for per-employment badges
         $employmentStatuses = [];
         if (!empty($verification['employments']) && is_array($verification['employments'])) {
@@ -516,6 +529,7 @@ class CandidateController extends BaseController
             'languages' => $languages,
             'certificates' => $certificates,
             'verification' => $verification,
+            'preferences' => $preferences,
             'hasEmploymentVerified' => $hasEmploymentVerified,
             'employmentStatuses' => $employmentStatuses
         ]);
@@ -886,6 +900,12 @@ class CandidateController extends BaseController
         if (!empty($candidate->attributes['verification_data'])) {
             $verification = json_decode($candidate->attributes['verification_data'], true) ?? [];
         }
+
+        $preferences = [];
+        if (!empty($candidate->attributes['preferences_data'])) {
+            $preferences = json_decode($candidate->attributes['preferences_data'], true) ?? [];
+        }
+
         try {
             \App\Services\EmploymentVerificationService::ensureSchema();
             $db = \App\Core\Database::getInstance();
@@ -970,7 +990,8 @@ class CandidateController extends BaseController
             'existingSkills' => $skills,
             'existingLanguages' => $languages,
             'existingCertificates' => $certificates,
-            'existingVerification' => $verification
+            'existingVerification' => $verification,
+            'existingPreferences' => $preferences
         ]);
     }
 
@@ -1262,7 +1283,7 @@ class CandidateController extends BaseController
             'expected_salary_min' => is_numeric($expectedSalaryMin) ? (int)$expectedSalaryMin : null,
             'expected_salary_max' => is_numeric($expectedSalaryMax) ? (int)$expectedSalaryMax : null,
             'current_salary' => is_numeric($currentSalary) ? (int)$currentSalary : null,
-            'notice_period' => is_numeric($noticePeriod) ? (int)$noticePeriod : null,
+            'notice_period' => $this->parseNoticePeriod($noticePeriod),
             'preferred_job_location' => $data['preferred_job_location'] ?? null,
             'portfolio_url' => $data['portfolio_url'] ?? null,
             'linkedin_url' => $data['linkedin_url'] ?? null,
@@ -1276,27 +1297,35 @@ class CandidateController extends BaseController
     {
         $titles = $data['preferred_job_titles'] ?? [];
         $types = $data['preferred_job_types'] ?? [];
-        $workMode = $data['preferred_work_mode'] ?? null;
+        $workMode = $data['preferred_work_mode'] ?? [];
         $locations = $data['preferred_locations'] ?? [];
         $minSalary = $data['minimum_acceptable_salary'] ?? null;
         $relocate = $data['open_to_relocation'] ?? null;
+
         if (!is_array($titles)) $titles = [];
         if (!is_array($types)) $types = [];
         if (!is_array($locations)) $locations = [];
+        if (!is_array($workMode)) {
+            $workMode = is_string($workMode) ? [trim($workMode)] : [];
+        }
+
         $titles = array_values(array_filter(array_map(function($v){ return is_string($v) ? trim($v) : ''; }, $titles)));
         $types = array_values(array_filter(array_map(function($v){ return is_string($v) ? trim($v) : ''; }, $types)));
         $locations = array_values(array_filter(array_map(function($v){ return is_string($v) ? trim($v) : ''; }, $locations)));
-        $workMode = is_string($workMode) ? trim($workMode) : null;
+        $workMode = array_values(array_filter(array_map(function($v){ return is_string($v) ? trim($v) : ''; }, $workMode)));
+
         $minSalary = is_numeric($minSalary) ? (int)$minSalary : null;
         $relocate = is_numeric($relocate) ? (int)$relocate : (in_array(strtolower((string)$relocate), ['yes','true','1']) ? 1 : 0);
+
         $payload = [
             'preferred_job_titles' => $titles,
             'preferred_job_types' => $types,
             'preferred_work_mode' => $workMode,
             'preferred_locations' => $locations,
             'minimum_acceptable_salary' => $minSalary,
-            'open_to_relocation' => $relocate
+            'open_to_relocation' => (int)$relocate
         ];
+
         $candidate->fill(['preferences_data' => json_encode($payload)]);
         $candidate->save();
     }
@@ -1525,7 +1554,7 @@ class CandidateController extends BaseController
         $response->view('candidate/help', [
             'title' => 'Help & Support',
             'candidate' => $candidate
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     public function privacy(Request $request, Response $response): void
@@ -1550,7 +1579,7 @@ class CandidateController extends BaseController
         $response->view('candidate/privacy', [
             'title' => 'Privacy Policy',
             'candidate' => $candidate
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     public function terms(Request $request, Response $response): void
@@ -1575,7 +1604,7 @@ class CandidateController extends BaseController
         $response->view('candidate/terms', [
             'title' => 'Terms of Service',
             'candidate' => $candidate
-        ]);
+        ], 200, 'candidate/layout');
     }
 
     public function deleteVideo(Request $request, Response $response): void
@@ -1621,6 +1650,45 @@ class CandidateController extends BaseController
         }
     }
 
+    /**
+     * Delete resume (CV)
+     */
+    public function deleteResume(Request $request, Response $response): void
+    {
+        $candidate = $this->ensureCandidate($request, $response);
+        if (!$candidate) return;
+
+        try {
+            // Delete resume file from storage
+            if (!empty($candidate->attributes['resume_url'])) {
+                try {
+                    $resumePath = parse_url($candidate->attributes['resume_url'], PHP_URL_PATH);
+                    if ($resumePath && file_exists($_SERVER['DOCUMENT_ROOT'] . $resumePath)) {
+                        @unlink($_SERVER['DOCUMENT_ROOT'] . $resumePath);
+                    }
+                } catch (\Exception $e) {
+                    error_log("Error deleting resume file: " . $e->getMessage());
+                }
+            }
+
+            // Update candidate record
+            $candidate->fill([
+                'resume_url' => null
+            ]);
+            $candidate->save();
+            $candidate->updateProfileStrength();
+
+            $response->json([
+                'success' => true,
+                'message' => 'Resume deleted successfully',
+                'profile_strength' => $candidate->attributes['profile_strength'] ?? 0
+            ]);
+        } catch (\Exception $e) {
+            error_log("Resume delete error: " . $e->getMessage());
+            $response->json(['error' => 'Failed to delete resume: ' . $e->getMessage()], 500);
+        }
+    }
+
     // Helper methods for dashboard
     private function getRecommendedJobs(Candidate $candidate): array
     {
@@ -1632,7 +1700,7 @@ class CandidateController extends BaseController
         $db = \App\Core\Database::getInstance();
         
         // Fetch top matches from candidate_job_scores
-        $sql = "SELECT j.*, e.company_name, e.logo_url as company_logo, cjs.overall_match_score as match_score
+        $sql = "SELECT j.*, e.company_name AS employer_company_name, e.logo_url as company_logo, cjs.overall_match_score as match_score
                 FROM candidate_job_scores cjs
                 JOIN jobs j ON cjs.job_id = j.id
                 LEFT JOIN employers e ON j.employer_id = e.id
@@ -1656,9 +1724,39 @@ class CandidateController extends BaseController
             }
         }
         
-        // Add bookmarked status
+        // Add bookmarked status and format location
         foreach ($recommendedJobs as &$jobData) {
+            if (empty($jobData['company_name'])) {
+                $jobData['company_name'] = $jobData['employer_company_name'] ?? 'Company Name Not Available';
+            }
             $jobData['is_bookmarked'] = $this->isBookmarked($candidateId, $jobData['id'] ?? 0);
+
+            // Format location_display
+            $locationStrings = [];
+            try {
+                $locRows = $db->fetchAll(
+                    "SELECT city, state, country FROM job_locations WHERE job_id = :job_id",
+                    ['job_id' => $jobData['id']]
+                );
+                foreach ($locRows as $loc) {
+                    $parts = array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']);
+                    if (!empty($parts)) $locationStrings[] = implode(', ', $parts);
+                }
+            } catch (\Exception $e) {}
+
+            if (empty($locationStrings) && !empty($jobData['locations'])) {
+                $locData = json_decode($jobData['locations'], true);
+                if (is_array($locData)) {
+                    foreach ($locData as $loc) {
+                        if (is_string($loc)) $locationStrings[] = $loc;
+                        elseif (is_array($loc)) {
+                            $parts = array_filter([$loc['city'] ?? '', $loc['state'] ?? '', $loc['country'] ?? '']);
+                            if (!empty($parts)) $locationStrings[] = implode(', ', $parts);
+                        }
+                    }
+                }
+            }
+            $jobData['location_display'] = !empty($locationStrings) ? implode(' | ', $locationStrings) : ($jobData['locations'] ?: 'Location not specified');
         }
 
         return $recommendedJobs;
@@ -1781,7 +1879,10 @@ class CandidateController extends BaseController
             if ($job) {
                 $jobData = $job->attributes;
                 $employer = $job->employer();
-                $jobData['company_name'] = $employer ? $employer->attributes['company_name'] : '';
+                $jobData['company_name'] = $jobData['company_name'] ?? '';
+                if (empty($jobData['company_name'])) {
+                    $jobData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                }
                 $jobs[] = $jobData;
             }
         }
@@ -1807,7 +1908,10 @@ class CandidateController extends BaseController
             if ($job) {
                 $jobData = $job->attributes;
                 $employer = $job->employer();
-                $jobData['company_name'] = $employer ? $employer->attributes['company_name'] : '';
+                $jobData['company_name'] = $jobData['company_name'] ?? '';
+                if (empty($jobData['company_name'])) {
+                    $jobData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+                }
                 $jobs[] = $jobData;
             }
         }
@@ -1854,8 +1958,13 @@ class CandidateController extends BaseController
             $appData['job_title'] = $job ? ($job->attributes['title'] ?? 'Unknown') : 'Unknown';
             $appData['job_id'] = $app->attributes['job_id'] ?? null;
             $appData['job_slug'] = $job ? ($job->attributes['slug'] ?? $job->slug ?? null) : null;
-            $employer = $job ? $job->employer() : null;
-            $appData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+            $jobCompany = $job ? ($job->attributes['company_name'] ?? '') : '';
+            if (!empty($jobCompany)) {
+                $appData['company_name'] = $jobCompany;
+            } else {
+                $employer = $job ? $job->employer() : null;
+                $appData['company_name'] = $employer ? ($employer->attributes['company_name'] ?? '') : '';
+            }
             $appData['status_label'] = $statusLabels[$status] ?? ucfirst($status);
             $appliedAt = $app->attributes['applied_at'] ?? $app->attributes['created_at'] ?? date('Y-m-d H:i:s');
             $appData['applied_at'] = date('M d, Y', strtotime($appliedAt));
@@ -1864,7 +1973,7 @@ class CandidateController extends BaseController
             if ($status === 'interview') {
                 $interviewSql = "SELECT * FROM interviews 
                                 WHERE application_id = :application_id 
-                                AND status IN ('scheduled', 'rescheduled')
+                                AND status IN ('scheduled', 'rescheduled', 'live')
                                 ORDER BY scheduled_start DESC 
                                 LIMIT 1";
                 $interview = $db->fetchOne($interviewSql, ['application_id' => $app->attributes['id']]);
@@ -1926,5 +2035,28 @@ class CandidateController extends BaseController
             'messages' => $unreadMessages,
             'notifications' => $unreadNotifications
         ];
+    }
+
+    private function parseNoticePeriod($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int)$value;
+        }
+
+        $value = strtolower((string)$value);
+        if ($value === 'immediate') {
+            return 0;
+        }
+
+        // Extract numbers from strings like "15 Days", "30 days", etc.
+        if (preg_match('/(\d+)/', $value, $matches)) {
+            return (int)$matches[1];
+        }
+
+        return null;
     }
 }

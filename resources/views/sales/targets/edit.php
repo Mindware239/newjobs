@@ -44,7 +44,7 @@ $title = 'Edit Target | ' . ($targetUser['name'] ?? $targetUser['email']);
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-slate-400">₹</span>
                         <input type="number" step="0.01" name="revenue_target" value="<?= $target['revenue_target'] ?? 0 ?>" required
-                               class="w-full pl-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                               class="w-full pl-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-slate-800 dark:text-white">
                     </div>
                     <p class="mt-1 text-xs text-slate-500">Target revenue amount for this month.</p>
                 </div>
@@ -53,13 +53,13 @@ $title = 'Edit Target | ' . ($targetUser['name'] ?? $targetUser['email']);
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deals Target</label>
                     <input type="number" name="deals_target" value="<?= $target['deals_target'] ?? 0 ?>" required
-                           class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                           class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-slate-800 dark:text-white">
                     <p class="mt-1 text-xs text-slate-500">Number of deals to be closed.</p>
                 </div>
             </div>
 
             <div class="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-700">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                <button type="submit" class="bg-primary hover:bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -69,3 +69,14 @@ $title = 'Edit Target | ' . ($targetUser['name'] ?? $targetUser['email']);
         </form>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

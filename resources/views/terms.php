@@ -5,7 +5,7 @@ $base = $base ?? '/';
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Terms of Service | Mindware Infotech</title>
+    <title>Terms of Service | Jobsence</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CSS -->
@@ -16,9 +16,9 @@ $base = $base ?? '/';
             theme: {
                 extend: {
                     colors: {
-                        primary: '#7e3aecff', // indigo-600
-                        secondary: '#eef2ff', // indigo-50
-                        accent: '#6c6ed8ff', // indigo-500
+                        primary: '#f05537',   // Jobsence brand orange
+                        secondary: '#fff1ed', // brand tint
+                        accent: '#FF6A3D',    // brand hover
                     }
                 }
             }
@@ -78,12 +78,12 @@ $base = $base ?? '/';
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">1. Acceptance of Terms</h3>
             <p class="mb-6">
-                By accessing and using Mindware Infotech ("the Platform"), you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+                By accessing and using Jobsence ("the Platform"), you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
             </p>
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">2. Services Description</h3>
             <p class="mb-6">
-                Mindware Infotech provides an online platform connecting employers with job seekers. We act as an intermediary and are not a party to any employment relationship formed through our platform.
+                Jobsence provides an online platform connecting employers with job seekers. We act as an intermediary and are not a party to any employment relationship formed through our platform.
             </p>
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">3. User Obligations</h3>
@@ -102,7 +102,7 @@ $base = $base ?? '/';
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">5. Limitation of Liability</h3>
             <p class="mb-6">
-                Mindware Infotech is not liable for any direct, indirect, incidental, or consequential damages arising from your use of the platform.
+                Jobsence is not liable for any direct, indirect, incidental, or consequential damages arising from your use of the platform.
             </p>
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">6. Changes to Terms</h3>
@@ -112,7 +112,7 @@ $base = $base ?? '/';
 
             <h3 class="text-xl font-semibold mb-3 text-gray-900">7. Contact Information</h3>
             <p class="mb-6">
-                For questions regarding these Terms, please contact us at <a href="mailto:gm@mindwareinfotech.com" class="text-indigo-600 hover:underline">gm@mindwareinfotech.com</a>.
+                For questions regarding these Terms, please contact us at <a href="mailto:gm@jobsence.com" class="text-primary hover:underline">gm@jobsence.com</a>.
             </p>
         </div>
     </main>

@@ -10,55 +10,57 @@
 
 /* Hero */
 .fc-hero {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+    background: linear-gradient(135deg, #fff5f2 0%, #fff1ed 100%);
     position: relative;
     overflow: hidden;
+    border-bottom: 1px solid #e5e7eb;
 }
 .fc-hero::before {
     content: '';
     position: absolute; inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f05537' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 .fc-hero-content { position: relative; z-index: 1; }
 
 /* Search bar in hero */
 .fc-hero-search {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
     border-radius: 14px;
     padding: 6px 6px 6px 18px;
     display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 12px rgba(240, 85, 55, 0.08);
 }
 .fc-hero-search input {
     flex: 1; background: transparent; border: none; outline: none;
-    color: #fff; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #111827; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.fc-hero-search input::placeholder { color: rgba(255,255,255,0.55); }
+.fc-hero-search input::placeholder { color: #9ca3af; }
 .fc-hero-search button {
-    background: #fff; color: #4338ca; font-size: 13px; font-weight: 700;
+    background: #f05537; color: #fff; font-size: 13px; font-weight: 700;
     border: none; border-radius: 10px; padding: 9px 20px; cursor: pointer;
     white-space: nowrap; transition: .15s;
 }
-.fc-hero-search button:hover { background: #e0e7ff; }
+.fc-hero-search button:hover { background: #FF6A3D; }
 
 /* Stat chips */
 .stat-chip {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: #fff;
+    border: 1px solid #e5e7eb;
     border-radius: 50px;
     padding: 6px 14px;
-    display: inline-flex; align-items: center; gap-6px;
-    color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #374151; font-size: 12px; font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 /* Filter sidebar */
 .filter-sidebar {
     background: #fff;
-    border: 1px solid #ede9fe;
+    border: 1px solid #fff1ed;
     border-radius: 16px;
     position: sticky; top: 20px;
-    box-shadow: 0 1px 3px rgba(67,56,202,.06), 0 4px 16px rgba(67,56,202,.04);
+    box-shadow: 0 1px 3px rgba(240, 85, 55, 0.06), 0 4px 16px rgba(240, 85, 55, 0.04);
 }
 .filter-label { font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; display: block; }
 .filter-input {
@@ -67,7 +69,7 @@
     transition: border-color .15s, box-shadow .15s;
     background: #fafafa;
 }
-.filter-input:focus { border-color: #6d28d9; box-shadow: 0 0 0 3px rgba(109,40,217,.1); background: #fff; }
+.filter-input:focus { border-color: #f05537; box-shadow: 0 0 0 3px rgba(240, 85, 55, 0.1); background: #fff; }
 .filter-select {
     width: 100%; padding: 9px 12px; font-size: 13px; font-family: 'Plus Jakarta Sans',sans-serif;
     border: 1.5px solid #e5e7eb; border-radius: 10px; outline: none; color: #111827;
@@ -76,43 +78,43 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 10px center; background-size: 16px;
 }
-.filter-select:focus { border-color: #6d28d9; box-shadow: 0 0 0 3px rgba(109,40,217,.1); }
+.filter-select:focus { border-color: #f05537; box-shadow: 0 0 0 3px rgba(240, 85, 55, 0.1); }
 
 /* Radio pills */
 .radio-pill { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.radio-pill input[type=radio] { accent-color: #6d28d9; width:14px; height:14px; }
+.radio-pill input[type=radio] { accent-color: #f05537; width:14px; height:14px; }
 .radio-pill span { font-size: 12px; font-weight: 500; color: #374151; }
 
 /* Apply button */
 .btn-apply {
-    width: 100%; padding: 11px; background: linear-gradient(135deg,#6d28d9,#4338ca);
+    width: 100%; padding: 11px; background: #f05537;
     color: #fff; font-size: 13px; font-weight: 700; border: none; border-radius: 11px;
     cursor: pointer; font-family: 'Plus Jakarta Sans',sans-serif;
-    box-shadow: 0 4px 12px rgba(109,40,217,.3); transition: .2s;
+    box-shadow: 0 4px 12px rgba(240, 85, 55, 0.3); transition: .2s;
 }
-.btn-apply:hover { opacity: .88; transform: translateY(-1px); }
+.btn-apply:hover { background: #FF6A3D; transform: translateY(-1px); }
 
 /* Company cards */
 .company-card {
     background: #fff;
-    border: 1px solid #ede9fe;
+    border: 1px solid #fff1ed;
     border-radius: 16px;
     overflow: hidden;
     display: block; color: inherit; text-decoration: none;
     transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    box-shadow: 0 1px 3px rgba(67,56,202,.05);
+    box-shadow: 0 1px 3px rgba(240, 85, 55, 0.05);
 }
 .company-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(109,40,217,.12);
-    border-color: #c4b5fd;
+    box-shadow: 0 12px 32px rgba(240, 85, 55, 0.12);
+    border-color: #ffd4c9;
 }
 .company-logo {
     width: 48px; height: 48px; border-radius: 12px;
     background: #f3f4f6; overflow: hidden; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 18px; color: #6d28d9;
-    border: 1px solid #ede9fe;
+    font-weight: 700; font-size: 18px; color: #f05537;
+    border: 1px solid #fff1ed;
 }
 .company-logo img { width:100%; height:100%; object-fit:cover; }
 .badge-pill {
@@ -122,13 +124,13 @@
     white-space: nowrap;
 }
 .card-footer {
-    background: #faf9ff;
-    border-top: 1px solid #f0ebff;
+    background: #fff5f2;
+    border-top: 1px solid #fff1ed;
     padding: 10px 16px;
     display: flex; align-items: center; justify-content: space-between;
 }
 .view-link {
-    font-size: 12px; font-weight: 700; color: #6d28d9;
+    font-size: 12px; font-weight: 700; color: #f05537;
     display: inline-flex; align-items: center; gap: 3px;
 }
 
@@ -136,23 +138,23 @@
 .hiw-section { background: #fff; }
 .hiw-step-num {
     width: 32px; height: 32px; border-radius: 50%;
-    background: linear-gradient(135deg,#6d28d9,#4338ca);
+    background: linear-gradient(135deg, #f05537, #FF6A3D);
     color: #fff; font-size: 13px; font-weight: 800;
-    display: flex; align-items: center; justify-center: center;
-    flex-shrink: 0; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
 }
 .hiw-card {
-    background: #faf9ff;
-    border: 1px solid #ede9fe;
+    background: #fff5f2;
+    border: 1px solid #fff1ed;
     border-radius: 18px;
     padding: 28px 20px 24px;
     text-align: center;
     transition: .2s;
 }
-.hiw-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(109,40,217,.1); }
+.hiw-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(240, 85, 55, 0.1); }
 .hiw-icon {
     width: 56px; height: 56px; border-radius: 16px;
-    background: linear-gradient(135deg,#6d28d9,#4338ca);
+    background: linear-gradient(135deg, #f05537, #FF6A3D);
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 16px; color: #fff;
 }
@@ -162,15 +164,15 @@
 @media(min-width:768px){ .hiw-connector { display:flex; align-items:center; justify-content:center; } }
 
 /* CTA buttons */
-.cta-row { background: linear-gradient(135deg,#1e1b4b,#312e81); }
+.cta-row { background: linear-gradient(135deg, #f05537, #FF6A3D); }
 .cta-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 14px 20px; border-radius: 12px;
     font-size: 14px; font-weight: 700; text-decoration: none;
     transition: .2s; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans',sans-serif;
 }
-.cta-btn-primary { background: #fff; color: #4338ca; }
-.cta-btn-primary:hover { background: #e0e7ff; }
+.cta-btn-primary { background: #fff; color: #f05537; }
+.cta-btn-primary:hover { background: #fff1ed; }
 .cta-btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.3); }
 .cta-btn-outline:hover { border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.07); }
 
@@ -184,7 +186,7 @@
 
 /* Empty state */
 .empty-state {
-    background: #fff; border: 1px solid #ede9fe; border-radius: 16px;
+    background: #fff; border: 1px solid #fff1ed; border-radius: 16px;
     padding: 64px 24px; text-align: center;
 }
 </style>
@@ -194,19 +196,19 @@
     <!-- ── HERO ── -->
     <div class="fc-hero py-12 px-4">
         <div class="fc-hero-content max-w-3xl mx-auto text-center">
-            <span style="display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border-radius:50px;padding:4px 14px;margin-bottom:16px;">
+            <span style="display:inline-block;background:#fff1ed;border:1px solid #ffd4c9;color:#f05537;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border-radius:50px;padding:4px 14px;margin-bottom:16px;">
                 🏢 Featured Companies
             </span>
-            <h1 style="font-size:clamp(26px,4vw,42px);font-weight:800;color:#fff;line-height:1.2;margin:0 0 12px;">
+            <h1 style="font-size:clamp(26px,4vw,42px);font-weight:800;color:#111827;line-height:1.2;margin:0 0 12px;">
                 Top Companies Hiring Now
             </h1>
-            <p style="color:rgba(255,255,255,.7);font-size:15px;margin:0 0 28px;">
+            <p style="color:#4b5563;font-size:15px;margin:0 0 28px;">
                 Discover leading employers across industries and find your next opportunity
             </p>
 
             <!-- Inline search in hero -->
             <div class="fc-hero-search" style="max-width:520px;margin:0 auto 24px;">
-                <svg style="width:18px;height:18px;color:rgba(255,255,255,.6);flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+                <svg style="width:18px;height:18px;color:#9ca3af;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
                 <form method="GET" action="/company/featured" style="flex:1;display:flex;align-items:center;gap:8px;">
                     <input type="text" name="q" value="<?= htmlspecialchars($filters['q'] ?? '') ?>" placeholder="Search companies, industries...">
                     <button type="submit">Search</button>
@@ -239,7 +241,7 @@
             <aside class="lg:col-span-1">
                 <div class="filter-sidebar p-5">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
-                        <div style="width:32px;height:32px;background:linear-gradient(135deg,#6d28d9,#4338ca);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <div style="width:32px;height:32px;background:linear-gradient(135deg, #f05537, #FF6A3D);border-radius:8px;display:flex;align-items:center;justify-content:center;">
                             <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                         </div>
                         <span style="font-size:14px;font-weight:700;color:#111827;">Filter Companies</span>
@@ -288,9 +290,9 @@
                                 $exp_options = [['entry','Entry Level'],['experienced','Experienced'],['','All']];
                                 foreach ($exp_options as [$val, $lbl]):
                                 ?>
-                                <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;background:<?= (($filters['experience'] ?? '') === $val) ? '#ede9fe' : '#f9fafb' ?>;border:1.5px solid <?= (($filters['experience'] ?? '') === $val) ? '#6d28d9' : '#e5e7eb' ?>;border-radius:8px;padding:6px 10px;">
-                                    <input type="radio" name="experience" value="<?= $val ?>" <?= (($filters['experience'] ?? '') === $val) ? 'checked' : '' ?> style="accent-color:#6d28d9;width:13px;height:13px;">
-                                    <span style="font-size:12px;font-weight:500;color:<?= (($filters['experience'] ?? '') === $val) ? '#6d28d9' : '#374151' ?>;"><?= $lbl ?></span>
+                                <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;background:<?= (($filters['experience'] ?? '') === $val) ? '#fff1ed' : '#f9fafb' ?>;border:1.5px solid <?= (($filters['experience'] ?? '') === $val) ? '#f05537' : '#e5e7eb' ?>;border-radius:8px;padding:6px 10px;">
+                                    <input type="radio" name="experience" value="<?= $val ?>" <?= (($filters['experience'] ?? '') === $val) ? 'checked' : '' ?> style="accent-color:#f05537;width:13px;height:13px;">
+                                    <span style="font-size:12px;font-weight:500;color:<?= (($filters['experience'] ?? '') === $val) ? '#f05537' : '#374151' ?>;"><?= $lbl ?></span>
                                 </label>
                                 <?php endforeach; ?>
                             </div>
@@ -350,9 +352,9 @@
                                 <div class="company-logo">
                                     <?php if (!empty($co['logo_url'])): ?>
                                         <img src="<?= htmlspecialchars($co['logo_url']) ?>" alt="<?= htmlspecialchars($co['name'] ?? '') ?>" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                                        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#6d28d9;"><?= $initial ?></span>
+                                        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#f05537;"><?= $initial ?></span>
                                     <?php else: ?>
-                                        <span style="font-weight:800;font-size:20px;color:#6d28d9;"><?= $initial ?></span>
+                                        <span style="font-weight:800;font-size:20px;color:#f05537;"><?= $initial ?></span>
                                     <?php endif; ?>
                                 </div>
 
@@ -372,7 +374,7 @@
                                     <!-- Industry + reviews -->
                                     <div style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                                         <?php if (!empty($co['industry'])): ?>
-                                        <span style="font-size:11px;color:#6d28d9;font-weight:600;"><?= htmlspecialchars($co['industry']) ?></span>
+                                        <span style="font-size:11px;color:#f05537;font-weight:600;"><?= htmlspecialchars($co['industry']) ?></span>
                                         <?php endif; ?>
                                         <?php if ($reviews > 0): ?>
                                         <span style="font-size:10px;color:#9ca3af;">·</span>
@@ -386,19 +388,19 @@
                             <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
                                 <?php if (!empty($co['company_size'])): ?>
                                 <span class="badge-pill">
-                                    <svg style="width:10px;height:10px;margin-right:3px;color:#6d28d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <svg style="width:10px;height:10px;margin-right:3px;color:#f05537;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     <?= htmlspecialchars($co['company_size']) ?>
                                 </span>
                                 <?php endif; ?>
                                 <?php if (!empty($co['founded_year'])): ?>
                                 <span class="badge-pill">
-                                    <svg style="width:10px;height:10px;margin-right:3px;color:#6d28d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <svg style="width:10px;height:10px;margin-right:3px;color:#f05537;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     Est. <?= htmlspecialchars($co['founded_year']) ?>
                                 </span>
                                 <?php endif; ?>
                                 <?php if (!empty($co['location'])): ?>
                                 <span class="badge-pill">
-                                    <svg style="width:10px;height:10px;margin-right:3px;color:#6d28d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                                    <svg style="width:10px;height:10px;margin-right:3px;color:#f05537;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                                     <?= htmlspecialchars($co['location']) ?>
                                 </span>
                                 <?php endif; ?>
@@ -419,12 +421,12 @@
 
                 <?php else: ?>
                 <div class="empty-state">
-                    <div style="width:56px;height:56px;background:#ede9fe;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                        <svg style="width:28px;height:28px;color:#6d28d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+                    <div style="width:56px;height:56px;background:#fff1ed;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <svg style="width:28px;height:28px;color:#f05537;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
                     </div>
                     <h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 6px;">No companies found</h3>
                     <p style="font-size:13px;color:#6b7280;margin:0 0 20px;">Try adjusting your filters or search query</p>
-                    <a href="/company/featured" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#6d28d9,#4338ca);color:#fff;font-size:13px;font-weight:700;border-radius:10px;text-decoration:none;">
+                    <a href="/company/featured" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#f05537,#f05537);color:#fff;font-size:13px;font-weight:700;border-radius:10px;text-decoration:none;">
                         Clear Filters
                     </a>
                 </div>
@@ -438,9 +440,9 @@
     <section class="hiw-section py-14 mt-4">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div style="text-align:center;margin-bottom:40px;">
-                <span style="display:inline-block;background:#ede9fe;color:#6d28d9;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-radius:50px;padding:4px 14px;margin-bottom:12px;">Process</span>
+                <span style="display:inline-block;background:#fff1ed;color:#f05537;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-radius:50px;padding:4px 14px;margin-bottom:12px;">Process</span>
                 <h2 style="font-size:clamp(22px,3vw,32px);font-weight:800;color:#111827;margin:0 0 8px;">How it works</h2>
-                <p style="font-size:14px;color:#6b7280;margin:0;">Your simple journey to the perfect job on Mindware Infotech</p>
+                <p style="font-size:14px;color:#6b7280;margin:0;">Your simple journey to the perfect job on Jobsence</p>
             </div>
 
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
@@ -454,7 +456,7 @@
                 foreach ($steps as [$num, $title, $desc, $path]):
                 ?>
                 <div class="hiw-card">
-                    <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:800;border-radius:50%;margin-bottom:16px;">
+                    <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#fff1ed;color:#f05537;font-size:12px;font-weight:800;border-radius:50%;margin-bottom:16px;">
                         <?= $num ?>
                     </div>
                     <div class="hiw-icon">
@@ -475,10 +477,10 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div style="text-align:center;margin-bottom:24px;">
                 <h2 style="font-size:22px;font-weight:800;color:#fff;margin:0 0 6px;">Ready to find your dream job?</h2>
-                <p style="font-size:13px;color:rgba(255,255,255,.65);margin:0;">Join thousands of candidates already hired through Mindware Infotech</p>
+                <p style="font-size:13px;color:rgba(255,255,255,.65);margin:0;">Join thousands of candidates already hired through Jobsence</p>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;max-width:700px;margin:0 auto;">
-                <a href="/register-candidate" class="cta-btn cta-btn-primary">
+                <a href="/register-candidate" class="cta-btn cta-btn-#f05537">
                     <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                     Register Free
                 </a>
@@ -499,3 +501,13 @@
     </div>
 
 </div>
+
+
+
+
+
+
+
+
+
+

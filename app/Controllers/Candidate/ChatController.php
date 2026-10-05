@@ -196,6 +196,16 @@ class ChatController extends BaseController
             return;
         }
 
+        // RESTRICTION: Attachments are only for premium users
+        if ($hasAttachment && !$candidate->isPremium()) {
+            $response->json([
+                'error' => 'Premium required',
+                'message' => 'Sending attachments (PDF, images, videos) is a premium feature. Please upgrade to send files.',
+                'upgrade_url' => '/candidate/premium/plans'
+            ], 403);
+            return;
+        }
+
         $userId = $candidate->attributes['user_id'];
 
         // Handle file attachment (optional)
@@ -323,20 +333,6 @@ class ChatController extends BaseController
         $candidate = $this->ensureCandidate($request, $response);
         if (!$candidate) return;
         
-        if (!$candidate->isPremium()) {
-            $accept = strtolower($request->header('Accept', '') ?? '');
-            if (strpos($accept, 'application/json') !== false || $request->isAjax()) {
-                $response->json([
-                    'error' => 'Premium required',
-                    'message' => 'Direct chat is a premium feature. Please upgrade to start a conversation.',
-                    'upgrade_url' => '/candidate/premium/plans'
-                ], 403);
-            } else {
-                $response->redirect('/candidate/premium/plans');
-            }
-            return;
-        }
-
         $data = $request->getJsonBody() ?? $request->all();
         $employerId = (int)($data['employer_id'] ?? 0);
         $jobId = (int)($data['job_id'] ?? 0);

@@ -23,7 +23,7 @@
                   <option value="<?= $s ?>" <?= (($it['status'] ?? '')===$s)?'selected':'' ?>><?= $s ?></option>
                 <?php endforeach; ?>
               </select>
-              <button class="px-3 py-1 bg-purple-600 text-white rounded">Update</button>
+              <button class="px-3 py-1 bg-primary text-white rounded">Update</button>
             </form>
           </td>
         </tr>
@@ -35,3 +35,14 @@
     </table>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

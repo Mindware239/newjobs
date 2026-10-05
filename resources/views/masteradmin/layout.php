@@ -14,12 +14,12 @@
             theme: {
                 extend: {
                     colors: {
-                        blueMain: "#2563EB",
+                        blueMain: "#FF6A3D",
                         greenMain: "#10B981",
                         yellowMain: "#F59E0B",
-                        purpleMain: "#8B5CF6",
+                        purpleMain: "#f05537",
                         pinkMain: "#EC4899",
-                        indigoMain: "#6366F1",
+                        indigoMain: "#FF6A3D",
                         sidebarBg: "#1a2c57ff"
                     }
                 }
@@ -29,29 +29,29 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         [x-cloak] { display: none !important; }
-        body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; }
+        body { font-family: 'Nunito Sans', sans-serif; font-weight: 600; }
         :root{
-            --color-primary:#5B6BD5;
-            --color-primary-hover:#4F5FCC;
+            --color-#f05537:#f05537;
+            --color-#f05537-hover:#FF6A3D;
             --color-secondary:#6B6F8D;
             --color-heading:#2F3045;
             --color-page-bg:#F0F1F6;
             --color-white:#FFFFFF;
             --color-border:#E3E5ED;
             --color-sidebar-bg:#0F172A;
-            --color-active-menu-bg:#E9ECFF;
+            --color-active-menu-bg:#fff1ed;
         }
         body{background-color:var(--color-page-bg);color:var(--color-heading)}
         .bg-white{background-color:var(--color-white)!important}
         .border-gray-200,.border-gray-100,.border-gray-300{border-color:var(--color-border)!important}
         .text-gray-900,.text-gray-800{color:var(--color-heading)!important}
         .text-gray-700,.text-gray-600{color:var(--color-secondary)!important}
-        .bg-blue-600{background-color:var(--color-primary)!important}
-        .hover\:bg-blue-700:hover{background-color:var(--color-primary-hover)!important}
-        .bg-purple-700\/30,.bg-purple-700,.text-purple-300,.text-purple-700{color:var(--color-primary)!important;background-color:var(--color-active-menu-bg)!important}
+        .bg-primary{background-color:var(--color-#f05537)!important}
+        .hover\:bg-primary-600:hover{background-color:var(--color-#f05537-hover)!important}
+        .bg-primary-600\/30,.bg-primary-600,.text-primary-50,.text-primary-600{color:var(--color-#f05537)!important;background-color:var(--color-active-menu-bg)!important}
         .sidebar-gradient{background: linear-gradient(180deg, #334155 0%, #1e293b 100%)}
         .sidebar-item{color:#e2e8f0}
         .sidebar-item:hover{background:rgba(255,255,255,0.1); color:#ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1)}
@@ -415,7 +415,7 @@ o    <!-- SIDEBAR -->
                         </span>
                         <input x-model="reportDate" type="date" class="pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigoMain bg-white" />
                     </div>
-                    <a :href="'/master/reports?date='+reportDate" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm flex items-center gap-2 shadow hover:bg-indigo-700">
+                    <a :href="'/master/reports?date='+reportDate" class="px-4 py-2 rounded-xl bg-primary text-white text-sm flex items-center gap-2 shadow hover:bg-primary-600">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 13l3 3 7-7"></path></svg>
                         Generate Report
                     </a>
@@ -459,3 +459,14 @@ o    <!-- SIDEBAR -->
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

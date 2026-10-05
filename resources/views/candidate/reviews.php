@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'My Reviews' ?> - Mindware Infotech</title>
+    <title><?= $title ?? 'My Reviews' ?> - Jobsence</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        .btn-primary-solid {
+            background: linear-gradient(135deg, #f05537 0%, #FF6A3D 100%);
             border: none;
             color: white;
             transition: all 0.2s ease;
             box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        .btn-primary-solid:hover {
+            background: linear-gradient(135deg, #0f172a 0%, #f05537 100%);
             box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
             transform: translateY(-1px);
         }
@@ -27,7 +27,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-8">
             <div class="flex items-center gap-3 mb-3">
-                <div class="p-3 bg-blue-600 rounded-xl shadow-md">
+                <div class="p-3 bg-primary rounded-xl shadow-md">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                     </svg>
@@ -46,7 +46,7 @@
             <div class="border-b border-gray-200">
                 <div class="flex items-center justify-between px-6 py-3">
                     <div class="flex items-center gap-4">
-                        <span class="text-sm font-medium text-indigo-700">Reviews (<?= count($userReviews ?? []) ?>)</span>
+                        <span class="text-sm font-medium text-primary-600">Reviews (<?= count($userReviews ?? []) ?>)</span>
                         <?php if (!empty($userReviews)): ?>
                         <div class="flex items-center gap-2">
                             <label class="text-sm text-gray-600">Sort</label>
@@ -60,7 +60,7 @@
                         </div>
                         <?php endif; ?>
                     </div>
-                    <a href="/candidate/reviews/create" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md btn-primary">
+                    <a href="/candidate/reviews/create" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md btn-primary-solid">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         Write a review
                     </a>
@@ -70,8 +70,8 @@
             <div class="p-6">
                 <?php if (empty($userReviews)): ?>
                     <div class="flex flex-col items-center text-center py-12">
-                        <div class="mb-4 bg-indigo-50 p-4 rounded-full">
-                            <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="mb-4 bg-primary-50 p-4 rounded-full">
+                            <svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
                             </svg>
                         </div>
@@ -103,7 +103,7 @@
                                         <?php if (!empty($review['company_logo'])): ?>
                                             <img src="<?= htmlspecialchars($review['company_logo']) ?>" alt="Logo" class="w-6 h-6 rounded-full object-cover">
                                         <?php endif; ?>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary">
                                             <?= htmlspecialchars($review['company_name'] ?? 'Company') ?>
                                         </span>
                                     </div>
@@ -128,7 +128,7 @@
                                     <?= htmlspecialchars($short) ?>
                                 </p>
                                 <?php if (mb_strlen($text) > 280): ?>
-                                    <button class="mt-2 text-sm text-indigo-600 hover:text-indigo-800" onclick="document.getElementById('rv-<?= (int)$review['id'] ?>').textContent = '<?= htmlspecialchars($text, ENT_QUOTES) ?>'; this.remove();">
+                                    <button class="mt-2 text-sm text-primary hover:text-primary" onclick="document.getElementById('rv-<?= (int)$review['id'] ?>').textContent = '<?= htmlspecialchars($text, ENT_QUOTES) ?>'; this.remove();">
                                         Read more
                                     </button>
                                 <?php endif; ?>
@@ -142,3 +142,14 @@
     <?php include __DIR__ . '/../include/footer.php'; ?>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

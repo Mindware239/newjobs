@@ -13,15 +13,15 @@ $title = 'Marketing Campaigns';
         <div class="flex items-center gap-3">
             <!-- View Toggle -->
             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-                <button @click="view = 'grid'" :class="view === 'grid' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="p-2 rounded-md transition-all">
+                <button @click="view = 'grid'" :class="view === 'grid' ? 'bg-white dark:bg-slate-700 text-primary dark:text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="p-2 rounded-md transition-all">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                 </button>
-                <button @click="view = 'list'" :class="view === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="p-2 rounded-md transition-all">
+                <button @click="view = 'list'" :class="view === 'list' ? 'bg-white dark:bg-slate-700 text-primary dark:text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="p-2 rounded-md transition-all">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
             </div>
 
-            <a href="/sales/manager/campaigns/create" class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-medium shadow-lg shadow-indigo-200/50 transition-all flex items-center gap-2">
+            <a href="/sales/manager/campaigns/create" class="px-4 py-2 bg-primary text-white hover:bg-primary-600 rounded-xl font-medium shadow-lg shadow-primary-100/50 transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                 <span class="hidden sm:inline">Create Campaign</span>
             </a>
@@ -42,9 +42,9 @@ $title = 'Marketing Campaigns';
     <div class="flex flex-col sm:flex-row gap-4">
         <div class="relative flex-1">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" x-model="search" placeholder="Search campaigns..." class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-slate-400">
+            <input type="text" x-model="search" placeholder="Search campaigns..." class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white placeholder-slate-400">
         </div>
-        <select x-model="filter" class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+        <select x-model="filter" class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary dark:text-white">
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="scheduled">Scheduled</option>
@@ -56,15 +56,15 @@ $title = 'Marketing Campaigns';
     <!-- Campaign Grid View -->
     <div x-show="view === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
         <template x-for="c in filteredCampaigns" :key="c.id">
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-900 transition-all group flex flex-col">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-primary-100 dark:hover:border-primary transition-all group flex flex-col">
                 <div class="p-6 flex-1">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <div class="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary/30 flex items-center justify-center text-primary dark:text-primary">
                                 <span x-html="getTypeIcon(c.type)"></span>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" x-text="c.name"></h3>
+                                <h3 class="font-bold text-slate-800 dark:text-white group-hover:text-primary dark:group-hover:text-primary transition-colors" x-text="c.name"></h3>
                                 <span class="text-xs text-slate-500 dark:text-slate-400" x-text="c.type"></span>
                             </div>
                         </div>
@@ -92,7 +92,7 @@ $title = 'Marketing Campaigns';
                             <span x-text="c.progress + '%'"></span>
                         </div>
                         <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-indigo-500 rounded-full transition-all duration-500" :style="'width: ' + c.progress + '%'"></div>
+                            <div class="h-full bg-primary rounded-full transition-all duration-500" :style="'width: ' + c.progress + '%'"></div>
                         </div>
                     </div>
                 </div>
@@ -102,17 +102,17 @@ $title = 'Marketing Campaigns';
                             <img class="w-6 h-6 rounded-full border-2 border-white dark:border-slate-800" :src="'https://ui-avatars.com/api/?name=User+' + i + '&background=random'" alt="">
                         </template>
                     </div>
-                    <button class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">View Details &rarr;</button>
+                    <button class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">View Details &rarr;</button>
                 </div>
             </div>
         </template>
 
         <!-- Create New Placeholder -->
-        <a href="/sales/manager/campaigns/create" class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-all h-full min-h-[280px] group">
-            <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-400 flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/40 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+        <a href="/sales/manager/campaigns/create" class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary-600 hover:bg-primary-50/30 dark:hover:bg-primary/10 transition-all h-full min-h-[280px] group">
+            <div class="w-12 h-12 rounded-full bg-primary-50 dark:bg-primary/20 text-primary flex items-center justify-center mb-4 group-hover:bg-primary-50 dark:group-hover:bg-primary/40 group-hover:text-primary dark:group-hover:text-primary transition-colors">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             </div>
-            <span class="font-semibold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">Create New Campaign</span>
+            <span class="font-semibold text-slate-600 dark:text-slate-300 group-hover:text-primary dark:group-hover:text-primary">Create New Campaign</span>
             <span class="text-sm text-slate-400 dark:text-slate-500 mt-1">Launch a new outreach</span>
         </a>
     </div>
@@ -135,7 +135,7 @@ $title = 'Marketing Campaigns';
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
+                                    <div class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary/30 flex items-center justify-center text-primary dark:text-primary mr-3">
                                         <span x-html="getTypeIcon(c.type)" class="scale-75"></span>
                                     </div>
                                     <div>
@@ -157,12 +157,12 @@ $title = 'Marketing Campaigns';
                                         <span x-text="c.progress + '%'"></span>
                                     </div>
                                     <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <div class="h-full bg-indigo-500 rounded-full" :style="'width: ' + c.progress + '%'"></div>
+                                        <div class="h-full bg-primary rounded-full" :style="'width: ' + c.progress + '%'"></div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a :href="'/sales/manager/campaigns/' + c.id + '/edit'" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</a>
+                                <a :href="'/sales/manager/campaigns/' + c.id + '/edit'" class="text-primary dark:text-primary hover:text-primary-900 dark:hover:text-primary">Edit</a>
                             </td>
                         </tr>
                     </template>
@@ -191,9 +191,9 @@ function campaignsApp(campaignsData) {
 
         get stats() {
             return [
-                { label: 'Active Campaigns', value: this.campaigns.filter(c => c.status === 'active').length, colorClass: 'text-indigo-600 dark:text-indigo-400' },
+                { label: 'Active Campaigns', value: this.campaigns.filter(c => c.status === 'active').length, colorClass: 'text-primary dark:text-primary' },
                 { label: 'Total Leads', value: this.formatNumber(this.campaigns.reduce((acc, c) => acc + c.leads, 0)), colorClass: 'text-emerald-600 dark:text-emerald-400' },
-                { label: 'Conversions', value: this.campaigns.reduce((acc, c) => acc + c.conversions, 0), colorClass: 'text-purple-600 dark:text-purple-400' },
+                { label: 'Conversions', value: this.campaigns.reduce((acc, c) => acc + c.conversions, 0), colorClass: 'text-primary dark:text-primary' },
                 { label: 'Total Spend', value: '₹' + this.formatNumber(this.campaigns.reduce((acc, c) => acc + parseInt(c.spent.replace(/[^0-9]/g, '')), 0)), colorClass: 'text-slate-600 dark:text-slate-400' },
             ];
         },
@@ -201,7 +201,7 @@ function campaignsApp(campaignsData) {
         getStatusClass(status) {
             const classes = {
                 'active': 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-600/20 dark:ring-emerald-400/20',
-                'scheduled': 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 ring-1 ring-blue-600/20 dark:ring-blue-400/20',
+                'scheduled': 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary ring-1 ring-primary/20 dark:ring-primary-100/20',
                 'paused': 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 ring-1 ring-amber-600/20 dark:ring-amber-400/20',
                 'completed': 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-400 ring-1 ring-slate-600/20 dark:ring-slate-400/20',
             };
@@ -228,3 +228,13 @@ function campaignsApp(campaignsData) {
     }
 }
 </script>
+
+
+
+
+
+
+
+
+
+

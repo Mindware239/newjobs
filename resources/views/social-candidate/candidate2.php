@@ -54,23 +54,23 @@
 
     <!-- STEP 1 -->
     <div class="flex flex-col items-center">
-      <div class="w-7 h-7 rounded-full bg-blue-800 text-white flex items-center justify-center text-sm">✓</div>
+      <div class="w-7 h-7 rounded-full bg-primary-900 text-white flex items-center justify-center text-sm">✓</div>
       <span class="text-xs mt-2">Initial Screening</span>
     </div>
 
-    <div class="w-20 h-[2px] bg-blue-800 mx-2"></div>
+    <div class="w-20 h-[2px] bg-primary-900 mx-2"></div>
 
     <!-- STEP 2 -->
     <div class="flex flex-col items-center">
-      <div class="w-7 h-7 rounded-full bg-blue-800 text-white flex items-center justify-center text-sm">✓</div>
+      <div class="w-7 h-7 rounded-full bg-primary-900 text-white flex items-center justify-center text-sm">✓</div>
       <span class="text-xs mt-2">Application</span>
     </div>
 
-    <div class="w-20 h-[2px] bg-blue-800 mx-2"></div>
+    <div class="w-20 h-[2px] bg-primary-900 mx-2"></div>
 
     <!-- STEP 3 -->
     <div class="flex flex-col items-center">
-      <div class="w-7 h-7 rounded-full bg-blue-800 text-white flex items-center justify-center text-sm">3</div>
+      <div class="w-7 h-7 rounded-full bg-primary-900 text-white flex items-center justify-center text-sm">3</div>
       <span class="text-xs mt-2 font-semibold">Confirmation</span>
     </div>
 
@@ -92,3 +92,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

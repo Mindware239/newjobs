@@ -5,7 +5,7 @@
       <p class="text-sm text-gray-600">Unlocked and approved. Summary shown with privacy safeguards.</p>
     </div>
     <div class="flex items-center gap-2">
-      <a href="/employer/verification/report/<?= (int)($unlock['id'] ?? 0) ?>" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+      <a href="/employer/verification/report/<?= (int)($unlock['id'] ?? 0) ?>" class="inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
         Download official report
       </a>
@@ -42,7 +42,7 @@
         ?>
         <div class="grid md:grid-cols-2 gap-4">
           <?php foreach ($types as $key => $label): $files = $grouped[$key] ?? []; $has = !empty($files); ?>
-            <div class="rounded-xl border p-4 <?= $has ? 'border-indigo-200 bg-white' : 'border-gray-200 bg-gray-50' ?>">
+            <div class="rounded-xl border p-4 <?= $has ? 'border-primary-100 bg-white' : 'border-gray-200 bg-gray-50' ?>">
               <div class="flex items-center justify-between">
                 <div class="font-medium text-sm"><?= $label ?></div>
                 <?php if ($has): ?>
@@ -85,3 +85,14 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

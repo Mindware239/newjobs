@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Sales Manager' ?> - Mindware Infotech</title>
+    <title><?= $title ?? 'Sales Manager' ?> - Jobsence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         [x-cloak] { display: none !important; }
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Nunito Sans', sans-serif; font-weight: 600; }
         /* Custom Scrollbar for Sidebar */
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -32,8 +32,8 @@
                             950: '#020617',
                         },
                         indigo: {
-                            600: '#4f46e5',
-                            700: '#4338ca',
+                            600: '#FF6A3D',
+                            700: '#e55a2d',
                         }
                     }
                 }
@@ -188,3 +188,14 @@
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

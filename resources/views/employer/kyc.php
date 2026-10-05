@@ -36,7 +36,7 @@
         </div>
         <?php if ($kyc_status === 'not_submitted' || $kyc_status === 'rejected'): ?>
             <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" 
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                 Upload Documents
             </button>
         <?php endif; ?>
@@ -54,9 +54,9 @@
 </div>
 
 <!-- Required Documents Info -->
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-    <h3 class="text-sm font-semibold text-blue-900 mb-2">Required Documents</h3>
-    <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
+<div class="bg-primary-50 border border-primary-100 rounded-lg p-4 mb-6">
+    <h3 class="text-sm font-semibold text-primary mb-2">Required Documents</h3>
+    <ul class="text-sm text-primary-900 space-y-1 list-disc list-inside">
         <li>Business License / Registration Certificate</li>
         <li>Tax ID / GST Certificate</li>
         <li>Address Proof (Utility Bill / Rent Agreement)</li>
@@ -76,7 +76,7 @@
             <p class="mt-1 text-sm text-gray-500">Upload your KYC documents to get verified.</p>
             <div class="mt-6">
                 <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-600">
                     Upload Documents
                 </button>
             </div>
@@ -120,7 +120,7 @@
                         <div class="ml-4">
                             <a href="<?= htmlspecialchars($doc['file_url']) ?>" 
                                target="_blank"
-                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                               class="text-primary hover:text-primary-900 text-sm font-medium">
                                 View
                             </a>
                         </div>
@@ -160,7 +160,7 @@
                         Cancel
                     </button>
                     <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                         Upload
                     </button>
                 </div>
@@ -199,4 +199,15 @@ document.getElementById('uploadForm')?.addEventListener('submit', async function
     }
 });
 </script>
+
+
+
+
+
+
+
+
+
+
+
 

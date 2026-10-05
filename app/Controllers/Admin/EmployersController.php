@@ -34,8 +34,9 @@ class EmployersController extends BaseController
         $params = [];
 
         if ($search) {
-            $where[] = "(e.company_name LIKE :search OR u.email LIKE :search)";
-            $params['search'] = "%{$search}%";
+            $where[] = "(e.company_name LIKE :s1 OR u.email LIKE :s2)";
+            $params['s1'] = "%{$search}%";
+            $params['s2'] = "%{$search}%";
         }
 
         if ($status !== 'all') {

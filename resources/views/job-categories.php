@@ -41,7 +41,7 @@ $getCatIconName = function ($name) use ($iconPaths) {
         <nav class="flex mb-8" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                    <a href="/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <a href="/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
                         Home
                     </a>
                 </li>
@@ -68,7 +68,7 @@ $getCatIconName = function ($name) use ($iconPaths) {
                 <?php $has = isset($groupedCategories[$char]); ?>
                 <?php if ($has): ?>
                     <a href="#cat-<?= $char ?>"
-                       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white">
+                       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors bg-primary-50 text-primary hover:bg-primary hover:text-white">
                         <?= $char ?>
                     </a>
                 <?php else: ?>
@@ -79,7 +79,7 @@ $getCatIconName = function ($name) use ($iconPaths) {
             <?php endforeach; ?>
             <?php if (isset($groupedCategories['#'])): ?>
                 <a href="#cat-other"
-                   class="px-3 h-8 flex items-center justify-center rounded-lg text-sm font-semibold bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">#</a>
+                   class="px-3 h-8 flex items-center justify-center rounded-lg text-sm font-semibold bg-primary-50 text-primary hover:bg-primary hover:text-white transition-colors">#</a>
             <?php endif; ?>
         </div>
 
@@ -101,14 +101,14 @@ $getCatIconName = function ($name) use ($iconPaths) {
                             <?php $iconPath = $iconPaths[$iconKey] ?? $iconPaths['briefcase']; ?>
                             <a href="/jobs-in-category/<?= htmlspecialchars($slug, ENT_QUOTES) ?>"
                                onclick="try{ if(window.MWMarketing){ MWMarketing.trackCategoryView({content_name: '<?= htmlspecialchars($cat['name'] ?? '', ENT_QUOTES) ?>', content_type:'category'});} }catch(_){}"
-                               class="group flex items-center p-4 rounded-xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/50 hover:shadow-sm transition-all duration-200">
-                                <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
+                               class="group flex items-center p-4 rounded-xl border border-gray-100 hover:border-primary hover:bg-primary-50/50 hover:shadow-sm transition-all duration-200">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <?= $iconPath ?>
                                     </svg>
                                 </div>
                                 <div class="ml-4 min-w-0">
-                                    <h3 class="font-medium text-gray-900 group-hover:text-blue-600 truncate transition-colors"
+                                    <h3 class="font-medium text-gray-900 group-hover:text-primary truncate transition-colors"
                                         title="<?= htmlspecialchars($cat['name'] ?? '') ?>">
                                         <?= htmlspecialchars($cat['name'] ?? '') ?>
                                     </h3>
@@ -137,3 +137,14 @@ $getCatIconName = function ($name) use ($iconPaths) {
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

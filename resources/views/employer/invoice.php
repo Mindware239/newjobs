@@ -3,7 +3,7 @@
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Invoice</h1>
-        <a href="/employer/payments" class="text-purple-600 hover:text-purple-800">Back to Payments</a>
+        <a href="/employer/payments" class="text-primary hover:text-primary-900">Back to Payments</a>
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -73,7 +73,7 @@
             <?php if (!empty($payment['invoice_url'])): ?>
             <a href="<?= htmlspecialchars($payment['invoice_url']) ?>" target="_blank" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Download PDF</a>
             <?php endif; ?>
-            <button onclick="window.print()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Print</button>
+            <button onclick="window.print()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">Print</button>
         </div>
     </div>
 
@@ -93,3 +93,14 @@
         </form>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

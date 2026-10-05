@@ -23,7 +23,7 @@
                            name="name" 
                            value="<?= htmlspecialchars($formData['name'] ?? '') ?>"
                            required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                            placeholder="e.g., IT / Software, Manufacturing, etc.">
                     <p class="mt-1 text-xs text-gray-500">This will be displayed to employers when posting jobs</p>
                 </div>
@@ -35,7 +35,7 @@
                     <textarea id="description" 
                               name="description" 
                               rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                               placeholder="Brief description of this category"><?= htmlspecialchars($formData['description'] ?? '') ?></textarea>
                 </div>
 
@@ -47,7 +47,7 @@
                            id="image" 
                            name="image" 
                            accept="image/*"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
                     <p class="mt-1 text-xs text-gray-500">Upload an image or icon for this category (recommended: 200x200px or square images)</p>
                 </div>
 
@@ -61,7 +61,7 @@
                                name="sort_order" 
                                value="<?= htmlspecialchars($formData['sort_order'] ?? '0') ?>"
                                min="0"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
                         <p class="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
                     </div>
 
@@ -86,7 +86,7 @@
                     <a href="/admin/job-categories" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </a>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600">
                         Create Category
                     </button>
                 </div>
@@ -94,4 +94,15 @@
         </form>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 

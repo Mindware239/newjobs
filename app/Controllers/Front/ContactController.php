@@ -17,15 +17,26 @@ class ContactController
      */
     public static function submitForm(Request $request): void
     {
-        // 1. Basic Security Check (Honeypot)
+        // 1. Basic Security Check (Honeypot + Captcha)
         $data = $request->all();
 
-        // Check the hidden anti-spam field we included in the form
+        // Check the hidden anti-spam field
         if (!empty($data['_hp_email'])) {
-            // Likely a bot. Silently exit.
             header("Location: /contact?status=error&msg=Bot detected.");
             exit(); 
         }
+
+        // Validate Captcha
+        $user_captcha = (int)($data['captcha'] ?? 0);
+        $correct_captcha = (int)($_SESSION['captcha_result'] ?? -1);
+
+        if ($user_captcha !== $correct_captcha) {
+            header("Location: /contact?status=error&msg=Incorrect security answer. Please try again.");
+            exit();
+        }
+
+        // Clear captcha after use
+        unset($_SESSION['captcha_result']);
         
         // 2. Data Retrieval and Validation
         
@@ -54,7 +65,7 @@ class ContactController
         
         // Use ADMIN_MAIL from .env as the primary recipient
         $to = $_ENV['ADMIN_MAIL'] ?? $_ENV['MAIL_RECIPIENT'] ?? "gm@indianbarcode.com";
-        $site_name = $_ENV['APP_NAME'] ?? "Mind Infotech";
+        $site_name = $_ENV['APP_NAME'] ?? "Jobsence";
 
         $email_subject = "New Contact Submission from {$site_name}: " . $subject;
         
@@ -116,7 +127,6 @@ class ContactController
         </html>";
         
         // Use MailService to send via SMTP
-        // Assuming App\Services\MailService exists and is autoloaded
         $mail_success = \App\Services\MailService::sendEmail($to, $email_subject, $email_body, null, null);
 
         // 4. Redirect based on success/failure
@@ -135,10 +145,13 @@ class ContactController
      */
     public static function index(): void
     {
-          
-        $viewPath = dirname(dirname(dirname(__DIR__))) . '/resources/views/contact.php';
+        // Generate a simple math captcha
+        $num1 = rand(1, 10);
+        $num2 = rand(1, 9);
+        $_SESSION['captcha_result'] = $num1 + $num2;
+        $captcha_question = "What is {$num1} + {$num2}?";
 
-        // Now require the file using the corrected, absolute path
+        $viewPath = dirname(dirname(dirname(__DIR__))) . '/resources/views/contact.php';
         require_once $viewPath;
     }
 }

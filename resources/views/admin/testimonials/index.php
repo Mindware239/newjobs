@@ -54,7 +54,7 @@
                     </td>
                     <td class="p-3">
                         <?php if (!empty($row['video_url'])): ?>
-                            <a href="<?= htmlspecialchars((string)$row['video_url']) ?>" target="_blank" class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 hover:bg-purple-200">Video</a>
+                            <a href="<?= htmlspecialchars((string)$row['video_url']) ?>" target="_blank" class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-50 text-primary-600 hover:bg-primary">Video</a>
                         <?php elseif (!empty($row['message'])): ?>
                             <span class="text-gray-600 line-clamp-2"><?= htmlspecialchars((string)$row['message']) ?></span>
                         <?php else: ?>
@@ -88,3 +88,14 @@
         </table>
     </div>
  </div>
+
+
+
+
+
+
+
+
+
+
+

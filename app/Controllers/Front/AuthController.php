@@ -7,17 +7,24 @@ namespace App\Controllers\Front;
 use App\Controllers\BaseController;
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\Database;
 use App\Models\User;
 use App\Models\Employer;
 use App\Models\EmployerSetting;
 use App\Models\EmployerKycDocument;
 use App\Core\RedisClient;
+use App\Repositories\AuthRepository;
 use App\Services\AuthService;
+use App\Services\AuthFlowService;
 use App\Services\VerificationService;
 use App\Services\GoogleOAuthService;
 use App\Services\AppleOAuthService;
 use App\Services\MailService;
 use App\Services\CookieService;
+use App\Core\Storage;
+use App\Services\ResumeTextExtractor;
+use App\Models\Candidate;
+use App\Models\ResumeFile;
 
 class AuthController extends BaseController
 {
@@ -146,8 +153,47 @@ class AuthController extends BaseController
                 return;
             }
 
+            $phoneDigits = preg_replace('/\D+/', '', (string)($data['phone'] ?? ''));
+            if (!preg_match('/^[0-9]{10}$/', $phoneDigits)) {
+                $response->json(['error' => 'Mobile Number must be 10 digits'], 422);
+                return;
+            }
+            $normalizedPhone = AuthService::normalizePhoneNumber($phoneDigits);
+            if ($normalizedPhone === '' || $this->findExistingRegistrationPhone($normalizedPhone)) {
+                $response->json(['error' => 'यह Mobile नंबर पहले से रजिस्टर्ड है / Mobile number already registered'], 409);
+                return;
+            }
+            $data['phone'] = $normalizedPhone;
+
+            $postalCode = trim((string)($data['pincode'] ?? $data['postal_code'] ?? ($data['address']['postal_code'] ?? '')));
+            if ($postalCode !== '' && !preg_match('/^[0-9]{6}$/', $postalCode)) {
+                $response->json(['error' => 'Pin Code must be exactly 6 digits'], 422);
+                return;
+            }
+
+            $gstin = strtoupper(trim((string)($data['gstin'] ?? $data['tax_id'] ?? '')));
+            if ($gstin !== '' && !preg_match('/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/', $gstin)) {
+                $response->json(['error' => 'Please enter valid GSTIN number.'], 422);
+                return;
+            }
+            $providerError = $this->providerIdentityError((string)($data['email'] ?? ''), $phoneDigits, $gstin, $data['no_gst'] ?? null);
+            if ($providerError !== null) {
+                $response->json(['error' => $providerError], 409);
+                return;
+            }
+
+            $emailVerification = VerificationService::verifyEmailAuthOTP(
+                (string)($data['email'] ?? ''),
+                (string)($data['email_otp'] ?? ''),
+                'register_employer'
+            );
+            if (empty($emailVerification['success'])) {
+                $response->json(['error' => $emailVerification['error'] ?? 'Invalid or expired email OTP'], 422);
+                return;
+            }
+
             // Check if user exists
-            $existing = User::where('email', '=', $data['email'])->first();
+            $existing = $this->findExistingRegistrationEmail((string)$data['email']);
             if ($existing) {
                 $response->json(['error' => 'Email already registered'], 409);
                 return;
@@ -198,20 +244,25 @@ class AuthController extends BaseController
             $companyName = $emailLocal !== '' ? ucfirst($emailLocal) : ('Company ' . (string)$user->id);
         }
         $companySlug = $companyName !== '' ? (new Employer())->generateSlug($companyName) : ('company-' . (string)$user->id);
+        
         $employer->fill([
             'user_id' => $user->id,
+            'register_as' => $data['register_as'] ?? 'company',
             'company_name' => $companyName,
             'company_slug' => $companySlug,
             'website' => $data['website'] ?? null,
-            'description' => $data['description'] ?? null,
             'industry' => $data['industry'] ?? null,
-            'size' => isset($data['company_size']) ? $data['company_size'] : null,
+            'company_type' => $data['company_type'] ?? null,
+            'profession_type' => $data['profession_type'] ?? null,
+            'service_category' => $data['service_category'] ?? null,
+            'size' => isset($data['company_size']) ? $data['company_size'] : (isset($data['size']) ? $data['size'] : null),
             'address' => !empty($address) ? json_encode($address, JSON_UNESCAPED_UNICODE) : null,
-            'country' => $data['country'] ?? null,
+            'country' => $data['country'] ?? 'India',
             'state' => $address['state'] ?? null,
             'city' => $address['city'] ?? null,
-            'postal_code' => $address['postal_code'] ?? null,
-            'kyc_status' => 'pending'
+            'postal_code' => $postalCode ?: null,
+            'tax_id' => $gstin ?: null,
+            'kyc_status' => 'not_submitted'
         ]);
         
         error_log("Attempting to save employer for user ID: " . $user->id);
@@ -322,9 +373,41 @@ class AuthController extends BaseController
         }
 
         // Auto-login after registration
-        $_SESSION['user_id'] = $user->id;
-        $_SESSION['user_role'] = $user->role;
+        $this->signInUser($user);
         error_log("✓ Session set - User ID: {$user->id}, Role: {$user->role}");
+
+        // Send welcome / verification email and notify admin
+        try {
+            // Send email verification OTP
+            \App\Services\VerificationService::sendEmailVerification((int)$user->id, (string)$user->email);
+
+            // Send role-based welcome email
+            \App\Services\NotificationService::send(
+                (int)$user->id,
+                'employer_welcome',
+                'Welcome to ' . (getenv('PORTAL_NAME') ?: 'Jobsence'),
+                'Welcome, ' . $data['full_name'] . '! Your employer account has been created. Please complete your KYC verification to start posting jobs.',
+                ['employer_name' => $data['full_name'], 'company_name' => $companyName],
+                null,
+                ['email']
+            );
+
+            // Notify Admin about new employer registration
+            $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+            \App\Services\MailService::sendEmail(
+                $adminMail,
+                'New Employer Registered: ' . $companyName,
+                "<p>A new employer has registered on the platform:</p>
+                 <ul>
+                    <li><strong>Company:</strong> {$companyName}</li>
+                    <li><strong>Contact Name:</strong> {$data['full_name']}</li>
+                    <li><strong>Email:</strong> {$user->email}</li>
+                    <li><strong>Mobile:</strong> {$data['phone']}</li>
+                 </ul>"
+            );
+        } catch (\Throwable $e) {
+            error_log('Failed to send notifications during employer registration: ' . $e->getMessage());
+        }
 
         // Always return JSON with redirect info for JavaScript to handle
         $redirectUrl = '/employer/company-profile';
@@ -363,14 +446,40 @@ class AuthController extends BaseController
         
         try {
             $data = $isJsonBody ? $request->getJsonBody() : $request->all();
+            $data['email'] = strtolower(trim((string)($data['email'] ?? '')));
+            $phoneDigits = preg_replace('/\D+/', '', (string)($data['mobile'] ?? ''));
+            $normalizedPhone = AuthService::normalizePhoneNumber($phoneDigits);
+            $prevalidateOnly = !empty($data['prevalidate_only']);
             
-            // Email-only registration for candidates with international standard validation
+            // Validation
             $errors = $this->validate($data, [
                 'full_name' => 'required',
                 'mobile' => 'required',
                 'email' => 'required|email',
                 'password' => 'required|password_strong|min:8|max:20',
             ]);
+
+            $confirmPassword = (string)($data['password_confirm'] ?? $data['confirm_password'] ?? '');
+            if ($confirmPassword === '' || (string)($data['password'] ?? '') !== $confirmPassword) {
+                $errors['confirm_password'] = ['Passwords do not match'];
+            }
+
+            if (!preg_match('/^[0-9]{10}$/', (string)$phoneDigits) || $normalizedPhone === '') {
+                $errors['mobile'] = ['Mobile Number must be exactly 10 digits'];
+            }
+
+            if (empty($errors['email']) && $this->findExistingRegistrationEmail($data['email'])) {
+                $errors['email'] = ['Email already registered'];
+            }
+
+            if (empty($errors['mobile']) && $this->findExistingRegistrationPhone($normalizedPhone)) {
+                $errors['mobile'] = ['Mobile number already registered'];
+            }
+
+            $resumeErrors = $this->validateCandidateResume($request);
+            if (!empty($resumeErrors)) {
+                $errors['resume'] = $resumeErrors;
+            }
 
             if (!empty($errors)) {
                 if ($isAjax) {
@@ -385,15 +494,25 @@ class AuthController extends BaseController
                 return;
             }
 
-            // Check if user exists
-            $existing = User::where('email', '=', $data['email'])->first();
-            if ($existing) {
+            if ($prevalidateOnly) {
+                $response->json(['success' => true, 'message' => 'Candidate details are valid']);
+                return;
+            }
+
+            $resumeFile = $request->file('resume');
+
+            $emailVerification = VerificationService::verifyEmailAuthOTP(
+                (string)($data['email'] ?? ''),
+                (string)($data['email_otp'] ?? ''),
+                'register_candidate'
+            );
+            if (empty($emailVerification['success'])) {
                 if ($isAjax) {
-                    $response->json(['error' => 'Email already registered'], 409);
+                    $response->json(['error' => $emailVerification['error'] ?? 'Invalid or expired email OTP'], 422);
                 } else {
                     $response->view('auth/register-candidate', [
                         'title' => 'Candidate Registration',
-                        'error' => 'Email already registered',
+                        'error' => $emailVerification['error'] ?? 'Invalid or expired email OTP',
                         'old' => $data
                     ]);
                 }
@@ -407,7 +526,8 @@ class AuthController extends BaseController
                 'email' => $data['email'],
                 'role' => 'candidate',
                 'status' => 'active', // Candidates can be active immediately
-                'phone' => $data['mobile'] ?? null
+                'phone' => $normalizedPhone,
+                'is_email_verified' => 1
             ]);
             $user->setPassword($data['password']);
 
@@ -424,24 +544,66 @@ class AuthController extends BaseController
                 return;
             }
 
-            // Create candidate profile with registration data
-            $candidateData = [];
-            if (!empty($data['full_name'])) {
-                $candidateData['full_name'] = $data['full_name'];
-            }
-            if (!empty($data['mobile'])) {
-                $candidateData['mobile'] = $data['mobile'];
-            }
-            
-            $candidate = \App\Models\Candidate::createForUser((int)$user->id, $candidateData);
+            // Handle Resume Upload
+            $storage = Storage::disk('local');
+            $resumePath = $storage->store($resumeFile, 'uploads/resumes');
+            $resumeUrl = $storage->url($resumePath);
 
+            // Create candidate profile
+            $candidate = new Candidate();
+            $candidate->fill([
+                'user_id' => $user->id,
+                'full_name' => $user->name,
+                'email' => $user->email,
+                'mobile' => $user->phone,
+                'resume_url' => $resumeUrl,
+                'profile_status' => 'active',
+                'visibility' => 'public',
+                'is_profile_complete' => 1
+            ]);
+            $candidate->save();
+
+            // Save Resume File record
+            $resumeFileModel = new ResumeFile();
+            $resumeFileModel->fill([
+                'candidate_id' => $candidate->id,
+                'filename' => $resumeFile['name'],
+                'filepath' => $resumePath,
+                'hash' => sha1_file(Storage::disk('local')->path($resumePath)),
+                'status' => 'uploaded',
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+            $resumeFileModel->save();
+
+            // Send welcome / verification email and notify admin
             try {
-                \App\Services\NotificationService::queueEmail(
-                    $user->email,
+                // Send role-based welcome email
+                \App\Services\NotificationService::send(
+                    (int)$user->id,
                     'candidate_welcome',
-                    ['candidate_user_id' => (int)$user->id]
+                    'Welcome to ' . (getenv('PORTAL_NAME') ?: 'Jobsence'),
+                    'Welcome, ' . $data['full_name'] . '! Thanks for joining Jobsence. We\'ve received your resume and we\'re excited to help you find your next career opportunity.',
+                    ['candidate_name' => $data['full_name']],
+                    null,
+                    ['email']
                 );
-            } catch (\Exception $e) {}
+
+                // Notify Admin about new candidate registration
+                $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+                \App\Services\MailService::sendEmail(
+                    $adminMail,
+                    'New Candidate Registered: ' . $data['full_name'],
+                    "<p>A new candidate has registered on the platform with a resume:</p>
+                     <ul>
+                        <li><strong>Name:</strong> {$data['full_name']}</li>
+                        <li><strong>Email:</strong> {$user->email}</li>
+                        <li><strong>Mobile:</strong> {$data['mobile']}</li>
+                        <li><strong>Resume:</strong> <a href=\"{$resumeUrl}\">View Resume</a></li>
+                     </ul>"
+                );
+            } catch (\Throwable $e) {
+                error_log('Failed to send notifications during candidate registration: ' . $e->getMessage());
+            }
             
             try {
                 $matchService = new \App\Services\JobMatchService();
@@ -452,9 +614,7 @@ class AuthController extends BaseController
             // Auto-login the newly registered candidate
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
-            if ($candidate && isset($candidate->attributes['id'])) {
-                $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
-            }
+            $_SESSION['candidate_id'] = (int)$candidate->id;
             
             $authService = new \App\Services\AuthService();
             $jwtToken = $authService->generateToken($user);
@@ -463,13 +623,13 @@ class AuthController extends BaseController
                 $authService->setTokenCookie($jwtToken);
             }
 
-            // Redirect to profile completion page
-            $redirectUrl = '/candidate/profile/complete';
+            // Redirect to dashboard (since profile is now "complete" enough with resume)
+            $redirectUrl = '/candidate/dashboard';
 
             if ($isAjax) {
                 $response->json([
                     'success' => true,
-                    'message' => 'Registration successful! Redirecting to complete your profile...',
+                    'message' => 'Registration successful! Your resume has been uploaded.',
                     'user_id' => $user->id,
                     'redirect' => $redirectUrl,
                     'token' => $jwtToken
@@ -491,6 +651,112 @@ class AuthController extends BaseController
                 ]);
             }
         }
+    }
+
+    /**
+     * One company = one Email + Mobile + GST: returns a bilingual error if GST is missing without
+     * "I don't have GST", or if any identifier already belongs to an employer / registered mentor.
+     */
+    private function providerIdentityError(string $email, string $phone, string $gstin, $noGst): ?string
+    {
+        $noGst = in_array($noGst, [true, 1, '1', 'true', 'on'], true);
+        if ($gstin === '' && !$noGst) {
+            return 'GST नंबर भरें या “मेरे पास GST नहीं है” चुनें / Enter GSTIN or tick “I don’t have GST”';
+        }
+
+        $conflicts = \App\Services\Registration\ProviderIdentity::conflicts($email, $phone, $noGst ? '' : $gstin);
+        if (!$conflicts) {
+            return null;
+        }
+        return implode(' • ', array_map(static fn($m) => $m[0] . ' / ' . $m[1], $conflicts));
+    }
+
+    private function findExistingRegistrationEmail(string $email): ?User
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return null;
+        }
+
+        $authRepository = new AuthRepository();
+        $row = $authRepository->findUserByAnyEmail($email);
+        return $row ? new User($row) : null;
+    }
+
+    private function findExistingRegistrationPhone(string $normalizedPhone): ?User
+    {
+        $authService = new AuthService();
+        $user = $authService->findUserByPhone($normalizedPhone);
+        if ($user) {
+            return $user;
+        }
+
+        $digits = preg_replace('/\D+/', '', $normalizedPhone) ?: '';
+        $lastTen = strlen($digits) >= 10 ? substr($digits, -10) : $digits;
+        if (!preg_match('/^[0-9]{10}$/', $lastTen)) {
+            return null;
+        }
+
+        $db = Database::getInstance();
+        $row = $db->fetchOne(
+            "SELECT * FROM users
+             WHERE RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(phone, ''), ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), 10) = :phone
+             LIMIT 1",
+            ['phone' => $lastTen]
+        );
+
+        return $row ? new User($row) : null;
+    }
+
+    private function validateCandidateResume(Request $request): array
+    {
+        if (!$request->hasFile('resume')) {
+            return ['Please upload your resume'];
+        }
+
+        $resumeFile = $request->file('resume');
+        $ext = strtolower(pathinfo((string)($resumeFile['name'] ?? ''), PATHINFO_EXTENSION));
+        if (!in_array($ext, ['pdf', 'doc', 'docx'], true)) {
+            return ['Invalid resume format. Only PDF, DOC, and DOCX are allowed'];
+        }
+
+        if ((int)($resumeFile['size'] ?? 0) > 5 * 1024 * 1024) {
+            return ['Resume size exceeds 5MB limit'];
+        }
+
+        $mime = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mime = (string)finfo_file($finfo, (string)$resumeFile['tmp_name']);
+                finfo_close($finfo);
+            }
+        }
+
+        $allowedMimes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/zip',
+            'application/octet-stream',
+        ];
+
+        if ($mime !== '' && !in_array($mime, $allowedMimes, true)) {
+            return ['Invalid file content. Please upload a real PDF or Word document.'];
+        }
+
+        try {
+            $extractor = new ResumeTextExtractor();
+            $text = $extractor->extractResumeText((string)$resumeFile['tmp_name'], $ext);
+            $text = trim($text);
+            if ($text !== '' && strlen($text) < 80) {
+                return ['The uploaded resume contains too little readable text. Please upload a text-based PDF or Word document.'];
+            }
+        } catch (\Throwable $e) {
+            error_log("Resume text verification skipped during registration: " . $e->getMessage());
+        }
+
+        return [];
     }
 
     public function login(Request $request, Response $response): void
@@ -532,60 +798,38 @@ class AuthController extends BaseController
         $data = $request->getMethod() === 'POST' 
             ? ($isJson ? $request->getJsonBody() : $request->all())
             : [];
-        $email = $data['email'] ?? '';
-        $password = $data['password'] ?? '';
+        $email = trim((string)($data['email'] ?? ''));
+        $password = (string)($data['password'] ?? '');
+        $emailOtp = trim((string)($data['email_otp'] ?? ''));
 
         $redis = RedisClient::getInstance();
         $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-        $rateKey = 'login_attempt:' . strtolower((string)$email) . ':' . $ip;
+        $rateKey = 'login_attempt:' . strtolower($email) . ':' . $ip;
         $attempts = 0;
         try {
             $val = $redis->isAvailable() ? $redis->get($rateKey) : null;
             $attempts = is_array($val) ? (int)($val['count'] ?? 0) : (int)($val ?? 0);
         } catch (\Throwable $t) {}
-        if ($attempts >= 5) {
+        if ($attempts >= 10) { // Increased from 5 since we might have multi-step check
             $response->json(['error' => 'Too many attempts. Please try again later.'], 429);
             return;
         }
+
         /** @var \App\Models\User|null $existingUser */
-        $existingUser = User::where('email', '=', $email)->first();
-        if (!$existingUser) {
-            $acceptHeader = $request->header('Accept') ?? '';
-            if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
-                $response->json(['error' => 'User not registered. Please create an account first.'], 404);
-            } else {
-                $response->view('auth/login', [
-                    'title' => 'Login',
-                    'error' => 'You are not registered with us. Please create an account first.',
-                    'redirect' => $request->get('redirect')
-                ]);
-            }
-            try {
-                if ($redis->isAvailable()) {
-                    $redis->set($rateKey, ['count' => $attempts + 1], 300);
-                }
-            } catch (\Throwable $t) {}
+        $authRepository = new AuthRepository();
+        $userRow = $authRepository->findUserByAnyEmail($email);
+
+        if (!$userRow) {
+            $this->handleLoginFailure($request, $response, $redis, $rateKey, $attempts, 'User not registered. Please create an account first.', 404);
             return;
         }
 
-        $authService = new AuthService();
-        $user = $authService->login($email, $password);
-        if (!$user) {
-            $acceptHeader = $request->header('Accept') ?? '';
-            if (strpos($acceptHeader, 'application/json') !== false || $isJson) {
-                $response->json(['error' => 'Invalid email or password'], 401);
-            } else {
-                $response->view('auth/login', [
-                    'title' => 'Login',
-                    'error' => 'Invalid email or password',
-                    'redirect' => $request->get('redirect')
-                ]);
-            }
-            try {
-                if ($redis->isAvailable()) {
-                    $redis->set($rateKey, ['count' => $attempts + 1], 300);
-                }
-            } catch (\Throwable $t) {}
+        /** @var \App\Models\User|null $user */
+        $user = new User($userRow);
+
+        // Handle login failure if user not authenticated
+        if (!$user->verifyPassword($password)) {
+            $this->handleLoginFailure($request, $response, $redis, $rateKey, $attempts, 'Invalid email or password', 401);
             return;
         }
 
@@ -617,6 +861,19 @@ class AuthController extends BaseController
             session_regenerate_id(true);
         }
 
+        // Normalize role to canonical to satisfy middleware checks
+        $rawRole = (string)($user->role ?? '');
+        if (str_starts_with($rawRole, 'social_') || str_starts_with($rawRole, 'social-')) {
+            $canon = $rawRole;
+            if ($rawRole === 'social_candidate' || $rawRole === 'social-candidate') $canon = 'candidate';
+            if ($rawRole === 'social_employer' || $rawRole === 'social-employer') $canon = 'employer';
+            
+            if ($canon !== $rawRole) {
+                $user->role = $canon;
+                try { $user->save(); } catch (\Throwable $t) {}
+            }
+        }
+
         $primaryRole = $user->role;
         try {
             $roles = $user->roles();
@@ -644,9 +901,15 @@ class AuthController extends BaseController
             if ($candidate && isset($candidate->attributes['id'])) {
                 $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
             }
+        } elseif ($user->role === 'employer' || $user->role === 'social_employer') {
+            $employer = \App\Models\Employer::findByUserId($user->id);
+            if ($employer && isset($employer->id)) {
+                $_SESSION['employer_id'] = (int)$employer->id;
+            }
         }
 
         // Generate optional JWT for web session clients (hydrate cookie for Ajax + mobile-web hybrid)
+        $authService = new AuthService();
         $jwtToken = $authService->generateToken($user);
         $jwtCookieEnabled = ($_ENV['WEB_JWT_COOKIE'] ?? '1') === '1';
         if ($jwtCookieEnabled) {
@@ -661,64 +924,53 @@ class AuthController extends BaseController
         try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
         error_log("✓ Login successful - User ID: {$user->id}, Role: {$user->role}");
 
-        $acceptHeader = $request->header('Accept') ?? '';
-        $isJsonRequest = strpos($acceptHeader, 'application/json') !== false || $isJson;
-        
         // Determine redirect URL
         $redirect = $request->get('redirect');
-        if (!$redirect && $user->role === 'employer') {
-            $redirect = '/employer/dashboard';
-        } elseif (!$redirect && $user->role === 'candidate') {
-            $candidate = $candidate ?? \App\Models\Candidate::findByUserId($user->id);
-
-            if (!$candidate) {
-                $nameFromEmail = $this->extractNameFromEmail($user->attributes['email'] ?? '');
-                $initialData = [];
-                if ($nameFromEmail) {
-                    $initialData['full_name'] = $nameFromEmail;
-                }
-                $candidate = \App\Models\Candidate::createForUser($user->id, $initialData);
-            } elseif (empty($candidate->attributes['full_name'])) {
-                $nameFromEmail = $this->extractNameFromEmail($user->attributes['email'] ?? '');
-                if ($nameFromEmail) {
-                    $candidate->fill(['full_name' => $nameFromEmail]);
-                    $candidate->save();
-                }
-            }
-
-            // Optional profile-strength updates (non-blocking, separate job preferred)
-            // if ($candidate) {
-            //     $candidate->updateProfileStrength();
-            // }
-
-            $hasData = false;
-            if ($candidate && isset($candidate->attributes)) {
-                $hasData = !empty($candidate->attributes['full_name']) ||
-                          !empty($candidate->attributes['mobile']) ||
-                          !empty($candidate->attributes['city']) ||
-                          !empty($candidate->attributes['dob']) ||
-                          !empty($candidate->attributes['gender']);
-            }
-
-            $redirect = $hasData ? '/candidate/dashboard' : '/candidate/profile/complete';
-        } elseif (!$redirect && $primaryRole === 'sales_manager') {
-            $redirect = '/sales-manager/dashboard';
-        } elseif (!$redirect && $primaryRole === 'sales_executive') {
-            $redirect = '/sales-executive/dashboard';
-        } elseif (!$redirect) {
-            $redirect = '/';
+        if (!$redirect || !$this->isValidRedirectUrl($redirect)) {
+            $redirect = $this->resolveRedirectForUser($user);
         }
-        
+
+        $acceptHeader = $request->header('Accept') ?? '';
+        $isJsonRequest = strpos($acceptHeader, 'application/json') !== false || $isJson;
+
         if ($isJsonRequest) {
             $response->json([
                 'success' => true,
                 'message' => 'Login successful',
+                'token' => $jwtToken,
                 'user' => $user->toArray(),
                 'redirect_to' => $redirect
             ]);
         } else {
             $response->redirect($redirect);
         }
+    }
+
+    /**
+     * Handle login failure with rate limiting and response formatting
+     */
+    private function handleLoginFailure(Request $request, Response $response, $redis, string $rateKey, int $attempts, string $message, int $statusCode): void
+    {
+        $contentType = $request->header('Content-Type') ?? '';
+        $isJson = strpos($contentType, 'application/json') !== false;
+        $acceptHeader = $request->header('Accept') ?? '';
+        $isJsonRequest = strpos($acceptHeader, 'application/json') !== false || $isJson;
+
+        if ($isJsonRequest) {
+            $response->json(['error' => $message], $statusCode);
+        } else {
+            $response->view('auth/login', [
+                'title' => 'Login',
+                'error' => $message,
+                'redirect' => $request->get('redirect')
+            ]);
+        }
+
+        try {
+            if ($redis && $redis->isAvailable()) {
+                $redis->set($rateKey, ['count' => $attempts + 1], 300);
+            }
+        } catch (\Throwable $t) {}
     }
 
     public function googleLogin(Request $request, Response $response): void
@@ -878,6 +1130,15 @@ class AuthController extends BaseController
             // Determine redirect URL
             $redirect = $_SESSION['oauth_redirect'] ?? null;
             unset($_SESSION['oauth_redirect']);
+            
+            // Validate redirect against user role
+            if ($redirect) {
+                if ($user->role === 'employer' && strpos($redirect, '/candidate/') === 0) {
+                    $redirect = '/employer/dashboard';
+                } elseif ($user->role === 'candidate' && strpos($redirect, '/employer/') === 0) {
+                    $redirect = '/candidate/dashboard';
+                }
+            }
             
             if (!$redirect) {
                 $redirect = $this->getDefaultRedirectUrl($user);
@@ -1078,6 +1339,15 @@ class AuthController extends BaseController
             $redirect = $_SESSION['oauth_redirect'] ?? null;
             unset($_SESSION['oauth_redirect']);
             
+            // Validate redirect against user role
+            if ($redirect) {
+                if ($user->role === 'employer' && strpos($redirect, '/candidate/') === 0) {
+                    $redirect = '/employer/dashboard';
+                } elseif ($user->role === 'candidate' && strpos($redirect, '/employer/') === 0) {
+                    $redirect = '/candidate/dashboard';
+                }
+            }
+            
             if (!$redirect) {
                 $redirect = $this->getDefaultRedirectUrl($user);
             }
@@ -1208,6 +1478,11 @@ class AuthController extends BaseController
                 $linkData['is_email_verified'] = 1;
             } elseif ($provider === 'apple' && strpos($userData['email'], '@privaterelay.appleid.com') === false) {
                 $linkData['is_email_verified'] = 1;
+            }
+            
+            // CRITICAL FIX: Ensure user has a role if missing
+            if (empty($user->role)) {
+                $linkData['role'] = 'candidate';
             }
             
             $user->fill($linkData);
@@ -1381,9 +1656,12 @@ class AuthController extends BaseController
 
     public function forgotPassword(Request $request, Response $response): void
     {
+        $authFlowService = new AuthFlowService();
         // Show forgot password form
         if ($request->getMethod() === 'GET') {
-            $response->view('auth/forgot-password', [
+            $isAdminPath = (strpos($request->getUri(), '/admin/') === 0);
+            $view = $isAdminPath ? 'admin/auth/forgot-password' : 'auth/forgot-password';
+            $response->view($view, [
                 'title' => 'Forgot Password'
             ]);
             return;
@@ -1398,12 +1676,8 @@ class AuthController extends BaseController
             return;
         }
 
-        $db = \App\Core\Database::getInstance();
-        $userRow = $db->fetchOne("SELECT * FROM users WHERE LOWER(email) = LOWER(:email) OR LOWER(google_email) = LOWER(:google_email) OR LOWER(apple_email) = LOWER(:apple_email) LIMIT 1", [
-            'email' => $email,
-            'google_email' => $email,
-            'apple_email' => $email
-        ]);
+        $authRepository = new AuthRepository();
+        $userRow = $authRepository->findUserByAnyEmail($email);
         $user = $userRow ? new User($userRow) : null;
         $userEmail = $email;
         
@@ -1411,24 +1685,17 @@ class AuthController extends BaseController
         if (!$user) {
             error_log("Forgot Password - User not found for email: {$email}");
         } else {
-            $userEmail = (string)($user->email ?: $user->google_email ?: $user->apple_email ?: $email);
+            $userEmail = $authFlowService->resolveDeliverableEmail($user, $email);
             error_log("Forgot Password - User found. ID: {$user->id}, Role: {$user->role}, Email in DB: {$userEmail}");
         }
 
         // Restrict password reset for assigned sales roles
         if ($user) {
             try {
-                $db = \App\Core\Database::getInstance();
-                $roles = $db->fetchAll(
-                    'SELECT r.slug FROM roles r INNER JOIN role_user ru ON ru.role_id = r.id WHERE ru.user_id = :uid',
-                    ['uid' => (int)$user->id]
-                );
-                $blocked = ['sales_manager','sales_executive'];
-                foreach ($roles as $r) {
-                    if (in_array((string)($r['slug'] ?? ''), $blocked, true)) {
-                        $response->json(['error' => 'Password reset is disabled for assigned sales roles'], 403);
-                        return;
-                    }
+                $roleSlugs = $authRepository->getRoleSlugsByUserId((int)$user->id);
+                if ($authFlowService->hasBlockedSalesRole($roleSlugs)) {
+                    $response->json(['error' => 'Password reset is disabled for assigned sales roles'], 403);
+                    return;
                 }
             } catch (\Throwable $t) {
                 // Fall through to normal flow on query failure
@@ -1468,25 +1735,9 @@ class AuthController extends BaseController
             }
             
             // Always store in database as reliable fallback
-            $db = \App\Core\Database::getInstance();
             try {
-                // Delete any existing tokens for this user
-                // Use UTC_TIMESTAMP() to match timezone
-                $db->query("DELETE FROM password_resets WHERE user_id = :user_id OR expires_at < UTC_TIMESTAMP()", [
-                    'user_id' => $user->id
-                ]);
-                
-                // Insert new token
                 error_log("Forgot Password - Storing token in database for user_id: {$user->id}, token: " . substr($token, 0, 20) . "...");
-                $db->query(
-                    "INSERT INTO password_resets (email, token, user_id, expires_at) VALUES (:email, :token, :user_id, :expires_at)",
-                    [
-                        'email' => $userEmail,
-                        'token' => $token,
-                        'user_id' => $user->id,
-                        'expires_at' => $expiresAt
-                    ]
-                );
+                $authRepository->upsertPasswordResetToken((int)$user->id, $userEmail, $token, $expiresAt);
                 $stored = true;
                 error_log("Forgot Password - Token stored successfully in database. Expires at: {$expiresAt}");
             } catch (\Exception $e) {
@@ -1501,11 +1752,7 @@ class AuthController extends BaseController
             }
 
             // Build absolute reset link and send email
-            $isAdminContext = str_starts_with($request->getPath(), '/admin/');
-            $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $path = ($isAdminContext ? '/admin/reset-password' : '/reset-password') . "?token={$token}";
-            $resetLink = $scheme . '://' . $host . $path;
+            $resetLink = $authFlowService->buildResetLink($request, $token);
 
             // Send password reset email
             $emailSent = \App\Services\MailService::sendPasswordReset($userEmail, $resetLink);
@@ -1522,9 +1769,7 @@ class AuthController extends BaseController
             'success' => true,
             'message' => 'If an account exists with that email, a password reset link has been sent.'
         ];
-        $env = getenv('APP_ENV') ?: '';
-        $hostName = $_SERVER['HTTP_HOST'] ?? '';
-        $isLocal = in_array(strtolower($env), ['local','development','dev'], true) || in_array($hostName, ['localhost','127.0.0.1'], true);
+        $isLocal = $authFlowService->shouldExposeResetLinkForLocal();
         if ($isLocal && $resetLink) {
             $responseData['reset_link'] = $resetLink;
         }
@@ -1534,12 +1779,16 @@ class AuthController extends BaseController
 
     public function resetPassword(Request $request, Response $response): void
     {
+        $authRepository = new AuthRepository();
+        $authFlowService = new AuthFlowService();
         $token = $request->get('token') ?? '';
         
         // Show reset password form
         if ($request->getMethod() === 'GET') {
             if (empty($token)) {
-                $response->view('auth/reset-password', [
+                $isAdminPath = (strpos($request->getUri(), '/admin/') === 0);
+                $view = $isAdminPath ? 'admin/auth/reset-password' : 'auth/reset-password';
+                $response->view($view, [
                     'title' => 'Reset Password',
                     'error' => 'Invalid or missing reset token',
                     'token' => ''
@@ -1561,29 +1810,17 @@ class AuthController extends BaseController
             
             // If not in Redis, check database
             if (!$tokenData) {
-                $db = \App\Core\Database::getInstance();
                 try {
                     error_log("Reset Password - Checking database for token...");
-                    // Use UTC_TIMESTAMP() to match timezone with stored expires_at
-                    $result = $db->fetchOne(
-                        "SELECT user_id, email, expires_at FROM password_resets WHERE token = :token AND expires_at > UTC_TIMESTAMP()",
-                        ['token' => $token]
-                    );
+                    $result = $authRepository->getValidPasswordResetTokenData($token);
                     
                     error_log("Reset Password - Database query result: " . ($result ? 'found' : 'not found'));
                     if ($result) {
                         error_log("Reset Password - Token data: user_id={$result['user_id']}, email={$result['email']}, expires_at={$result['expires_at']}");
-                        $tokenData = [
-                            'user_id' => $result['user_id'],
-                            'email' => $result['email'],
-                            'expires_at' => $result['expires_at']
-                        ];
+                        $tokenData = $authFlowService->normalizeTokenData($result);
                     } else {
                         // Check if token exists but expired
-                        $expiredCheck = $db->fetchOne(
-                            "SELECT token, expires_at FROM password_resets WHERE token = :token",
-                            ['token' => $token]
-                        );
+                        $expiredCheck = $authRepository->getPasswordResetTokenData($token);
                         if ($expiredCheck) {
                             $currentUtc = gmdate('Y-m-d H:i:s');
                             error_log("Reset Password - Token found but expired. Expires at: {$expiredCheck['expires_at']}, Current UTC time: {$currentUtc}");
@@ -1599,7 +1836,9 @@ class AuthController extends BaseController
 
             if (!$tokenData) {
                 error_log("Reset Password - Token validation failed. Token: " . substr($token, 0, 20) . "...");
-                $response->view('auth/reset-password', [
+                $isAdminPath = (strpos($request->getUri(), '/admin/') === 0);
+                $view = $isAdminPath ? 'admin/auth/reset-password' : 'auth/reset-password';
+                $response->view($view, [
                     'title' => 'Reset Password',
                     'error' => 'Invalid or expired reset token',
                     'token' => ''
@@ -1609,7 +1848,9 @@ class AuthController extends BaseController
             
             error_log("Reset Password - Token validated successfully for user_id: {$tokenData['user_id']}");
 
-            $response->view('auth/reset-password', [
+            $isAdminPath = (strpos($request->getUri(), '/admin/') === 0);
+            $view = $isAdminPath ? 'admin/auth/reset-password' : 'auth/reset-password';
+            $response->view($view, [
                 'title' => 'Reset Password',
                 'token' => $token,
                 'error' => ''
@@ -1648,19 +1889,11 @@ class AuthController extends BaseController
         
         // If not in Redis, check database
         if (!$tokenData) {
-            $db = \App\Core\Database::getInstance();
             try {
-                $result = $db->fetchOne(
-                    "SELECT user_id, email, expires_at FROM password_resets WHERE token = :token AND expires_at > UTC_TIMESTAMP()",
-                    ['token' => $token]
-                );
+                $result = $authRepository->getValidPasswordResetTokenData($token);
                 
                 if ($result) {
-                    $tokenData = [
-                        'user_id' => $result['user_id'],
-                        'email' => $result['email'],
-                        'expires_at' => $result['expires_at']
-                    ];
+                    $tokenData = $authFlowService->normalizeTokenData($result);
                 }
             } catch (\Exception $e) {
                 error_log("Error checking password reset token in database: " . $e->getMessage());
@@ -1689,9 +1922,8 @@ class AuthController extends BaseController
             }
             
             // Delete from database
-            $db = \App\Core\Database::getInstance();
             try {
-                $db->query("DELETE FROM password_resets WHERE token = :token", ['token' => $token]);
+                $authRepository->deletePasswordResetToken($token);
             } catch (\Exception $e) {
                 error_log("Error deleting password reset token: " . $e->getMessage());
             }
@@ -1734,6 +1966,7 @@ class AuthController extends BaseController
 
     public function processVerification(Request $request, Response $response): void
     {
+        $authRepository = new AuthRepository();
         $data = $request->all();
         
         // Basic validation
@@ -1801,11 +2034,7 @@ class AuthController extends BaseController
             
             // Also update candidate profile status if applicable
             if ($user->role === 'candidate') {
-                 $db = \App\Core\Database::getInstance();
-                 $db->query(
-                    "UPDATE candidates SET profile_status = :status WHERE user_id = :user_id",
-                    ['status' => 'active', 'user_id' => $user->id]
-                 );
+                 $authRepository->activateCandidateProfileByUserId((int)$user->id);
             }
 
             $response->redirect('/login?success=account_verified');
@@ -1821,19 +2050,75 @@ class AuthController extends BaseController
 
     public function sendPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $response->json([
+            'success' => false,
+            'error' => 'Mobile OTP login/registration is coming soon. Please use Email OTP.'
+        ], 503);
+    }
 
-        if ($phone === '') {
-            $response->json(['error' => 'Phone number is required'], 422);
+    public function sendEmailOtp(Request $request, Response $response): void
+    {
+        $data = $request->getJsonBody() ?? $request->all();
+        $email = trim((string)($data['email'] ?? ''));
+        $purpose = trim((string)($data['purpose'] ?? 'auth'));
+        $role = trim((string)($data['role'] ?? ''));
+
+        if ($email === '') {
+            $response->json(['error' => 'Email is required'], 422);
             return;
         }
 
-        $result = VerificationService::sendAuthPhoneOTP($phone, $purpose, [
-            'role' => $data['role'] ?? null,
-        ]);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $response->json(['error' => 'Please enter a valid email address'], 422);
+            return;
+        }
 
+        if (strtolower($purpose) === 'register_candidate') {
+            if ($this->findExistingRegistrationEmail($email)) {
+                $response->json(['error' => 'Email already registered'], 409);
+                return;
+            }
+
+            $phoneDigits = preg_replace('/\D+/', '', (string)($data['mobile'] ?? $data['phone'] ?? ''));
+            if ($phoneDigits !== '') {
+                $normalizedPhone = AuthService::normalizePhoneNumber($phoneDigits);
+                if (!preg_match('/^[0-9]{10}$/', (string)$phoneDigits) || $normalizedPhone === '') {
+                    $response->json(['error' => 'Mobile Number must be exactly 10 digits'], 422);
+                    return;
+                }
+                if ($this->findExistingRegistrationPhone($normalizedPhone)) {
+                    $response->json(['error' => 'Mobile number already registered'], 409);
+                    return;
+                }
+            }
+        } elseif (strtolower($purpose) === 'register_employer') {
+            if ($this->findExistingRegistrationEmail($email)) {
+                $response->json(['error' => 'यह Email पहले से रजिस्टर्ड है / Email already registered'], 409);
+                return;
+            }
+            if (array_key_exists('gstin', $data) || array_key_exists('no_gst', $data)) {
+                $providerError = $this->providerIdentityError($email, (string)($data['phone'] ?? $data['mobile'] ?? ''), strtoupper(trim((string)($data['gstin'] ?? ''))), $data['no_gst'] ?? null);
+                if ($providerError !== null) {
+                    $response->json(['error' => $providerError], 409);
+                    return;
+                }
+            }
+
+            $phoneDigits = preg_replace('/\D+/', '', (string)($data['phone'] ?? $data['mobile'] ?? ''));
+            if ($phoneDigits !== '') {
+                $normalizedPhone = AuthService::normalizePhoneNumber($phoneDigits);
+                if (!preg_match('/^[0-9]{10}$/', (string)$phoneDigits) || $normalizedPhone === '') {
+                    $response->json(['error' => 'Mobile Number must be exactly 10 digits'], 422);
+                    return;
+                }
+                if ($this->findExistingRegistrationPhone($normalizedPhone)) {
+                    $response->json(['error' => 'Mobile number already registered'], 409);
+                    return;
+                }
+            }
+        }
+
+        $result = VerificationService::sendEmailAuthOTP($email, $purpose, ['role' => $role]);
         if (empty($result['success'])) {
             $response->json(['error' => $result['error'] ?? 'Failed to send OTP'], 500);
             return;
@@ -1841,138 +2126,35 @@ class AuthController extends BaseController
 
         $payload = [
             'success' => true,
-            'message' => 'OTP sent successfully',
-            'phone' => $result['phone'],
-            'purpose' => $result['purpose'],
-            'mode' => $result['mode'] ?? 'sms',
+            'message' => 'OTP sent to your email',
+            'email' => $result['email'] ?? $email,
+            'purpose' => $result['purpose'] ?? $purpose,
         ];
-
-        if (!empty($result['otp_preview'])) {
-            $payload['otp_preview'] = $result['otp_preview'];
-        }
-
         $response->json($payload);
     }
 
     public function loginWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $phone = trim((string)($data['phone'] ?? ''));
-        $otp = trim((string)($data['otp'] ?? ''));
-        $purpose = trim((string)($data['purpose'] ?? 'auth'));
-
-        if ($phone === '' || $otp === '') {
-            $response->json(['error' => 'phone and otp are required'], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP($phone, $otp, $purpose);
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $user = $authService->loginByPhone($phone);
-        if (!$user) {
-            $response->json(['error' => 'Account not found for this phone number'], 404);
-            return;
-        }
-
-        $this->signInUser($user);
         $response->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'redirect' => $this->resolveRedirectForUser($user),
-            'user' => [
-                'id' => (int)$user->id,
-                'email' => $user->email,
-                'role' => $user->role,
-                'phone' => $user->phone,
-            ],
-        ]);
+            'success' => false,
+            'error' => 'Mobile OTP login is coming soon. Please use Email OTP login.'
+        ], 503);
     }
 
     public function registerCandidateWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $errors = $this->validate($data, [
-            'phone' => 'required',
-            'otp' => 'required',
-            'full_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
-        ]);
-
-        if (!empty($errors)) {
-            $response->json(['errors' => $errors], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $result = $authService->registerCandidateWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
-            return;
-        }
-
-        $user = $result['user'];
-        $this->signInUser($user);
-
         $response->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'redirect' => '/candidate/profile/complete',
-            'user_id' => (int)$user->id,
-            'additional_mobile' => $result['additional_mobile'] ?? null,
-        ], 201);
+            'success' => false,
+            'error' => 'Mobile OTP candidate registration is coming soon. Please use Email OTP registration.'
+        ], 503);
     }
 
     public function registerEmployerWithPhoneOtp(Request $request, Response $response): void
     {
-        $data = $request->getJsonBody() ?? $request->all();
-        $errors = $this->validate($data, [
-            'phone' => 'required',
-            'otp' => 'required',
-            'company_name' => 'required',
-            'email' => 'sometimes|email',
-            'password' => 'sometimes|min:8',
-        ]);
-
-        if (!empty($errors)) {
-            $response->json(['errors' => $errors], 422);
-            return;
-        }
-
-        $verification = VerificationService::verifyAuthPhoneOTP((string)$data['phone'], (string)$data['otp'], (string)($data['purpose'] ?? 'auth'));
-        if (empty($verification['success'])) {
-            $response->json(['error' => $verification['error'] ?? 'Invalid OTP'], 400);
-            return;
-        }
-
-        $authService = new AuthService();
-        $result = $authService->registerEmployerWithPhone($data);
-        if (empty($result['success']) || empty($result['user'])) {
-            $response->json(['error' => $result['error'] ?? 'Registration failed'], 400);
-            return;
-        }
-
-        $user = $result['user'];
-        $this->signInUser($user);
-
         $response->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'redirect' => $this->resolveRedirectForUser($user),
-            'user_id' => (int)$user->id,
-            'additional_mobile' => $result['additional_mobile'] ?? null,
-        ], 201);
+            'success' => false,
+            'error' => 'Mobile OTP employer registration is coming soon. Please use Email OTP registration.'
+        ], 503);
     }
 
     private function signInUser(User $user): void
@@ -2011,6 +2193,11 @@ class AuthController extends BaseController
             }
             if ($candidate && isset($candidate->attributes['id'])) {
                 $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
+            }
+        } elseif ($user->role === 'employer' || $user->role === 'social_employer') {
+            $employer = \App\Models\Employer::findByUserId((int)$user->id);
+            if ($employer && isset($employer->id)) {
+                $_SESSION['employer_id'] = (int)$employer->id;
             }
         }
 

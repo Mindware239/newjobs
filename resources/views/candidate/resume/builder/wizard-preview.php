@@ -3,11 +3,14 @@
 $headerSection = $sectionsData['header'] ?? null;
 $headerContent = $headerSection['section_data']['content'] ?? [];
 $colors = $template ? ($template->getSchema()['colors'] ?? []) : [];
-$primaryColor = $colors['primary'] ?? '#2563eb';
+$primaryColor = $colors['#f05537'] ?? '#f05537';
 // Theme override (from 'theme' section)
 $themeSection = $sectionsData['theme'] ?? null;
 if ($themeSection && !empty($themeSection['section_data']['content']['primary_color'])) {
     $primaryColor = $themeSection['section_data']['content']['primary_color'];
+} elseif ($themeSection && !empty($themeSection['section_data']['content']['#f05537_color'])) {
+    // Backward compatibility for previously stored invalid key
+    $primaryColor = $themeSection['section_data']['content']['#f05537_color'];
 }
 
 // Get full name or split
@@ -202,3 +205,14 @@ $location = $headerContent['location'] ?? ($headerContent['city'] ?? '') . ', ' 
     </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+

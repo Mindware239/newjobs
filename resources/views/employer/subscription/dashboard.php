@@ -4,7 +4,7 @@ $title = 'Subscription Dashboard';
 function render_usage_bar($used, $limit, $label) {
     $percentage = ($limit > 0) ? ($used / $limit) * 100 : 0;
     $percentage = min(100, $percentage);
-    $bar_color = $percentage > 90 ? 'bg-red-500' : ($percentage > 70 ? 'bg-yellow-500' : 'bg-indigo-600');
+    $bar_color = $percentage > 90 ? 'bg-red-500' : ($percentage > 70 ? 'bg-yellow-500' : 'bg-primary');
 
     echo '<div class="mb-4">';
     echo '    <div class="flex justify-between items-center mb-1">';
@@ -20,7 +20,7 @@ function render_usage_bar($used, $limit, $label) {
 $status = $subscription['status'] ?? 'inactive';
 $status_color = match($status) {
     'active' => 'bg-green-100 text-green-800',
-    'trial' => 'bg-blue-100 text-blue-800',
+    'trial' => 'bg-primary-50 text-primary-900',
     'pending' => 'bg-yellow-100 text-yellow-800',
     'cancelled' => 'bg-gray-100 text-gray-800',
     default => 'bg-red-100 text-red-800',
@@ -37,7 +37,7 @@ $status_color = match($status) {
             <p class="mt-1 text-sm text-gray-500">Manage your plan, track usage, and view billing history.</p>
         </div>
         <div class="mt-4 flex md:mt-0 md:ml-4">
-            <a href="/employer/subscription/plans" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+            <a href="/employer/subscription/plans" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600">
                 Change Plan
             </a>
         </div>
@@ -103,15 +103,21 @@ $status_color = match($status) {
                 <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
                     <ul class="divide-y divide-gray-200">
                         <?php 
-                        $features = [];
+                        $featuresList = [];
                         if (!empty($plan['features']) && is_string($plan['features'])) {
                             $decoded = json_decode($plan['features'], true);
                             if (is_array($decoded)) {
-                                $features = $decoded;
+                                foreach ($decoded as $item) {
+                                    if (is_string($item)) {
+                                        $featuresList[] = $item;
+                                    } elseif (is_array($item) && ($item['is_enabled'] ?? 1)) {
+                                        $featuresList[] = (string)($item['feature_text'] ?? '');
+                                    }
+                                }
                             }
                         }
                         ?>
-                        <?php foreach ($features as $feature): ?>
+                        <?php foreach ($featuresList as $feature): ?>
                         <li class="py-3 px-6 flex items-center">
                             <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             <span class="ml-3 text-sm text-gray-700"><?= htmlspecialchars($feature) ?></span>
@@ -150,7 +156,7 @@ $status_color = match($status) {
                         <?php endif; ?>
                     </ul>
                     <div class="text-center py-3 px-6 border-t border-gray-200">
-                        <a href="/employer/billing/invoices" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">View all invoices &rarr;</a>
+                        <a href="/employer/billing/invoices" class="text-sm font-medium text-primary hover:text-primary">View all invoices &rarr;</a>
                     </div>
                 </div>
             </div>
@@ -161,10 +167,21 @@ $status_color = match($status) {
             <h3 class="text-lg font-medium text-gray-900">No Active Subscription</h3>
             <p class="mt-1 text-sm text-gray-500">You do not have an active subscription. Please choose a plan to continue.</p>
             <div class="mt-6">
-                <a href="/employer/subscription/plans" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                <a href="/employer/subscription/plans" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-600">
                     View Plans
                 </a>
             </div>
         </div>
     <?php endif; ?>
 </div>
+
+
+
+
+
+
+
+
+
+
+

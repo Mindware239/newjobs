@@ -16,7 +16,7 @@ class GeoController extends BaseController
             'http' => [
                 'method' => 'GET',
                 'header' => implode("\r\n", [
-                    'User-Agent: MindwareInfotech/1.0 (Job Portal)',
+                    'User-Agent: Jobsence/1.0 (Job Portal)',
                     'Accept: application/json',
                     'Accept-Language: en'
                 ]),

@@ -9,7 +9,7 @@
 <?php if (!$blog): ?>
   <div class="max-w-4xl mx-auto px-4 py-12">
     <h1 class="text-2xl font-bold mb-4">Post not found</h1>
-    <a class="text-blue-600 hover:underline" href="/blog">Back to Blog</a>
+    <a class="text-primary hover:underline" href="/blog">Back to Blog</a>
   </div>
   <?php return; ?>
 <?php endif; ?>
@@ -26,15 +26,15 @@
       <?php $shareUrl = htmlspecialchars($meta['canonical'] ?? ('/blog/' . ($blog['slug'] ?? ''))); ?>
       <?php $shareText = htmlspecialchars($blog['title'] ?? ''); ?>
       <a class="px-3 py-2 border rounded inline-flex items-center gap-2 hover:bg-gray-50" href="https://twitter.com/intent/tweet?text=<?= $shareText ?>&url=<?= $shareUrl ?>" target="_blank">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M19.633 7.997c.013.17.013.34.013.51 0 5.206-3.963 11.203-11.203 11.203-2.224 0-4.292-.652-6.033-1.78.31.036.607.049.93.049 1.844 0 3.54-.627 4.887-1.69a3.95 3.95 0 01-3.686-2.736c.24.036.481.062.735.062.353 0 .706-.049 1.036-.135a3.944 3.944 0 01-3.162-3.868v-.049c.53.296 1.139.472 1.79.496a3.936 3.936 0 01-1.758-3.28c0-.735.196-1.406.545-1.992a11.197 11.197 0 008.129 4.127 4.445 4.445 0 01-.098-.903 3.942 3.942 0 013.944-3.944c1.134 0 2.157.481 2.872 1.253a7.77 7.77 0 002.504-.954 3.978 3.978 0 01-1.734 2.177 7.881 7.881 0 002.268-.607 8.479 8.479 0 01-1.972 2.04z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M19.633 7.997c.013.17.013.34.013.51 0 5.206-3.963 11.203-11.203 11.203-2.224 0-4.292-.652-6.033-1.78.31.036.607.049.93.049 1.844 0 3.54-.627 4.887-1.69a3.95 3.95 0 01-3.686-2.736c.24.036.481.062.735.062.353 0 .706-.049 1.036-.135a3.944 3.944 0 01-3.162-3.868v-.049c.53.296 1.139.472 1.79.496a3.936 3.936 0 01-1.758-3.28c0-.735.196-1.406.545-1.992a11.197 11.197 0 008.129 4.127 4.445 4.445 0 01-.098-.903 3.942 3.942 0 013.944-3.944c1.134 0 2.157.481 2.872 1.253a7.77 7.77 0 002.504-.954 3.978 3.978 0 01-1.734 2.177 7.881 7.881 0 002.268-.607 8.479 8.479 0 01-1.972 2.04z"/></svg>
         Twitter
       </a>
       <a class="px-3 py-2 border rounded inline-flex items-center gap-2 hover:bg-gray-50" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= $shareUrl ?>" target="_blank">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-700" viewBox="0 0 24 24" fill="currentColor"><path d="M4.983 3.5C3.88 3.5 3 4.38 3 5.483c0 1.102.88 1.982 1.983 1.982 1.102 0 1.982-.88 1.982-1.982C6.965 4.38 6.085 3.5 4.983 3.5zM3.25 8.25h3.466V20.5H3.25V8.25zM9.6 8.25h3.322v1.666h.047c.463-.878 1.594-1.802 3.283-1.802 3.51 0 4.156 2.311 4.156 5.317V20.5h-3.466v-5.494c0-1.31-.023-2.996-1.827-2.996-1.829 0-2.109 1.432-2.109 2.907V20.5H9.6V8.25z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-600" viewBox="0 0 24 24" fill="currentColor"><path d="M4.983 3.5C3.88 3.5 3 4.38 3 5.483c0 1.102.88 1.982 1.983 1.982 1.102 0 1.982-.88 1.982-1.982C6.965 4.38 6.085 3.5 4.983 3.5zM3.25 8.25h3.466V20.5H3.25V8.25zM9.6 8.25h3.322v1.666h.047c.463-.878 1.594-1.802 3.283-1.802 3.51 0 4.156 2.311 4.156 5.317V20.5h-3.466v-5.494c0-1.31-.023-2.996-1.827-2.996-1.829 0-2.109 1.432-2.109 2.907V20.5H9.6V8.25z"/></svg>
         LinkedIn
       </a>
       <a class="px-3 py-2 border rounded inline-flex items-center gap-2 hover:bg-gray-50" href="https://www.facebook.com/sharer/sharer.php?u=<?= $shareUrl ?>" target="_blank">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.07C22 6.55 17.52 2 12 2S2 6.55 2 12.07c0 5.02 3.66 9.19 8.44 9.93v-7.02H7.9v-2.91h2.54V9.41c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34v7.02C18.34 21.26 22 17.09 22 12.07z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.07C22 6.55 17.52 2 12 2S2 6.55 2 12.07c0 5.02 3.66 9.19 8.44 9.93v-7.02H7.9v-2.91h2.54V9.41c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34v7.02C18.34 21.26 22 17.09 22 12.07z"/></svg>
         Facebook
       </a>
       <a class="px-3 py-2 border rounded inline-flex items-center gap-2 hover:bg-gray-50" href="https://wa.me/?text=<?= $shareText ?>%20<?= $shareUrl ?>" target="_blank">
@@ -57,8 +57,8 @@
       .blog-content table{width:100%;border-collapse:collapse;margin:1rem 0}
       .blog-content th,.blog-content td{border:1px solid #e5e7eb;padding:.6rem .9rem}
       .blog-content tr:nth-child(odd){background:#fafafa}
-      .blog-content a{color:#2563eb;text-decoration:none;border-bottom:1px solid #bfdbfe}
-      .blog-content a:hover{color:#1d4ed8;border-bottom-color:#93c5fd}
+      .blog-content a{color:#f05537;text-decoration:none;border-bottom:1px solid #fff1ed}
+      .blog-content a:hover{color:#FF6A3D;border-bottom-color:#93c5fd}
       .blog-content hr{border:0;border-top:1px solid #e5e7eb;margin:1.5rem 0}
       .blog-content img{max-width:100%;height:auto;border-radius:.5rem;margin:1rem 0}
       .blog-content code{background:#f3f4f6;border:1px solid #e5e7eb;padding:.15rem .35rem;border-radius:.3rem}
@@ -110,7 +110,7 @@
           <ul class="space-y-2 text-sm">
             <?php foreach ($toc as $item): ?>
               <li>
-                <a class="text-blue-600 hover:underline" href="#<?= htmlspecialchars($item['id'] ?? '') ?>">
+                <a class="text-primary hover:underline" href="#<?= htmlspecialchars($item['id'] ?? '') ?>">
                   <?= htmlspecialchars($item['text'] ?? '') ?>
                 </a>
               </li>
@@ -123,7 +123,7 @@
         <ul class="space-y-2">
           <?php foreach ($categories as $c): ?>
             <li>
-              <a class="text-blue-600 hover:underline" href="/blog/category/<?= htmlspecialchars($c['slug'] ?? '') ?>">
+              <a class="text-primary hover:underline" href="/blog/category/<?= htmlspecialchars($c['slug'] ?? '') ?>">
                 <?= htmlspecialchars($c['name'] ?? '') ?>
               </a>
             </li>
@@ -134,7 +134,7 @@
         <h3 class="font-semibold mb-2">Search</h3>
         <form action="/blog" method="GET" class="flex gap-2">
           <input type="text" name="search" placeholder="Search articles..." class="flex-1 px-3 py-2 border rounded">
-          <button type="submit" class="px-3 py-2 bg-blue-600 text-white rounded">Search</button>
+          <button type="submit" class="px-3 py-2 bg-primary text-white rounded">Search</button>
         </form>
       </div>
       <?php if (!empty($latestArticles)): ?>
@@ -150,7 +150,7 @@
                   <div class="w-14 h-14 rounded bg-gray-200"></div>
                 <?php endif; ?>
                 <div>
-                  <div class="text-sm font-medium group-hover:text-blue-600"><?= htmlspecialchars($lp['title'] ?? '') ?></div>
+                  <div class="text-sm font-medium group-hover:text-primary"><?= htmlspecialchars($lp['title'] ?? '') ?></div>
                   <div class="text-xs text-gray-500"><?= htmlspecialchars($lp['published_at'] ?? '') ?></div>
                 </div>
               </a>
@@ -162,3 +162,14 @@
     </div>
   </aside>
   </div>
+
+
+
+
+
+
+
+
+
+
+
