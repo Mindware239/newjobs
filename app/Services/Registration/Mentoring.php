@@ -27,7 +27,7 @@ class Mentoring
 {
     public const DAILY_LIMIT = 3;
     public const TOTAL_LIMIT = ['mentorplan' => null, 'internplan' => 20, 'jobplan' => null];
-    public const AGREEMENT_VERSION = '2026-10-v3';
+    public const AGREEMENT_VERSION = '2026-10-v4';
     public const OTP_PURPOSE = 'mentoring_agreement';
     public const RESPONSE_DAYS = 7;
 
@@ -886,8 +886,10 @@ class Mentoring
             'job' => $version === '2026-10-v2'
                 ? ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी।',
                     '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing.']
-                : ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी। विदेश की नौकरी के लिए: ' . FormRegistry::abroadDisclaimer()[0],
-                    '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing. For jobs abroad: ' . FormRegistry::abroadDisclaimer()[1]],
+                : ['19. नौकरी – प्रदाता पुष्टि करता है कि नौकरी असली और क़ानूनी है, वेतन लागू न्यूनतम वेतन से कम नहीं है, और नियुक्ति पत्र / शर्तें लिखित में दी जाएँगी। विदेश की नौकरी के लिए: ' . FormRegistry::abroadDisclaimer()[0]
+                        . ($version === '2026-10-v3' ? '' : ' वीज़ा: ' . FormRegistry::visaDisclaimer()[0]),
+                    '19. Job – The Provider confirms the vacancy is genuine and lawful, the pay is not below the applicable minimum wage, and the appointment letter / terms will be given in writing. For jobs abroad: ' . FormRegistry::abroadDisclaimer()[1]
+                        . ($version === '2026-10-v3' ? '' : ' Visa: ' . FormRegistry::visaDisclaimer()[1])],
             default => ['19. सेवा – काम का दायरा, क़ीमत, सामान और समय काम शुरू होने से पहले तय होंगे; ग्राहक भुगतान सीधे प्रदाता को करेगा; काम की गुणवत्ता और सुरक्षा प्रदाता की ज़िम्मेदारी है। Jobsence इस सेवा अनुबंध का पक्ष नहीं है।',
                 '19. Service – Scope, price, materials and timing are agreed before work starts; the Customer pays the Provider directly; workmanship and safety are the Provider’s responsibility. Jobsence is not a party to the service contract itself.'],
         };

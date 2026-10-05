@@ -34,6 +34,19 @@ class LocationPagesController extends BaseController
             'hi' => 'पास की सेवाएँ (प्लंबर, इलेक्ट्रीशियन…)', 'en' => 'Services Near Me (Plumber, Electrician…)'],
     ];
 
+    /** Countries Jobsence does not serve (no pages, no sitemap entries, old links redirect). */
+    public const BLOCKED = ['pakistan'];
+
+    public static function isBlocked(string $slug): bool
+    {
+        foreach (self::BLOCKED as $b) {
+            if ($slug === $b || str_starts_with($slug, $b . '-') || str_ends_with($slug, '-' . $b)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Kinds that list providers (no abroad pages: providers are India-only). */
     public static function isProviderKind(string $kind): bool
     {

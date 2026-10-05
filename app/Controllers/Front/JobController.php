@@ -35,6 +35,10 @@ class JobController
     public function jobsByLocation(Request $request, Response $response, array $params): void
     {
         $slug = $params['location'] ?? '';
+        if (LocationPagesController::isBlocked(strtolower((string)$slug))) {
+            $response->redirect('/jobs');
+            return;
+        }
         $page = max(1, (int)$request->get('page', 1));
         
         $data = $this->jobService->getJobsByLocation($slug, $page);
@@ -52,6 +56,10 @@ class JobController
     {
         $roleSlug = $params['role'] ?? '';
         $locationSlug = $params['location'] ?? '';
+        if (LocationPagesController::isBlocked(strtolower((string)$locationSlug))) {
+            $response->redirect('/jobs');
+            return;
+        }
         $page = max(1, (int)$request->get('page', 1));
 
         $data = $this->jobService->getJobsByRoleAndLocation($roleSlug, $locationSlug, $page);

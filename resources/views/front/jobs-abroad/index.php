@@ -89,6 +89,7 @@ $applyUrl = static fn(string $country, string $role = '') => '/apply/internation
             <?php endif; ?>
 
             <div class="ja-note" style="border-color:#fecaca;background:#fef2f2;color:#7f1d1d;font-weight:600">⚠️ <?= $tp(FormRegistry::abroadDisclaimer()) ?></div>
+            <div class="ja-note" style="border-color:#fecaca;background:#fef2f2;color:#7f1d1d;font-weight:600">🛂 <?= $tp(FormRegistry::visaDisclaimer()) ?></div>
             <div class="ja-note">
                 <?= $t('Jobsence एक प्लेटफ़ॉर्म है, रिक्रूटिंग एजेंट नहीं। ECR पासपोर्ट वाले केवल eMigrate (emigrate.gov.in) पर पंजीकृत एजेंट के माध्यम से विदेश जाएँ। नौकरी या वीज़ा के लिए किसी को पैसे न दें।', 'Jobsence is a platform, not a recruiting agent. ECR passport holders must emigrate only through agents registered on eMigrate (emigrate.gov.in). Never pay anyone for a job or visa.') ?>
                 <?= $tp(FormRegistry::platformDisclaimer()) ?>

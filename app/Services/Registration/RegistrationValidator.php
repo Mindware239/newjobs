@@ -22,7 +22,7 @@ class RegistrationValidator
         $details = [];
         $errors = [];
 
-        // International forms (jobs abroad, hiring companies): residents of Nepal, Sri Lanka, Pakistan,
+        // International forms (jobs abroad, hiring companies): residents of Nepal, Sri Lanka,
         // Afghanistan, Bangladesh, China and Thailand give a mobile with country code, their country
         // instead of an Indian state, and their local postal code.
         $residence = 'India';

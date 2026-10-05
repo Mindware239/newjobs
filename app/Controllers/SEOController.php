@@ -113,7 +113,7 @@ class SEOController
                 WHERE j.status = 'published'
             ");
             foreach ($countries as $country) {
-                if (empty($country['slug'])) continue;
+                if (empty($country['slug']) || \App\Controllers\Front\LocationPagesController::isBlocked((string)$country['slug'])) continue;
                 $url = $this->baseUrl . '/jobs-in-' . $country['slug'];
                 $xml .= $this->urlElement($url, '0.9', 'daily');
             }
