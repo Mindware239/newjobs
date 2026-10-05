@@ -22,6 +22,15 @@ class RegistrationValidator
         $details = [];
         $errors = [];
 
+        // International forms (jobs abroad, hiring companies): residents of Nepal, Sri Lanka, Pakistan,
+        // Afghanistan, Bangladesh, China and Thailand give a mobile with country code, their country
+        // instead of an Indian state, and their local postal code.
+        $residence = 'India';
+        if (!empty($form['international']) && is_string($in['residence_country'] ?? null) && isset(FormRegistry::OPEN_COUNTRIES[$in['residence_country']])) {
+            $residence = $in['residence_country'];
+        }
+        $foreign = $residence !== 'India';
+
         foreach (FormRegistry::fields($form) as $key => $f) {
             $required = (bool)$f['required'];
             $raw = $in[$key] ?? null;
@@ -47,7 +56,7 @@ class RegistrationValidator
 
                 case 'mobile':
                     $s = trim((string)$raw);
-                    $value = $s === '' ? '' : (self::mobile($s) ?? '');
+                    $value = $s === '' ? '' : (($foreign ? self::intlMobile($s, $residence) : self::mobile($s)) ?? '');
                     if ($s !== '' && $value === '') {
                         $errors[$key] = ['सही 10 अंकों का मोबाइल नंबर भरें', 'Enter a valid 10-digit mobile number'];
                     } elseif ($required && $value === '') {
@@ -118,6 +127,14 @@ class RegistrationValidator
                     break;
 
                 case 'pincode':
+                    if ($foreign) {
+                        $pc = preg_replace('/\D/', '', (string)$raw);
+                        $value = null;
+                        if ($pc !== '' && preg_match('/^\d{3,6}$/', $pc)) {
+                            $details['postal_code'] = $pc; // foreign postal codes are not Indian PINs
+                        }
+                        break;
+                    }
                     $value = preg_replace('/\D/', '', (string)$raw);
                     if (!preg_match('/^[1-9]\d{5}$/', $value)) {
                         $errors[$key] = ['सही 6 अंकों का पिन कोड भरें', 'Enter a valid 6-digit PIN code'];
@@ -126,6 +143,10 @@ class RegistrationValidator
 
                 case 'state':
                     $value = (string)$raw;
+                    if ($foreign) {
+                        $value = self::clean($raw, 80) ?: $residence;
+                        break;
+                    }
                     if (!in_array($value, array_column(SkillDevelopmentController::STATES, 0), true)) {
                         $errors[$key] = ['राज्य चुनें', 'Select State / UT'];
                     }
@@ -373,6 +394,23 @@ class RegistrationValidator
             $s = preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last3;
         }
         return ($n < 0 ? '-' : '') . $s;
+    }
+
+    /** Mobile of a resident of $country (open countries): "+977…" (country code + 6–12 digits). */
+    public static function intlMobile(string $raw, string $country): ?string
+    {
+        $code = FormRegistry::OPEN_COUNTRIES[$country] ?? null;
+        if ($code === null) {
+            return null;
+        }
+        $d = preg_replace('/\D/', '', $raw);
+        if (str_starts_with($d, '00' . $code)) {
+            $d = substr($d, 2 + strlen($code));
+        } elseif (str_starts_with($d, $code) && strlen($d) > strlen($code) + 6) {
+            $d = substr($d, strlen($code));
+        }
+        $d = ltrim($d, '0');
+        return preg_match('/^\d{6,12}$/', $d) ? '+' . $code . $d : null;
     }
 
     public static function mobile(string $raw): ?string

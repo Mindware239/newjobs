@@ -223,7 +223,8 @@ class ApplyController extends BaseController
             \App\Services\Registration\Mentoring::identify((string)$reg['token']);
             $country = (string)($_SESSION['intl_unlock_country'] ?? trim(explode(',', (string)($details['preferred_countries'] ?? ''))[0] ?? ''));
             unset($_SESSION['intl_unlock_country']);
-            $unlock = $country !== '' ? \App\Services\Registration\Mentoring::unlockCountry($reg, $country, 'INR') : ['ok' => false];
+            $currency = ($reg['details']['residence_country'] ?? 'India') === 'India' ? 'INR' : 'USD';
+            $unlock = $country !== '' ? \App\Services\Registration\Mentoring::unlockCountry($reg, $country, $currency) : ['ok' => false];
             $response->redirect($unlock['ok'] ? '/apply/pay/' . $unlock['reg']['token'] : '/apply/status/' . $reg['token']);
             return;
         }

@@ -36,7 +36,9 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                 <p style="margin:0 0 10px;font-weight:800;color:#f05537">भारत को कुशल बनाने की Jobsence पहल</p>
                 <h1><span aria-hidden="true"><?= $form['icon'] ?></span> <?= $tb($form['title'][0], $form['title'][1]) ?></h1>
                 <p class="sd-lead" style="margin-bottom:6px"><?= $t($form['intro'][0], $form['intro'][1]) ?></p>
-                <p style="margin:0;font-weight:800"><?= $t("एकमुश्त प्रोसेसिंग शुल्क: ₹{$feeLabel} (GST सहित, वापसी योग्य नहीं)", "One-time processing fee: ₹{$feeLabel} (including GST, non-refundable)") ?></p>
+                <p style="margin:0;font-weight:800"><?= \App\Services\Registration\FormRegistry::feeOf($form) <= 0
+                    ? $t('रजिस्ट्रेशन मुफ़्त है', 'Registration is free')
+                    : $t("एकमुश्त प्रोसेसिंग शुल्क: ₹{$feeLabel} (GST सहित, किसी भी स्थिति में वापसी योग्य नहीं)", "One-time processing fee: ₹{$feeLabel} (including GST, non-refundable in any condition)") ?></p>
                 <p style="margin:4px 0 0;font-size:.9rem;color:#4b5563">(<?= $t('यह भारत सरकार की योजना नहीं है', 'This is NOT a Government of India scheme') ?>)</p>
             </div>
 
@@ -105,7 +107,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                 case 'mobile': ?>
                                     <div class="<?= $cls($k, $full) ?>">
                                         <?= $label($f, $id) ?>
-                                        <input type="tel" id="<?= $id ?>" name="<?= $k ?>" value="<?= $val($k) ?>" inputmode="numeric" maxlength="14" pattern="[0-9+\s\-]{10,14}" <?= $required ?> <?= $k === 'mobile' ? 'autocomplete="tel"' : '' ?> <?= $isProvider && $k === 'mobile' ? 'data-unique="mobile"' : '' ?>>
+                                        <input type="tel" id="<?= $id ?>" name="<?= $k ?>" value="<?= $val($k) ?>" inputmode="tel" maxlength="<?= !empty($form['international']) ? 18 : 14 ?>" pattern="<?= !empty($form['international']) ? '[0-9+\s\-]{7,18}' : '[0-9+\s\-]{10,14}' ?>" <?= $required ?> <?= $k === 'mobile' ? 'autocomplete="tel"' : '' ?> <?= $isProvider && $k === 'mobile' ? 'data-unique="mobile"' : '' ?>>
                                         <div class="sd-err" data-unique-msg="<?= $k ?>"></div>
                                         <?= $err($k) ?>
                                     </div>
@@ -159,9 +161,17 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                         <?= $label($f, $id) ?>
                                         <select id="<?= $id ?>" name="state" required>
                                             <option value="">— चुनें / Select —</option>
+                                            <?php if (!empty($form['international'])): ?><optgroup label="भारत / India"><?php endif; ?>
                                             <?php foreach ($states as $names): ?>
                                                 <option value="<?= $h($names[0]) ?>" <?= ($old['state'] ?? '') === $names[0] ? 'selected' : '' ?>><?= $h($names[1]) ?> / <?= $h($names[0]) ?></option>
                                             <?php endforeach; ?>
+                                            <?php if (!empty($form['international'])): ?></optgroup>
+                                                <optgroup label="भारत के बाहर / Outside India">
+                                                    <?php foreach (array_slice(array_keys(\App\Services\Registration\FormRegistry::OPEN_COUNTRIES), 1) as $oc): ?>
+                                                        <option value="<?= $h($oc) ?>" <?= ($old['state'] ?? '') === $oc ? 'selected' : '' ?>><?= $h($oc) ?></option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php endif; ?>
                                         </select>
                                         <?= $err('state') ?>
                                     </div>
@@ -381,6 +391,23 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
             }, function () { status.textContent = 'Location permission denied – please type your address below'; }, { enableHighAccuracy: true, timeout: 15000 });
         });
     });
+
+<?php if (!empty($form['international'])): ?>
+    // ---- country of residence: outside India → country code mobile, country instead of state, local postal code ----
+    (function () {
+        var res = form.querySelector('[name="residence_country"]'), codes = <?= json_encode(\App\Services\Registration\FormRegistry::OPEN_COUNTRIES) ?>;
+        if (!res) return;
+        var st = form.querySelector('select[name="state"]'), pin = form.querySelector('[name="pincode"]'), mob = form.querySelector('[name="mobile"]');
+        function apply() {
+            var c = res.value || 'India', foreign = c !== 'India';
+            if (pin) { pin.required = !foreign; pin.pattern = foreign ? '[0-9]{3,6}' : '[1-9][0-9]{5}'; pin.placeholder = foreign ? 'Postal code (optional)' : ''; }
+            if (st && foreign) { st.value = c; }
+            if (st && !foreign && Object.prototype.hasOwnProperty.call(codes, st.value) && st.value !== 'India') { st.value = ''; }
+            if (mob) { mob.placeholder = foreign ? ('+' + codes[c] + ' …') : '98XXXXXXXX'; }
+        }
+        res.addEventListener('change', apply); apply();
+    })();
+<?php endif; ?>
 
     // ---- searchable categories (3000+) ----
     var catInput = document.getElementById('sd-cat-input');

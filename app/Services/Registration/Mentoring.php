@@ -224,8 +224,10 @@ class Mentoring
         if (($seeker['type'] ?? '') !== 'intljob' || $seeker['payment_status'] !== 'paid') {
             return ['ok' => false, 'msg' => ['यह केवल विदेश में नौकरी के रजिस्ट्रेशन के लिए है', 'Only for Jobs Abroad registrations']];
         }
-        if (!preg_match('/^[\p{L} .&\'()-]{2,60}$/u', $country) || in_array(mb_strtolower($country), ['india', 'भारत'], true)) {
-            return ['ok' => false, 'msg' => ['सही देश का नाम लिखें (भारत के बाहर)', 'Enter a valid country outside India']];
+        $home = (string)($seeker['details']['residence_country'] ?? 'India');
+        $isHome = mb_strtolower($country) === mb_strtolower($home) || ($home === 'India' && mb_strtolower($country) === 'भारत');
+        if (!preg_match('/^[\p{L} .&\'()-]{2,60}$/u', $country) || $isHome) {
+            return ['ok' => false, 'msg' => ['सही देश का नाम लिखें (आपके अपने देश के अलावा)', 'Enter a valid country other than your own country of residence']];
         }
         $have = self::countriesOf($seeker)[mb_strtolower($country)] ?? null;
         if ($have && $have['paid']) {

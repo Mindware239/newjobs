@@ -1272,6 +1272,7 @@ class FormRegistry
     {
         return [
             'type' => 'jobpro',
+            'international' => true,
             'prefix' => 'JBP',
             'side' => 'provider',
             'icon' => '🏭',
@@ -1285,6 +1286,7 @@ class FormRegistry
                 [
                     'title' => ['आपकी संस्था', 'Organisation'],
                     'fields' => [
+                        self::residenceField(),
                         self::radio('provider_kind', ['आप कौन हैं', 'You are'], [
                             'company' => ['कंपनी', 'Company'], 'startup' => ['स्टार्टअप', 'Startup'], 'msme' => ['दुकान / MSME / फ़ैक्टरी', 'Shop / MSME / Factory'],
                             'institute' => ['स्कूल / कॉलेज / संस्थान', 'School / College / Institute'], 'hospital' => ['अस्पताल / क्लिनिक', 'Hospital / Clinic'],
@@ -1300,7 +1302,7 @@ class FormRegistry
                     ],
                 ],
                 self::personalSection(['name_label' => ['संपर्क व्यक्ति का नाम', 'Contact Person Name'], 'dob' => false, 'gender' => false, 'aadhaar_required' => false]),
-                self::locationSection(['भारत में कार्यस्थल का पता', 'Workplace address in India']),
+                self::locationSection(['कंपनी / कार्यस्थल का पता', 'Company / workplace address']),
                 [
                     'title' => ['नौकरियाँ', 'Jobs'],
                     'fields' => [
@@ -1329,6 +1331,23 @@ class FormRegistry
         ];
     }
 
+    /** Jobsence is open for these countries (country => dialling code); India first. */
+    public const OPEN_COUNTRIES = [
+        'India' => '91', 'Nepal' => '977', 'Sri Lanka' => '94', 'Pakistan' => '92', 'Afghanistan' => '93',
+        'Bangladesh' => '880', 'China' => '86', 'Thailand' => '66',
+    ];
+
+    /** Bilingual "country of residence" field for international forms. */
+    private static function residenceField(): array
+    {
+        $opts = [];
+        foreach (array_keys(self::OPEN_COUNTRIES) as $c) {
+            $opts[$c] = $c === 'India' ? ['भारत', 'India'] : [$c, $c];
+        }
+        return ['key' => 'residence_country', 'type' => 'select', 'label' => ['आप किस देश में रहते हैं', 'Country of residence'], 'options' => $opts, 'required' => true, 'full' => true,
+            'hint' => ['भारत के बाहर: मोबाइल नंबर देश कोड के साथ (जैसे +977) और राज्य की जगह अपना देश चुनें।', 'Outside India: give your mobile with country code (e.g. +977) and pick your country instead of a state.']];
+    }
+
     /** Jobs abroad: candidate verifies every job with the embassy / consulate or the country's ministry; Jobsence is not liable. */
     public static function abroadDisclaimer(): array
     {
@@ -1346,6 +1365,7 @@ class FormRegistry
     {
         return [
             'type' => 'intljob',
+            'international' => true,
             'prefix' => 'IJB',
             'side' => 'candidate',
             'icon' => '🌍',
@@ -1368,7 +1388,8 @@ class FormRegistry
                 ],
             ],
             'sections' => [
-                self::personalSection([]),
+                ['title' => ['निवास', 'Residence'], 'fields' => [self::residenceField()]],
+                self::personalSection(['name_label' => ['पूरा नाम (पासपोर्ट के अनुसार)', 'Full Name (as per passport)']]),
                 self::addressSection(false),
                 [
                     'title' => ['विदेश में नौकरी', 'Job Abroad'],
