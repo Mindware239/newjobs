@@ -16,7 +16,7 @@ class PortalRegistration
     public const GST_RATE = 0.18;
     public const COURSE_FEE = 12000.00; // skill development course fee after selection (+ GST)
 
-    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan'];
+    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan', 'intljob', 'intlcountry'];
     public const STATUSES = ['new', 'under_scrutiny', 'selected', 'rejected', 'completed', 'expired'];
 
     /** Skill-development registrations are valid for this many months after payment. */
@@ -351,6 +351,55 @@ class PortalRegistration
         }
         return (int)$pdo->exec("UPDATE portal_registrations SET status = 'expired'
             WHERE valid_until IS NOT NULL AND valid_until < NOW() AND status NOT IN ('expired', 'completed', 'rejected')");
+    }
+
+    /** ₹ per USD used when a USD price is paid in rupees (admin setting usd_inr_rate). */
+    public static function usdInrRate(): float
+    {
+        try {
+            $rate = (float)\App\Models\SystemSetting::get('usd_inr_rate', 88);
+        } catch (\Throwable $e) {
+            $rate = 88.0;
+        }
+        return $rate >= 40 && $rate <= 250 ? $rate : 88.0;
+    }
+
+    /**
+     * Unpaid registration with a dual price → switch the currency it will be paid in.
+     * details.price_inr / price_usd (both set, e.g. per-country unlock) or details.usd_price (₹ = USD × rate, GST incl.).
+     */
+    public static function switchCurrency(array $reg, string $currency): bool
+    {
+        $d = $reg['details'] ?? [];
+        $currency = $currency === 'USD' ? 'USD' : 'INR';
+        if ($reg['payment_status'] === 'paid' || ($reg['currency'] ?? 'INR') === $currency || (empty($d['usd_price']) && empty($d['price_usd']))) {
+            return false;
+        }
+        if ($currency === 'USD') {
+            $total = (float)($d['price_usd'] ?? $d['usd_price']);
+            [$base, $gst] = [$total, 0.0];
+        } else {
+            $total = !empty($d['price_inr']) ? (float)$d['price_inr'] : round((float)$d['usd_price'] * self::usdInrRate());
+            [$base, $gst] = [self::baseAmount($total), self::gstAmount($total)];
+        }
+        Database::getInstance()->execute(
+            'UPDATE portal_registrations SET currency = ?, total_amount = ?, fee_base = ?, gst_amount = ?, razorpay_order_id = NULL WHERE id = ? AND payment_status <> \'paid\'',
+            [$currency, $total, $base, $gst, (int)$reg['id']]
+        );
+        return true;
+    }
+
+    /** Both ways a dual-priced registration can be paid: ['USD' => 10.0, 'INR' => 1180.0] (empty if single-currency). */
+    public static function priceChoices(array $reg): array
+    {
+        $d = $reg['details'] ?? [];
+        if (empty($d['usd_price']) && empty($d['price_usd'])) {
+            return [];
+        }
+        return [
+            'USD' => (float)($d['price_usd'] ?? $d['usd_price']),
+            'INR' => !empty($d['price_inr']) ? (float)$d['price_inr'] : round((float)$d['usd_price'] * self::usdInrRate()),
+        ];
     }
 
     /** "₹1,829" or "USD 12" for a registration's total. */

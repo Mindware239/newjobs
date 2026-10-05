@@ -96,7 +96,9 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                 case 'date': ?>
                                     <div class="<?= $cls($k, $full) ?>">
                                         <?= $label($f, $id) ?>
-                                        <input type="date" id="<?= $id ?>" name="<?= $k ?>" value="<?= $val($k) ?>" max="<?= date('Y-m-d', strtotime('-14 years')) ?>" <?= $required ?>>
+                                        <?php $dm = $f['date_mode'] ?? ''; [$dmin, $dmax] = $dm === 'expiry' ? [date('Y-m-d', strtotime('tomorrow')), date('Y-m-d', strtotime('+11 years'))]
+                                            : ($dm === 'future' ? [date('Y-m-d'), date('Y-m-d', strtotime('+1 year'))] : [date('Y-m-d', strtotime('-100 years')), date('Y-m-d', strtotime('-14 years'))]); ?>
+                                        <input type="date" id="<?= $id ?>" name="<?= $k ?>" value="<?= $val($k) ?>" min="<?= $dmin ?>" max="<?= $dmax ?>" <?= $required ?>>
                                         <?= $err($k) ?>
                                     </div>
                                 <?php break;
@@ -255,6 +257,13 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                         <label class="sd-opt" style="margin-top:8px;display:inline-flex"><input type="checkbox" name="no_gst" value="1" id="sd-no-gst" <?= !empty($old['no_gst']) ? 'checked' : '' ?>> <span class="opt-txt"><?= $t('मेरे पास GST नहीं है', 'I don’t have GST') ?></span></label>
                                         <div class="sd-err" data-unique-msg="gstin"></div>
                                         <?= $err('gstin') ?>
+                                    </div>
+                                <?php break;
+                                case 'passport': ?>
+                                    <div class="<?= $cls($k, $full) ?>">
+                                        <?= $label($f, $id) ?>
+                                        <input type="text" id="<?= $id ?>" name="<?= $k ?>" value="" maxlength="12" autocomplete="off" style="text-transform:uppercase" placeholder="K1234567" <?= $required ?>>
+                                        <?= $hint($f) ?><?= $err($k) ?>
                                     </div>
                                 <?php break;
                                 case 'bank_account': ?>

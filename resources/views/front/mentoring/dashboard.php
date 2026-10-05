@@ -37,6 +37,27 @@ $statusLabel = [
                     <span class="mt-tag"><?= $tp($role === 'provider' ? $k['providers_label'] : $k['seekers_label']) ?></span>
                     <div class="mt-meta"><?= $h(implode(', ', array_filter([$me['city'], $me['state']]))) ?> · <?= $h($me['categories']) ?></div>
 
+                    <?php if ($role === 'seeker' && ($me['type'] ?? '') === 'intljob'): $countries = Mentoring::countriesOf($me); ?>
+                        <div id="countries" style="margin-top:12px">
+                            <b>🌍 <?= $t('मेरे देश', 'My countries') ?></b>
+                            <span class="mt-meta"><?= $t('हर देश एक बार ₹1,180 (₹1,000 + GST) या USD 10 – उस देश की कंपनियाँ आपको देख सकेंगी।', 'Each country one-time ₹1,180 (₹1,000 + GST) or USD 10 – employers in that country can see you.') ?></span>
+                            <div class="mt-skills" style="margin:8px 0">
+                                <?php foreach ($countries as $c): ?>
+                                    <?php if ($c['paid']): ?><span style="background:#ecfdf5;color:#047857">✔ <?= $h($c['country']) ?></span>
+                                    <?php else: ?><a href="/apply/pay/<?= $h($c['token']) ?>" style="padding:2px 8px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:.74rem;font-weight:800;text-decoration:none">⏳ <?= $h($c['country']) ?> – <?= $t('भुगतान करें', 'pay') ?></a><?php endif; ?>
+                                <?php endforeach; ?>
+                                <?php if (!$countries): ?><span class="mt-meta"><?= $t('अभी कोई देश अनलॉक नहीं – नीचे जोड़ें।', 'No country unlocked yet – add one below.') ?></span><?php endif; ?>
+                            </div>
+                            <?php $wanted = array_filter(array_map('trim', explode(',', (string)($me['details']['preferred_countries'] ?? '')))); ?>
+                            <form method="POST" action="/mentoring/country" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                <?= $mtCsrf() ?>
+                                <input name="country" list="mt-countries" required placeholder="Japan, UAE, USA…" style="flex:1 1 200px;height:44px;padding:0 10px;border:1px solid #d1d5db;border-radius:10px">
+                                <datalist id="mt-countries"><?php foreach (array_unique(array_merge($wanted, array_values(\App\Controllers\Front\JobsAbroadController::countries()))) as $cn): ?><option value="<?= $h($cn) ?>"><?php endforeach; ?></datalist>
+                                <button class="sd-btn" name="currency" value="INR" type="submit"><?= $t('अनलॉक – ₹1,180', 'Unlock – ₹1,180') ?></button>
+                                <button class="sd-btn mt-green" name="currency" value="USD" type="submit"><?= $t('अनलॉक – USD 10', 'Unlock – USD 10') ?></button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
                     <?php if ($role === 'seeker'): ?>
                         <?php if ($state === 'open'): ?>
                             <p class="sd-alert ok" style="margin:10px 0 0"><?= $kind === 'nearme'

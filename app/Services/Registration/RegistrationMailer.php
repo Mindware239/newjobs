@@ -37,7 +37,7 @@ class RegistrationMailer
             <p>प्रिय {$h($reg['full_name'])},<br>नमस्ते!</p>
             <p>Jobsence पर <b>{$h($form['title'][0])}</b> के लिए धन्यवाद। " . ($free ? 'आपका मुफ़्त रजिस्ट्रेशन पूरा हो गया है।' : "आपका {$money}" . ($usd ? '' : ' (GST सहित)') . " का एकमुश्त प्रोसेसिंग शुल्क सफलतापूर्वक प्राप्त हो गया है।") . "</p>
             <p>Dear {$h($reg['full_name'])},<br>Thank you for your <b>{$h($form['title'][1])}</b> with Jobsence. " . ($free ? 'Your free registration is complete.' : "Your one-time processing fee of <b>{$money}</b>" . ($usd ? '' : ' (including GST)') . " has been successfully received.") . "</p>
-            <h3 style='margin:20px 0 8px;font-size:16px'>रजिस्ट्रेशन विवरण / Registration Details</h3>
+            <h3 style='margin:20px 0 8px;font-size:16px'>" . ($free ? 'रजिस्ट्रेशन विवरण / Registration Details' : 'भुगतान रसीद / Payment Receipt') . "</h3>
             " . self::detailsTable($reg, $form) . "
             <p>आपका फॉर्म सफलतापूर्वक जमा होकर हमारे डेटाबेस में सुरक्षित है। / Your form has been successfully submitted and stored in our database.</p>
             " . (!empty($reg['valid_until']) ? "<p style='background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px'><b>रजिस्ट्रेशन वैधता / Registration valid till: " . $h(date('d M Y', strtotime((string)$reg['valid_until']))) . "</b><br>रजिस्ट्रेशन भुगतान की तारीख से " . (\App\Models\PortalRegistration::validityLabel((string)$reg['type'])[0] ?? '3 महीने') . " तक मान्य है। / Your registration is valid for " . (\App\Models\PortalRegistration::validityLabel((string)$reg['type'])[1] ?? '3 months') . " from the date of payment.</p>" : '') . "
@@ -53,13 +53,13 @@ class RegistrationMailer
             " . (($pass = ContactPass::accessUrl($reg)) !== null
                 ? "<p style='margin-top:16px'><a href='" . $h(rtrim($_ENV['APP_URL'] ?? '', '/') . $pass) . "' style='display:inline-block;background:#f05537;color:#fff;padding:10px 16px;border-radius:8px;font-weight:bold;text-decoration:none'>अभी खोलें – नंबर और पता देखें / Open now – see numbers &amp; addresses</a><br><small>यह लिंक केवल आपके लिए है – किसी से साझा न करें। / This link is only for you – do not share it.</small></p>"
                 : '') . "
-            " . (in_array($reg['type'], ['skill', 'internship', 'provider', 'internpro', 'mentorplan', 'internplan', 'fulltime', 'parttime', 'wfh', 'jobpro', 'jobplan', 'nearpro', 'nearseek'], true)
+            " . (in_array($reg['type'], ['skill', 'internship', 'provider', 'internpro', 'mentorplan', 'internplan', 'fulltime', 'parttime', 'wfh', 'jobpro', 'jobplan', 'nearpro', 'nearseek', 'intljob', 'intlcountry'], true)
                 ? "<p style='margin-top:16px'><a href='" . $h(rtrim($_ENV['APP_URL'] ?? '', '/') . '/mentoring/access/' . $reg['token']) . "' style='display:inline-block;background:#138808;color:#fff;padding:10px 16px;border-radius:8px;font-weight:bold;text-decoration:none'>मेरा मेंटरिंग डैशबोर्ड / My mentoring dashboard</a><br><small>यह लिंक केवल आपके लिए है – किसी से साझा न करें। / This link is only for you – do not share it.</small></p>"
                 : '') . "
             <p style='margin-top:16px'><a href='" . $h(self::statusUrl($reg)) . "' style='color:#f05537;font-weight:bold'>रसीद देखें / View your receipt</a></p>
         ");
 
-        return self::send((string)$reg['email'], 'Thank You – Your Jobsence ' . $form['title'][1] . ' is Received | ' . ($free ? 'Registered' : 'Payment Confirmed') . ' (' . $reg['reg_no'] . ')', $body);
+        return self::send((string)$reg['email'], ($free ? 'Thank You – Your Jobsence ' . $form['title'][1] . ' is Received | Registered' : 'Payment Receipt ' . \App\Models\PortalRegistration::money($reg) . ' – Jobsence ' . $form['title'][1] . (!empty($reg['details']['country']) ? ' – ' . $reg['details']['country'] : '')) . ' (' . $reg['reg_no'] . ')', $body);
     }
 
     /** "Your registration ends in N days – renew" (sent 10, 5 and 1 day before expiry). */
@@ -136,19 +136,32 @@ class RegistrationMailer
     public static function notifyOwner(array $reg): bool
     {
         $form = FormRegistry::byType((string)$reg['type']);
-        $owner = (string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com');
-        if ($owner === '' || !$form) {
+        if (!$form) {
             return false;
         }
-
+        $to = array_filter([(string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com')]);
+        // Hiring companies and jobs-abroad registrations / payments are also intimated to Jobsence.
+        if (in_array($reg['type'], ['jobpro', 'jobplan', 'intljob', 'intlcountry', 'internpro', 'provider'], true)) {
+            $to[] = (string)($_ENV['JOBSENCE_NOTIFY_MAIL'] ?? 'gm@jobsence.com');
+        }
+        $to = array_unique(array_filter($to));
+        if (!$to) {
+            return false;
+        }
+        $free = (float)($reg['total_amount'] ?? 0) <= 0;
+        $abroad = ($reg['details']['based_in'] ?? '') === 'abroad' ? ' (jobs abroad: ' . ($reg['details']['country'] ?? '?') . ')' : '';
         $base = rtrim($_ENV['APP_URL'] ?? 'http://localhost:8000', '/');
         $body = self::layout(
-            '<p><b>Payment received – ' . htmlspecialchars($form['title'][1]) . '</b></p>'
+            '<p><b>' . ($free ? 'New free registration' : 'Payment received') . ' – ' . htmlspecialchars($form['title'][1] . $abroad) . '</b></p>'
             . self::detailsTable($reg, $form)
             . "<p><a href='{$base}/admin/registrations/" . (int)$reg['id'] . "' style='color:#f05537;font-weight:bold'>Open in admin</a></p>"
         );
-
-        return self::send($owner, 'Payment Received ₹' . number_format((float)$reg['total_amount'], 0) . ' – ' . $form['title'][1] . ' – ' . $reg['reg_no'], $body);
+        $subject = ($free ? 'New registration' : 'Payment Received ' . \App\Models\PortalRegistration::money($reg)) . ' – ' . $form['title'][1] . $abroad . ' – ' . $reg['reg_no'];
+        $ok = false;
+        foreach ($to as $addr) {
+            $ok = self::send($addr, $subject, $body) || $ok;
+        }
+        return $ok;
     }
 
     public static function payUrl(array $reg): string
@@ -173,7 +186,7 @@ class RegistrationMailer
             'नाम / Name' => $reg['full_name'] ?? '',
             'मोबाइल / Mobile' => $reg['mobile'] ?? '',
             'ईमेल / Email' => $reg['email'] ?? '',
-            ($form['categories_label'][0] . ' / ' . $form['categories_label'][1]) => $reg['categories'] ?? '',
+            (isset($form['categories_label']) ? $form['categories_label'][0] . ' / ' . $form['categories_label'][1] : 'कैटेगरी / Categories') => $reg['categories'] ?? '',
             'स्थान / Location' => trim(implode(', ', array_filter([$reg['city'] ?? '', $reg['district'] ?? '', $reg['state'] ?? ''])) . ' – ' . ($reg['pincode'] ?? ''), ' –'),
         ];
         foreach (['training_mode', 'work_mode', 'duration'] as $key) {
@@ -182,9 +195,19 @@ class RegistrationMailer
                 $rows[$label($key, [$key])] = implode(' / ', $fields[$key]['options'][$v]);
             }
         }
-        if (($reg['payment_status'] ?? '') === 'paid') {
-            $rows['भुगतान / Amount Paid'] = '₹' . number_format((float)$reg['total_amount'], 0) . ' (GST सहित / incl. GST)';
+        if (!empty($reg['details']['country'])) {
+            $rows['देश / Country'] = (string)$reg['details']['country'];
+        }
+        if (!empty($reg['details']['plan_days'])) {
+            $rows['प्लान / Plan'] = (int)$reg['details']['plan_days'] . ' दिन / days';
+        }
+        if (($reg['payment_status'] ?? '') === 'paid' && (float)($reg['total_amount'] ?? 0) > 0) {
+            $usd = ($reg['currency'] ?? 'INR') === 'USD';
+            $money = \App\Models\PortalRegistration::money($reg);
+            $rows['भुगतान / Amount Paid'] = $usd ? $money . ' (भारत के बाहर – GST नहीं / outside India – no GST)'
+                : $money . ' (₹' . number_format((float)$reg['fee_base'], 2) . ' + GST 18% ₹' . number_format((float)$reg['gst_amount'], 2) . ')';
             $rows['पेमेंट आईडी / Payment ID'] = $reg['razorpay_payment_id'] ?? '';
+            $rows['तारीख / Date'] = !empty($reg['paid_at']) ? date('d M Y, h:i A', strtotime((string)$reg['paid_at'])) : '';
         }
 
         $html = "<table cellpadding='8' style='border-collapse:collapse;font-size:14px;width:100%;border:1px solid #e5e7eb'>";

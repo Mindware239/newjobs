@@ -44,7 +44,7 @@ class Mentoring
         'internship' => ['seekers' => ['internship'], 'provider' => 'internpro', 'plan' => 'internplan', 'single' => true, 'provider_initiates' => true,
             'seeker_form' => '/apply/internship', 'provider_form' => '/apply/internship-provider', 'seekers_page' => '/internship-seekers', 'providers_page' => '/internship-providers',
             'seekers_label' => ['इंटर्नशिप चाहने वाले', 'Internship seekers'], 'providers_label' => ['इंटर्नशिप प्रदाता', 'Internship providers'], 'what' => ['इंटर्नशिप', 'Internship']],
-        'job' => ['seekers' => ['fulltime', 'parttime', 'wfh'], 'provider' => 'jobpro', 'plan' => 'jobplan', 'single' => true, 'provider_initiates' => true,
+        'job' => ['seekers' => ['fulltime', 'parttime', 'wfh', 'intljob'], 'provider' => 'jobpro', 'plan' => 'jobplan', 'single' => true, 'provider_initiates' => true,
             'seeker_form' => '/apply/full-time-job', 'provider_form' => '/apply/job-provider', 'seekers_page' => '/job-seekers', 'providers_page' => '/hiring-companies',
             'seekers_label' => ['नौकरी चाहने वाले', 'Job seekers'], 'providers_label' => ['भर्ती करने वाली कंपनियाँ', 'Hiring companies'], 'what' => ['नौकरी', 'Job']],
         'nearme' => ['seekers' => ['nearseek'], 'provider' => 'nearpro', 'plan' => null, 'single' => false, 'provider_initiates' => false,
@@ -136,7 +136,9 @@ class Mentoring
     /** SQL for a seeker who is paid, open and not yet matched (alias r). */
     private const OPEN_SEEKER_SQL = "r.payment_status = 'paid' AND r.status NOT IN ('rejected','completed','expired')
         AND (r.valid_until IS NULL OR r.valid_until > NOW())
-        AND NOT EXISTS (SELECT 1 FROM mentor_assignments a WHERE a.candidate_reg_id = r.id AND a.status = 'accepted')";
+        AND NOT EXISTS (SELECT 1 FROM mentor_assignments a WHERE a.candidate_reg_id = r.id AND a.status = 'accepted')
+        AND (r.type <> 'intljob' OR EXISTS (SELECT 1 FROM portal_registrations u WHERE u.type = 'intlcountry' AND u.payment_status = 'paid'
+             AND JSON_UNQUOTE(JSON_EXTRACT(u.details, '$.seeker_reg_id')) = CAST(r.id AS CHAR)))";
 
     public static function activeMatch(int $seekerId): ?array
     {
@@ -188,6 +190,72 @@ class Mentoring
         return array_filter(FormRegistry::HIRING_PLANS, static fn($o) => $o['abroad'] === $abroad);
     }
 
+    // ------------------------------------------------------------------
+    // Jobs abroad: unlock a country (₹1,180 or USD 10, one-time)
+    // ------------------------------------------------------------------
+
+    /** country => ['paid' => bool, 'token' => unlock token] for a jobs-abroad seeker. */
+    public static function countriesOf(array $seeker): array
+    {
+        $out = [];
+        foreach (Database::getInstance()->fetchAll(
+            "SELECT token, payment_status, JSON_UNQUOTE(JSON_EXTRACT(details, '$.country')) AS country FROM portal_registrations
+             WHERE type = 'intlcountry' AND JSON_UNQUOTE(JSON_EXTRACT(details, '$.seeker_reg_id')) = ? ORDER BY id",
+            [(string)$seeker['id']]
+        ) as $r) {
+            $key = mb_strtolower((string)$r['country']);
+            if (!isset($out[$key]) || $r['payment_status'] === 'paid') {
+                $out[$key] = ['country' => (string)$r['country'], 'paid' => $r['payment_status'] === 'paid', 'token' => $r['token']];
+            }
+        }
+        return $out;
+    }
+
+    /** Paid countries of a seeker (names). */
+    public static function paidCountries(array $seeker): array
+    {
+        return array_values(array_map(static fn($c) => $c['country'], array_filter(self::countriesOf($seeker), static fn($c) => $c['paid'])));
+    }
+
+    /** Start (or reuse) the payment that unlocks $country for this seeker. Returns ['ok', 'reg'?, 'msg'?]. */
+    public static function unlockCountry(array $seeker, string $country, string $currency): array
+    {
+        $country = trim((string)preg_replace('/\s+/', ' ', $country));
+        if (($seeker['type'] ?? '') !== 'intljob' || $seeker['payment_status'] !== 'paid') {
+            return ['ok' => false, 'msg' => ['यह केवल विदेश में नौकरी के रजिस्ट्रेशन के लिए है', 'Only for Jobs Abroad registrations']];
+        }
+        if (!preg_match('/^[\p{L} .&\'()-]{2,60}$/u', $country) || in_array(mb_strtolower($country), ['india', 'भारत'], true)) {
+            return ['ok' => false, 'msg' => ['सही देश का नाम लिखें (भारत के बाहर)', 'Enter a valid country outside India']];
+        }
+        $have = self::countriesOf($seeker)[mb_strtolower($country)] ?? null;
+        if ($have && $have['paid']) {
+            return ['ok' => false, 'msg' => ['यह देश पहले से अनलॉक है', 'This country is already unlocked']];
+        }
+        if ($have) {
+            $reg = PortalRegistration::findByToken($have['token']);
+            if ($reg) {
+                PortalRegistration::switchCurrency($reg, $currency);
+                return ['ok' => true, 'reg' => PortalRegistration::findByToken($have['token'])];
+            }
+        }
+        $usd = $currency === 'USD';
+        $reg = PortalRegistration::create([
+            'type' => 'intlcountry',
+            'full_name' => $seeker['full_name'],
+            'mobile' => $seeker['mobile'],
+            'email' => $seeker['email'],
+            'city' => $seeker['city'],
+            'state' => $seeker['state'],
+            'pincode' => $seeker['pincode'],
+            'categories' => $seeker['categories'],
+            'details' => json_encode(['seeker_reg_id' => (int)$seeker['id'], 'country' => $country,
+                'price_inr' => FormRegistry::INTL_COUNTRY_FEE_INR, 'price_usd' => FormRegistry::INTL_COUNTRY_FEE_USD], JSON_UNESCAPED_UNICODE),
+            'declaration_accepted' => 1,
+            'currency' => $usd ? 'USD' : 'INR',
+        ], 'ICU', $usd ? FormRegistry::INTL_COUNTRY_FEE_USD : FormRegistry::INTL_COUNTRY_FEE_INR);
+        return $reg ? ['ok' => true, 'reg' => $reg] : ['ok' => false, 'msg' => ['सर्वर त्रुटि, दोबारा प्रयास करें', 'Server error, please retry']];
+    }
+
     /** Open (or reuse) an unpaid plan; paying while a plan is active extends it from its end date. */
     public static function createPlan(array $provider, ?string $option = null): ?array
     {
@@ -220,6 +288,9 @@ class Mentoring
         if ($opt) {
             $details['plan_option'] = (string)$option;
             $details['plan_days'] = (int)$opt['days'];
+            if ($opt['currency'] === 'USD') {
+                $details['usd_price'] = (float)$opt['fee']; // payable in ₹ too, at the admin rate
+            }
         }
         return PortalRegistration::create([
             'type' => $planType,

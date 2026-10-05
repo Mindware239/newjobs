@@ -14,6 +14,13 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">USD → INR rate (₹ per 1 USD)</label>
+                <input type="number" name="usd_inr_rate" step="0.01" min="40" max="250" value="<?= htmlspecialchars((string)($settings['usd_inr_rate'] ?? 88)) ?>"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md">
+                <p class="text-xs text-gray-500 mt-1">Used when a USD price (jobs outside India) is paid in rupees. Razorpay settles every payment to the bank in ₹.</p>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Maintenance Mode</label>
                 <label class="flex items-center">
                     <input type="checkbox" name="maintenance_mode" value="1" 

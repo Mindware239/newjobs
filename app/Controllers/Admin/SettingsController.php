@@ -33,7 +33,8 @@ class SettingsController extends BaseController
             'profile_reminder_enabled' => (int)SystemSetting::get('profile_reminder_enabled', 1),
             'profile_reminder_frequency_days' => (int)SystemSetting::get('profile_reminder_frequency_days', 3),
             'profile_reminder_max_per_week' => (int)SystemSetting::get('profile_reminder_max_per_week', 2),
-            'profile_reminder_min_strength' => (int)SystemSetting::get('profile_reminder_min_strength', 100)
+            'profile_reminder_min_strength' => (int)SystemSetting::get('profile_reminder_min_strength', 100),
+            'usd_inr_rate' => (float)SystemSetting::get('usd_inr_rate', 88),
         ];
 
         $response->view('admin/settings/index', [
@@ -76,6 +77,10 @@ class SettingsController extends BaseController
         SystemSetting::set('profile_reminder_frequency_days', (string)$profileReminderFreq, 'general');
         SystemSetting::set('profile_reminder_max_per_week', (string)$profileReminderMax, 'general');
         SystemSetting::set('profile_reminder_min_strength', (string)$profileReminderMin, 'general');
+        $usdRate = (float)$request->post('usd_inr_rate', 88);
+        if ($usdRate >= 40 && $usdRate <= 250) {
+            SystemSetting::set('usd_inr_rate', (string)round($usdRate, 2), 'payments');
+        }
 
         // Save hide_external_jobs to the specific settings table as requested
         $db = Database::getInstance();

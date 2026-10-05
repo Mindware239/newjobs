@@ -12,7 +12,7 @@ require dirname(__DIR__, 2) . '/include/_young_india.php';
 
 $sdButtonsHeadingTag = $sdButtonsHeadingTag ?? 'h2';
 $sdForms = FormRegistry::all();
-$sdCandidateOrder = ['skill-development', 'internship', 'full-time-job', 'part-time-job', 'work-from-home', 'healthcare-jobs', 'restaurant-chef-jobs'];
+$sdCandidateOrder = ['skill-development', 'internship', 'full-time-job', 'part-time-job', 'work-from-home', 'healthcare-jobs', 'restaurant-chef-jobs', 'international-job'];
 $sdProviders = [
     ['/apply/skill-provider', '👩‍🏫', ['स्किल मेंटर / ग्रुप मेंटर / संस्थान – मुफ़्त रजिस्टर करें', 'Skill Mentors / Group Mentors / Institutes – Register Free']],
     ['/apply/internship-provider', '🏢', $sdForms['internship-provider']['button']],

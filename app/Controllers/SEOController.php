@@ -283,10 +283,17 @@ class SEOController
         $this->renderXml($response, $xml);
     }
 
-    /** Skills / internships / jobs / Near Me catalogue: every category and subcategory. */
+    /** Skills / internships / jobs / Near Me catalogue + jobs abroad (country × category). */
     public function catalogue(Request $request, Response $response): void
     {
         $xml = $this->startUrlSet();
+        $xml .= $this->urlElement($this->baseUrl . '/jobs-abroad', '0.8', 'weekly');
+        foreach (array_keys(\App\Controllers\Front\JobsAbroadController::countries()) as $c) {
+            $xml .= $this->urlElement($this->baseUrl . '/jobs-abroad/' . $c, '0.6', 'weekly');
+            foreach (\App\Services\Registration\SkillTaxonomy::tree() as $sector) {
+                $xml .= $this->urlElement($this->baseUrl . '/jobs-abroad/' . $c . '/' . $sector['slug'], '0.5', 'monthly');
+            }
+        }
         foreach (array_keys(\App\Controllers\Front\CatalogueController::MODES) as $mode) {
             $xml .= $this->urlElement($this->baseUrl . '/categories/' . $mode, '0.8', 'weekly');
             foreach (\App\Controllers\Front\CatalogueController::tree($mode) as $sector) {

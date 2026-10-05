@@ -2,7 +2,7 @@
 require __DIR__ . '/_partials.php';
 $amount = number_format((float)$reg['total_amount'], 0);
 $isFree = (float)$reg['total_amount'] <= 0;
-$mentoringTypes = ['skill', 'internship', 'provider', 'internpro', 'mentorplan', 'internplan', 'fulltime', 'parttime', 'wfh', 'jobpro', 'jobplan', 'nearpro'];
+$mentoringTypes = ['skill', 'internship', 'provider', 'internpro', 'mentorplan', 'internplan', 'fulltime', 'parttime', 'wfh', 'jobpro', 'jobplan', 'nearpro', 'intljob', 'intlcountry'];
 ?>
 <div class="sd">
     <section class="sd-section">

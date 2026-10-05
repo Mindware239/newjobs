@@ -147,6 +147,7 @@ $router->post('/near-me/rate/{id}', [\App\Controllers\Front\NearMeController::cl
 $router->get('/mentoring', [\App\Controllers\Front\MentoringController::class, 'dashboard']);
 $router->get('/mentoring/access/{token}', [\App\Controllers\Front\MentoringController::class, 'access']);
 $router->get('/mentoring/logout', [\App\Controllers\Front\MentoringController::class, 'logout']);
+$router->post('/mentoring/country', [\App\Controllers\Front\MentoringController::class, 'unlockCountry'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/mentoring/plan', [\App\Controllers\Front\MentoringController::class, 'buyPlan'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/skill-seekers', [\App\Controllers\Front\MentoringController::class, 'skillSeekers']);
 $router->get('/internship-seekers', [\App\Controllers\Front\MentoringController::class, 'internshipSeekers']);
@@ -165,6 +166,9 @@ $router->post('/mentoring/agreement/{token}/otp', [\App\Controllers\Front\Mentor
 $router->post('/mentoring/agreement/{token}/sign', [\App\Controllers\Front\MentoringController::class, 'agreementSign'], [$otpRateLimit, $csrfMiddleware]);
 $router->post('/mentoring/agreement/{token}/decline', [\App\Controllers\Front\MentoringController::class, 'agreementDecline'], [$csrfMiddleware]);
 $router->post('/mentoring/agreement/{token}/end', [\App\Controllers\Front\MentoringController::class, 'agreementEnd'], [$csrfMiddleware]);
+$router->get('/jobs-abroad', [\App\Controllers\Front\JobsAbroadController::class, 'index']);
+$router->get('/jobs-abroad/{country}', [\App\Controllers\Front\JobsAbroadController::class, 'country']);
+$router->get('/jobs-abroad/{country}/{category}', [\App\Controllers\Front\JobsAbroadController::class, 'category']);
 $router->get('/categories/{mode}', [\App\Controllers\Front\CatalogueController::class, 'index']);
 $router->get('/categories/{mode}/{category}', [\App\Controllers\Front\CatalogueController::class, 'category']);
 $router->get('/categories/{mode}/{category}/{sub}', [\App\Controllers\Front\CatalogueController::class, 'sub']);

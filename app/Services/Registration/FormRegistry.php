@@ -80,6 +80,8 @@ class FormRegistry
             'internship-plan' => self::providerPlan('internplan'),
             'job-provider' => self::jobProvider(),
             'job-plan' => self::providerPlan('jobplan'),
+            'international-job' => self::internationalJob(),
+            'intl-country' => self::countryUnlock(),
             'ngo-registration' => self::ngo(),
             'jobs-pass' => self::jobsPass(),
             'near-me-provider' => self::nearMeProvider(),
@@ -1289,10 +1291,10 @@ class FormRegistry
                             'ngo' => ['NGO', 'NGO'], 'individual' => ['व्यक्ति / घर के लिए', 'Individual / Household'],
                         ], true, ['full' => true]),
                         self::text('business_name', ['कंपनी / दुकान / संस्था का नाम', 'Company / shop / organisation name'], true, ['max' => 150]),
-                        self::radio('based_in', ['कंपनी कहाँ स्थित है', 'Where is the company based'], [
-                            'india' => ['भारत में', 'In India'], 'abroad' => ['भारत के बाहर (शुल्क USD में)', 'Outside India (fees in USD)'],
+                        self::radio('based_in', ['ये नौकरियाँ कहाँ हैं', 'Where are these jobs located'], [
+                            'india' => ['भारत में (शुल्क ₹ में)', 'In India (fees in ₹)'], 'abroad' => ['भारत के बाहर (शुल्क USD में – ₹ में भी भुगतान)', 'Outside India (fees in USD – payable in ₹ too)'],
                         ], true, ['full' => true]),
-                        self::text('country', ['देश (भारत के बाहर की कंपनी के लिए)', 'Country (for companies outside India)'], false, ['max' => 80]),
+                        self::text('country', ['नौकरी का देश (भारत के बाहर की नौकरी के लिए)', 'Country of the jobs (for jobs outside India)'], false, ['max' => 80]),
                         ['key' => 'gstin', 'type' => 'gst', 'label' => ['GST नंबर', 'GST Number'], 'required' => false],
                         self::text('website', ['वेबसाइट (यदि हो)', 'Website (if any)'], false, ['max' => 190]),
                     ],
@@ -1321,7 +1323,96 @@ class FormRegistry
             ],
             'next_steps' => [
                 ['Jobsence टीम आपकी जानकारी सत्यापित करेगी – उसके बाद नौकरी चाहने वाले आपको देख सकेंगे।', 'The Jobsence team will verify your details – after that job seekers can see you.'],
+                ['आपकी जानकारी Jobsence (gm@jobsence.com) को भेज दी गई है; भारत के बाहर की कंपनियाँ सवाल इसी ईमेल पर भेजें।', 'Your details have been sent to Jobsence (gm@jobsence.com); companies outside India can write to this email with any questions.'],
                 ['अभी “मेरा डैशबोर्ड” खोलें और भर्ती प्लान लें – ₹216 (3 दिन) से ₹19,424 (1 साल) तक – 3, 7, 15 दिन, 1 महीना, 6 महीने या 1 साल; भारत के बाहर USD 12 (1 दिन) से।', 'Open “My dashboard” now and get a hiring plan – from ₹216 (3 days) to ₹19,424 (1 year) – 3, 7, 15 days, 1 month, 6 months or 1 year; outside India from USD 12 (1 day).'],
+            ],
+        ];
+    }
+
+    /** Jobs abroad: free registration, then ₹1,000 + 18% GST (₹1,180) or USD 10 per country, one-time. */
+    public const INTL_COUNTRY_FEE_INR = 1180.00;
+    public const INTL_COUNTRY_FEE_USD = 10.00;
+
+    private static function internationalJob(): array
+    {
+        return [
+            'type' => 'intljob',
+            'prefix' => 'IJB',
+            'side' => 'candidate',
+            'icon' => '🌍',
+            'otp' => true,
+            'multipart' => true,
+            'fee' => 0.0,
+            'max_categories' => 5,
+            'title' => ['विदेश में नौकरी – मुफ़्त रजिस्ट्रेशन', 'Jobs Abroad – Free Registration'],
+            'button' => ['विदेश में नौकरी चाहिए? मुफ़्त रजिस्टर करें', 'Looking for a job abroad? Register free'],
+            'intro' => ['रजिस्ट्रेशन मुफ़्त है। जिस देश की कंपनियों को आपकी प्रोफ़ाइल दिखानी है, उस हर देश के लिए एक बार ₹1,000 + GST (₹1,180) या USD 10।', 'Registration is free. For each country whose employers should see your profile, pay once: ₹1,000 + GST (₹1,180) or USD 10.'],
+            'categories_label' => ['आप कौन सी नौकरी चाहते हैं – अधिकतम 5', 'Jobs you want – up to 5'],
+            'info' => [
+                'title' => ['ज़रूरी जानकारी', 'Important'],
+                'points' => [
+                    ['हर देश के लिए एकमुश्त ₹1,180 (₹1,000 + 18% GST) या USD 10 – किसी भी स्थिति में वापसी योग्य नहीं।', 'Each country: one-time ₹1,180 (₹1,000 + 18% GST) or USD 10 – non-refundable in any condition.'],
+                    ['वैध पासपोर्ट ज़रूरी है – पासपोर्ट नंबर और समाप्ति तिथि भरें।', 'A valid passport is mandatory – enter its number and expiry date.'],
+                    ['Jobsence एक प्लेटफ़ॉर्म है, रिक्रूटिंग एजेंट नहीं। ECR पासपोर्ट वाले केवल eMigrate (emigrate.gov.in) पर पंजीकृत एजेंट के माध्यम से विदेश जाएँ और नियोक्ता की जाँच करें।', 'Jobsence is a platform, not a recruiting agent. ECR passport holders must emigrate only through agents registered on eMigrate (emigrate.gov.in), and should verify every employer there.'],
+                    self::platformDisclaimer(),
+                ],
+            ],
+            'sections' => [
+                self::personalSection([]),
+                self::addressSection(false),
+                [
+                    'title' => ['विदेश में नौकरी', 'Job Abroad'],
+                    'fields' => [
+                        self::text('preferred_countries', ['पसंदीदा देश (कॉमा से अलग)', 'Preferred countries (comma separated)'], true, ['full' => true, 'max' => 255,
+                            'hint' => ['जैसे: UAE, Saudi Arabia, Canada, Germany', 'e.g. UAE, Saudi Arabia, Canada, Germany']]),
+                        self::radio('passport_status', ['पासपोर्ट (ज़रूरी)', 'Passport (mandatory)'], [
+                            'ecnr' => ['वैध पासपोर्ट – ECNR', 'Valid passport – ECNR'], 'ecr' => ['वैध पासपोर्ट – ECR', 'Valid passport – ECR'],
+                        ], true, ['full' => true]),
+                        ['key' => 'passport', 'type' => 'passport', 'label' => ['पासपोर्ट नंबर', 'Passport number'], 'required' => true,
+                            'hint' => ['सुरक्षा के लिए एन्क्रिप्ट करके रखा जाता है।', 'Stored encrypted for your safety.']],
+                        ['key' => 'passport_expiry', 'type' => 'date', 'date_mode' => 'expiry', 'label' => ['पासपोर्ट की समाप्ति तिथि', 'Passport expiry date'], 'required' => true],
+                        self::categories(true),
+                        self::qualification(),
+                        self::radio('experience', ['कुल अनुभव', 'Total Experience'], [
+                            'fresher' => ['फ्रेशर', 'Fresher'], '0_1' => ['1 साल से कम', 'Less than 1 year'], '1_3' => ['1–3 साल', '1–3 years'],
+                            '3_5' => ['3–5 साल', '3–5 years'], '5_10' => ['5–10 साल', '5–10 years'], '10_plus' => ['10+ साल', '10+ years'],
+                        ], true, ['full' => true]),
+                        self::number('expected_salary_usd', ['अपेक्षित वेतन (USD प्रति माह)', 'Expected salary (USD per month)'], false, 0, 100000),
+                        self::languagesField(['आप कौन सी भाषाएँ जानते हैं', 'Languages you know'], false),
+                        self::textarea('about_me', ['अपने बारे में संक्षेप में (स्किल, अनुभव, सर्टिफ़िकेट)', 'About you (skills, experience, certificates)'], false),
+                        self::file('resume', ['रिज़्यूमे / CV (PDF/DOC, अधिकतम 5MB)', 'Resume / CV (PDF/DOC, max 5MB)']),
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
+                ['रजिस्ट्रेशन मुफ़्त है; हर देश के लिए ₹1,180 या USD 10 का एकमुश्त शुल्क किसी भी स्थिति में वापसी योग्य नहीं है।', 'Registration is free; the one-time fee of ₹1,180 or USD 10 per country is non-refundable in any condition.'],
+                ['Jobsence रिक्रूटिंग एजेंट नहीं है और विदेश में नौकरी या वीज़ा की गारंटी नहीं देता। मैं विदेश जाने से पहले नियोक्ता और एजेंट की जाँच eMigrate पर करूँगा/करूँगी।', 'Jobsence is not a recruiting agent and does not guarantee any job or visa abroad. I will verify the employer and any agent on eMigrate before travelling.'],
+                ['मैं किसी को भी नौकरी या वीज़ा के लिए पैसे नहीं दूँगा/दूँगी और ऐसी माँग की शिकायत Jobsence से करूँगा/करूँगी।', 'I will not pay anyone money for a job or visa and will report any such demand to Jobsence.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['अभी “मेरा डैशबोर्ड” खोलें और जिन देशों में आपकी प्रोफ़ाइल दिखानी है उन्हें अनलॉक करें (हर देश ₹1,180 या USD 10)।', 'Open “My dashboard” now and unlock the countries where your profile should be shown (₹1,180 or USD 10 each).'],
+                ['उस देश में भर्ती करने वाली कंपनियाँ आपकी प्रोफ़ाइल देखकर त्रिपक्षीय समझौता भेजेंगी।', 'Companies hiring in that country see your profile and send a tripartite agreement.'],
+            ],
+        ];
+    }
+
+    /** One country unlocked for a jobs-abroad seeker (bought from the dashboard). */
+    private static function countryUnlock(): array
+    {
+        return [
+            'type' => 'intlcountry', 'prefix' => 'ICU', 'side' => 'service', 'icon' => '🌍', 'internal' => true, 'hidden_from_hub' => true,
+            'fee' => self::INTL_COUNTRY_FEE_INR,
+            'title' => ['देश अनलॉक – विदेश में नौकरी', 'Country unlock – Jobs Abroad'],
+            'button' => ['देश अनलॉक', 'Country unlock'],
+            'intro' => ['इस देश की कंपनियाँ आपकी प्रोफ़ाइल देख सकेंगी।', 'Employers in this country can see your profile.'],
+            'sections' => [],
+            'declaration' => [self::platformDisclaimer()],
+            'next_steps' => [
+                ['इस देश में भर्ती करने वाली कंपनियाँ अब आपकी प्रोफ़ाइल देख सकती हैं।', 'Companies hiring in this country can now see your profile.'],
+                ['और देश जोड़ने के लिए अपना डैशबोर्ड खोलें।', 'Open your dashboard to add more countries.'],
             ],
         ];
     }

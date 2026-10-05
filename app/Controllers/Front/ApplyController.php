@@ -74,6 +74,14 @@ class ApplyController extends BaseController
         // ?cat=Electrician (from the category catalogue) pre-selects that category.
         $cat = trim((string)$request->get('cat', ''));
         $prefill = $this->prefill($form) + ($cat !== '' && mb_strlen($cat) <= 80 ? ['categories' => [$cat]] : []);
+        // Jobs abroad: ?country=Japan pre-fills the country and pays for it right after the free registration.
+        if ($form['type'] === 'intljob') {
+            $country = trim((string)$request->get('country', ''));
+            if (preg_match('/^[\p{L} .&\'()-]{2,60}$/u', $country)) {
+                $prefill['preferred_countries'] = $country;
+                $_SESSION['intl_unlock_country'] = $country;
+            }
+        }
         $this->renderForm($response, $slug, $form, $prefill, []);
     }
 
@@ -209,6 +217,17 @@ class ApplyController extends BaseController
             unset($_SESSION['portal_otp_verified'][strtolower((string)$cols['email'])]);
         }
 
+        // Jobs abroad: free registration, then straight to the payment for the chosen country.
+        if ($form['type'] === 'intljob' && self::completeIfFree($reg)) {
+            $reg = PortalRegistration::find((int)$reg['id']) ?? $reg;
+            \App\Services\Registration\Mentoring::identify((string)$reg['token']);
+            $country = (string)($_SESSION['intl_unlock_country'] ?? trim(explode(',', (string)($details['preferred_countries'] ?? ''))[0] ?? ''));
+            unset($_SESSION['intl_unlock_country']);
+            $unlock = $country !== '' ? \App\Services\Registration\Mentoring::unlockCountry($reg, $country, 'INR') : ['ok' => false];
+            $response->redirect($unlock['ok'] ? '/apply/pay/' . $unlock['reg']['token'] : '/apply/status/' . $reg['token']);
+            return;
+        }
+
         $response->redirect('/apply/pay/' . $reg['token']);
     }
 
@@ -231,6 +250,11 @@ class ApplyController extends BaseController
             return;
         }
 
+        $want = strtoupper((string)$request->get('currency', ''));
+        if (in_array($want, ['INR', 'USD'], true) && $reg['payment_status'] !== 'paid' && PortalRegistration::switchCurrency($reg, $want)) {
+            $response->redirect('/apply/pay/' . $reg['token']);
+            return;
+        }
         if ($reg['payment_status'] !== 'paid' && (self::completeIfFree($reg) || RegistrationPayments::reconcile($reg))) {
             $reg = PortalRegistration::find((int)$reg['id']);
         }

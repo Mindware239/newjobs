@@ -97,7 +97,11 @@ class LocationPagesController extends BaseController
             }
         }
         foreach ((is_file($f = dirname(__DIR__, 3) . '/resources/data/countries.php') ? require $f : []) as $country) {
-            $map[self::slug($country)] ??= ['name' => $country, 'state' => '', 'level' => 'abroad'];
+            $map[self::slug($country)] ??= ['name' => $country, 'state' => '', 'level' => 'abroad', 'country' => $country];
+        }
+        // Searched short names: /jobs-in-usa, /jobs-in-england, /jobs-in-uae, /jobs-in-saudi …
+        foreach (JobsAbroadController::ALIASES as $alias => [$display, $country]) {
+            $map[$alias] ??= ['name' => $display, 'state' => '', 'level' => 'abroad', 'country' => $country];
         }
         return $map;
     }
@@ -160,7 +164,10 @@ class LocationPagesController extends BaseController
 
         $response->view('front/location/index', [
             'kind' => $kind,
-            'k' => $k,
+            'k' => ($place['level'] === 'abroad' && in_array($kind, ['jobs', 'internship', 'skill'], true))
+                ? ['form' => '/apply/international-job?country=' . rawurlencode((string)($place['country'] ?? $place['name']))] + $k
+                : $k,
+            'abroadSlug' => $place['level'] === 'abroad' ? self::slug((string)($place['country'] ?? $place['name'])) : null,
             'slug' => $slug,
             'place' => $place,
             'full' => $full,

@@ -71,6 +71,7 @@ $canSeeNames = $isProvider;
                         <article class="mt-card">
                             <h3><?= $h($canSeeNames ? $r['full_name'] : ContactPass::maskName((string)$r['full_name'])) ?></h3>
                             <div class="mt-meta">📍 <?= $h(implode(', ', array_filter([$r['city'] ?: $r['district'], $r['state']]))) ?><?= !empty($r['preferred_location']) ? ' · ' . $t('पसंद: ', 'prefers: ') . $h($r['preferred_location']) : '' ?></div>
+                            <?php if (($r['type'] ?? '') === 'intljob'): ?><div class="mt-meta">🌍 <?= $t('विदेश:', 'Abroad:') ?> <b><?= $h(implode(', ', Mentoring::paidCountries($r))) ?></b> · 🛂 <?= $h(strtoupper((string)($d['passport_status'] ?? ''))) ?></div><?php endif; ?>
                             <div class="mt-meta">🎓 <?= $h($mtQual($r['qualification'])) ?><?= !empty($d['current_course']) ? ' · ' . $h($d['current_course']) : '' ?></div>
                             <div class="mt-skills"><?php foreach (array_slice(array_filter(array_map('trim', explode(',', (string)$r['categories']))), 0, 5) as $c): ?><span><?= $h($c) ?></span><?php endforeach; ?></div>
                             <?php if (!empty($d['preferred_timing'])): ?><div class="mt-meta">🕘 <?= $h($mtTiming($d['preferred_timing'])) ?></div><?php endif; ?>

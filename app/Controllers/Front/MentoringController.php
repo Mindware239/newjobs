@@ -86,6 +86,23 @@ class MentoringController extends BaseController
         $response->redirect('/apply/pay/' . $plan['token']);
     }
 
+    /** POST /mentoring/country {country, currency} – jobs-abroad seeker unlocks a country. */
+    public function unlockCountry(Request $request, Response $response): void
+    {
+        $me = Mentoring::me();
+        if (!$me || ($me['type'] ?? '') !== 'intljob') {
+            $response->redirect('/mentoring');
+            return;
+        }
+        $r = Mentoring::unlockCountry($me, (string)$request->post('country', ''), strtoupper((string)$request->post('currency', 'INR')) === 'USD' ? 'USD' : 'INR');
+        if (!$r['ok']) {
+            $this->flash(false, $r['msg']);
+            $response->redirect('/mentoring#countries');
+            return;
+        }
+        $response->redirect('/apply/pay/' . $r['reg']['token']);
+    }
+
     // ------------------------------------------------------------------
     // Directories
     // ------------------------------------------------------------------

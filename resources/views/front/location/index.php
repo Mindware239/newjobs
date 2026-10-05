@@ -91,7 +91,7 @@ $points = [
                         'services' => $tb('सेवा चाहिए – Near Me पास', 'Need a service – Near Me pass'),
                     ][$kind] : $tb("{$k['hi']} के लिए आवेदन करें", "Apply for {$k['en']}") ?></a>
                     <?php if (isset($k['offer'])): ?><a class="sd-btn ghost" style="width:100%;text-align:center;margin-top:8px" href="<?= $h($k['offer']) ?>"><?= $kind === 'services' ? $tb('सेवा देते हैं? रजिस्टर करें', 'Provide a service? Enrol') : $tb('मुफ़्त रजिस्टर करें', 'Register free') ?></a><?php endif; ?>
-                    <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.85rem;color:#6b7280"><?= $t('भारत के बाहर के उम्मीदवारों के लिए अंतरराष्ट्रीय शुल्क जल्द – सवाल gm@jobsence.com पर भेजें।', 'International pricing for candidates outside India is coming soon – write to gm@jobsence.com.') ?></p><?php endif; ?>
+                    <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.85rem;color:#6b7280"><?= $t('रजिस्ट्रेशन मुफ़्त · ' . $name . ' अनलॉक: ₹1,180 (₹1,000 + GST) या USD 10, एक बार · पासपोर्ट ज़रूरी', 'Registration free · unlock ' . $name . ': ₹1,180 (₹1,000 + GST) or USD 10, one-time · passport mandatory') ?></p><?php endif; ?>
                 </div>
             </div>
         </div>
@@ -110,6 +110,15 @@ $points = [
                 </div>
             <?php endif; ?>
 
+            <?php if ($abroad && !empty($abroadSlug)): ?>
+                <h2 style="font-size:1.1rem;margin-top:26px"><?= $t("{$name} में नौकरियाँ – 3000+ प्रकार, हर कैटेगरी", "Jobs in {$name} – 3000+ job types in every category") ?></h2>
+                <div class="lc-chips">
+                    <?php foreach (\App\Services\Registration\SkillTaxonomy::tree() as $sec): ?>
+                        <a href="/jobs-abroad/<?= $h($abroadSlug . '/' . $sec['slug']) ?>"><?= $h($sec['short']) ?> (<?= number_format($sec['count']) ?>)</a>
+                    <?php endforeach; ?>
+                    <a href="/jobs-abroad/<?= $h($abroadSlug) ?>" style="font-weight:800">🌍 <?= $t('सभी देखें', 'See all') ?></a>
+                </div>
+            <?php endif; ?>
             <h2 style="font-size:1.1rem;margin-top:26px"><?= $t("{$name} में और देखें", "More in {$name}") ?></h2>
             <div class="lc-chips">
                 <?php foreach (L::KINDS as $kk => $other): if ($kk === $kind) continue; ?>

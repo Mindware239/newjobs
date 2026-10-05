@@ -68,6 +68,15 @@ class RegistrationValidator
 
                 case 'date':
                     $t = $raw ? strtotime((string)$raw) : false;
+                    if (($f['date_mode'] ?? '') === 'expiry') {
+                        // Passport / document expiry: still valid today, at most 11 years ahead.
+                        if ($t && $t > strtotime('today') && $t <= strtotime('+11 years')) {
+                            $value = date('Y-m-d', $t);
+                        } elseif ($required || $raw) {
+                            $errors[$key] = ['वैध (समाप्त न हुई) तारीख भरें', 'Enter a valid, not-expired date'];
+                        }
+                        break;
+                    }
                     if (($f['date_mode'] ?? '') === 'future') {
                         // Availability dates: today up to one year ahead.
                         if ($t && $t >= strtotime('today') && $t <= strtotime('+1 year')) {
@@ -217,6 +226,21 @@ class RegistrationValidator
                         $value = $gst;
                     }
                     break;
+
+                case 'passport':
+                    $pp = strtoupper(preg_replace('/[\s-]+/', '', is_scalar($raw) ? (string)$raw : ''));
+                    if ($pp === '') {
+                        if ($required) {
+                            $errors[$key] = ['पासपोर्ट नंबर भरें', 'Enter your passport number'];
+                        }
+                    } elseif (!preg_match('/^[A-Z][0-9]{7}$|^[A-Z0-9]{6,9}$/', $pp)) {
+                        $errors[$key] = ['सही पासपोर्ट नंबर भरें (जैसे K1234567)', 'Enter a valid passport number (e.g. K1234567)'];
+                    } else {
+                        // Stored encrypted; only the last 3 characters are kept readable.
+                        $details['passport_enc'] = DataCipher::encrypt($pp);
+                        $details['passport_last3'] = substr($pp, -3);
+                    }
+                    continue 2;
 
                 case 'bank_account':
                     $acct = preg_replace('/\s+/', '', is_scalar($raw) ? (string)$raw : '');

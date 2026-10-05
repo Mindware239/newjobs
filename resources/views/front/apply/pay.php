@@ -26,6 +26,12 @@ $money = \App\Models\PortalRegistration::money($reg);
                     <tr><td><b><?= $isUsd ? $t('देय राशि', 'Amount payable') : $t('देय राशि (GST सहित)', 'Amount payable (incl. GST)') ?></b></td><td class="amt" style="font-size:1.25rem;color:#f05537"><?= $h($money) ?></td></tr>
                 </table>
 
+                <?php $choices = \App\Models\PortalRegistration::priceChoices($reg); if ($choices): ?>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px" role="group" aria-label="Currency">
+                        <a href="?currency=INR" class="sd-btn <?= $isUsd ? 'ghost' : '' ?>" style="flex:1 1 200px;text-align:center">₹<?= $h(number_format($choices['INR'], 0)) ?> · <?= $t('UPI / भारतीय कार्ड', 'UPI / Indian card') ?></a>
+                        <a href="?currency=USD" class="sd-btn <?= $isUsd ? '' : 'ghost' ?>" style="flex:1 1 200px;text-align:center">USD <?= $h(rtrim(rtrim(number_format($choices['USD'], 2), '0'), '.')) ?> · <?= $t('अंतरराष्ट्रीय कार्ड', 'International card') ?></a>
+                    </div>
+                <?php endif; ?>
                 <?php if ($orderId !== '' && $razorpayKey !== ''): ?>
                     <button id="sd-pay-btn" type="button" class="sd-btn" style="width:100%"><?= $isUsd ? $tb("{$money} भुगतान करें", "Pay {$money} – international card") : $tb("{$money} भुगतान करें", "Pay {$money} – UPI / Card / Net Banking") ?></button>
                 <?php else: ?>
