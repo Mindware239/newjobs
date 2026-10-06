@@ -159,7 +159,11 @@ if (!isset($sdPartialsLoaded)) {
             <strong><?= Lang::t('⚠️ ज़रूरी सूचना', '⚠️ Important Notice') ?></strong>
             <ul>
                 <li><?= Lang::t('यह भारत को कुशल बनाने की Jobsence पहल है – भारत सरकार की योजना नहीं।', 'This is Jobsence’s initiative to make India skilled – NOT a Government of India scheme.') ?></li>
+                <?php if ($fee <= 0 && $money === ''): ?>
+                    <li><?= Lang::t('जॉब सीकर के लिए रजिस्ट्रेशन मुफ़्त है। Jobsence नौकरी के बदले कभी पैसे नहीं माँगता।', 'Registration is free for job seekers. Jobsence never asks for money for a job.') ?></li>
+                <?php else: ?>
                 <li><?= Lang::t('एकमुश्त शुल्क ' . ($money !== '' ? $money : '₹' . number_format($fee, 0) . ' (GST सहित)') . ' किसी भी स्थिति में वापसी योग्य नहीं है।', 'One-time fee ' . ($money !== '' ? $money : '₹' . number_format($fee, 0) . ' (including GST)') . ' is non-refundable in any condition.') ?></li>
+                <?php endif; ?>
                 <li><?= Lang::t('Jobsence किसी नौकरी, इंटर्नशिप या प्लेसमेंट की गारंटी नहीं देता।', 'Jobsence does not guarantee any job, internship or placement.') ?></li>
             </ul>
         </div>

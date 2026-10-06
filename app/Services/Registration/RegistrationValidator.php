@@ -70,6 +70,16 @@ class RegistrationValidator
                         $errors[$key] = ['सही 10 अंकों का मोबाइल नंबर भरें', 'Enter a valid 10-digit mobile number'];
                     } elseif ($required && $value === '') {
                         $errors[$key] = ['मोबाइल नंबर भरें', 'Mobile number is required'];
+                    } elseif ($value !== '') {
+                        // Emergency contacts (senior citizens) must be other people's numbers.
+                        foreach ((array)($f['differs_from'] ?? []) as $other) {
+                            $o = trim((string)($in[$other] ?? ''));
+                            $oNorm = $o === '' ? '' : (($foreign ? self::intlMobile($o, $residence, FormRegistry::residenceCountries($form)[$residence] ?? null) : self::mobile($o)) ?? '');
+                            if ($oNorm !== '' && $oNorm === $value) {
+                                $errors[$key] = ['यह नंबर पहले ही भरा जा चुका है – किसी दूसरे व्यक्ति का नंबर दें', 'This number is already used above – give another person’s number'];
+                                break;
+                            }
+                        }
                     }
                     break;
 
@@ -215,6 +225,8 @@ class RegistrationValidator
                         if ($problem) {
                             $errors[$key] = $problem;
                         }
+                    } elseif ($required) {
+                        $errors[$key] = ['यह दस्तावेज़ अपलोड करना ज़रूरी है', 'Please upload this document'];
                     }
                     continue 2;
 

@@ -58,7 +58,7 @@ $row = static function (string $hi, string $en, $value) use ($t, $h): void {
             </article>
 
             <div class="ij-note">
-                <?= $t('Jobsence इस विभाग / कंपनी से संबद्ध नहीं है। आवेदन केवल आधिकारिक वेबसाइट पर करें; कोई भी नौकरी के बदले पैसे माँगे तो सावधान रहें। Jobs Pass शुल्क कोई सरकारी शुल्क नहीं है।', 'Jobsence is not affiliated with this department / company. Apply only on the official website and beware of anyone asking for money for a job. The Jobs Pass fee is not a government fee.') ?>
+                <?= $t('Jobsence इस विभाग / कंपनी से संबद्ध नहीं है। आवेदन केवल आधिकारिक वेबसाइट पर करें; कोई भी नौकरी के बदले पैसे माँगे तो सावधान रहें।', 'Jobsence is not affiliated with this department / company. Apply only on the official website and beware of anyone asking for money for a job.') ?>
             </div>
         </div>
     </section>

@@ -13,7 +13,7 @@ $sdShowcaseLimit = 200;
                 'See which skills we offer training in right now (online or offline in Delhi-NCR) and which skills we are looking for mentors in. Learners can choose up to 5 skills.'
             ) ?></p>
             <div class="sd-cta-row" style="justify-content:center">
-                <a class="sd-btn" href="/apply/skill-development"><?= $tb('सीखने के लिए आवेदन करें – ₹155', 'Apply to Learn – ₹155') ?></a>
+                <a class="sd-btn" href="/apply/skill-development"><?= $tb('सीखने के लिए आवेदन करें – मुफ़्त', 'Apply to Learn – free') ?></a>
                 <a class="sd-btn ghost" href="/apply/skill-provider"><?= $tb('मेंटर / ट्रेनर बनें', 'Become a Mentor / Trainer') ?></a>
             </div>
         </div>

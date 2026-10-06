@@ -16,13 +16,13 @@ $statusLabel = [
             <?php $mtFlash($flash); ?>
 
             <?php if (!$me): ?>
-                <p style="color:#4b5563;max-width:780px"><?= $t('स्किल सीखने वाले और इंटर्नशिप चाहने वाले ₹155 का फॉर्म भरते हैं। मेंटर, संस्थान, ग्रुप मेंटर और इंटर्नशिप देने वाली कंपनियाँ मुफ़्त रजिस्टर करती हैं। फ़ोन और ईमेल केवल दोनों के शुल्क और त्रिपक्षीय समझौते के बाद।', 'Skill and internship seekers fill the ₹155 form. Mentors, institutes, group mentors and internship companies register free. Phone and email only after both have paid and signed the tripartite agreement.') ?></p>
+                <p style="color:#4b5563;max-width:780px"><?= $t('स्किल सीखने वाले और इंटर्नशिप चाहने वाले मुफ़्त फॉर्म भरते हैं। मेंटर, संस्थान, ग्रुप मेंटर और इंटर्नशिप देने वाली कंपनियाँ मुफ़्त रजिस्टर करती हैं और प्रोफ़ाइल देखने के लिए प्लान लेती हैं। फ़ोन और ईमेल केवल त्रिपक्षीय समझौते के बाद।', 'Skill and internship seekers fill a free form. Mentors, institutes, group mentors and internship companies register free and take a plan to view profiles. Phone and email only after the tripartite agreement is signed.') ?></p>
                 <div class="mt-stats">
                     <?php foreach ($stats as $kk => $st): $kc = Mentoring::KINDS[$kk]; $lbl = [$kc['seekers_label'][0], $kc['seekers_label'][1], $kc['providers_label'][0], $kc['providers_label'][1]]; ?>
                         <div class="mt-stat">
                             <div class="n"><?= (int)$st['seekers'] ?></div><b><?= $t($lbl[0], $lbl[1]) ?></b> · <?= (int)$st['providers'] ?> <?= $t($lbl[2], $lbl[3]) ?>
                             <div class="mt-act">
-                                <a class="sd-btn" href="<?= $h($kc['seeker_form']) ?>"><?= $t('₹155 फॉर्म भरें', 'Apply – ₹155') ?></a>
+                                <a class="sd-btn" href="<?= $h($kc['seeker_form']) ?>"><?= $t('मुफ़्त फॉर्म भरें', 'Apply – free') ?></a>
                                 <a class="sd-btn mt-green" href="<?= $h($kc['provider_form']) ?>"><?= $t('मुफ़्त रजिस्टर करें', 'Register free') ?></a>
                             </div>
                             <div class="mt-act"><a href="<?= $h($kc['seekers_page']) ?>"><?= $t($lbl[1] . ' देखें', 'See ' . strtolower($lbl[1])) ?></a> · <a href="<?= $h($kc['providers_page']) ?>"><?= $t($lbl[3] . ' देखें', 'See ' . strtolower($lbl[3])) ?></a></div>
@@ -40,7 +40,7 @@ $statusLabel = [
                     <?php if ($role === 'seeker' && ($me['type'] ?? '') === 'intljob'): $countries = Mentoring::countriesOf($me); ?>
                         <div id="countries" style="margin-top:12px">
                             <b>🌍 <?= $t('मेरे देश', 'My countries') ?></b>
-                            <span class="mt-meta"><?= $t('हर देश एक बार ₹1,180 (₹1,000 + GST) या USD 10 – उस देश की कंपनियाँ आपको देख सकेंगी।', 'Each country one-time ₹1,180 (₹1,000 + GST) or USD 10 – employers in that country can see you.') ?></span>
+                            <span class="mt-meta"><?= $t('हर देश का अनलॉक मुफ़्त है – उस देश की कंपनियाँ आपको देख सकेंगी।', 'Unlocking each country is free – employers in that country can see you.') ?></span>
                             <div class="mt-skills" style="margin:8px 0">
                                 <?php foreach ($countries as $c): ?>
                                     <?php if ($c['paid']): ?><span style="background:#ecfdf5;color:#047857">✔ <?= $h($c['country']) ?></span>
@@ -53,8 +53,8 @@ $statusLabel = [
                                 <?= $mtCsrf() ?>
                                 <input name="country" list="mt-countries" required placeholder="Japan, UAE, USA…" style="flex:1 1 200px;height:44px;padding:0 10px;border:1px solid #d1d5db;border-radius:10px">
                                 <datalist id="mt-countries"><?php foreach (array_unique(array_merge($wanted, array_values(\App\Controllers\Front\JobsAbroadController::countries()))) as $cn): ?><option value="<?= $h($cn) ?>"><?php endforeach; ?></datalist>
-                                <button class="sd-btn" name="currency" value="INR" type="submit"><?= $t('अनलॉक – ₹1,180', 'Unlock – ₹1,180') ?></button>
-                                <button class="sd-btn mt-green" name="currency" value="USD" type="submit"><?= $t('अनलॉक – USD 10', 'Unlock – USD 10') ?></button>
+                                <button class="sd-btn" name="currency" value="INR" type="submit"><?= $t('अनलॉक – मुफ़्त (भारत)', 'Unlock – free (India)') ?></button>
+                                <button class="sd-btn mt-green" name="currency" value="USD" type="submit"><?= $t('अनलॉक – मुफ़्त (भारत के बाहर)', 'Unlock – free (outside India)') ?></button>
                             </form>
                         </div>
                     <?php endif; ?>

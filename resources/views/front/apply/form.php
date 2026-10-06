@@ -339,12 +339,17 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                     </div>
                 </fieldset>
 
+<?php if (\App\Services\Registration\FormRegistry::feeOf($form) <= 0): ?>
+                <div class="sd-alert ok"><b><?= $t('मुफ़्त', 'Free') ?>:</b> <?= $t('कोई भुगतान नहीं – फॉर्म जमा होते ही रजिस्ट्रेशन पूरा।', 'No payment – your registration is complete as soon as you submit.') ?></div>
+                <button type="submit" class="sd-btn" style="width:100%" id="sd-submit"><?= $tb('फॉर्म जमा करें', 'Submit Form') ?></button>
+                <?php else: ?>
                 <div class="sd-alert ok">
                     <b><?= $t('भुगतान', 'Payment') ?>:</b>
                     <?= $t("अगले पेज पर UPI, कार्ड या नेट बैंकिंग से ₹{$feeLabel} का भुगतान करें। सफल भुगतान के बाद ही फॉर्म मान्य होगा।", "Pay ₹{$feeLabel} on the next page via UPI, card or net banking. The form is considered only after successful payment.") ?>
                 </div>
 
                 <button type="submit" class="sd-btn" style="width:100%" id="sd-submit"><?= $tb("फॉर्म जमा करें और ₹{$feeLabel} भुगतान करें", "Submit Form & Pay ₹{$feeLabel}") ?></button>
+                <?php endif; ?>
             </form>
         </div>
     </section>

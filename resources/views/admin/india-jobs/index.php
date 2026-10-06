@@ -8,7 +8,7 @@ $csrf = $h($_SESSION['csrf_token'] ?? '');
     <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Jobs in India</h1>
-            <p class="mt-2 text-sm text-gray-600">Railways, Army, Police, State Govt, PSU, bank and company notifications shown on <a class="text-primary font-semibold hover:underline" href="/india-jobs" target="_blank">/india-jobs</a>. Full details and apply links are visible only with a Jobs Pass (₹177 / month).</p>
+            <p class="mt-2 text-sm text-gray-600">Railways, Army, Police, State Govt, PSU, bank and company notifications shown on <a class="text-primary font-semibold hover:underline" href="/india-jobs" target="_blank">/india-jobs</a>. Full details and apply links are free for everyone (job seekers use Jobsence free).</p>
         </div>
         <div class="flex gap-2">
             <a href="/admin/india-jobs/sources" class="inline-flex items-center justify-center rounded-lg bg-gray-800 px-4 py-2 text-sm font-bold text-white hover:bg-gray-900">Sources &amp; feeds</a>

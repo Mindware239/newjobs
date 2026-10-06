@@ -12,14 +12,14 @@ use App\Services\VerificationService;
  * Young India mentoring: skill / internship seekers ↔ mentors, institutes and internship providers.
  *
  *  - Providers (skill mentors / institutes, internship providers) register free.
- *  - Seekers pay the ₹155 form fee; the registration stays valid until they are matched.
+ *  - Seekers register free (FormRegistry::SEEKERS_FREE); the registration stays valid until they are matched.
  *  - Both sides see each other's name, location, skills / domains, qualification, timing –
  *    never phone or email.
  *  - A provider with a paid plan (₹155 / USD 5 outside India: mentors 30 days, internship providers 10 days, max 20)
  *    can open 3 full profiles a day and send / sign agreements.
  *  - Phone and email are shown only after the tripartite agreement (seeker + provider + Jobsence)
  *    is signed by both with an email OTP; Jobsence countersigns automatically.
- *  - A seeker who rejects (ends) a signed match must pay a new form fee.
+ *  - A seeker who rejects (ends) a signed match must fill a new form (free while SEEKERS_FREE).
  *
  * Agreements live in mentor_assignments (shared with the older admin / auto matching).
  */
@@ -247,7 +247,7 @@ class Mentoring
     }
 
     // ------------------------------------------------------------------
-    // Jobs abroad: unlock a country (₹1,180 or USD 10, one-time)
+    // Jobs abroad: unlock a country (free for job seekers – FormRegistry::SEEKERS_FREE)
     // ------------------------------------------------------------------
 
     /** country => ['paid' => bool, 'token' => unlock token] for a jobs-abroad seeker. */
@@ -310,7 +310,7 @@ class Mentoring
                 'price_inr' => FormRegistry::INTL_COUNTRY_FEE_INR, 'price_usd' => FormRegistry::INTL_COUNTRY_FEE_USD], JSON_UNESCAPED_UNICODE),
             'declaration_accepted' => 1,
             'currency' => $usd ? 'USD' : 'INR',
-        ], 'ICU', $usd ? FormRegistry::INTL_COUNTRY_FEE_USD : FormRegistry::INTL_COUNTRY_FEE_INR);
+        ], 'ICU', FormRegistry::SEEKERS_FREE ? 0.0 : ($usd ? FormRegistry::INTL_COUNTRY_FEE_USD : FormRegistry::INTL_COUNTRY_FEE_INR));
         return $reg ? ['ok' => true, 'reg' => $reg] : ['ok' => false, 'msg' => ['सर्वर त्रुटि, दोबारा प्रयास करें', 'Server error, please retry']];
     }
 

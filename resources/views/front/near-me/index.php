@@ -68,7 +68,7 @@ $unlocked = $pass !== null;
             <p style="color:#4b5563;margin:0;max-width:760px"><?= $t('प्लंबर, इलेक्ट्रीशियन, कारपेंटर, वेल्डर, पेंटर, हेयर ड्रेसर, सैलून और भी बहुत कुछ – अपने पिन कोड के पास। सभी सेवा प्रदाता फोटो और लाइव सेल्फ़ी से रजिस्टर होते हैं।', 'Plumbers, electricians, carpenters, welders, painters, hair dressers, salons and more – near your PIN code. Every provider registers with a photo and a live selfie.') ?></p>
 
             <div class="nm-cta">
-                <a href="/apply/near-me-seeker"><span class="ico" aria-hidden="true">🔎</span><span><b><?= $t('मुझे सेवा चाहिए', 'I need a service') ?></b><small><?= $t("{$feeLabel} (₹150 + GST) – 3 महीने तक प्रदाता चुनें; दोनों के साइन के बाद नंबर", "{$feeLabel} (₹150 + GST) – choose providers for 3 months; number after both sign") ?></small></span></a>
+                <a href="/apply/near-me-seeker"><span class="ico" aria-hidden="true">🔎</span><span><b><?= $t('मुझे सेवा चाहिए', 'I need a service') ?></b><small><?= $t('मुफ़्त – 3 महीने तक प्रदाता चुनें; दोनों के साइन के बाद नंबर', 'Free – choose providers for 3 months; number after both sign') ?></small></span></a>
                 <a href="/apply/near-me-provider"><span class="ico" aria-hidden="true">🛠️</span><span><b><?= $t('मैं सेवा देता/देती हूँ – रजिस्टर करें', 'I provide a service – enrol') ?></b><small><?= $t("{$feeLabel} (₹150 + GST) – 3 महीने, फोटो + सेल्फ़ी ज़रूरी", "{$feeLabel} (₹150 + GST) – 3 months, photo + selfie required") ?></small></span></a>
             </div>
 
@@ -156,8 +156,8 @@ $unlocked = $pass !== null;
                 <p style="margin:0 0 10px;color:#4b5563"><?= $t('आपके सबसे पास के ' . count($results) . ' सेवा प्रदाता (अधिकतम 5) – फोटो और समय के साथ', 'Your ' . count($results) . ' nearest service provider' . (count($results) > 1 ? 's' : '') . ' (up to 5) – with photo and timings') ?></p>
                 <?php if (!$unlocked): ?>
                     <div class="ij-pass" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;border:2px dashed #f05537;border-radius:14px;padding:14px;margin-bottom:14px;background:#fff">
-                        <span><b><?= $t('मोबाइल नंबर और पूरा पता देखने के लिए Near Me पास लें', 'Get the Near Me pass to see mobile numbers & full addresses') ?></b><br><?= $t("{$feeLabel} (₹150 + GST) प्लेटफ़ॉर्म शुल्क – 3 महीने", "{$feeLabel} (₹150 + GST) platform fee – 3 months") ?></span>
-                        <a class="sd-btn" href="/apply/near-me-seeker"><?= $tb('पास लें', 'Get pass') ?></a>
+                        <span><b><?= $t('मोबाइल नंबर और पूरा पता देखने के लिए मुफ़्त Near Me पास लें', 'Get the free Near Me pass to see mobile numbers & full addresses') ?></b><br><?= $t('सेवा चाहने वालों के लिए मुफ़्त – 3 महीने', 'Free for people looking for a service – 3 months') ?></span>
+                        <a class="sd-btn" href="/apply/near-me-seeker"><?= $tb('मुफ़्त पास लें', 'Get free pass') ?></a>
                     </div>
                 <?php endif; ?>
                 <div class="nm-list">

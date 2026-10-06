@@ -40,7 +40,7 @@ $applyUrl = static fn(string $country, string $role = '') => '/apply/internation
                 <h1><?= $t("{$country} में {$sector['short']} नौकरियाँ", "{$sector['short']} jobs in {$country}") ?></h1>
             <?php endif; ?>
             <div class="ja-cta">
-                <span><b><?= $t('रजिस्ट्रेशन मुफ़्त', 'Registration is free') ?></b> · <?= $t("हर देश के लिए एक बार {$fee} (₹1,000 + GST)", "each country one-time {$fee} (₹1,000 + GST)") ?> · <?= $t('पासपोर्ट ज़रूरी', 'passport mandatory') ?></span>
+                <span><b><?= $t('रजिस्ट्रेशन मुफ़्त', 'Registration is free') ?></b> · <?= FormRegistry::SEEKERS_FREE ? $t('देश अनलॉक भी मुफ़्त', 'country unlock free too') : $t("हर देश के लिए एक बार {$fee} (₹1,000 + GST)", "each country one-time {$fee} (₹1,000 + GST)") ?> · <?= $t('पासपोर्ट ज़रूरी', 'passport mandatory') ?></span>
                 <span style="flex-basis:100%;font-size:.82rem;color:#7f1d1d">⚠️ <?= $t('हर नौकरी दूतावास / कॉन्सुलेट या उस देश के मंत्रालय से स्वयं पक्का करें – धोखाधड़ी के लिए Jobsence ज़िम्मेदार नहीं।', 'Verify every job yourself with the embassy / consulate or that country’s ministry – Jobsence is not liable for fraud.') ?></span>
                 <a class="sd-btn" href="<?= $h($level === 'all' ? '/apply/international-job' : $applyUrl($country)) ?>"><?= $level === 'all' ? $tb('मुफ़्त रजिस्टर करें', 'Register free') : $tb("{$country} के लिए आवेदन करें", "Apply for {$country}") ?></a>
             </div>

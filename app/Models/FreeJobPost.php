@@ -15,6 +15,9 @@ class FreeJobPost
 {
     public const LIVE_DAYS = 30;
     public const MAX_PER_DAY = 10;
+    /** Employers pay: this many posts a month are free, every further post costs EXTRA_POST_FEE (₹200 + 18% GST). */
+    public const FREE_POSTS_PER_MONTH = 3;
+    public const EXTRA_POST_FEE = 236.00;
     /** Contact reveals per user per day (contacts are never in the page HTML – see StateJobsController::contact). */
     public const CONTACTS_PER_DAY = 30;
 
@@ -38,14 +41,15 @@ class FreeJobPost
         'apprentice' => ['अप्रेंटिस', 'Apprentice'],
     ];
 
-    public static function create(array $p): int
+    /** $pendingPayment: an extra post beyond the free quota – stored, goes live once paid (activatePaid). */
+    public static function create(array $p, bool $pendingPayment = false): int
     {
         self::ensureSchema();
         $db = Database::getInstance();
         $db->execute(
             'INSERT INTO free_job_posts (user_id, company_name, company_type, contact_person, phone, email, title, job_type, state, city,
                 vacancies, salary, qualification, experience, description, how_to_apply, status, published_at, expires_at, ip_address)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'live\', NOW(), NOW() + INTERVAL ' . self::LIVE_DAYS . ' DAY, ?)',
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ' . ($pendingPayment ? "'pending_payment', NULL, NULL" : "'live', NOW(), NOW() + INTERVAL " . self::LIVE_DAYS . ' DAY') . ', ?)',
             [$p['user_id'], $p['company_name'], $p['company_type'], $p['contact_person'], $p['phone'], $p['email'], $p['title'], $p['job_type'],
              $p['state'], $p['city'], $p['vacancies'], $p['salary'], $p['qualification'], $p['experience'], $p['description'], $p['how_to_apply'],
              substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45)]
@@ -70,6 +74,24 @@ class FreeJobPost
     {
         self::ensureSchema();
         return Database::getInstance()->fetchAll('SELECT * FROM free_job_posts WHERE user_id = ? ORDER BY id DESC LIMIT 100', [$userId]);
+    }
+
+    /** Posts this user made this calendar month that count against the free quota (unpaid drafts do not). */
+    public static function postedThisMonth(int $userId): int
+    {
+        self::ensureSchema();
+        return (int)(Database::getInstance()->fetchOne(
+            "SELECT COUNT(*) AS n FROM free_job_posts WHERE user_id = ? AND status <> 'pending_payment' AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", [$userId]
+        )['n'] ?? 0);
+    }
+
+    /** A paid extra post goes live for LIVE_DAYS from now. */
+    public static function activatePaid(int $id): void
+    {
+        self::ensureSchema();
+        Database::getInstance()->execute(
+            "UPDATE free_job_posts SET status = 'live', published_at = NOW(), expires_at = NOW() + INTERVAL " . self::LIVE_DAYS . " DAY WHERE id = ? AND status = 'pending_payment'", [$id]
+        );
     }
 
     public static function postedToday(int $userId): int
@@ -159,7 +181,7 @@ class FreeJobPost
                 experience VARCHAR(80) NULL,
                 description TEXT NULL,
                 how_to_apply VARCHAR(500) NULL,
-                status ENUM('live','hidden','closed') NOT NULL DEFAULT 'live',
+                status ENUM('live','hidden','closed','pending_payment') NOT NULL DEFAULT 'live',
                 views INT UNSIGNED NOT NULL DEFAULT 0,
                 published_at DATETIME NULL,
                 expires_at DATETIME NULL,
@@ -170,6 +192,14 @@ class FreeJobPost
                 KEY idx_fjp_live (status, expires_at, state, city),
                 KEY idx_fjp_user (user_id, created_at)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            try {
+                $st = Database::getInstance()->fetchOne("SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'free_job_posts' AND COLUMN_NAME = 'status'");
+                if ($st && !str_contains((string)$st['t'], 'pending_payment')) {
+                    $pdo->exec("ALTER TABLE free_job_posts MODIFY status ENUM('live','hidden','closed','pending_payment') NOT NULL DEFAULT 'live'");
+                }
+            } catch (\Throwable $e) {
+                error_log('free_job_posts status upgrade: ' . $e->getMessage());
+            }
             $pdo->exec("CREATE TABLE IF NOT EXISTS free_job_contact_views (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 user_id BIGINT UNSIGNED NOT NULL,

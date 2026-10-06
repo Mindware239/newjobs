@@ -141,7 +141,26 @@ class StateJobsController extends BaseController
             $response->view('front/state-jobs/post', $this->formData([]) + ['errors' => $e, 'old' => $in], 422, 'layout');
             return;
         }
-        $id = FreeJobPost::create($p);
+        // Employers pay: FREE_POSTS_PER_MONTH free posts a month, then ₹200 + GST per post (paid through the usual checkout).
+        $overQuota = !$this->currentUser->isAdmin() && FreeJobPost::postedThisMonth((int)$this->currentUser->id) >= FreeJobPost::FREE_POSTS_PER_MONTH;
+        $id = FreeJobPost::create($p, $overQuota);
+        if ($overQuota) {
+            $reg = \App\Models\PortalRegistration::create([
+                'type' => 'jobpost',
+                'full_name' => $p['contact_person'],
+                'mobile' => $p['phone'] !== '' ? $p['phone'] : (string)preg_replace('/\D/', '', (string)($this->currentUser->phone ?? '')),
+                'email' => $p['email'] !== '' ? $p['email'] : (string)($this->currentUser->email ?? ''),
+                'city' => $p['city'],
+                'state' => $p['state'],
+                'categories' => mb_substr($p['title'], 0, 190),
+                'details' => json_encode(['post_id' => $id, 'company' => $p['company_name'], 'user_id' => (int)$this->currentUser->id], JSON_UNESCAPED_UNICODE),
+                'declaration_accepted' => 1,
+            ], 'JPS', FreeJobPost::EXTRA_POST_FEE);
+            if ($reg) {
+                $response->redirect('/apply/pay/' . $reg['token']);
+                return;
+            }
+        }
         $_SESSION['fjp_flash'] = 'posted';
         $response->redirect(FreeJobPost::url(['id' => $id] + $p));
     }
@@ -235,6 +254,7 @@ class StateJobsController extends BaseController
             'companyTypes' => FreeJobPost::COMPANY_TYPES,
             'jobTypes' => FreeJobPost::JOB_TYPES,
             'myPosts' => $this->currentUser ? FreeJobPost::byUser((int)$this->currentUser->id) : [],
+            'usedThisMonth' => $this->currentUser ? FreeJobPost::postedThisMonth((int)$this->currentUser->id) : 0,
         ] + $extra;
     }
 

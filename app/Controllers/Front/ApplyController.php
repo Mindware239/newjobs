@@ -18,7 +18,7 @@ use App\Services\SeoService;
 use App\Services\VerificationService;
 
 /**
- * Jobsence ₹155 registration forms:
+ * Jobsence registration forms (free for job seekers; employers / providers pay for plans):
  *   /apply                       hub with all buttons
  *   /apply/{form}                skill-development | internship | full-time-job | part-time-job | work-from-home | skill-provider
  *   /apply/pay/{token}           Razorpay checkout
@@ -37,7 +37,7 @@ class ApplyController extends BaseController
     {
         $this->seo(
             'Jobsence – भारत का Job Portal | Skill Development, Internship, Full-time, Part-time & Work from Home Jobs in India',
-            'Apply on Jobsence – Skill Development, Internship, Full-time, Part-time and Work from Home registration. 3000+ categories, Hindi + English forms, one-time fee ₹155 incl. GST. भारत को कुशल बनाने की Jobsence पहल.',
+            'Apply on Jobsence – Skill Development, Internship, Full-time, Part-time and Work from Home registration. 3000+ categories, Hindi + English forms, free for job seekers. भारत को कुशल बनाने की Jobsence पहल.',
             '/apply'
         );
         $response->view('front/apply/hub', ['forms' => FormRegistry::all()] + $this->shared(), 200, 'layout');
@@ -115,7 +115,8 @@ class ApplyController extends BaseController
             $errors['captcha'] = ['सुरक्षा प्रश्न का सही उत्तर दें', 'Enter the correct answer to the security question'];
         }
 
-        $files = ['resume' => $request->file('resume'), 'video' => $request->file('video'), 'photo' => $request->file('photo'), 'selfie' => $request->file('selfie')];
+        $files = ['resume' => $request->file('resume'), 'video' => $request->file('video'), 'photo' => $request->file('photo'), 'selfie' => $request->file('selfie'),
+            'address_proof' => $request->file('address_proof')];
         [$cols, $details, $fieldErrors] = RegistrationValidator::validate($form, $in, $files);
         $errors += $fieldErrors;
 
@@ -180,8 +181,8 @@ class ApplyController extends BaseController
             }
             unset($cols[$field]);
         }
-        // Photo / live selfie (Near Me providers, restaurant jobs) are kept in details.
-        foreach (['photo', 'selfie'] as $field) {
+        // Photo / live selfie (Near Me providers, restaurant jobs) and address proof (senior citizens) are kept in details.
+        foreach (['photo', 'selfie', 'address_proof'] as $field) {
             $file = $files[$field] ?? null;
             if ($file && ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
                 $path = $this->storeUpload($file, $form['type'], $field);
@@ -479,7 +480,7 @@ class ApplyController extends BaseController
     private function shared(): array
     {
         return [
-            'fee' => PortalRegistration::FEE,
+            'fee' => \App\Services\Registration\FormRegistry::SEEKERS_FREE ? 0.0 : PortalRegistration::FEE,
             'courseFee' => PortalRegistration::COURSE_FEE,
             'states' => SkillDevelopmentController::STATES,
             'whatsappNumber' => preg_replace('/\D/', '', (string)($_ENV['SKILL_WHATSAPP_NUMBER'] ?? $_ENV['WHATSAPP_NUMBER'] ?? '')),

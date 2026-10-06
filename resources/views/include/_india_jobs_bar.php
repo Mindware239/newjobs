@@ -37,11 +37,17 @@ $ijItems = $ijTicker
 .ijbar-run a:hover { color: #fff !important; text-decoration: underline; }
 .ijbar-run a::before { content: "●"; color: #f05537; margin-right: 8px; font-size: 10px; }
 @keyframes ijbarRun { to { transform: translateX(-100%); } }
-@media (prefers-reduced-motion: reduce) { .ijbar-cta, .ijbar-run { animation: none; } .ijbar-run { padding-left: 0; } }
+/* Senior citizen jobs – Jobsence USP: gold button with a blinking "NEW – first in India" badge */
+.ijbar-senior { flex: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 900; color: #111827 !important; text-decoration: none; background: linear-gradient(90deg, #fde68a, #fbbf24); padding: 4px 12px; border-radius: 999px; border: 2px solid #fff; box-shadow: 0 0 0 0 rgba(251,191,36,.7); animation: ijSenior 1.6s ease-in-out infinite; }
+.ijbar-senior:hover { background: #fbbf24; }
+.ijbar-new { background: #dc2626; color: #fff; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 999px; letter-spacing: .5px; animation: ijbarBlink 1s steps(2, start) infinite; }
+@keyframes ijSenior { 50% { box-shadow: 0 0 0 5px rgba(251,191,36,.35); } }
+@media (prefers-reduced-motion: reduce) { .ijbar-cta, .ijbar-run, .ijbar-senior, .ijbar-new { animation: none; } .ijbar-run { padding-left: 0; } }
 @media (max-width: 480px) { .ijbar { font-size: 12px; padding: 6px 8px 4px; } .ijbar-main a { font-size: 13px; padding: 6px 11px !important; } }
 </style>
 <div class="ijbar" role="region" aria-label="See Jobs in India">
     <div class="ijbar-main">
+    <a class="ijbar-senior" href="/apply/senior-citizen-jobs" title="<?= $ijHi ? 'भारत में पहली बार – Jobsence द्वारा' : 'First in India – by Jobsence' ?>">👴 <?= $ijHi ? 'वरिष्ठ नागरिक नौकरियाँ (59+)' : 'Senior Citizen Jobs (59+)' ?> <span class="ijbar-new"><?= $ijHi ? 'नया – भारत में पहली बार' : 'NEW – first in India' ?></span></a>
     <a class="ijbar-cta" href="/india-jobs"><span class="ijbar-dot" aria-hidden="true"></span><?= $ijHi ? 'भारत की नौकरियाँ देखें' : 'See Jobs in India' ?></a>
     <a class="ijbar-yi" href="/mentoring"><span class="ijbar-flag" aria-hidden="true"></span> <span class="l"><?= $ijHi ? 'युवा भारत मेंटरिंग' : 'Young India Mentoring' ?></span></a>
     <a class="ijbar-near" href="/jobs-by-state" style="background:#f59e0b">📍 <?= $ijHi ? 'राज्य अनुसार नौकरियाँ' : 'Jobs by State A–Z' ?></a>

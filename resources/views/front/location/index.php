@@ -34,7 +34,7 @@ $points = [
     ],
     'mentors' => [
         ["{$name} में सत्यापित मेंटर, ग्रुप मेंटर और ट्रेनिंग संस्थान – 3000+ स्किल।", "Verified mentors, group mentors and training institutes in {$name} – 3000+ skills."],
-        ['मेंटर और संस्थान मुफ़्त रजिस्टर करते हैं; सीखने वाले ₹155 का फॉर्म भरते हैं।', 'Mentors and institutes register free; learners fill the ₹155 form.'],
+        ['मेंटर और संस्थान मुफ़्त रजिस्टर करते हैं; सीखने वालों के लिए फॉर्म भी मुफ़्त है।', 'Mentors and institutes register free; the learners’ form is free too.'],
         ['फ़ोन और ईमेल केवल त्रिपक्षीय समझौते (उम्मीदवार + मेंटर + Jobsence) के बाद।', 'Phone and email only after the tripartite agreement (candidate + mentor + Jobsence).'],
     ],
     'jobs' => [
@@ -82,8 +82,8 @@ $points = [
                     <ul class="lc-points"><?php foreach ($points as $p): ?><li><?= $tp($p) ?></li><?php endforeach; ?></ul>
                 </div>
                 <div class="lc-cta">
-                    <div class="price">₹155 <small style="font-size:.9rem;font-weight:700;color:#6b7280"><?= $t('GST सहित, एक बार', 'incl. GST, one-time') ?></small></div>
-                    <p style="margin:4px 0 12px;color:#4b5563"><?= $t("{$name} के लिए अभी रजिस्टर करें – CAPTCHA, OTP और सुरक्षित Razorpay भुगतान।", "Register now for {$name} – CAPTCHA, OTP and secure Razorpay payment.") ?></p>
+                    <div class="price"><?= $t('मुफ़्त', 'Free') ?> <small style="font-size:.9rem;font-weight:700;color:#6b7280"><?= $t('नौकरी ढूँढने / सीखने वालों के लिए', 'for job seekers & learners') ?></small></div>
+                    <p style="margin:4px 0 12px;color:#4b5563"><?= $t("{$name} के लिए अभी मुफ़्त रजिस्टर करें – CAPTCHA और OTP से सुरक्षित।", "Register free now for {$name} – secured with CAPTCHA and OTP.") ?></p>
                     <a class="sd-btn" style="width:100%;text-align:center" href="<?= $h($k['form']) ?>"><?= isset($k['offer']) ? [
                         'mentors' => $tb('मेंटर चाहिए – आवेदन करें', 'Find a mentor – apply'),
                         'interncos' => $tb('इंटर्नशिप चाहिए – आवेदन करें', 'Want an internship – apply'),
@@ -93,7 +93,7 @@ $points = [
                     <?php if (isset($k['offer'])): ?><a class="sd-btn ghost" style="width:100%;text-align:center;margin-top:8px" href="<?= $h($k['offer']) ?>"><?= $kind === 'services' ? $tb('सेवा देते हैं? रजिस्टर करें', 'Provide a service? Enrol') : $tb('मुफ़्त रजिस्टर करें', 'Register free') ?></a><?php endif; ?>
                     <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.82rem;color:#7f1d1d;font-weight:600">⚠️ <?= $tp(\App\Services\Registration\FormRegistry::abroadDisclaimer()) ?></p>
                         <p style="margin:6px 0 0;font-size:.82rem;color:#7f1d1d;font-weight:600">🛂 <?= $tp(\App\Services\Registration\FormRegistry::visaDisclaimer()) ?></p><?php endif; ?>
-                    <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.85rem;color:#6b7280"><?= $t('रजिस्ट्रेशन मुफ़्त · ' . $name . ' अनलॉक: ₹1,180 (₹1,000 + GST) या USD 10, एक बार · पासपोर्ट ज़रूरी', 'Registration free · unlock ' . $name . ': ₹1,180 (₹1,000 + GST) or USD 10, one-time · passport mandatory') ?></p><?php endif; ?>
+                    <?php if ($abroad): ?><p style="margin:10px 0 0;font-size:.85rem;color:#6b7280"><?= $t('रजिस्ट्रेशन मुफ़्त · ' . $name . ' अनलॉक भी मुफ़्त · पासपोर्ट ज़रूरी', 'Registration free · unlocking ' . $name . ' is free too · passport mandatory') ?></p><?php endif; ?>
                 </div>
             </div>
         </div>
@@ -138,7 +138,7 @@ $points = [
 
             <div class="lc-faq" style="margin-top:26px">
                 <h2 style="font-size:1.1rem"><?= $t('अक्सर पूछे जाने वाले सवाल', 'Frequently asked questions') ?></h2>
-                <details><summary><?= $t('रजिस्ट्रेशन शुल्क कितना है?', 'What is the registration fee?') ?></summary><p style="margin:6px 0 0"><?= $t('₹155 (GST सहित), एक बार, वापसी योग्य नहीं।', '₹155 (including GST), one-time, non-refundable.') ?></p></details>
+                <details><summary><?= $t('रजिस्ट्रेशन शुल्क कितना है?', 'What is the registration fee?') ?></summary><p style="margin:6px 0 0"><?= $t('नौकरी ढूँढने और सीखने वालों के लिए रजिस्ट्रेशन मुफ़्त है। केवल मेंटर, इंटर्नशिप देने वाले और कंपनियाँ अपने प्लान का शुल्क देते हैं। Jobsence नौकरी के बदले कभी पैसे नहीं माँगता।', 'Registration is free for job seekers and learners. Only mentors, internship providers and companies pay for their plans. Jobsence never asks for money for a job.') ?></p></details>
                 <details><summary><?= $t('क्या नौकरी या प्लेसमेंट की गारंटी है?', 'Is a job or placement guaranteed?') ?></summary><p style="margin:6px 0 0"><?= $t('नहीं। Jobsence आपका प्रोफ़ाइल उपयुक्त कंपनियों और मेंटर्स तक पहुँचाने की कोशिश करता है।', 'No. Jobsence tries to share your profile with suitable companies and mentors.') ?></p></details>
                 <details><summary><?= $t('क्या यह सरकारी योजना है?', 'Is this a Government scheme?') ?></summary><p style="margin:6px 0 0"><?= $t('नहीं। यह भारत को कुशल बनाने की Jobsence पहल है – भारत सरकार की योजना नहीं।', 'No. This is Jobsence’s initiative to make India skilled – not a Government of India scheme.') ?></p></details>
             </div>

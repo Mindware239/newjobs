@@ -103,6 +103,9 @@ class RegistrationPayments
             return;
         }
         $fresh = PortalRegistration::find((int)$reg['id']) ?? $reg;
+        if ($fresh['type'] === 'jobpost' && !empty($fresh['details']['post_id'])) {
+            \App\Models\FreeJobPost::activatePaid((int)$fresh['details']['post_id']); // paid extra post goes live
+        }
         RegistrationMailer::sendThankYou($fresh);
         RegistrationMailer::notifyOwner($fresh);
     }

@@ -7,13 +7,13 @@ use App\Services\Registration\Mentoring;
 $isSkill = $kind === 'skill';
 $words = [
     'skill' => ['h1' => ['सत्यापित मेंटर, ग्रुप मेंटर और ट्रेनिंग संस्थान', 'Verified mentors, group mentors & training institutes'],
-        'pay' => ['मेंटर ढूँढ रहे हैं? एक बार का फॉर्म शुल्क ₹155 भरें – फिर सभी मेंटर के पूरे नाम और उनसे समझौता।', 'Looking for a mentor? Pay the one-time ₹155 form fee – then see every mentor’s full name and sign with them.'],
+        'pay' => ['मेंटर ढूँढ रहे हैं? मुफ़्त फॉर्म भरें – फिर सभी मेंटर के पूरे नाम और उनसे समझौता।', 'Looking for a mentor? Fill the free form – then see every mentor’s full name and sign with them.'],
         'choose' => ['इन्हें मेंटर चुनें – समझौता', 'Choose as mentor – agreement']],
     'internship' => ['h1' => ['इंटर्नशिप देने वाली सत्यापित कंपनियाँ और संस्थान', 'Verified companies & institutes offering internships'],
-        'pay' => ['इंटर्नशिप ढूँढ रहे हैं? ₹155 का फॉर्म भरें – फिर सभी प्रदाताओं के नाम और समझौता।', 'Looking for an internship? Fill the ₹155 form – then see all providers and sign with them.'],
+        'pay' => ['इंटर्नशिप ढूँढ रहे हैं? मुफ़्त फॉर्म भरें – फिर सभी प्रदाताओं के नाम और समझौता।', 'Looking for an internship? Fill the free form – then see all providers and sign with them.'],
         'choose' => ['इंटर्नशिप के लिए समझौता', 'Agreement for internship']],
     'job' => ['h1' => ['भर्ती करने वाली सत्यापित कंपनियाँ, दुकानें और संस्थान', 'Verified companies, shops & institutes hiring now'],
-        'pay' => ['नौकरी ढूँढ रहे हैं? ₹155 का फॉर्म भरें – फिर सभी कंपनियों के नाम और उनसे समझौता।', 'Looking for a job? Fill the ₹155 form – then see every company’s name and sign with them.'],
+        'pay' => ['नौकरी ढूँढ रहे हैं? मुफ़्त फॉर्म भरें – फिर सभी कंपनियों के नाम और उनसे समझौता।', 'Looking for a job? Fill the free form – then see every company’s name and sign with them.'],
         'choose' => ['इस कंपनी से समझौता', 'Agreement with this company']],
 ][$kind];
 $here = $_SERVER['REQUEST_URI'] ?? $k['providers_page'];
@@ -40,7 +40,7 @@ $modes = ['online' => ['ऑनलाइन', 'Online'], 'offline_ncr' => ['ऑ�
             <?php else: ?>
                 <div class="mt-box" style="margin:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between">
                     <span><?= $tp($words['pay']) ?></span>
-                    <a class="sd-btn" href="<?= $h($k['seeker_form']) ?>"><?= $tb('₹155 फॉर्म भरें', 'Apply – ₹155') ?></a>
+                    <a class="sd-btn" href="<?= $h($k['seeker_form']) ?>"><?= $tb('मुफ़्त फॉर्म भरें', 'Apply – free') ?></a>
                 </div>
             <?php endif; ?>
             <?php $mtSearch($f, false); ?>

@@ -132,7 +132,7 @@ require __DIR__ . '/_styles.php';
 
             <div class="ij-note">
                 <b><?= $t('ज़रूरी सूचना', 'Important notice') ?>:</b>
-                <?= $t('Jobsence इन सरकारी विभागों, PSU या कंपनियों से संबद्ध नहीं है। Jobs Pass शुल्क Jobsence की लिस्टिंग सेवा का है – यह कोई सरकारी शुल्क नहीं है। आवेदन हमेशा आधिकारिक वेबसाइट पर करें; जानकारी की पुष्टि आधिकारिक अधिसूचना से करें। ', 'Jobsence is not affiliated with these government departments, PSUs or companies. The Jobs Pass fee is for Jobsence’s listing service – it is not a government fee. Always apply on the official website and confirm details in the official notification. ') ?>
+                <?= $t('Jobsence इन सरकारी विभागों, PSU या कंपनियों से संबद्ध नहीं है। आवेदन हमेशा आधिकारिक वेबसाइट पर करें; जानकारी की पुष्टि आधिकारिक अधिसूचना से करें; नौकरी के बदले पैसे माँगने वाले किसी भी व्यक्ति से सावधान रहें। ', 'Jobsence is not affiliated with these government departments, PSUs or companies. Always apply on the official website and confirm details in the official notification; beware of anyone asking for money for a job. ') ?>
                 <?= $tp(\App\Services\Registration\FormRegistry::platformDisclaimer()) ?>
             </div>
         </div>

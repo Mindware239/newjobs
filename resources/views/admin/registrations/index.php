@@ -8,7 +8,7 @@ $revenue = array_sum(array_column($stats, 'revenue'));
 <div>
     <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">₹155 Registrations</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Registrations</h1>
             <p class="mt-2 text-sm text-gray-600">Skill development, internship, full-time, part-time, work-from-home and mentor forms from <a class="text-primary font-semibold hover:underline" href="/apply" target="_blank">/apply</a></p>
         </div>
         <a href="/admin/registrations/export?<?= $h($query()) ?>" class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-600">Export CSV</a>

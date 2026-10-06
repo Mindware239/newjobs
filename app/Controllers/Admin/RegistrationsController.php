@@ -122,7 +122,7 @@ class RegistrationsController extends BaseController
         $kind = (string)$request->param('kind');
         $column = ['resume' => 'resume_path', 'video' => 'video_path'][$kind] ?? null;
         $relative = $reg && $column ? (string)($reg[$column] ?? '') : '';
-        if ($reg && in_array($kind, ['photo', 'selfie'], true)) {
+        if ($reg && in_array($kind, ['photo', 'selfie', 'address_proof'], true)) {
             $relative = (string)($reg['details'][$kind . '_path'] ?? '');
         }
 
@@ -197,7 +197,7 @@ class RegistrationsController extends BaseController
                 $value = match ($f['type']) {
                     'aadhaar' => $reg['aadhaar_last4'] ? 'XXXX XXXX ' . $reg['aadhaar_last4'] : '',
                     'gst' => $reg['gstin'] ?: (!empty($reg['details']['no_gst']) ? 'No GST (declared)' : ''),
-                    'file' => $reg['resume_path'] ? '__file:resume' : '',
+                    'file' => $k === 'resume' ? ($reg['resume_path'] ? '__file:resume' : '') : (!empty($reg['details'][$k . '_path']) ? '__file:' . $k : ''),
                     'image', 'selfie' => !empty($reg['details'][$k . '_path']) ? '__file:' . $k : '',
                     'video' => trim(($reg['video_path'] ? '__file:video' : '') . (!empty($reg['details']['video_link']) ? ' ' . $reg['details']['video_link'] : '')),
                     'bank_account' => self::bankAccount($reg),

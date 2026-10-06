@@ -88,13 +88,13 @@ class SkillDevelopmentController extends BaseController
     {
         SeoService::getInstance()->setMeta([
             'title' => 'Skills, Mentors & Training in India | Skill Development Courses | Become a Mentor – Jobsence',
-            'description' => 'Skills Jobsence offers training in (online video classes across India or offline in Delhi-NCR) and the skills we are looking for mentors in. Learners choose up to 5 skills. One-time fee ₹155.',
+            'description' => 'Skills Jobsence offers training in (online video classes across India or offline in Delhi-NCR) and the skills we are looking for mentors in. Learners choose up to 5 skills. Registration is free for learners.',
             'keywords' => self::KEYWORDS,
             'canonical' => rtrim($_ENV['APP_URL'] ?? 'http://localhost:8000', '/') . '/skills',
             'robots' => 'index, follow',
         ]);
         $response->view('front/skill-development/skills', [
-            'fee' => PortalRegistration::FEE,
+            'fee' => \App\Services\Registration\FormRegistry::feeOf(\App\Services\Registration\FormRegistry::get('skill-development') ?? []),
             'whatsappNumber' => preg_replace('/\D/', '', (string)($_ENV['SKILL_WHATSAPP_NUMBER'] ?? $_ENV['WHATSAPP_NUMBER'] ?? '')),
         ], 200, 'layout');
     }
@@ -111,10 +111,10 @@ class SkillDevelopmentController extends BaseController
         $stateHi = $stateSlug ? self::STATES[$stateSlug][1] : null;
 
         $title = $stateEn
-            ? "Skill Development in {$stateEn} for Unemployed Youth | Jobsence – Best Job Portal | Fee ₹155"
-            : 'Skill Development in India | Jobsence Skill Development Centre | Skills, Jobs & Internship | Fee ₹155';
+            ? "Skill Development in {$stateEn} for Unemployed Youth | Jobsence – Best Job Portal | Free Registration"
+            : 'Skill Development in India | Jobsence Skill Development Centre | Skills, Jobs & Internship | Free Registration';
         $where = $stateEn ? "in {$stateEn}" : 'across India';
-        $description = "Skill development for unemployed youth {$where} – 10th pass, uneducated, drivers, homemakers, graduates, engineers. 2000+ skills, online video classes Pan-India or offline in Delhi-NCR, then internship and jobs. One-time fee ₹155 incl. GST. भारत को कुशल बनाने की Jobsence पहल – not a Government scheme.";
+        $description = "Skill development for unemployed youth {$where} – 10th pass, uneducated, drivers, homemakers, graduates, engineers. 2000+ skills, online video classes Pan-India or offline in Delhi-NCR, then internship and jobs. Free registration for learners. भारत को कुशल बनाने की Jobsence पहल – not a Government scheme.";
 
         $faqs = $this->faqs();
         $path = $stateSlug ? '/skill-development/' . $stateSlug : '/skill-development';
@@ -132,7 +132,7 @@ class SkillDevelopmentController extends BaseController
             'stateEn' => $stateEn,
             'stateHi' => $stateHi,
             'faqs' => $faqs,
-            'fee' => PortalRegistration::FEE,
+            'fee' => \App\Services\Registration\FormRegistry::feeOf(\App\Services\Registration\FormRegistry::get('skill-development') ?? []),
             'courseFee' => PortalRegistration::COURSE_FEE,
             'states' => self::STATES,
             'popularSkills' => self::POPULAR_SKILLS,
@@ -142,7 +142,6 @@ class SkillDevelopmentController extends BaseController
 
     private function faqs(): array
     {
-        $total = number_format(PortalRegistration::FEE, 0);
         $courseGst = number_format(PortalRegistration::COURSE_FEE * PortalRegistration::GST_RATE, 0);
 
         return [
@@ -152,9 +151,9 @@ class SkillDevelopmentController extends BaseController
                 'No. This is Jobsence’s own initiative to make India skilled. It is NOT a Government of India scheme or programme.',
             ],
             [
-                'रजिस्ट्रेशन शुल्क कितना है? क्या यह वापस मिलेगा?', 'What is the registration fee? Is it refundable?',
-                "एकमुश्त प्रोसेसिंग शुल्क केवल ₹{$total} (GST सहित) है। यह वापसी योग्य नहीं है।",
-                "The one-time processing fee is ₹{$total} only (including GST). It is non-refundable.",
+                'क्या रजिस्ट्रेशन का कोई शुल्क है?', 'Is there a registration fee?',
+                'नहीं। सीखने वालों और नौकरी ढूँढने वालों के लिए रजिस्ट्रेशन मुफ़्त है। केवल मेंटर / नियोक्ता अपने प्लान का शुल्क देते हैं।',
+                'No. Registration is free for learners and job seekers. Only mentors / employers pay for their plans.',
             ],
             [
                 'चयन के बाद कोर्स फीस कितनी है?', 'What is the course fee after selection?',
@@ -193,8 +192,8 @@ class SkillDevelopmentController extends BaseController
             ],
             [
                 'क्या मैं मेंटर / ट्रेनर के रूप में जुड़ सकता हूँ?', 'Can I join as a mentor / trainer?',
-                "हाँ। Jobsence अपनी मेंटर टीम बना रहा है। अपनी जानकारी और डेमो वीडियो के साथ ₹{$total} शुल्क देकर नामांकन करें। चयन होने पर प्रति प्रशिक्षार्थी तय मानदेय, ट्रेनिंग पूरी होने के बाद दिया जाएगा।",
-                "Yes. Jobsence is building its own Mentor Team. Enrol with your details and a demo video for the same ₹{$total} fee. If selected, you get a fixed emolument per candidate, paid after the training is completed.",
+                "हाँ। Jobsence अपनी मेंटर टीम बना रहा है। अपनी जानकारी और डेमो वीडियो के साथ मुफ़्त नामांकन करें। चयन होने पर प्रति प्रशिक्षार्थी तय मानदेय, ट्रेनिंग पूरी होने के बाद दिया जाएगा।",
+                "Yes. Jobsence is building its own Mentor Team. Enrol free with your details and a demo video. If selected, you get a fixed emolument per candidate, paid after the training is completed.",
             ],
         ];
     }
@@ -209,7 +208,7 @@ class SkillDevelopmentController extends BaseController
             'description' => 'भारत को कुशल बनाने की Jobsence पहल – Jobsence’s initiative to make India skilled. Not a Government of India scheme.',
             'url' => $base . '/skill-development',
             'areaServed' => $stateEn ? ['@type' => 'State', 'name' => $stateEn] : ['@type' => 'Country', 'name' => 'India'],
-            'priceRange' => '₹155',
+            'priceRange' => '₹0',
         ];
         $course = [
             '@type' => 'Course',
@@ -220,7 +219,7 @@ class SkillDevelopmentController extends BaseController
             'offers' => [
                 '@type' => 'Offer',
                 'category' => 'Registration form fee',
-                'price' => number_format(PortalRegistration::FEE, 2, '.', ''),
+                'price' => '0.00',
                 'priceCurrency' => 'INR',
             ],
             'hasCourseInstance' => [

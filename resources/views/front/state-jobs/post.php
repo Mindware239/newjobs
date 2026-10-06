@@ -28,6 +28,10 @@ $csrf = '<input type="hidden" name="_token" value="' . $h($_SESSION['csrf_token'
                     <p style="margin:10px 0 0"><a class="sd-btn" href="/register-employer"><?= $tb('मुफ़्त एम्प्लॉयर खाता बनाएँ', 'Create a free employer account') ?></a> <a class="sd-btn ghost" href="/logout"><?= $tb('लॉग आउट', 'Logout') ?></a></p>
                 </div>
             <?php else: ?>
+                <?php $freeLeft = max(0, \App\Models\FreeJobPost::FREE_POSTS_PER_MONTH - (int)$usedThisMonth); ?>
+                <div class="sd-alert <?= $freeLeft > 0 ? 'ok' : 'info' ?>" role="status"><?= $freeLeft > 0
+                    ? $t('इस महीने आपकी ' . $freeLeft . ' मुफ़्त पोस्ट बाकी हैं (हर महीने ' . \App\Models\FreeJobPost::FREE_POSTS_PER_MONTH . ' मुफ़्त)। उसके बाद हर पोस्ट ₹200 + GST।', $freeLeft . ' free post(s) left this month (' . \App\Models\FreeJobPost::FREE_POSTS_PER_MONTH . ' free every month). After that each post is ₹200 + GST.')
+                    : $t('इस महीने की मुफ़्त पोस्ट पूरी – यह पोस्ट ₹200 + GST (₹236) में 30 दिन लाइव रहेगी। भुगतान के बाद तुरंत लाइव।', 'This month’s free posts are used – this post costs ₹200 + GST (₹236) and stays live for 30 days. It goes live right after payment.') ?></div>
                 <?php if (isset($errors['general'])): ?><div class="sd-alert err" role="alert"><?= $tp($errors['general']) ?></div><?php endif; ?>
                 <?php if ($errors && !isset($errors['general'])): ?><div class="sd-alert err" role="alert"><?= $t('कृपया लाल रंग में दिखाई गई गलतियाँ ठीक करें।', 'Please correct the errors shown in red.') ?></div><?php endif; ?>
                 <form method="POST" action="/post-job-free" class="sd-card sj-form" novalidate>

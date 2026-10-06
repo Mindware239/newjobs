@@ -17,7 +17,8 @@ use App\Services\SeoService;
 /**
  * "Near Me" – local service providers (plumber, electrician, carpenter, hair dresser, salon…)
  * found by PIN code. Anyone can see who is nearby; mobile number and full address are shown
- * only with an active Near Me pass (₹150 + GST, 3 months).
+ * only with an active Near Me pass (3 months) – free for people looking for a service; service
+ * providers pay for their listing.
  */
 class NearMeController extends BaseController
 {

@@ -6,7 +6,7 @@ $renderValue = static function (string $v) use ($h, $reg): string {
         $src = '/admin/registrations/' . (int)$reg['id'] . '/file/' . $kind;
         $out = str_replace('__file:' . $kind, '<a target="_blank" href="' . $src . '"><img src="' . $src . '" alt="' . $text . '" style="max-height:160px;border-radius:10px;border:1px solid #e5e7eb"></a>', $out);
     }
-    foreach (['resume' => 'Download resume', 'video' => 'Watch demo video'] as $kind => $text) {
+    foreach (['resume' => 'Download resume', 'video' => 'Watch demo video', 'address_proof' => 'View address proof'] as $kind => $text) {
         $out = str_replace('__file:' . $kind, '<a class="font-semibold text-primary hover:underline" target="_blank" href="/admin/registrations/' . (int)$reg['id'] . '/file/' . $kind . '">' . $text . '</a>', $out);
     }
     return preg_replace('#(https?://[^\s<]+)#', '<a class="text-primary hover:underline break-all" target="_blank" rel="noopener noreferrer" href="$1">$1</a>', $out);

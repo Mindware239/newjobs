@@ -196,7 +196,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.42A12.08 12.08 0 0118.84 17.6 11.95 11.95 0 0012 20.06a11.95 11.95 0 00-6.84-2.46 12.08 12.08 0 01.68-7.02L12 14z"></path>
                     </svg>
-                    ₹155 Registrations
+                    Registrations
                 </a>
                 <a href="/admin/registrations?type=skill"
                    class="flex items-center pl-11 pr-3 py-1.5 text-sm rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white <?= ($_GET['type'] ?? '') === 'skill' ? 'text-white' : '' ?>">

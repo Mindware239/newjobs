@@ -158,8 +158,8 @@ class LocationPagesController extends BaseController
             $titles['skill'] = "Online Skill Development in {$full} – Learn from Indian Mentors";
         }
         $descriptions = [
-            'internship' => "Find internships in {$full}: paid (₹8,000+ stipend) and unpaid, on-site and work from home, across 3000+ domains. Register once with Jobsence for ₹155.",
-            'skill' => "Skill development in {$full}: 3000+ skills with online video classes and mentors. Choose up to 5 skills. Register with Jobsence for ₹155 – not a Govt scheme.",
+            'internship' => "Find internships in {$full}: paid (₹8,000+ stipend) and unpaid, on-site and work from home, across 3000+ domains. Register free with Jobsence.",
+            'skill' => "Skill development in {$full}: 3000+ skills with online video classes and mentors. Choose up to 5 skills. Register free with Jobsence – not a Govt scheme.",
             'jobs' => "Latest jobs in {$full}: full-time, part-time, work from home and Govt / PSU openings. Register with Jobsence and get matched with employers.",
             'mentors' => "Find verified mentors, group mentors and training institutes in {$full} for 3000+ skills. Mentors and institutes register free on Jobsence – a Jobsence initiative for young India.",
             'interncos' => "Verified companies, startups and institutes offering internships in {$full}. Providers register free; interns connect through a Jobsence agreement.",

@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../apply/_partials.php';
 $feeLabel = number_format((float)$fee, 0);
+$free = (float)$fee <= 0; // job seekers free (FormRegistry::SEEKERS_FREE)
 $courseLabel = number_format((float)$courseFee, 0);
 $courseGst = number_format((float)$courseFee * 0.18, 0);
 $placeHi = $stateHi ? "{$stateHi} के" : 'भारत के';
@@ -14,11 +15,11 @@ $placeEn = $stateEn ? "in {$stateEn}" : 'of India';
             <span class="sd-badge">भारत को कुशल बनाने की Jobsence पहल · <?= $t('सरकारी योजना नहीं', 'Not a Govt. scheme') ?></span>
             <h1><?= $tb("{$placeHi} हर बेरोज़गार युवा के लिए कौशल विकास – गाँव से राजधानी तक", "Skill Development for Every Unemployed Youth {$placeEn} – From Village to Capital") ?></h1>
             <p class="sd-lead"><?= $t(
-                "एकमुश्त शुल्क केवल ₹{$feeLabel} (GST सहित)। 2000+ स्किल्स। पूरे भारत में ऑनलाइन वीडियो क्लास या दिल्ली-NCR में ऑफलाइन क्लास। ट्रेनिंग के बाद इंटर्नशिप और नौकरी के लिए आवेदन करें।",
-                "One-time fee only ₹{$feeLabel} (including GST). 2000+ skills. Online video classes Pan-India or offline classes in Delhi-NCR. After training, apply for internships and jobs."
+                ($free ? "रजिस्ट्रेशन मुफ़्त।" : "एकमुश्त शुल्क केवल ₹{$feeLabel} (GST सहित)।") . " 2000+ स्किल्स। पूरे भारत में ऑनलाइन वीडियो क्लास या दिल्ली-NCR में ऑफलाइन क्लास। ट्रेनिंग के बाद इंटर्नशिप और नौकरी के लिए आवेदन करें।",
+                ($free ? "Registration is free." : "One-time fee only ₹{$feeLabel} (including GST).") . " 2000+ skills. Online video classes Pan-India or offline classes in Delhi-NCR. After training, apply for internships and jobs."
             ) ?></p>
             <div class="sd-cta-row">
-                <a class="sd-btn" href="/apply/skill-development"><?= $tb("फॉर्म भरें – केवल ₹{$feeLabel}", "Fill Form Now – Pay ₹{$feeLabel} Only") ?></a>
+                <a class="sd-btn" href="/apply/skill-development"><?= $free ? $tb('फॉर्म भरें – मुफ़्त', 'Fill Form Now – Free') : $tb("फॉर्म भरें – केवल ₹{$feeLabel}", "Fill Form Now – Pay ₹{$feeLabel} Only") ?></a>
                 <a class="sd-btn ghost" href="/apply/skill-provider"><?= $tb('Jobsence मेंटर टीम से जुड़ें', 'Join the Jobsence Mentor Team') ?></a>
             </div>
             <div style="margin-top:24px"><?php $sdNotice((float)$fee); ?></div>
@@ -50,7 +51,8 @@ $placeEn = $stateEn ? "in {$stateEn}" : 'of India';
             <div class="sd-grid">
                 <?php foreach ([
                     ['फॉर्म भरें', 'Fill the form', 'हिंदी या अंग्रेज़ी में अपनी जानकारी और पसंदीदा स्किल भरें।', 'Enter your details and preferred skills in Hindi or English.'],
-                    ["₹{$feeLabel} भुगतान करें", "Pay ₹{$feeLabel}", 'UPI, कार्ड या नेट बैंकिंग से सुरक्षित ऑनलाइन भुगतान।', 'Pay securely online via UPI, card or net banking.'],
+                    $free ? ['ईमेल OTP से पुष्टि करें', 'Confirm with email OTP', 'फॉर्म मुफ़्त है – ईमेल OTP से पुष्टि होते ही रजिस्ट्रेशन पूरा।', 'The form is free – your registration is complete once your email OTP is confirmed.']
+                          : ["₹{$feeLabel} भुगतान करें", "Pay ₹{$feeLabel}", 'UPI, कार्ड या नेट बैंकिंग से सुरक्षित ऑनलाइन भुगतान।', 'Pay securely online via UPI, card or net banking.'],
                     ['जाँच का इंतज़ार करें', 'Wait for scrutiny', 'फॉर्म और रिज़्यूमे की जाँच में कम से कम 3–6 महीने लगते हैं।', 'Scrutiny of forms and resumes takes minimum 3–6 months.'],
                     ['क्लास जॉइन करें', 'Join classes', 'चयन के बाद ऑनलाइन या दिल्ली-NCR में ऑफलाइन ट्रेनिंग शुरू करें।', 'After selection, start training online or offline in Delhi-NCR.'],
                 ] as $i => $step): ?>
@@ -87,11 +89,11 @@ $placeEn = $stateEn ? "in {$stateEn}" : 'of India';
             <h2><?= $tb('फीस विवरण', 'Fee Structure') ?></h2>
             <table class="sd-table">
                 <tbody>
-                    <tr><td><?= $t('एकमुश्त प्रोसेसिंग शुल्क (GST सहित)', 'One-time processing fee (including GST)') ?></td><td class="amt">₹<?= $h($feeLabel) ?></td></tr>
+                    <tr><td><?= $t('रजिस्ट्रेशन (प्रोसेसिंग) शुल्क', 'Registration (processing) fee') ?></td><td class="amt"><?= $free ? $t('मुफ़्त', 'Free') : '₹' . $h($feeLabel) . ' ' . $t('(GST सहित)', '(incl. GST)') ?></td></tr>
                     <tr><td><?= $t('चयन के बाद कुल कोर्स फीस', 'Total course fee after selection') ?></td><td class="amt">₹<?= $h($courseLabel) ?> + 18% GST (₹<?= $h($courseGst) ?>)</td></tr>
                 </tbody>
             </table>
-            <p style="margin-top:12px;font-size:.92rem;color:#4b5563"><?= $t('दोनों शुल्क वापसी योग्य नहीं हैं।', 'Both fees are non-refundable.') ?></p>
+            <p style="margin-top:12px;font-size:.92rem;color:#4b5563"><?= $free ? $t('कोर्स फीस वापसी योग्य नहीं है।', 'The course fee is non-refundable.') : $t('दोनों शुल्क वापसी योग्य नहीं हैं।', 'Both fees are non-refundable.') ?></p>
         </div>
     </section>
 
@@ -112,7 +114,7 @@ $placeEn = $stateEn ? "in {$stateEn}" : 'of India';
         <div class="sd-wrap sd-declare">
             <h2><?= $tb('घोषणा व अस्वीकरण', 'Declaration & Disclaimer') ?></h2>
             <ol>
-                <li><?= $t("₹{$feeLabel} प्रोसेसिंग शुल्क (GST सहित) वापसी योग्य नहीं है।", "The ₹{$feeLabel} processing fee (including GST) is non-refundable.") ?></li>
+                <li><?= $free ? $t('रजिस्ट्रेशन मुफ़्त है – Jobsence नौकरी या ट्रेनिंग के चयन के लिए कभी पैसे नहीं माँगता।', 'Registration is free – Jobsence never asks for money to select you for a job or training.') : $t("₹{$feeLabel} प्रोसेसिंग शुल्क (GST सहित) वापसी योग्य नहीं है।", "The ₹{$feeLabel} processing fee (including GST) is non-refundable.") ?></li>
                 <li><?= $t("चयन के बाद ₹{$courseLabel} + 18% GST कोर्स फीस भी वापसी योग्य नहीं है।", "After selection, the ₹{$courseLabel} + 18% GST course fee is also non-refundable.") ?></li>
                 <li><?= $t('Jobsence किसी नौकरी या प्लेसमेंट की गारंटी नहीं देता।', 'Jobsence does not guarantee any job or placement.') ?></li>
                 <li><?= $t('हम केवल रिज़्यूमे कंपनियों तक पहुँचाने, जॉब-रेडी बनाने या स्व-रोज़गार में मार्गदर्शन की कोशिश करते हैं।', 'We only try to push your resume to companies, make you job-ready, or guide you towards self-employment.') ?></li>
@@ -132,7 +134,7 @@ $placeEn = $stateEn ? "in {$stateEn}" : 'of India';
                 </details>
             <?php endforeach; ?>
             <div class="sd-cta-row">
-                <a class="sd-btn" href="/apply/skill-development"><?= $tb("फॉर्म भरें – ₹{$feeLabel}", 'Fill Form Now') ?></a>
+                <a class="sd-btn" href="/apply/skill-development"><?= $free ? $tb('फॉर्म भरें – मुफ़्त', 'Fill Form Now – Free') : $tb("फॉर्म भरें – ₹{$feeLabel}", 'Fill Form Now') ?></a>
                 <a class="sd-btn ghost" href="/apply"><?= $tb('इंटर्नशिप / नौकरी के फॉर्म', 'Internship / Job forms') ?></a>
             </div>
         </div>

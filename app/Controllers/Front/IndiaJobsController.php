@@ -15,8 +15,8 @@ use App\Services\SeoService;
 
 /**
  * "See Jobs in India" – Railways, Army, Police, State Govts, PSUs, banks and big companies.
- * Anyone can browse titles; full details + the official apply link need login + an active
- * Jobs Pass (₹150 + GST, 1 month, one email + one mobile, email-OTP verified).
+ * Job seekers use Jobsence free (FormRegistry::SEEKERS_FREE): full details + the official apply
+ * link are open to everyone. (The Jobs Pass – ₹150 + GST, 1 month – only applies if seeker fees return.)
  */
 class IndiaJobsController extends BaseController
 {
@@ -82,7 +82,8 @@ class IndiaJobsController extends BaseController
         return [
             'loggedIn' => (bool)$user,
             'pass' => $pass,
-            'unlocked' => $pass !== null || $this->isAdmin(),
+            // Job seekers free (FormRegistry::SEEKERS_FREE): Govt job details and apply links are open to everyone.
+            'unlocked' => FormRegistry::SEEKERS_FREE || $pass !== null || $this->isAdmin(),
             'passFee' => FormRegistry::JOBS_PASS_FEE,
             'states' => array_column(SkillDevelopmentController::STATES, 0),
             'types' => FormRegistry::INDIA_JOB_TYPES,

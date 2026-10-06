@@ -65,10 +65,98 @@ class FormRegistry
     }
 
     /** slug => form definition */
+    /**
+     * Pricing model (user, 2026-10-06): job seekers use Jobsence free, employers / providers pay.
+     * With SEEKERS_FREE every job-seeker-side form costs nothing; their fee wording is removed and a
+     * "free for job seekers" line added (makeFree). Set to false to bring the old seeker fees back.
+     */
+    public const SEEKERS_FREE = true;
+    public const SEEKER_FREE_SLUGS = ['skill-development', 'internship', 'full-time-job', 'part-time-job', 'work-from-home', 'jobs-pass',
+        'restaurant-chef-jobs', 'healthcare-jobs', 'senior-citizen-jobs', 'near-me-seeker', 'intl-country', 'international-job'];
+
+    /** Is this registration type free because it is on the job-seeker side? */
+    public static function seekerIsFree(string $type): bool
+    {
+        if (!self::SEEKERS_FREE) {
+            return false;
+        }
+        foreach (self::SEEKER_FREE_SLUGS as $slug) {
+            if ((self::all()[$slug]['type'] ?? null) === $type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Job-seeker form without fees: price-free labels, no fee sentences, a clear "free" line. */
+    private static function makeFree(array $f): array
+    {
+        $f['fee'] = 0.0;
+        if (!empty($f['fee_by'])) {
+            $field = $f['fee_by'][0];
+            unset($f['fee_by']);
+            foreach ($f['sections'] as &$sec) {
+                foreach ($sec['fields'] as &$fld) {
+                    if (($fld['key'] ?? '') === $field && !empty($fld['options'])) {
+                        foreach ($fld['options'] as &$o) {
+                            $o = array_map(static fn($l) => trim((string)preg_replace('/\s*[–-]\s*₹.*$/u', '', $l)), $o);
+                        }
+                        unset($o);
+                    }
+                }
+                unset($fld);
+            }
+            unset($sec);
+        }
+        $isFee = static fn(array $p): bool => (bool)preg_match('/processing fee|platform fee|one-time fee|one-time ₹|\bthe fee\b|fee of ₹|fee for work|form fee again|pass is valid|₹\s?\d[\d,]*\s*\+\s*(18%\s*)?GST|^\s*(doctor|front desk|sweeper|other hospital staff):/iu', (string)$p[1])
+            && !preg_match('/course fee/i', (string)$p[1]);
+        $free = ['जॉब सीकर के लिए रजिस्ट्रेशन पूरी तरह मुफ़्त है – भुगतान नौकरी देने वाले करते हैं।', 'Registration is completely free for job seekers – employers pay.'];
+        // "(₹1,180 or USD 10 each)" inside an otherwise useful sentence: keep the sentence, drop the price.
+        $noPrice = static fn(array $p): array => array_map(static fn($s) => trim((string)preg_replace('/\s*\([^()]*(?:₹|USD)[^()]*\)/u', '', (string)$s)), $p);
+        foreach (['declaration', 'next_steps'] as $k) {
+            if (!empty($f[$k])) {
+                $f[$k] = array_values(array_map($noPrice, array_filter($f[$k], static fn($p) => !$isFee($p))));
+            }
+        }
+        $f['declaration'] = array_merge([$free], $f['declaration'] ?? []);
+        $points = array_values(array_filter($f['info']['points'] ?? [], static fn($p) => !$isFee($p)));
+        $f['info'] = [
+            'title' => preg_match('/fee|शुल्क/iu', (string)($f['info']['title'][1] ?? 'fee')) ? ['जॉब सीकर के लिए मुफ़्त', 'Free for job seekers'] : $f['info']['title'],
+            'points' => array_merge([$free], $points),
+        ];
+        foreach (['intro', 'button'] as $k) {
+            if (!empty($f[$k])) {
+                $f[$k] = array_map(static function (string $text): string {
+                    $parts = preg_split('/(?<=[.।])\s+/u', $text) ?: [$text];
+                    $keep = array_filter($parts, static fn($s) => !preg_match('/₹|GST/u', $s));
+                    return $keep ? trim(implode(' ', $keep)) : trim((string)preg_replace('/\s*[–-]?\s*₹.*$/u', '', $text));
+                }, $f[$k]);
+            }
+        }
+        return $f;
+    }
+
     public static function all(): array
     {
         static $forms = null;
-        return $forms ??= [
+        if ($forms !== null) {
+            return $forms;
+        }
+        $forms = self::definitions();
+        if (self::SEEKERS_FREE) {
+            foreach (self::SEEKER_FREE_SLUGS as $slug) {
+                if (isset($forms[$slug])) {
+                    $forms[$slug] = self::makeFree($forms[$slug]);
+                }
+            }
+            $forms['jobs-pass']['hidden_from_hub'] = true; // Govt job details are free now – no pass needed
+        }
+        return $forms;
+    }
+
+    private static function definitions(): array
+    {
+        return [
             'skill-development' => self::skillDevelopment(),
             'internship' => self::internship(),
             'full-time-job' => self::job('fulltime'),
@@ -92,6 +180,7 @@ class FormRegistry
             'hire-part-time' => self::hirePartTime(),
             'senior-citizen-jobs' => self::seniorJobs(),
             'senior-citizen-hiring' => self::seniorHiring(),
+            'extra-job-post' => self::extraJobPost(),
         ];
     }
 
@@ -776,6 +865,8 @@ class FormRegistry
     /** Senior citizens (59+): full-time / part-time work ₹500 + 18% GST once a year; community service free. */
     public const SENIOR_FEES = ['full_time' => 590.00, 'part_time' => 590.00, 'community' => 0.00];
     public const SENIOR_MIN_AGE = 59;
+    /** Organisations offering a senior-citizen job: ₹500 per job (GST included), job live for 7 days. */
+    public const SENIOR_JOB_FEE = 500.00;
 
     private static function seniorJobs(): array
     {
@@ -805,6 +896,21 @@ class FormRegistry
             'sections' => [
                 self::personalSection(['dob_mode' => 'senior']),
                 self::addressSection(false),
+                [
+                    'title' => ['आपातकाल के लिए दो अपनों के संपर्क और पते का प्रमाण', 'Two Emergency Contacts (near & dear) and Address Proof'],
+                    'fields' => [
+                        self::text('em1_name', ['पहला संपर्क – नाम', 'First contact – name'], true, ['max' => 150]),
+                        self::text('em1_relation', ['आपसे रिश्ता (बेटा, बेटी, पति/पत्नी, भाई…)', 'Relation to you (son, daughter, spouse, brother…)'], true, ['max' => 60]),
+                        ['key' => 'em1_mobile', 'type' => 'mobile', 'label' => ['पहले संपर्क का मोबाइल नंबर', 'First contact – mobile number'], 'required' => true, 'differs_from' => ['mobile']],
+                        ['key' => 'em1_address', 'type' => 'textarea', 'label' => ['पहले संपर्क का पूरा पता', 'First contact – full address'], 'required' => true, 'full' => true, 'max' => 500],
+                        self::text('em2_name', ['दूसरा संपर्क – नाम', 'Second contact – name'], true, ['max' => 150]),
+                        self::text('em2_relation', ['आपसे रिश्ता', 'Relation to you'], true, ['max' => 60]),
+                        ['key' => 'em2_mobile', 'type' => 'mobile', 'label' => ['दूसरे संपर्क का मोबाइल नंबर', 'Second contact – mobile number'], 'required' => true, 'differs_from' => ['mobile', 'em1_mobile']],
+                        ['key' => 'em2_address', 'type' => 'textarea', 'label' => ['दूसरे संपर्क का पूरा पता', 'Second contact – full address'], 'required' => true, 'full' => true, 'max' => 500],
+                        ['key' => 'address_proof', 'type' => 'file', 'label' => ['आपके पते का प्रमाण – आधार, वोटर आईडी, राशन कार्ड, पासपोर्ट या बिजली / पानी / फ़ोन बिल (PDF / JPG / PNG, अधिकतम 5MB)', 'Your address proof – Aadhaar, voter ID, ration card, passport or electricity / water / phone bill (PDF / JPG / PNG, max 5MB)'], 'required' => true, 'full' => true, 'allow_images' => true,
+                            'hint' => ['आपात स्थिति में Jobsence या काम देने वाली संस्था इन संपर्कों से बात कर सकती है।', 'In an emergency Jobsence or the organisation may contact these people.']],
+                    ],
+                ],
                 [
                     'title' => ['आप क्या चाहते हैं', 'What You Are Looking For'],
                     'fields' => [
@@ -852,11 +958,20 @@ class FormRegistry
             'side' => 'provider',
             'icon' => '🤝',
             'otp' => true,
-            'fee' => 0.0,
+            // Employers pay (user, 2026-10-06): a nominal ₹500 per senior-citizen job, live for 7 days (PortalRegistration::VALIDITY).
+            'fee' => self::SENIOR_JOB_FEE,
             'max_categories' => 5,
-            'title' => ['वरिष्ठ नागरिकों को काम दें – संस्था रजिस्ट्रेशन (मुफ़्त)', 'Engage Senior Citizens – Organisation Registration (free)'],
+            'title' => ['वरिष्ठ नागरिकों के लिए नौकरी दें – ₹500 प्रति नौकरी, 7 दिन', 'Offer a Job to Senior Citizens – ₹500 per job, 7 days'],
             'button' => ['कंपनी / स्कूल / अस्पताल / NGO – वरिष्ठ नागरिकों को काम दें', 'Company / school / hospital / NGO – engage senior citizens'],
-            'intro' => ['अनुभवी वरिष्ठ नागरिकों (59+) को फ़ुल-टाइम, पार्ट-टाइम या सामुदायिक सेवा के लिए जोड़ें। संस्था का रजिस्ट्रेशन मुफ़्त है।', 'Engage experienced senior citizens (59+) for full-time, part-time or community-service roles. Registration for organisations is free.'],
+            'intro' => ['अनुभवी वरिष्ठ नागरिकों (59+) को फ़ुल-टाइम, पार्ट-टाइम या सामुदायिक सेवा के लिए जोड़ें। हर नौकरी के लिए नाममात्र शुल्क ₹500 (GST सहित) – नौकरी 7 दिन तक वरिष्ठ नागरिकों को दिखेगी।', 'Engage experienced senior citizens (59+) for full-time, part-time or community-service roles. A nominal ₹500 (incl. GST) per job – the job is shown to senior citizens for 7 days.'],
+            'info' => [
+                'title' => ['शुल्क', 'Fee'],
+                'points' => [
+                    ['हर नौकरी के लिए ₹500 (GST सहित), 7 दिन के लिए। एक और नौकरी के लिए यह फ़ॉर्म दोबारा भरें।', '₹500 (including GST) per job, for 7 days. Fill this form again for another job.'],
+                    ['वरिष्ठ नागरिकों के लिए रजिस्ट्रेशन मुफ़्त है – वरिष्ठ नागरिकों से कोई शुल्क न माँगें।', 'Registration is free for senior citizens – never ask them for any fee.'],
+                    self::platformDisclaimer(),
+                ],
+            ],
             'categories_label' => ['आपको किस काम के लिए लोग चाहिए – अधिकतम 5', 'Work you need people for – up to 5'],
             'sections' => [
                 [
@@ -889,6 +1004,7 @@ class FormRegistry
             'declaration' => [
                 ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
                 ['हम वरिष्ठ नागरिकों से कोई शुल्क या डिपॉज़िट नहीं माँगेंगे और उनसे सम्मानजनक व्यवहार करेंगे।', 'We will not ask senior citizens for any fee or deposit and will treat them with respect.'],
+                ['₹500 का शुल्क प्रति नौकरी है, 7 दिन तक मान्य और वापसी योग्य नहीं।', 'The ₹500 fee is per job, valid for 7 days and non-refundable.'],
                 self::platformDisclaimer(),
                 self::notGovt(),
             ],
@@ -1642,6 +1758,23 @@ class FormRegistry
     }
 
     /** One country unlocked for a jobs-abroad seeker (bought from the dashboard). */
+    /** Employers pay (user, 2026-10-06): free board posts beyond FreeJobPost::FREE_POSTS_PER_MONTH cost ₹200 + 18% GST each. */
+    private static function extraJobPost(): array
+    {
+        return [
+            'type' => 'jobpost', 'prefix' => 'JPS', 'side' => 'service', 'icon' => '📢', 'internal' => true, 'hidden_from_hub' => true,
+            'fee' => \App\Models\FreeJobPost::EXTRA_POST_FEE,
+            'title' => ['अतिरिक्त नौकरी पोस्ट', 'Extra job post'],
+            'button' => ['अतिरिक्त नौकरी पोस्ट', 'Extra job post'],
+            'intro' => ['इस महीने की मुफ़्त पोस्ट पूरी हो गईं – यह पोस्ट ₹200 + GST में 30 दिन तक लाइव रहेगी।', 'This month’s free posts are used – this post goes live for 30 days for ₹200 + GST.'],
+            'sections' => [],
+            'declaration' => [self::platformDisclaimer()],
+            'next_steps' => [
+                ['आपकी नौकरी अब राज्य और शहर की सूची में लाइव है।', 'Your job is now live in the state & city list.'],
+            ],
+        ];
+    }
+
     private static function countryUnlock(): array
     {
         return [

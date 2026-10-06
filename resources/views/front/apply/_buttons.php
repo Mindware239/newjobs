@@ -42,7 +42,7 @@ $sdProviders = [
                     <a href="<?= $h($cu) ?>" style="padding:8px 14px;border-radius:999px;background:#fff;border:2px solid #0b3d91;color:#0b3d91;font-weight:800;text-decoration:none;font-size:.9rem"><?= $ci ?> <?= Lang::t($cl[0], $cl[1]) ?></a>
                 <?php endforeach; ?>
             </nav>
-            <p style="margin:0;color:#4b5563"><?= Lang::t('कौशल विकास → इंटर्नशिप → नौकरी। एकमुश्त शुल्क ₹155 (GST सहित); पार्ट-टाइम ₹250 + GST (3 महीने)।', 'Skill Development → Internship → Job. One-time fee ₹155 (incl. GST); part-time ₹250 + GST (3 months).') ?></p>
+            <p style="margin:0;color:#4b5563"><?= Lang::t('कौशल विकास → इंटर्नशिप → नौकरी। नौकरी ढूँढने वालों का रजिस्ट्रेशन मुफ़्त है; नियोक्ता / सेवा देने वाले अपने प्लान का शुल्क देते हैं।', 'Skill Development → Internship → Job. Registration is free for job seekers; employers / providers pay for their plans.') ?></p>
         </div>
 
         <style>
@@ -79,7 +79,7 @@ $sdProviders = [
                 </form>
                 <div class="act">
                     <a href="/apply/near-me-provider">🛠️ <?= Lang::t('सेवा देते हैं? ₹177 में जुड़ें', 'Provide a service? Enrol – ₹177') ?></a>
-                    <a href="/apply/near-me-seeker">🔎 <?= Lang::t('सेवा चाहिए? ₹177 पास', 'Need a service? ₹177 pass') ?></a>
+                    <a href="/apply/near-me-seeker">🔎 <?= Lang::t('सेवा चाहिए? मुफ़्त', 'Need a service? Free') ?></a>
                 </div>
             </div>
         </div>

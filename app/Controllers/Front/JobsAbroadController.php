@@ -17,7 +17,7 @@ use App\Services\SeoService;
  *   /jobs-abroad                         all countries (top destinations first)
  *   /jobs-abroad/{country}               job categories for that country
  *   /jobs-abroad/{country}/{category}    roles – each "Apply" opens the free form with country + role pre-filled,
- *                                        then goes straight to the ₹1,180 / USD 10 payment for that country.
+ *                                        then unlocks that country (free for job seekers – FormRegistry::SEEKERS_FREE).
  */
 class JobsAbroadController extends BaseController
 {
@@ -59,7 +59,7 @@ class JobsAbroadController extends BaseController
         $all = self::countries();
         $top = array_filter($all, static fn($c) => in_array($c, self::TOP, true));
         uasort($top, static fn($a, $b) => array_search($a, self::TOP, true) <=> array_search($b, self::TOP, true));
-        $this->meta('Jobs Abroad for Indians ' . date('Y') . ' – UAE, Saudi, USA, Japan, Canada & ' . count($all) . ' Countries', 'Register free for jobs abroad in ' . count($all) . ' countries – Gulf, Europe, USA, Japan, China and more. Unlock each country for ₹1,180 (₹1,000 + GST) or USD 10. Passport mandatory.', '/jobs-abroad');
+        $this->meta('Jobs Abroad for Indians ' . date('Y') . ' – UAE, Saudi, USA, Japan, Canada & ' . count($all) . ' Countries', 'Register free for jobs abroad in ' . count($all) . ' countries – Gulf, Europe, USA, Japan, China and more. Unlocking each country is free too. Passport mandatory.', '/jobs-abroad');
         $response->view('front/jobs-abroad/index', ['level' => 'all', 'top' => $top, 'all' => $all, 'counts' => $this->counts()], 200, 'layout');
     }
 
@@ -71,7 +71,7 @@ class JobsAbroadController extends BaseController
             $response->redirect('/jobs-abroad');
             return;
         }
-        $this->meta("Jobs in {$country} for Indians " . date('Y') . ' – All Categories | Apply', "Jobs in {$country} for Indian job seekers in every category – construction, healthcare, IT, hospitality, drivers, factory and more. Register free; unlock {$country} for ₹1,180 or USD 10.", '/jobs-abroad/' . $slug);
+        $this->meta("Jobs in {$country} for Indians " . date('Y') . ' – All Categories | Apply', "Jobs in {$country} for Indian job seekers in every category – construction, healthcare, IT, hospitality, drivers, factory and more. Register and unlock {$country} free.", '/jobs-abroad/' . $slug);
         $response->view('front/jobs-abroad/index', ['level' => 'country', 'slug' => $slug, 'country' => $country, 'tree' => SkillTaxonomy::tree(),
             'counts' => $this->counts()[mb_strtolower($country)] ?? ['seekers' => 0, 'companies' => 0]], 200, 'layout');
     }
@@ -85,7 +85,7 @@ class JobsAbroadController extends BaseController
             $response->redirect($country ? '/jobs-abroad/' . $slug : '/jobs-abroad');
             return;
         }
-        $this->meta("{$sector['short']} Jobs in {$country} for Indians " . date('Y'), "{$sector['short']} jobs in {$country}: " . number_format($sector['count']) . " roles. Register free, passport mandatory; unlock {$country} for ₹1,180 or USD 10.", '/jobs-abroad/' . $slug . '/' . $sector['slug']);
+        $this->meta("{$sector['short']} Jobs in {$country} for Indians " . date('Y'), "{$sector['short']} jobs in {$country}: " . number_format($sector['count']) . " roles. Register and unlock {$country} free, passport mandatory.", '/jobs-abroad/' . $slug . '/' . $sector['slug']);
         $response->view('front/jobs-abroad/index', ['level' => 'category', 'slug' => $slug, 'country' => $country, 'sector' => $sector], 200, 'layout');
     }
 
