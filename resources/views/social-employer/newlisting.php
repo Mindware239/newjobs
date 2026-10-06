@@ -686,7 +686,7 @@ How should applicants apply? *
 
 
 <!-- Notification Emails -->
-<div class="bg-gray-200 p-6 rounded mb-8" x-data="{ emails: <?= !empty($job['notification_emails']) ? $job['notification_emails'] : "['sales@indianbarcode.com']" ?> }">
+<div class="bg-gray-200 p-6 rounded mb-8" x-data="{ emails: <?= !empty($job['notification_emails']) ? $job['notification_emails'] : "['gm@jobsence.com']" ?> }">
 
 <label class="font-semibold block mb-3">
 Notification emails

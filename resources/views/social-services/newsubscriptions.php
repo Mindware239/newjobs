@@ -99,7 +99,7 @@
         </label>
         <input type="email"
                class="w-full border rounded-md p-2.5 bg-white"
-               value="sales@indianbarcode.com">
+               value="gm@jobsence.com">
       </div>
 
       <!-- FREQUENCY -->

@@ -168,7 +168,7 @@ $base = isset($base) && is_string($base) ? $base : ($scheme . '://' . $host); ?>
 
             <input name="email"
                    class="w-full border bg-white p-2 rounded"
-                   value="sales@indianbarcode.com">
+                   value="gm@jobsence.com">
 
         </div>
 

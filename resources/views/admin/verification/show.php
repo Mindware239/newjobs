@@ -377,7 +377,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                         </svg>
                         <div class="min-w-0">
                             <p class="text-[11px] text-gray-400 uppercase tracking-wider">HR Email</p>
-                            <p class="text-sm font-medium text-gray-800 break-all">sales@indianbarcode.com</p>
+                            <p class="text-sm font-medium text-gray-800 break-all">gm@jobsence.com</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
@@ -402,7 +402,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                         </svg>
                         <div class="min-w-0">
                             <p class="text-[11px] text-gray-400 uppercase tracking-wider">Reporting Manager</p>
-                            <p class="text-sm font-medium text-gray-800 break-all">gm@indianbarcode.com</p>
+                            <p class="text-sm font-medium text-gray-800 break-all">gm@jobsence.com</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
@@ -541,7 +541,7 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                             </svg>
                         </div>
                         <div class="pb-4"><p class="text-sm font-medium text-gray-900">HR Email Added</p>
-                            <p class="text-xs text-gray-500">sales@indianbarcode.com</p>
+                            <p class="text-xs text-gray-500">gm@jobsence.com</p>
                             <p class="text-[11px] text-gray-400 mt-0.5">2024-12-10 14:35 · Candidate</p>
                         </div>
                     </div>

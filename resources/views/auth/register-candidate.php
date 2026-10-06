@@ -921,18 +921,9 @@
                     <span class="div-text">Or continue with</span>
                     <div class="div-line"></div>
                 </div>
-                <div class="social-grid">
+                <div class="social-grid" style="grid-template-columns:1fr"><!-- Only real sign-in providers: Google (Facebook / LinkedIn / Microsoft were never wired) -->
                     <a href="/auth/google?redirect=/candidate/dashboard" class="soc-btn" aria-label="Continue with Google">
                         <img alt="Google" src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png">
-                    </a>
-                    <a href="/auth/facebook?redirect=/candidate/dashboard" class="soc-btn" aria-label="Continue with Facebook">
-                        <svg viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073C24 5.403 18.627 0 12 0S0 5.403 0 12.073C0 18.09 4.388 23.092 10.125 24v-8.437H7.078V12.07h3.047V9.412c0-3.007 1.792-4.667 4.533-4.667 1.313 0 2.686.235 2.686.235v2.955h-1.513c-1.49 0-1.953.93-1.953 1.887v2.248h3.328l-.532 3.493h-2.796V24C19.612 23.092 24 18.09 24 12.073z"/><path fill="#fff" d="M16.906 15.563l.532-3.493h-3.328V9.822c0-.957.463-1.887 1.953-1.887h1.513V4.98s-1.373-.235-2.686-.235c-2.741 0-4.533 1.66-4.533 4.667v2.658H7.078v3.055h3.047V24h3.984v-8.437h2.796z"/></svg>
-                    </a>
-                    <a href="/auth/linkedin?redirect=/candidate/dashboard" class="soc-btn" aria-label="Continue with LinkedIn">
-                        <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path fill="#fff" d="M6.21 9.03h2.61v8.16H6.21V9.03zm1.31-4.22c.84 0 1.52.68 1.52 1.52s-.68 1.52-1.52 1.52-1.52-.68-1.52-1.52.68-1.52 1.52-1.52zM10.28 9.03h2.5v1.12h.04c.35-.66 1.19-1.36 2.45-1.36 2.62 0 3.1 1.72 3.1 3.95v4.44h-2.6v-3.93c0-.94-.02-2.16-1.32-2.16-1.32 0-1.52 1.03-1.52 2.09v4H10.28V9.03z"/></svg>
-                    </a>
-                    <a href="/auth/microsoft?redirect=/candidate/dashboard" class="soc-btn" aria-label="Continue with Microsoft">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="9" height="9" fill="#F25022"/><rect x="13" y="2" width="9" height="9" fill="#7FBA00"/><rect x="2" y="13" width="9" height="9" fill="#00A4EF"/><rect x="13" y="13" width="9" height="9" fill="#FFB900"/></svg>
                     </a>
                 </div>
 
