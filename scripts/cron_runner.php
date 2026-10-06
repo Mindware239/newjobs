@@ -13,6 +13,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Load environment variables
 $dotenv = \Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/../');
 $dotenv->safeLoad();
+// Local machines: .env.local points at the local database (same as index.php); never present on the server.
+if (is_file(__DIR__ . '/../.env.local')) {
+    \Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/../', '.env.local')->load();
+}
 
 // Get task from argument
 $task = $argv[1] ?? null;
