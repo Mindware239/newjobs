@@ -600,9 +600,9 @@ class FormRegistry
     /** Restaurant / chef job seekers: ₹250 + 18% GST, valid 3 months. */
     public const RESTAURANT_FEE = 295.00;
 
-    private static function locationSection(array $title): array
+    private static function locationSection(array $title, ?array $geoHint = null): array
     {
-        return [
+        $section = [
             'title' => $title,
             'fields' => [
                 ['key' => 'geo', 'type' => 'geo', 'label' => ['मेरी लोकेशन', 'My location'], 'required' => false, 'full' => true,
@@ -617,6 +617,10 @@ class FormRegistry
                 self::text('landmark', ['नज़दीकी लैंडमार्क', 'Nearest Landmark'], false),
             ],
         ];
+        if ($geoHint !== null) {
+            $section['fields'][0]['hint'] = $geoHint;
+        }
+        return $section;
     }
 
     private static function nearMeProvider(): array
@@ -882,7 +886,7 @@ class FormRegistry
             'max_categories' => 5,
             'title' => ['वरिष्ठ नागरिक (59+) – फ़ुल-टाइम / पार्ट-टाइम काम और सामुदायिक सेवा', 'Senior Citizens (59+) – Full-time / Part-time Work & Community Service'],
             'button' => ['वरिष्ठ नागरिक (59+) – काम या सामुदायिक सेवा के लिए रजिस्टर करें', 'Senior citizens (59+) – register for work or community service'],
-            'intro' => ['अनुभव कभी रिटायर नहीं होता। 59 वर्ष या उससे अधिक उम्र के लोग फ़ुल-टाइम या पार्ट-टाइम काम के लिए, या समाज सेवा के लिए रजिस्टर करें – कंपनियाँ, स्कूल, अस्पताल और NGO आपके अनुभव से जुड़ेंगे।', 'Experience never retires. People aged 59 and above can register for full-time or part-time work, or for community service – companies, schools, hospitals and NGOs connect with your experience.'],
+            'intro' => ['अनुभव कभी रिटायर नहीं होता। 59 वर्ष या उससे अधिक उम्र के लोग फ़ुल-टाइम या पार्ट-टाइम काम के लिए, या समाज सेवा के लिए रजिस्टर करें – हमेशा घर के पास। आपके इलाके की कंपनियाँ, स्कूल, अस्पताल और NGO आपके अनुभव से जुड़ेंगे।', 'Experience never retires. People aged 59 and above can register for full-time or part-time work, or for community service, always near home – companies, schools, hospitals and NGOs in your area connect with your experience.'],
             'categories_label' => ['आप क्या काम कर सकते हैं – अधिकतम 5 (जैसे Accountant, Teacher, Consultant, Supervisor)', 'Work you can do – up to 5 (e.g. Accountant, Teacher, Consultant, Supervisor)'],
             'info' => [
                 'title' => ['शुल्क', 'Fees'],
@@ -895,7 +899,8 @@ class FormRegistry
             ],
             'sections' => [
                 self::personalSection(['dob_mode' => 'senior']),
-                self::addressSection(false),
+                self::locationSection(['घर का पता – काम घर के पास ही मिलेगा', 'Home address – work is matched near your home'],
+                    ['घर पर रहते हुए बटन दबाएँ – आपको केवल घर के पास का काम दिखाया जाएगा।', 'Tap the button while at home – you are only matched with work near your home.']),
                 [
                     'title' => ['आपातकाल के लिए दो अपनों के संपर्क और पते का प्रमाण', 'Two Emergency Contacts (near & dear) and Address Proof'],
                     'fields' => [
@@ -923,6 +928,9 @@ class FormRegistry
                         self::text('retired_from', ['आप कहाँ से रिटायर हुए (विभाग / कंपनी / पद)', 'Retired from (department / company / post)'], false, ['max' => 190]),
                         self::radio('experience', ['कुल अनुभव', 'Total experience'], [
                             '10_20' => ['10–20 साल', '10–20 years'], '20_30' => ['20–30 साल', '20–30 years'], '30_plus' => ['30+ साल', '30+ years'],
+                        ], true, ['full' => true]),
+                        self::radio('max_distance', ['घर से अधिकतम कितनी दूरी तक काम कर सकते हैं', 'How far from home can you work'], [
+                            '1' => ['1 किमी के भीतर', 'Within 1 km'], '3' => ['3 किमी के भीतर', 'Within 3 km'], '5' => ['5 किमी के भीतर', 'Within 5 km'], '10' => ['10 किमी के भीतर', 'Within 10 km'],
                         ], true, ['full' => true]),
                         self::radio('hours', ['कितना समय दे सकते हैं', 'Time you can give'], [
                             'full_day' => ['पूरा दिन', 'Full day'], 'half_day' => ['आधा दिन', 'Half day'], 'few_hours' => ['रोज़ कुछ घंटे', 'A few hours a day'],
@@ -987,7 +995,8 @@ class FormRegistry
                     ],
                 ],
                 self::personalSection(['name_label' => ['संपर्क व्यक्ति का नाम', 'Contact Person Name'], 'dob' => false, 'gender' => false, 'aadhaar_required' => false]),
-                self::locationSection(['कार्यस्थल का पता', 'Workplace address']),
+                self::locationSection(['कार्यस्थल का पता – पास रहने वाले वरिष्ठ नागरिक दिखेंगे', 'Workplace address – seniors living nearby are shown'],
+                    ['कार्यस्थल पर बटन दबाएँ – केवल पास रहने वाले वरिष्ठ नागरिक मिलाए जाते हैं।', 'Tap the button at the workplace – only seniors living nearby are matched.']),
                 [
                     'title' => ['आपको क्या चाहिए', 'What You Need'],
                     'fields' => [

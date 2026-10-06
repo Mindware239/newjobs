@@ -39,6 +39,7 @@ $mentoringTypes = ['skill', 'internship', 'provider', 'internpro', 'mentorplan',
                     <?php endif; ?>
                 </ul>
 
+                <?php if (in_array($reg['type'], ['senior', 'seniorhire'], true)) { require __DIR__ . '/_senior_matches.php'; } ?>
                 <?php if (in_array($reg['type'], $mentoringTypes, true)): ?>
                     <a class="sd-btn" style="width:100%;margin:6px 0 14px" href="/mentoring/access/<?= $h($reg['token']) ?>"><?= $tb('मेरा मेंटरिंग डैशबोर्ड खोलें →', 'Open my mentoring dashboard →') ?></a>
                 <?php elseif ($reg['type'] === 'jobpass'): ?>
