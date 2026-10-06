@@ -17,6 +17,8 @@ $dotenv->safeLoad();
 if (is_file(__DIR__ . '/../.env.local')) {
     \Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/../', '.env.local')->load();
 }
+// All dates the site shows (posted times, last dates …) are Indian time unless APP_TIMEZONE says otherwise.
+date_default_timezone_set((string)($_ENV['APP_TIMEZONE'] ?? 'Asia/Kolkata') ?: 'Asia/Kolkata');
 
 // Get task from argument
 $task = $argv[1] ?? null;

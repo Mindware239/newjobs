@@ -46,3 +46,6 @@ uploads/uploads/
 
 # Copies of official Govt notification PDFs (re-downloaded by the India jobs import)
 uploads/govt-notices/
+
+# Public Mozilla root-certificate bundle used by the job importers (no private keys)
+!resources/certs/cacert.pem

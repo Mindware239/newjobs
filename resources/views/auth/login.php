@@ -238,9 +238,70 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.7s linear infinite; }
+        /* ---- Three separate logins on one page ---- */
+        body { flex-direction: column; padding: 20px 16px 40px; }
+        .role-tabs { width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .role-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px; border-radius: 16px; border: 2px solid var(--slate-200); background: #fff; cursor: pointer; font-family: var(--font-head); text-decoration: none; color: var(--slate-900); }
+        .role-tab .ic { font-size: 26px; line-height: 1; }
+        .role-tab b { font-size: 17px; font-weight: 800; }
+        .role-tab small { font-size: 12px; font-weight: 700; color: var(--slate-500); }
+        .role-tab.on { border-color: var(--rc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--rc) 18%, transparent); }
+        .role-tab.on b { color: var(--rc); }
+        .login-shell { width: 100%; max-width: 980px; display: grid; grid-template-columns: 1fr 440px; gap: 18px; align-items: start; }
+        .role-info { background: #fff; border: 1px solid var(--slate-200); border-radius: 20px; padding: 26px; border-top: 5px solid var(--rc); }
+        .role-info h2 { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 4px; color: var(--rc); }
+        .role-info .tag { font-size: 14px; color: var(--slate-600); margin-bottom: 14px; }
+        .role-info ul { list-style: none; display: grid; gap: 9px; margin-bottom: 16px; }
+        .role-info li { display: flex; gap: 8px; font-size: 14px; line-height: 1.45; color: var(--slate-700); }
+        .role-info li::before { content: '✔'; color: var(--rc); font-weight: 800; }
+        .role-info .how { font-size: 13px; background: var(--slate-50); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; color: var(--slate-700); }
+        .role-info .reg { display: flex; flex-direction: column; gap: 8px; }
+        .role-info .reg a { display: block; text-align: center; padding: 10px; border-radius: 12px; border: 2px solid var(--rc); color: var(--rc); font-weight: 800; text-decoration: none; font-size: 14px; }
+        .lang-hi { display: block; }
+        .login-shell .login-card { max-width: none; }
+        @media (max-width: 860px) {
+            .login-shell { grid-template-columns: 1fr; }
+            .role-info { order: 2; }
+        }
+        @media (max-width: 480px) {
+            .role-tab b { font-size: 14px; }
+            .role-tab small { display: none; }
+            .login-card { padding: 24px 18px; }
+        }
     </style>
 </head>
 <body x-data="loginForm()">
+<?php
+$roles = require __DIR__ . '/_login_roles.php';
+$tab = $tab ?? 'candidate';
+$bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8') . ' · ' . htmlspecialchars($p[1], ENT_QUOTES, 'UTF-8');
+?>
+<nav class="role-tabs" aria-label="Choose login">
+    <?php foreach ($roles as $key => $r): ?>
+        <a href="<?= $r['href'] ?>" class="role-tab" style="--rc:<?= $r['color'] ?>" :class="tab === '<?= $key ?>' ? 'on' : ''"
+           @click.prevent="setTab('<?= $key ?>')" :aria-current="tab === '<?= $key ?>' ? 'page' : null">
+            <span class="ic" aria-hidden="true"><?= $r['icon'] ?></span>
+            <b><?= htmlspecialchars($r['title'][1], ENT_QUOTES, 'UTF-8') ?></b>
+            <small><?= htmlspecialchars($r['title'][0], ENT_QUOTES, 'UTF-8') ?></small>
+        </a>
+    <?php endforeach; ?>
+</nav>
+
+<div class="login-shell">
+    <?php foreach ($roles as $key => $r): ?>
+        <aside class="role-info" style="--rc:<?= $r['color'] ?>" x-show="tab === '<?= $key ?>'" <?= $key === $tab ? '' : 'x-cloak' ?>>
+            <h2><?= $r['icon'] ?> <?= htmlspecialchars($r['title'][1], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($r['title'][0], ENT_QUOTES, 'UTF-8') ?></h2>
+            <p class="tag"><?= $bi($r['tagline']) ?></p>
+            <ul>
+                <?php foreach ($r['points'] as $pt): ?><li><span><?= $bi($pt) ?></span></li><?php endforeach; ?>
+            </ul>
+            <p class="how"><b>🔑 <?= $bi(['लॉगिन कैसे करें', 'How to log in']) ?>:</b> <?= $bi($r['how']) ?></p>
+            <div class="reg">
+                <span style="font-size:13px;font-weight:700;color:var(--slate-600)"><?= $bi(['नए हैं?', 'New here?']) ?></span>
+                <?php foreach ($r['register'] as [$url, $label]): ?><a href="<?= $url ?>"><?= $bi($label) ?></a><?php endforeach; ?>
+            </div>
+        </aside>
+    <?php endforeach; ?>
 
 <div class="login-card">
 
@@ -252,8 +313,8 @@
 
     <!-- Header -->
     <div class="header">
-        <h2 class="title">Welcome Back</h2>
-        <p class="subtitle">Login to your candidate or employer account</p>
+        <h2 class="title" x-text="{candidate: 'Job Seeker Login', employer: 'Employer Login', mentor: 'Mentor Login'}[tab]">Login</h2>
+        <p class="subtitle" x-text="{candidate: 'जॉब सीकर लॉगिन · नौकरी, इंटर्नशिप, स्किल', employer: 'एम्प्लॉयर लॉगिन · कंपनी / HR', mentor: 'मेंटर लॉगिन · मेंटर, संस्थान, इंटर्नशिप प्रदाता, भर्ती कंपनी'}[tab]"></p>
     </div>
 
     <!-- Alerts -->
@@ -267,6 +328,37 @@
         <span x-text="error"></span>
     </div>
 
+    <!-- Mentor login (and job seekers who registered through a Jobsence form): mobile / email → email OTP -->
+    <form x-show="tab === 'mentor' || m.fallback" x-cloak @submit.prevent="m.step === 1 ? mIdentify() : mVerify()" novalidate>
+        <div class="fields">
+            <p x-show="m.fallback" style="font-size:13px;color:#334155;margin:0 0 4px;background:#f0fdf4;border-radius:10px;padding:10px">✅ आपका Jobsence रजिस्ट्रेशन मिला – ईमेल OTP से अपना डैशबोर्ड खोलें। · We found your Jobsence registration – open your dashboard with the email OTP.</p>
+            <div x-show="m.step === 1">
+                <label for="m_identifier" class="f-label">रजिस्ट्रेशन वाला मोबाइल नंबर या ईमेल · Registered mobile number or email</label>
+                <div class="f-wrap">
+                    <input id="m_identifier" type="text" x-model.trim="m.identifier" class="f-input" style="padding-left:14px" placeholder="98XXXXXXXX / +977… / you@example.com" autocomplete="username">
+                </div>
+            </div>
+            <div x-show="m.step === 2" x-cloak>
+                <p style="font-size:13px;color:#334155;margin:0 0 10px">OTP भेजा गया · OTP sent to <b x-text="m.masked"></b>
+                    <button type="button" @click="m.step = 1; m.otp = ''; m.fallback = false; error = ''" style="border:0;background:none;color:#f05537;font-weight:700;cursor:pointer">बदलें · Change</button></p>
+                <label for="m_otp" class="f-label">ईमेल OTP · Email OTP</label>
+                <div class="f-wrap">
+                    <input id="m_otp" type="text" x-ref="motp" x-model.trim="m.otp" class="f-input" style="padding-left:14px;letter-spacing:.4em;font-size:20px;text-align:center" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+                </div>
+                <div class="options-row" style="margin-top:10px;justify-content:flex-end">
+                    <button type="button" class="forgot" style="border:0;background:none;cursor:pointer" :disabled="wait > 0" @click="mIdentify(true)"
+                            x-text="wait > 0 ? ('Resend in ' + wait + 's') : 'OTP दोबारा · Resend'"></button>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" :disabled="isSubmitting">
+                <span x-show="!isSubmitting" x-text="m.step === 1 ? 'OTP भेजें · Send OTP' : 'लॉगिन करें · Log in'"></span>
+                <span x-show="isSubmitting" x-cloak>…</span>
+            </button>
+            <p x-show="tab === 'mentor'" style="font-size:12px;color:#64748b;margin:4px 2px 0;text-align:center">पहले रजिस्ट्रेशन ईमेल के लिंक से लॉगिन होता था – अब यहाँ भी। · Previously only via the link in your registration email – now here too.</p>
+        </div>
+    </form>
+
+    <div x-show="tab !== 'mentor' && !m.fallback">
     <!-- Mode Toggle -->
     <div class="auth-toggle">
         <button type="button" @click="authMode = 'quick'; error = ''" :class="authMode === 'quick' ? 'active' : ''" class="auth-toggle-btn">मोबाइल / ईमेल · Mobile / Email</button>
@@ -391,8 +483,10 @@
             </button>
         </div>
     </form>
+    </div><!-- /account login forms -->
 
     <!-- Social -->
+    <div x-show="tab !== 'mentor' && !m.fallback">
     <div class="social-header">
         <div class="social-line"></div>
         <span class="social-text">or continue with</span>
@@ -408,6 +502,7 @@
     <div class="social-grid" style="grid-template-columns:1fr">
         <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="social-btn" style="gap:10px;font-weight:700;color:#334155;text-decoration:none"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="">Google</a>
     </div>
+    </div><!-- /social -->
 
     <!-- Sign Up -->
     <div class="footer">
@@ -415,9 +510,13 @@
             $signupUrl  = $isEmployerContext ? '/register-employer' : '/register-candidate';
             $signupText = $isEmployerContext ? 'Create employer account' : 'Create candidate account';
         ?>
-        <p class="footer-text">
+        <p class="footer-text" x-show="tab !== 'mentor'">
             Don't have an account? <br>
-            <a href="<?= $signupUrl ?>" class="footer-link"><?= $signupText ?></a>
+            <a :href="tab === 'employer' ? '/register-employer' : '/register-candidate'" class="footer-link" x-text="tab === 'employer' ? 'Create employer account' : 'Create job seeker account'"><?= $signupText ?></a>
+        </p>
+        <p class="footer-text" x-show="tab === 'mentor'" x-cloak>
+            मेंटर नहीं बने? · Not registered yet? <br>
+            <a href="/apply/skill-provider" class="footer-link">Register free as a mentor</a>
         </p>
         <a href="/" class="back-home">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -428,6 +527,7 @@
     </div>
 
 </div>
+</div><!-- /.login-shell -->
 
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
@@ -443,6 +543,46 @@
             registrationMessage: urlParams.get('email') ? `Account created for ${urlParams.get('email')}. Please login.` : 'Account created successfully.',
             formData: { email: urlParams.get('email') || '', password: '', remember: true },
             step: 1, notFound: false, maskedEmail: '', wait: 0, timer: null,
+            tab: '<?= $tab ?? 'candidate' ?>',
+            m: { identifier: '', otp: '', step: 1, masked: '', role: 'provider', fallback: false },
+            setTab(t) {
+                this.tab = t; this.error = ''; this.notFound = false; this.m.fallback = false; this.m.step = 1;
+                const paths = { candidate: '/login/job-seeker', employer: '/login/employer', mentor: '/login/mentor' };
+                try { history.replaceState(null, '', paths[t] + window.location.search); } catch (e) {}
+            },
+            wrongTab(data) {
+                if (data.status !== 'wrong_tab') return false;
+                this.setTab(data.tab); this.error = data.error; return true;
+            },
+            async mIdentify(resend) {
+                this.error = '';
+                if (!this.m.identifier) { this.error = 'मोबाइल नंबर या ईमेल भरें · Enter your mobile number or email'; return false; }
+                this.isSubmitting = true;
+                let found = false;
+                try {
+                    const { ok, data } = await this.post('/login/mentoring/identify', { identifier: this.m.identifier, role: this.m.role });
+                    if (ok && data.status === 'otp_sent') {
+                        found = true; this.m.masked = data.email; this.m.step = 2; this.countdown(data.wait || 30);
+                        this.$nextTick(() => this.$refs.motp && this.$refs.motp.focus());
+                        if (resend) this.success = 'OTP दोबारा भेजा गया · OTP sent again';
+                    } else if (!this.m.fallback) {
+                        this.error = data.error || 'कुछ गलत हुआ · Something went wrong';
+                    }
+                } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
+                this.isSubmitting = false;
+                return found;
+            },
+            async mVerify() {
+                this.error = '';
+                if (!/^\d{6}$/.test(this.m.otp)) { this.error = '6 अंकों का OTP भरें · Enter the 6-digit OTP'; return; }
+                this.isSubmitting = true;
+                try {
+                    const { ok, data } = await this.post('/login/mentoring/verify', { otp: this.m.otp });
+                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/mentoring'; return; }
+                    this.error = data.error || 'OTP सही नहीं है · Incorrect OTP';
+                } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
+                this.isSubmitting = false;
+            },
             quick: { identifier: urlParams.get('email') || '', otp: '', pin: '', remember: true },
             redirectTo: urlParams.get('redirect') || '',
             async post(url, body) {
@@ -464,7 +604,14 @@
                 if (!this.quick.identifier) { this.error = 'मोबाइल नंबर या ईमेल भरें · Enter your mobile number or email'; return; }
                 this.isSubmitting = true;
                 try {
-                    const { ok, data } = await this.post('/login/identify', { identifier: this.quick.identifier, method: (useOtp || resend) ? 'otp' : '' });
+                    const { ok, data } = await this.post('/login/identify', { identifier: this.quick.identifier, as: this.tab, method: (useOtp || resend) ? 'otp' : '' });
+                    if (this.wrongTab(data)) { this.isSubmitting = false; return; }
+                    if (!ok && data.status === 'not_found' && this.tab === 'candidate') {
+                        // Registered through a Jobsence form (skill / internship / job) but no account: try that.
+                        this.m.identifier = this.quick.identifier; this.m.role = 'seeker'; this.m.fallback = true; this.isSubmitting = false;
+                        if (await this.mIdentify()) return;
+                        this.m.fallback = false; this.m.role = 'provider'; this.isSubmitting = true;
+                    }
                     if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
                     if (ok && data.status === 'pin_required') {
                         this.step = 3; this.quick.pin = '';
@@ -512,9 +659,10 @@
                     const res = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': this.getCsrfToken() },
-                        body: JSON.stringify(Object.assign({ redirect: this.redirectTo }, this.formData))
+                        body: JSON.stringify(Object.assign({ redirect: this.redirectTo, as: this.tab }, this.formData))
                     });
                     const data = await res.json();
+                    if (this.wrongTab(data)) { this.isSubmitting = false; return; }
                     if (res.ok && (data.success || data.status)) {
                         window.location.href = data.redirect || data.redirect_to || '/';
                     } else {

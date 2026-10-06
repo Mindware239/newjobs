@@ -41,6 +41,7 @@ $ijItems = $ijTicker
 <div class="ijbar" role="region" aria-label="See Jobs in India">
     <a class="ijbar-cta" href="/india-jobs"><span class="ijbar-dot" aria-hidden="true"></span><?= $ijHi ? 'भारत की नौकरियाँ देखें' : 'See Jobs in India' ?></a>
     <a class="ijbar-yi" href="/mentoring"><span class="ijbar-flag" aria-hidden="true"></span> <span class="l"><?= $ijHi ? 'युवा भारत मेंटरिंग' : 'Young India Mentoring' ?></span></a>
+    <a class="ijbar-near" href="/jobs-by-state" style="background:#f59e0b">📍 <?= $ijHi ? 'राज्य अनुसार नौकरियाँ' : 'Jobs by State A–Z' ?></a>
     <a class="ijbar-near" href="/near-me">📍 <?= $ijHi ? 'मेरे पास सेवा' : 'Near Me' ?></a>
     <div class="ijbar-track">
         <div class="ijbar-run">

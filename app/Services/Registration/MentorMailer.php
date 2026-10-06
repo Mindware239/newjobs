@@ -100,7 +100,7 @@ class MentorMailer
 
     public static function acceptedToOwner(array $candidate, array $mentor, array $assignment): bool
     {
-        $owner = (string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com');
+        $owner = \App\Helpers\AdminMail::to();
         $body = self::layout("<p><b>Mentor accepted a candidate</b></p><p>Mentor: " . self::h($mentor['full_name']) . " (" . self::h($mentor['reg_no']) . ")<br>Candidate: "
             . self::h($candidate['full_name']) . " (" . self::h($candidate['reg_no']) . ")<br>Skill: " . self::h($assignment['skill']) . "<br>Mode: " . self::modeLabel((string)$assignment['mode'])
             . "</p><p><a href='" . self::h(self::base() . '/admin/registrations/' . (int)$candidate['id']) . "'>Open in admin</a></p>");

@@ -127,6 +127,21 @@ class IndiaJobsController extends BaseController
         $response->redirect('/admin/india-jobs');
     }
 
+    /** POST /admin/india-jobs/{id}/feature – star / unstar for the homepage "Featured Govt & PSU jobs". */
+    public function feature(Request $request, Response $response): void
+    {
+        if (!$this->requireAdmin($response)) {
+            return;
+        }
+        $id = (int)$request->param('id');
+        if ($job = ExternalJob::find($id)) {
+            $on = empty($job['is_featured']);
+            ExternalJob::setFeatured($id, $on);
+            $_SESSION['flash_ij'] = $on ? 'Featured on the homepage.' : 'Removed from the homepage featured list.';
+        }
+        $response->redirect('/admin/india-jobs');
+    }
+
     public function toggle(Request $request, Response $response): void
     {
         if (!$this->requireAdmin($response)) {

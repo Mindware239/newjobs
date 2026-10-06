@@ -109,6 +109,40 @@ class Mentoring
         return $reg;
     }
 
+    /**
+     * Login without the emailed link: the newest paid registration of this role ('provider' = mentor /
+     * institute / internship provider / hiring company / Near Me provider; 'seeker' = skill, internship
+     * and job seekers) whose email or mobile matches $identifier.
+     */
+    public static function findForLogin(string $identifier, string $role): ?array
+    {
+        $types = [];
+        foreach (self::KINDS as $k) {
+            $types = array_merge($types, $role === 'provider' ? [$k['provider']] : $k['seekers']);
+        }
+        $identifier = trim($identifier);
+        if (str_contains($identifier, '@')) {
+            if (!filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+                return null;
+            }
+            $where = 'LOWER(email) = ?';
+            $params = [strtolower($identifier)];
+        } else {
+            $d = (string)preg_replace('/\D/', '', $identifier);
+            if (strlen($d) < 6) {
+                return null;
+            }
+            $last10 = strlen($d) >= 10 ? substr($d, -10) : $d;
+            $where = 'mobile IN (?, ?, ?)'; // Indian 10 digits, or +countrycode… for residents abroad
+            $params = [$last10, '+' . ltrim($d, '0'), $d];
+        }
+        $row = Database::getInstance()->fetchOne(
+            "SELECT id FROM portal_registrations WHERE type IN (" . self::inList($types) . ") AND payment_status = 'paid' AND $where ORDER BY id DESC LIMIT 1",
+            $params
+        );
+        return $row ? PortalRegistration::find((int)$row['id']) : null;
+    }
+
     public static function forget(): void
     {
         unset($_SESSION['mentoring_token']);

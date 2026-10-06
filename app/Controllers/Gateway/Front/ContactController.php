@@ -52,8 +52,8 @@ class ContactController
         
         // 3. Process the Data (Send an Email)
         
-        // Use ADMIN_MAIL from .env as the primary recipient
-        $to = $_ENV['ADMIN_MAIL'] ?? $_ENV['MAIL_RECIPIENT'] ?? "gm@indianbarcode.com";
+        // gm@jobsence.com, plus ADMIN_MAIL / OWNER_MAIL from .env if set
+        $to = \App\Helpers\AdminMail::to();
         $site_name = $_ENV['APP_NAME'] ?? "Jobsence";
 
         $email_subject = "New Contact Submission from {$site_name}: " . $subject;

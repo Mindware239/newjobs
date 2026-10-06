@@ -217,7 +217,7 @@ class AuthController extends ApiController
             );
 
             // Notify Admin about new candidate registration
-            $adminMail = getenv('ADMIN_MAIL') ?: 'admin@example.com';
+            $adminMail = \App\Helpers\AdminMail::to();
             \App\Services\MailService::sendEmail(
                 $adminMail,
                 'New Candidate Registered: ' . $data['full_name'],
@@ -422,7 +422,7 @@ class AuthController extends ApiController
             );
 
             // Notify Admin about new employer registration
-            $adminMail = getenv('ADMIN_MAIL') ?: 'admin@example.com';
+            $adminMail = \App\Helpers\AdminMail::to();
             \App\Services\MailService::sendEmail(
                 $adminMail,
                 'New Employer Registered: ' . ($data['company_name'] ?? 'Unknown'),

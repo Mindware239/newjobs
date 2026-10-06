@@ -12,7 +12,8 @@ use App\Models\ExternalJob;
  *
  * Rules kept on purpose:
  *  - only feeds an admin has added and enabled; HTML pages are read only for the official
- *    Employment News table and UPSC (advertisements, examinations, What's New – see UpscFetcher);
+ *    Employment News table, UPSC (advertisements, examinations, What's New – see UpscFetcher) and
+ *    the ICSIL Current Jobs table (IcsilFetcher) and the state boards' recruitment lists (GovtListFetcher);
  *  - robots.txt is honoured, one polite request per source per run, identified user agent;
  *  - public http(s) hosts only (no private / loopback addresses – SSRF guard);
  *  - every listing keeps the official source link; full text stays a short summary.
@@ -60,6 +61,8 @@ class FeedFetcher
                 'json' => self::parseJson($body),
                 'employmentnews' => self::parseEmploymentNews($body, $url),
                 'upsc' => UpscFetcher::listings($body, $url),
+                'icsil' => IcsilFetcher::listings($body, $url),
+                'govtlist' => GovtListFetcher::listings($body, $url),
                 default => self::parseXml($body),
             };
             $counts = ['new' => 0, 'updated' => 0, 'skipped' => 0];
@@ -70,7 +73,7 @@ class FeedFetcher
                 }
                 // Official sites often publish one feed for all news: keep only recruitment items
                 // (the Employment News table and UPSC advertisements / examinations list only vacancies).
-                if (!in_array($type, ['employmentnews', 'upsc'], true) && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
+                if (!in_array($type, ['employmentnews', 'upsc', 'icsil', 'govtlist'], true) && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
                     $skipped++;
                     continue;
                 }
@@ -83,6 +86,9 @@ class FeedFetcher
                 ])]++;
             }
             $status = sprintf('ok: %d items, %d new, %d updated, %d non-recruitment skipped', count($items), $counts['new'], $counts['updated'], $skipped);
+            if ($type === 'govtlist') {
+                GovtListFetcher::retire((int)$source['id']); // no closing date: hide once too old
+            }
             if ($type === 'upsc') {
                 $status .= sprintf(', %d new notices', UpscFetcher::notices((int)$source['id']));
             }
@@ -432,6 +438,10 @@ class FeedFetcher
         // Follow redirects by hand so every hop passes the public-host check.
         for ($hop = 0; $hop < 4; $hop++) {
             [$code, $body, $location] = self::request($url, $maxBytes);
+            if ($code === 0) {
+                // Government servers are often slow or drop the first connection: one retry with a longer wait.
+                [$code, $body, $location] = self::request($url, $maxBytes, 45);
+            }
             if ($code < 300 || $code >= 400 || $location === '') {
                 return [$code, $body];
             }
@@ -446,7 +456,7 @@ class FeedFetcher
     }
 
     /** @return array{0:int,1:string,2:string} */
-    private static function request(string $url, int $maxBytes): array
+    private static function request(string $url, int $maxBytes, int $timeout = 20): array
     {
         $ch = curl_init($url);
         $body = '';
@@ -455,7 +465,8 @@ class FeedFetcher
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
             CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_TIMEOUT => $maxBytes > self::MAX_BYTES ? 90 : 20, // official PDFs can be several MB
+            CURLOPT_TIMEOUT => $maxBytes > self::MAX_BYTES ? 90 : $timeout, // official PDFs can be several MB
+            CURLOPT_ENCODING => '', // accept gzip / deflate – some sites (e.g. SBI) compress even when not asked
             CURLOPT_USERAGENT => in_array(strtolower((string)parse_url($url, PHP_URL_HOST)), self::SHORT_UA_HOSTS, true) ? self::SHORT_UA : self::UA,
             CURLOPT_HTTPHEADER => ['Accept: application/rss+xml, application/atom+xml, application/json, text/xml;q=0.9, */*;q=0.5'],
             CURLOPT_WRITEFUNCTION => static function ($ch, string $chunk) use (&$body, $maxBytes): int {
@@ -463,6 +474,11 @@ class FeedFetcher
                 return strlen($body) > $maxBytes ? 0 : strlen($chunk);
             },
         ]);
+        // Current Mozilla root bundle shipped with the app (hosting bundles are often years old and miss newer
+        // roots, e.g. Sectigo R46). Certificates are still fully verified.
+        if (is_file($ca = dirname(__DIR__, 3) . '/resources/certs/cacert.pem')) {
+            curl_setopt($ch, CURLOPT_CAINFO, $ca);
+        }
         curl_exec($ch);
         $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $location = (string)curl_getinfo($ch, CURLINFO_REDIRECT_URL);

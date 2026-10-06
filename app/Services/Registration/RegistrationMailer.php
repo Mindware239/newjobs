@@ -8,7 +8,7 @@ use App\Services\MailService;
 
 /**
  * Bilingual (Hindi + English) emails for Jobsence registrations.
- * Candidate mail from gm@jobsence.com (SKILL_MAIL_FROM); owner copy to gm@indianbarcode.com (OWNER_MAIL).
+ * Candidate mail from gm@jobsence.com (SKILL_MAIL_FROM); owner copy to gm@jobsence.com (+ OWNER_MAIL / ADMIN_MAIL, see AdminMail).
  * The SMTP account must be allowed to send as the From address.
  */
 class RegistrationMailer
@@ -139,7 +139,7 @@ class RegistrationMailer
         if (!$form) {
             return false;
         }
-        $to = array_filter([(string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com')]);
+        $to = \App\Helpers\AdminMail::list();
         // Hiring companies and jobs-abroad registrations / payments are also intimated to Jobsence.
         if (in_array($reg['type'], ['jobpro', 'jobplan', 'intljob', 'intlcountry', 'internpro', 'provider'], true)) {
             $to[] = (string)($_ENV['JOBSENCE_NOTIFY_MAIL'] ?? 'gm@jobsence.com');

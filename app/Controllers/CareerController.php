@@ -219,7 +219,7 @@ class CareerController extends BaseController
             'attachments' => $attachments,
         ];
 
-        foreach (['gm@indianbarcode.com', 'gm@jobsence.com'] as $recipient) {
+        foreach (\App\Helpers\AdminMail::list() as $recipient) {
             try {
                 NotificationService::sendEmail($recipient, $payload['subject'], 'career_application_hr', $payload);
             } catch (\Throwable $e) {

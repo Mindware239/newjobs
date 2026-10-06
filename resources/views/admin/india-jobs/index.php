@@ -63,6 +63,7 @@ $csrf = $h($_SESSION['csrf_token'] ?? '');
                             <td class="px-4 py-3 text-sm whitespace-nowrap">
                                 <a class="font-semibold text-primary hover:underline" href="/india-jobs/<?= (int)$r['id'] ?>-<?= $h($r['slug']) ?>" target="_blank">View</a> ·
                                 <a class="font-semibold text-primary hover:underline" href="/admin/india-jobs/<?= (int)$r['id'] ?>/edit">Edit</a> ·
+                                <form method="POST" action="/admin/india-jobs/<?= (int)$r['id'] ?>/feature" style="display:inline"><input type="hidden" name="_token" value="<?= $csrf ?>"><button class="font-semibold <?= !empty($r['is_featured']) ? 'text-amber-600' : 'text-gray-500' ?> hover:underline" type="submit" title="Show in Featured on the homepage"><?= !empty($r['is_featured']) ? '★ Featured' : '☆ Feature' ?></button></form> ·
                                 <form method="POST" action="/admin/india-jobs/<?= (int)$r['id'] ?>/toggle" style="display:inline"><input type="hidden" name="_token" value="<?= $csrf ?>"><button class="font-semibold text-gray-700 hover:underline" type="submit"><?= $r['is_active'] ? 'Hide' : 'Show' ?></button></form> ·
                                 <form method="POST" action="/admin/india-jobs/<?= (int)$r['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Delete this job permanently?')"><input type="hidden" name="_token" value="<?= $csrf ?>"><button class="font-semibold text-red-600 hover:underline" type="submit">Delete</button></form>
                             </td>

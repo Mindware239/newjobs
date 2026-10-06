@@ -121,7 +121,10 @@ class MailService
             $fromName  = $fromName  ?: (getenv('MAIL_FROM_NAME') ?: 'Job Portal');
 
             $mail->setFrom($fromEmail, $fromName);
-            $mail->addAddress($to);
+            // Several recipients allowed: "a@x.com,b@y.com" (e.g. AdminMail::to()).
+            foreach (array_filter(array_map('trim', explode(',', $to))) as $toAddr) {
+                $mail->addAddress($toAddr);
+            }
             error_log("MailService - Attempting to send email to: {$to}, Subject: {$subject}");
 
             // EMAIL CONTENT

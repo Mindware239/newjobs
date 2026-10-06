@@ -1415,6 +1415,8 @@ class FormRegistry
             $opts[$c] = $c === 'India' ? ['भारत', 'India'] : [$c, $c];
         }
         return ['key' => 'residence_country', 'type' => 'select', 'label' => ['आप किस देश में रहते हैं', 'Country of residence'], 'options' => $opts, 'required' => true, 'full' => true,
+            // India pre-selected and shown first; the other countries follow A–Z in their own group.
+            'default' => 'India', 'pinned' => ['India'], 'pinned_label' => ['भारत', 'India'], 'others_label' => ['भारत के बाहर (A–Z)', 'Outside India (A–Z)'],
             'hint' => ['भारत के बाहर: मोबाइल नंबर देश कोड के साथ (जैसे +977) और राज्य की जगह अपना देश चुनें।', 'Outside India: give your mobile with country code (e.g. +977) and pick your country instead of a state.']];
     }
 

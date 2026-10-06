@@ -12,7 +12,7 @@ class VerificationService
     private const EMAIL_AUTH_OTP_TTL = 600; // 10 minutes
 
     /** New company / mentor enrolment: max 3 wrong OTPs, then blocked for 30 minutes; Jobsence-branded mail. */
-    private const STRICT_OTP_PURPOSES = ['register_employer', 'portal_provider', 'mentoring_agreement', 'login_device'];
+    private const STRICT_OTP_PURPOSES = ['register_employer', 'portal_provider', 'mentoring_agreement', 'login_device', 'mentoring_login'];
     private const STRICT_OTP_MAX_ATTEMPTS = 3;
     private const STRICT_OTP_BLOCK_SECONDS = 1800;
 

@@ -418,6 +418,8 @@ $totalCompanies = $stats['companies'] ?? 0;
     </div>
     <div class="home-wide">
         <?php require __DIR__ . '/front/apply/_buttons.php'; ?>
+        <?php require __DIR__ . '/include/_featured.php'; ?>
+        <?php require __DIR__ . '/include/_login_cards.php'; ?>
         <?php $quotesMode = 'rotate'; require __DIR__ . '/include/_skill_quotes.php'; ?>
         <?php $sdShowcaseLimit = 12; require __DIR__ . '/front/skill-development/_skills_showcase.php'; ?>
         <section class="relative hero-height bg-white text-gray-800">
@@ -1548,67 +1550,8 @@ $totalCompanies = $stats['companies'] ?? 0;
                 <?php endif; ?>
             </div>
         </section>
-         <!-- ══ GET APP LINK SECTION ══ -->
-        <section class="py-10 bg-white">
-            <div class="container mx-auto px-6 lg:px-[7.5rem]">
-                <div class="relative rounded-2xl overflow-hidden" style="background:#fef3f3; width:100%; max-width:100%; margin:0 auto;">
-                    <div class="flex flex-col md:flex-row items-center">
-
-                        <!-- COL 1 (col-md-5): Title + Input — has its own tinted bg -->
-                        <div class="w-full md:w-5/12 px-8 py-8 text-center md:text-left"
-                            style="background:#fef3f3;">
-                            <h3 class="font-bold text-gray-900 mb-1"
-                                style="font-size:20px; font-weight:600;">
-                                Get Jobsence app link on your mobile
-                            </h3>
-                            <p class="text-gray-500 text-sm mb-5">
-                                Available for both Android and iOS apps
-                            </p>
-                            <!-- Input + Button -->
-                            <div class="flex items-center bg-white rounded-full overflow-hidden border border-gray-200"
-                                style="max-width:360px;">
-                                <input type="tel"
-                                    name="mobile"
-                                    placeholder="Enter mobile number..."
-                                    class="flex-1 px-5 py-3 text-sm text-gray-700 outline-none bg-transparent placeholder-gray-400 font-medium" />
-                                <button type="button"
-                                    class="bg-primary text-white font-bold text-sm px-5 py-3 whitespace-nowrap hover:bg-primary-600 transition"
-                                    style="border-radius:0 50px 50px 0;">
-                                    Get&nbsp;link
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- COL 2 (col-md-4): Store Badges centered -->
-                        <div class="w-full md:w-4/12 flex items-center justify-center gap-4 py-8 px-6">
-                            <a href="https://play.google.com/store" target="_blank">
-                                <img src="<?= $base ?>assets/images/android-img.webp"
-                                    alt="Android Logo"
-                                    width="130" height="40"
-                                    class="h-10 w-auto object-contain" />
-                            </a>
-                            <a href="https://apps.apple.com" target="_blank">
-                                <img src="<?= $base ?>assets/images/apple-img.webp"
-                                    alt="Apple Logo"
-                                    width="130" height="40"
-                                    class="h-10 w-auto object-contain" />
-                            </a>
-                        </div>
-
-                        <!-- COL 3 (col-md-3): App Illustration -->
-                        <div class="w-full md:w-3/12 flex items-end justify-center md:justify-start px-4 pb-0 pt-4 md:pt-0">
-                            <img src="<?= $base ?>assets/images/bg-appdownload.png"
-                                alt="App Development"
-                                width="190" height="100"
-                                class="w-auto object-contain"
-                                style="max-height:175px;"
-                                onerror="this.style.display='none'" />
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </section>
+         <!-- App download section removed (2026-10-06): no Jobsence app is published in the stores yet, and
+              badges / "get link" without a real app made Google Safe Browsing flag the site as deceptive. -->
     </div>
     <?php
     // require __DIR__ . '/include/footer.php';

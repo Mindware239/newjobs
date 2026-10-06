@@ -1,0 +1,158 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Core\Database;
+
+/**
+ * Free job posts on the state & city job board (/jobs-by-state). Any employer account – private limited
+ * company, proprietorship, partnership, LLP, shop – can post its requirement free of cost; a post stays
+ * live for LIVE_DAYS days. Admin can hide a post; the poster can close it.
+ */
+class FreeJobPost
+{
+    public const LIVE_DAYS = 30;
+    public const MAX_PER_DAY = 10;
+
+    public const COMPANY_TYPES = [
+        'pvt_ltd' => ['प्राइवेट लिमिटेड कंपनी', 'Private Limited Company'],
+        'proprietorship' => ['प्रोप्राइटरशिप फ़र्म', 'Proprietorship Firm'],
+        'partnership' => ['पार्टनरशिप फ़र्म', 'Partnership Firm'],
+        'llp' => ['LLP', 'LLP'],
+        'opc' => ['वन पर्सन कंपनी (OPC)', 'One Person Company (OPC)'],
+        'public_ltd' => ['पब्लिक लिमिटेड कंपनी', 'Public Limited Company'],
+        'shop' => ['दुकान / स्थानीय व्यवसाय', 'Shop / local business'],
+        'other' => ['अन्य', 'Other'],
+    ];
+
+    public const JOB_TYPES = [
+        'full_time' => ['फ़ुल-टाइम', 'Full-time'],
+        'part_time' => ['पार्ट-टाइम', 'Part-time'],
+        'wfh' => ['वर्क फ्रॉम होम', 'Work from home'],
+        'contract' => ['कॉन्ट्रैक्ट', 'Contract'],
+        'internship' => ['इंटर्नशिप', 'Internship'],
+        'apprentice' => ['अप्रेंटिस', 'Apprentice'],
+    ];
+
+    public static function create(array $p): int
+    {
+        self::ensureSchema();
+        $db = Database::getInstance();
+        $db->execute(
+            'INSERT INTO free_job_posts (user_id, company_name, company_type, contact_person, phone, email, title, job_type, state, city,
+                vacancies, salary, qualification, experience, description, how_to_apply, status, published_at, expires_at, ip_address)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'live\', NOW(), NOW() + INTERVAL ' . self::LIVE_DAYS . ' DAY, ?)',
+            [$p['user_id'], $p['company_name'], $p['company_type'], $p['contact_person'], $p['phone'], $p['email'], $p['title'], $p['job_type'],
+             $p['state'], $p['city'], $p['vacancies'], $p['salary'], $p['qualification'], $p['experience'], $p['description'], $p['how_to_apply'],
+             substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45)]
+        );
+        return (int)$db->lastInsertId();
+    }
+
+    public static function find(int $id): ?array
+    {
+        self::ensureSchema();
+        return Database::getInstance()->fetchOne('SELECT * FROM free_job_posts WHERE id = ?', [$id]) ?: null;
+    }
+
+    /** Live, not expired posts (newest first). */
+    public static function live(): array
+    {
+        self::ensureSchema();
+        return Database::getInstance()->fetchAll("SELECT * FROM free_job_posts WHERE status = 'live' AND expires_at > NOW() ORDER BY published_at DESC");
+    }
+
+    public static function byUser(int $userId): array
+    {
+        self::ensureSchema();
+        return Database::getInstance()->fetchAll('SELECT * FROM free_job_posts WHERE user_id = ? ORDER BY id DESC LIMIT 100', [$userId]);
+    }
+
+    public static function postedToday(int $userId): int
+    {
+        self::ensureSchema();
+        return (int)(Database::getInstance()->fetchOne('SELECT COUNT(*) AS n FROM free_job_posts WHERE user_id = ? AND created_at >= CURDATE()', [$userId])['n'] ?? 0);
+    }
+
+    public static function setStatus(int $id, string $status): void
+    {
+        if (in_array($status, ['live', 'hidden', 'closed'], true)) {
+            self::ensureSchema();
+            Database::getInstance()->execute('UPDATE free_job_posts SET status = ? WHERE id = ?', [$status, $id]);
+        }
+    }
+
+    public static function countView(int $id): void
+    {
+        Database::getInstance()->execute('UPDATE free_job_posts SET views = views + 1 WHERE id = ?', [$id]);
+    }
+
+    /** Admin list (all statuses). */
+    public static function adminList(string $status = '', string $q = '', int $limit = 300): array
+    {
+        self::ensureSchema();
+        $where = [];
+        $params = [];
+        if (in_array($status, ['live', 'hidden', 'closed'], true)) {
+            $where[] = 'status = ?';
+            $params[] = $status;
+        }
+        if ($q !== '') {
+            $where[] = '(title LIKE ? OR company_name LIKE ? OR city LIKE ? OR state LIKE ? OR email LIKE ?)';
+            array_push($params, ...array_fill(0, 5, '%' . $q . '%'));
+        }
+        return Database::getInstance()->fetchAll(
+            'SELECT * FROM free_job_posts ' . ($where ? 'WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY id DESC LIMIT ' . max(1, min(1000, $limit)),
+            $params
+        );
+    }
+
+    public static function url(array $p): string
+    {
+        $slug = strtolower(trim((string)preg_replace('/[^A-Za-z0-9]+/', '-', $p['title'] . ' ' . $p['city']), '-'));
+        return '/free-job/' . (int)$p['id'] . '-' . substr($slug !== '' ? $slug : 'job', 0, 90);
+    }
+
+    public static function ensureSchema(): void
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $pdo = Database::getInstance()->getConnection();
+        if ($pdo) {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS free_job_posts (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                company_name VARCHAR(190) NOT NULL,
+                company_type VARCHAR(30) NOT NULL,
+                contact_person VARCHAR(120) NOT NULL,
+                phone VARCHAR(20) NULL,
+                email VARCHAR(190) NULL,
+                title VARCHAR(190) NOT NULL,
+                job_type VARCHAR(20) NOT NULL DEFAULT 'full_time',
+                state VARCHAR(80) NOT NULL,
+                city VARCHAR(120) NOT NULL,
+                vacancies INT UNSIGNED NULL,
+                salary VARCHAR(120) NULL,
+                qualification VARCHAR(190) NULL,
+                experience VARCHAR(80) NULL,
+                description TEXT NULL,
+                how_to_apply VARCHAR(500) NULL,
+                status ENUM('live','hidden','closed') NOT NULL DEFAULT 'live',
+                views INT UNSIGNED NOT NULL DEFAULT 0,
+                published_at DATETIME NULL,
+                expires_at DATETIME NULL,
+                ip_address VARCHAR(45) NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY idx_fjp_live (status, expires_at, state, city),
+                KEY idx_fjp_user (user_id, created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        }
+        $done = true;
+    }
+}

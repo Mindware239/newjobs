@@ -99,6 +99,11 @@ $router->post('/login', [AuthController::class, 'login'], [$loginRateLimit, $csr
 $router->post('/login/identify', [AuthController::class, 'loginIdentify'], [$loginRateLimit, $csrfMiddleware]);
 $router->post('/login/verify', [AuthController::class, 'loginVerify'], [$loginRateLimit, $csrfMiddleware]);
 $router->post('/login/pin', [AuthController::class, 'loginPin'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/login/mentoring/identify', [\App\Controllers\Front\MentoringController::class, 'loginIdentify'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/login/mentoring/verify', [\App\Controllers\Front\MentoringController::class, 'loginVerify'], [$loginRateLimit, $csrfMiddleware]);
+$router->get('/login/job-seeker', [AuthController::class, 'login']);
+$router->get('/login/employer', [AuthController::class, 'login']);
+$router->get('/login/mentor', [AuthController::class, 'login']);
 $router->get('/account/mobile', [AuthController::class, 'mobileForm']);
 $router->post('/account/mobile', [AuthController::class, 'mobileSave'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/account/security', [AuthController::class, 'security']);
@@ -141,6 +146,13 @@ $router->get('/jobs', [CandidateJobController::class, 'index']);
 
 // See Jobs in India – Govt / Railways / Army / Police / PSU / company notifications (full view needs Jobs Pass)
 $router->get('/india-jobs', [\App\Controllers\Front\IndiaJobsController::class, 'index']);
+// Jobs by state & city (A–Z) + free job posting for companies (employer account, no fee)
+$router->get('/jobs-by-state', [\App\Controllers\Front\StateJobsController::class, 'index']);
+$router->get('/jobs-by-state/{state}', [\App\Controllers\Front\StateJobsController::class, 'state']);
+$router->get('/post-job-free', [\App\Controllers\Front\StateJobsController::class, 'postForm']);
+$router->post('/post-job-free', [\App\Controllers\Front\StateJobsController::class, 'postSave'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/free-job/{id}/close', [\App\Controllers\Front\StateJobsController::class, 'close'], [$csrfMiddleware]);
+$router->get('/free-job/{id}', [\App\Controllers\Front\StateJobsController::class, 'show']);
 $router->get('/india-jobs/{id}', [\App\Controllers\Front\IndiaJobsController::class, 'show']);
 
 // Near Me local services (plumber, electrician, salon…) + paid contact pass links

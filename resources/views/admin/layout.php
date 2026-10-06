@@ -185,6 +185,11 @@
                     </svg>
                     Careers
                 </a>
+                <a href="/admin/business-summary"
+                   class="flex items-center px-3 py-2 text-sm font-bold rounded-lg text-slate-100 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/business-summary') !== false ? 'bg-primary text-white' : '' ?>">
+                    <span class="w-5 mr-3 text-center" aria-hidden="true">📊</span>
+                    Use cases &amp; payments
+                </a>
                 <a href="/admin/registrations"
                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white <?= strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/registrations') !== false ? 'bg-primary text-white' : '' ?>">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

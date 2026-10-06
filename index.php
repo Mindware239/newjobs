@@ -87,6 +87,8 @@ try {
     } catch (Exception $e) {
         // ignore
     }
+    // All dates the site shows (posted times, last dates …) are Indian time unless APP_TIMEZONE says otherwise.
+    date_default_timezone_set((string)($_ENV['APP_TIMEZONE'] ?? 'Asia/Kolkata') ?: 'Asia/Kolkata');
 
     $app = new Application();
 

@@ -102,7 +102,7 @@ class AuthController extends BaseController
                 );
 
                 // Notify Admin about new candidate registration
-                $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+                $adminMail = \App\Helpers\AdminMail::to();
                 \App\Services\MailService::sendEmail(
                     $adminMail,
                     'New Candidate Registered: ' . $data['full_name'],
@@ -390,7 +390,7 @@ class AuthController extends BaseController
             );
 
             // Notify Admin about new employer registration
-            $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+            $adminMail = \App\Helpers\AdminMail::to();
             \App\Services\MailService::sendEmail(
                 $adminMail,
                 'New Employer Registered: ' . $compName,

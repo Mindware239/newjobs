@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Models\PortalRegistration;
 use App\Services\Registration\Mentoring;
 use App\Services\SeoService;
+use App\Services\VerificationService;
 
 /**
  * Young India mentoring screens.
@@ -35,6 +36,76 @@ class MentoringController extends BaseController
             $this->flash(false, ['यह लिंक मान्य नहीं है या भुगतान बाकी है', 'This link is not valid or payment is pending']);
         }
         $response->redirect('/mentoring');
+    }
+
+    private const LOGIN_OTP_PURPOSE = 'mentoring_login';
+
+    /**
+     * POST /login/mentoring/identify {identifier, role: provider|seeker}
+     * Mentors / providers (and form-registered seekers) log in with their registered email or mobile:
+     * an OTP goes to the registration's email → {status: 'otp_sent', email} or {status: 'not_found'}.
+     */
+    public function loginIdentify(Request $request, Response $response): void
+    {
+        $role = $request->post('role') === 'seeker' ? 'seeker' : 'provider';
+        $identifier = trim((string)($request->post('identifier') ?? ''));
+        if ($identifier === '') {
+            $response->json(['success' => false, 'error' => 'मोबाइल नंबर या ईमेल भरें / Enter your mobile number or email'], 422);
+            return;
+        }
+        $reg = Mentoring::findForLogin($identifier, $role);
+        if (!$reg) {
+            $response->json(['success' => false, 'status' => 'not_found', 'error' => $role === 'provider'
+                ? 'इस मोबाइल / ईमेल से कोई मेंटर रजिस्ट्रेशन नहीं मिला – पहले मुफ़्त रजिस्टर करें / No mentor registration found with this mobile or email – register free first'
+                : 'इस मोबाइल / ईमेल से कोई खाता नहीं मिला / No account found with this mobile number or email'], 404);
+            return;
+        }
+        $email = strtolower(trim((string)($reg['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $response->json(['success' => false, 'error' => 'इस रजिस्ट्रेशन में ईमेल नहीं है – gm@jobsence.com पर लिखें / This registration has no email – write to gm@jobsence.com'], 422);
+            return;
+        }
+        $last = (int)($_SESSION['mlogin_sent'][(int)$reg['id']] ?? 0);
+        if ($last > time() - 30) {
+            $_SESSION['mlogin_reg'] = (int)$reg['id'];
+            $response->json(['success' => true, 'status' => 'otp_sent', 'email' => self::maskEmail($email), 'wait' => 30 - (time() - $last)]);
+            return;
+        }
+        $sent = VerificationService::sendEmailAuthOTP($email, self::LOGIN_OTP_PURPOSE);
+        if (empty($sent['success'])) {
+            $response->json(['success' => false, 'error' => (string)($sent['error'] ?? 'OTP नहीं भेजा जा सका / Could not send the OTP')], !empty($sent['blocked']) ? 429 : 500);
+            return;
+        }
+        $_SESSION['mlogin_sent'][(int)$reg['id']] = time();
+        $_SESSION['mlogin_reg'] = (int)$reg['id'];
+        $response->json(['success' => true, 'status' => 'otp_sent', 'email' => self::maskEmail($email), 'wait' => 30]);
+    }
+
+    /** POST /login/mentoring/verify {otp} → signed in to the mentoring dashboard. */
+    public function loginVerify(Request $request, Response $response): void
+    {
+        $reg = PortalRegistration::find((int)($_SESSION['mlogin_reg'] ?? 0));
+        if (!$reg) {
+            $response->json(['success' => false, 'error' => 'दोबारा शुरू करें / Please start again'], 422);
+            return;
+        }
+        $check = VerificationService::verifyEmailAuthOTP(strtolower(trim((string)$reg['email'])), trim((string)($request->post('otp') ?? '')), self::LOGIN_OTP_PURPOSE);
+        if (empty($check['success'])) {
+            $response->json(['success' => false, 'error' => (string)($check['error'] ?? 'OTP सही नहीं है / Incorrect OTP')], !empty($check['blocked']) ? 429 : 422);
+            return;
+        }
+        unset($_SESSION['mlogin_reg'], $_SESSION['mlogin_sent'][(int)$reg['id']]);
+        if (!Mentoring::identify((string)$reg['token'])) {
+            $response->json(['success' => false, 'error' => 'यह रजिस्ट्रेशन अभी सक्रिय नहीं है / This registration is not active yet'], 403);
+            return;
+        }
+        $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => '/mentoring']);
+    }
+
+    private static function maskEmail(string $email): string
+    {
+        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
+        return mb_substr($local, 0, 2) . str_repeat('•', max(1, min(6, mb_strlen($local) - 2))) . '@' . $domain;
     }
 
     public function logout(Request $request, Response $response): void

@@ -108,7 +108,7 @@ class MentoringMailer
         $mail($seeker, $provider, Mentoring::displayName($p), 'seeker');
         $mail($provider, $seeker, (string)$seeker['full_name'], 'provider');
 
-        $owner = (string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com');
+        $owner = \App\Helpers\AdminMail::to();
         MentorMailer::send($owner, 'Agreement signed JSA-' . (int)$a['id'] . ': ' . $seeker['reg_no'] . ' ↔ ' . $provider['reg_no'], MentorMailer::layout("
             <p>Tripartite agreement signed ({$h($a['kind'] ?? 'skill')} – {$h($a['skill'])}).</p>
             <p><b>Candidate:</b> {$h($seeker['full_name'])} ({$h($seeker['reg_no'])}) · signed {$h($a['candidate_signed_at'])} from {$h($a['candidate_sign_ip'])}<br>
@@ -141,6 +141,6 @@ class MentoringMailer
         foreach ([$seeker, $provider] as $r) {
             MentorMailer::send((string)$r['email'], 'Agreement ended JSA-' . (int)$a['id'] . ' | Jobsence', MentorMailer::layout("<p>प्रिय / Dear {$h($r['full_name'])},</p>" . $inner));
         }
-        MentorMailer::send((string)($_ENV['OWNER_MAIL'] ?? 'gm@indianbarcode.com'), 'Agreement ended JSA-' . (int)$a['id'] . ' by ' . $byRole, MentorMailer::layout($inner));
+        MentorMailer::send(\App\Helpers\AdminMail::to(), 'Agreement ended JSA-' . (int)$a['id'] . ' by ' . $byRole, MentorMailer::layout($inner));
     }
 }

@@ -412,7 +412,7 @@ class AuthController extends BaseController
             );
 
             // Notify Admin about new employer registration
-            $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+            $adminMail = \App\Helpers\AdminMail::to();
             \App\Services\MailService::sendEmail(
                 $adminMail,
                 'New Employer Registered: ' . $companyName,
@@ -608,7 +608,7 @@ class AuthController extends BaseController
                 );
 
                 // Notify Admin about new candidate registration
-                $adminMail = getenv('ADMIN_MAIL') ?: 'gm@indianbarcode.com';
+                $adminMail = \App\Helpers\AdminMail::to();
                 \App\Services\MailService::sendEmail(
                     $adminMail,
                     'New Candidate Registered: ' . $data['full_name'],
@@ -805,9 +805,18 @@ class AuthController extends BaseController
         if ($request->getMethod() === 'GET') {
             $redirect = $request->get('redirect');
             \App\Middlewares\CsrfMiddleware::generateToken();
+            // Separate logins on one page: /login/job-seeker, /login/employer, /login/mentor (or ?role= / ?as=).
+            $path = rtrim((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH), '/');
+            $as = (string)($request->get('as') ?? $request->get('role') ?? '');
+            $tab = match (true) {
+                str_ends_with($path, '/login/employer'), $as === 'employer' => 'employer',
+                str_ends_with($path, '/login/mentor'), in_array($as, ['mentor', 'provider'], true) => 'mentor',
+                default => 'candidate',
+            };
             $response->view('auth/login', [
                 'title' => 'Login',
-                'redirect' => $redirect
+                'redirect' => $redirect,
+                'tab' => $tab,
             ]);
             return;
         }
@@ -858,6 +867,11 @@ class AuthController extends BaseController
                 $redis->set($rateKey, 0, 300);
             }
         } catch (\Throwable $t) {}
+
+        if ($wrong = $this->wrongLoginTab($user, (string)($data['as'] ?? ''))) {
+            $response->json(['success' => false, 'status' => 'wrong_tab', 'tab' => $wrong[1], 'error' => $wrong[0]], 409);
+            return;
+        }
 
         if ($user->status !== 'active') {
             $acceptHeader = $request->header('Accept') ?? '';
@@ -2260,6 +2274,25 @@ class AuthController extends BaseController
         return strlen((string)$digits) >= 10 ? $auth->findUserByPhone($identifier) : null;
     }
 
+    /**
+     * Separate Job Seeker / Employer logins: an account of the other kind gets a clear message and the
+     * tab to use instead. Staff accounts and requests without 'as' (mobile app, old links) pass.
+     * @return array{0:string,1:string}|null [message, tab]
+     */
+    private function wrongLoginTab(User $user, string $as): ?array
+    {
+        if (!in_array($as, ['candidate', 'employer'], true) || $this->isStaffUser($user)) {
+            return null;
+        }
+        $role = (string)$user->role;
+        if ($role === $as || !in_array($role, ['candidate', 'employer'], true)) {
+            return null;
+        }
+        return $role === 'employer'
+            ? ['यह एम्प्लॉयर खाता है – “एम्प्लॉयर लॉगिन” से लॉगिन करें / This is an employer account – please use Employer Login', 'employer']
+            : ['यह जॉब सीकर खाता है – “जॉब सीकर लॉगिन” से लॉगिन करें / This is a job seeker account – please use Job Seeker Login', 'candidate'];
+    }
+
     /** Admin / sales staff always confirm with an email OTP – never a remembered device. */
     private function isStaffUser(User $user): bool
     {
@@ -2318,6 +2351,10 @@ class AuthController extends BaseController
             return;
         }
         $redirect = (string)($request->post('redirect') ?? '');
+        if ($wrong = $this->wrongLoginTab($user, (string)($request->post('as') ?? ''))) {
+            $response->json(['success' => false, 'status' => 'wrong_tab', 'tab' => $wrong[1], 'error' => $wrong[0]], 409);
+            return;
+        }
 
         if (!$this->isStaffUser($user) && TrustedDeviceService::isTrusted((int)$user->id)) {
             $this->signInUser($user);

@@ -56,10 +56,14 @@ $router->post('/admin/india-jobs/sources', [App\Controllers\Admin\IndiaJobsContr
 $router->post('/admin/india-jobs/sources/{id}/fetch', [App\Controllers\Admin\IndiaJobsController::class, 'fetchSource'], [$adminMiddleware, $csrfMiddleware]);
 $router->post('/admin/india-jobs/sources/{id}', [App\Controllers\Admin\IndiaJobsController::class, 'saveSource'], [$adminMiddleware, $csrfMiddleware]);
 $router->get('/admin/india-jobs/{id}/edit', [App\Controllers\Admin\IndiaJobsController::class, 'form'], [$adminMiddleware]);
+$router->post('/admin/india-jobs/{id}/feature', [App\Controllers\Admin\IndiaJobsController::class, 'feature'], [$adminMiddleware, $csrfMiddleware]);
 $router->post('/admin/india-jobs/{id}/toggle', [App\Controllers\Admin\IndiaJobsController::class, 'toggle'], [$adminMiddleware, $csrfMiddleware]);
 $router->post('/admin/india-jobs/{id}/delete', [App\Controllers\Admin\IndiaJobsController::class, 'delete'], [$adminMiddleware, $csrfMiddleware]);
 $router->post('/admin/india-jobs/{id}', [App\Controllers\Admin\IndiaJobsController::class, 'save'], [$adminMiddleware, $csrfMiddleware]);
 
+$router->get('/admin/free-jobs', [App\Controllers\Front\StateJobsController::class, 'adminIndex'], [$adminMiddleware]);
+$router->post('/admin/free-jobs/{id}/status', [App\Controllers\Front\StateJobsController::class, 'adminStatus'], [$adminMiddleware, $csrfMiddleware]);
+$router->get('/admin/business-summary', [App\Controllers\Admin\BusinessSummaryController::class, 'index'], [$adminMiddleware]);
 $router->get('/admin/registrations', [App\Controllers\Admin\RegistrationsController::class, 'index'], [$adminMiddleware]);
 $router->get('/admin/registrations/export', [App\Controllers\Admin\RegistrationsController::class, 'export'], [$adminMiddleware]);
 $router->get('/admin/registrations/{id}/file/{kind}', [App\Controllers\Admin\RegistrationsController::class, 'file'], [$adminMiddleware]);

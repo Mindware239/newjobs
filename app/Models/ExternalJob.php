@@ -17,11 +17,14 @@ use App\Core\Database;
 class ExternalJob
 {
     public const ORG_TYPES = ['railways', 'defence', 'police', 'central_govt', 'state_govt', 'psu', 'bank', 'private', 'other'];
-    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews', 'upsc'];
-    private const FEED_ENUM = "ENUM('rss','json','manual','employmentnews','upsc') NOT NULL DEFAULT 'manual'";
+    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews', 'upsc', 'icsil', 'govtlist'];
+    private const FEED_ENUM = "ENUM('rss','json','manual','employmentnews','upsc','icsil','govtlist') NOT NULL DEFAULT 'manual'";
 
     /** UPSC Recruitment Advertisements page (PDFs) – the UPSC reader also reads Active Examinations and What's New. */
     public const UPSC_ADVT_URL = 'https://www.upsc.gov.in/recruitment/recruitment-advertisement';
+
+    /** ICSIL (Delhi Govt – TCIL joint venture) Current Jobs table. */
+    public const ICSIL_JOBS_URL = 'https://www.icsil.in/requirement-careers';
 
     /** Employment News (Govt of India) "All Jobs" table – read hourly, new issue weekly. */
     public const EMPLOYMENT_NEWS_URL = 'https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All';
@@ -215,6 +218,35 @@ class ExternalJob
         Database::getInstance()->execute("UPDATE external_jobs SET $set WHERE id = ?", [...array_values($cols), $id]);
     }
 
+    /** Admin "feature on the homepage" star. */
+    public static function setFeatured(int $id, bool $featured): void
+    {
+        self::ensureSchema();
+        Database::getInstance()->execute('UPDATE external_jobs SET is_featured = ? WHERE id = ?', [$featured ? 1 : 0, $id]);
+    }
+
+    /**
+     * Homepage "Featured Govt & PSU jobs": jobs the admin starred, topped up with the newest open
+     * PSU / central / state Govt jobs so the box is never empty.
+     */
+    public static function featured(int $limit = 8): array
+    {
+        self::ensureSchema();
+        $db = Database::getInstance();
+        $open = "is_active = 1 AND (last_date IS NULL OR last_date >= CURDATE())";
+        $rows = $db->fetchAll("SELECT * FROM external_jobs WHERE is_featured = 1 AND $open ORDER BY published_at DESC LIMIT " . (int)$limit);
+        if (count($rows) < $limit) {
+            $ids = array_column($rows, 'id') ?: [0];
+            $more = $db->fetchAll(
+                "SELECT * FROM external_jobs WHERE $open AND org_type IN ('psu','central_govt','state_govt','bank','railways','defence')
+                 AND id NOT IN (" . implode(',', array_map('intval', $ids)) . ")
+                 ORDER BY (last_date IS NULL), published_at DESC LIMIT " . ($limit - count($rows))
+            );
+            $rows = array_merge($rows, $more);
+        }
+        return $rows;
+    }
+
     public static function setActive(int $id, bool $active): void
     {
         Database::getInstance()->execute('UPDATE external_jobs SET is_active = ? WHERE id = ?', [$active ? 1 : 0, $id]);
@@ -265,7 +297,7 @@ class ExternalJob
     {
         self::ensureSchema();
         return Database::getInstance()->fetchAll(
-            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews','upsc') AND feed_url IS NOT NULL AND feed_url <> ''
+            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews','upsc','icsil','govtlist') AND feed_url IS NOT NULL AND feed_url <> ''
                AND (last_fetched_at IS NULL OR last_fetched_at < NOW() - INTERVAL 50 MINUTE)
              ORDER BY last_fetched_at IS NOT NULL, last_fetched_at ASC LIMIT " . (int)$limit
         );
@@ -418,7 +450,7 @@ class ExternalJob
         // Older installs: add the columns introduced later.
         foreach ([
             'external_job_sources' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'suggested_feed' => 'VARCHAR(500) NULL', 'checked_at' => 'DATETIME NULL'],
-            'external_jobs' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'pdf_path' => 'VARCHAR(255) NULL'],
+            'external_jobs' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'pdf_path' => 'VARCHAR(255) NULL', 'is_featured' => 'TINYINT(1) NOT NULL DEFAULT 0'],
         ] as $table => $cols) {
             foreach ($cols as $col => $def) {
                 $has = Database::getInstance()->fetchOne(
@@ -436,7 +468,7 @@ class ExternalJob
             $ft = Database::getInstance()->fetchOne(
                 "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'external_job_sources' AND COLUMN_NAME = 'feed_type'"
             );
-            if ($ft && !str_contains((string)$ft['t'], "'upsc'")) {
+            if ($ft && !str_contains((string)$ft['t'], "'govtlist'")) {
                 $pdo->exec('ALTER TABLE external_job_sources MODIFY feed_type ' . self::FEED_ENUM);
             }
         } catch (\Throwable $e) {
@@ -460,6 +492,30 @@ class ExternalJob
             $st->execute([self::UPSC_ADVT_URL]);
             @mkdir(dirname($upscMarker), 0775, true);
             @file_put_contents($upscMarker, date('c'));
+        }
+        // State recruitment boards read by GovtListFetcher (DTC, PSSSB, HSSC, UKSSSC, UKPSC, UKMSSB) – added /
+        // switched on whenever the profile list changes; an admin's later edits are kept.
+        $glProfiles = \App\Services\IndiaJobs\GovtListFetcher::profiles();
+        $glMarker = dirname(__DIR__, 2) . '/storage/cache/govtlist-' . substr(sha1(implode('|', array_keys($glProfiles))), 0, 12) . '.enabled';
+        if (!is_file($glMarker)) {
+            $ins = $pdo->prepare("INSERT IGNORE INTO external_job_sources (name, org_type, state, website, kind) VALUES (?, ?, ?, ?, 'job')");
+            $upd = $pdo->prepare("UPDATE external_job_sources SET feed_url = ?, feed_type = 'govtlist', enabled = 1 WHERE name = ? AND (feed_url IS NULL OR feed_url = '')");
+            foreach ($glProfiles as $url => $gp) {
+                $ins->execute([$gp['name'], $gp['org_type'], $gp['state'], $gp['website']]);
+                $upd->execute([$url, $gp['name']]);
+            }
+            @mkdir(dirname($glMarker), 0775, true);
+            @file_put_contents($glMarker, date('c'));
+        }
+        // ICSIL (Delhi): Current Jobs table – switched on once.
+        $icsilMarker = dirname(__DIR__, 2) . '/storage/cache/icsil.enabled';
+        if (!is_file($icsilMarker)) {
+            $pdo->exec("INSERT IGNORE INTO external_job_sources (name, org_type, state, website, kind) VALUES ('Intelligent Communication Systems India Ltd (ICSIL)', 'psu', 'Delhi', 'https://www.icsil.in', 'job')");
+            $st = $pdo->prepare("UPDATE external_job_sources SET feed_url = ?, feed_type = 'icsil', enabled = 1
+                                 WHERE name = 'Intelligent Communication Systems India Ltd (ICSIL)' AND (feed_url IS NULL OR feed_url = '')");
+            $st->execute([self::ICSIL_JOBS_URL]);
+            @mkdir(dirname($icsilMarker), 0775, true);
+            @file_put_contents($icsilMarker, date('c'));
         }
 
         $pdo->exec("CREATE TABLE IF NOT EXISTS external_notices (

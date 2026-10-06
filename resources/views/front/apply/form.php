@@ -186,9 +186,21 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                         <?= $label($f, $id) ?>
                                         <select id="<?= $id ?>" name="<?= $k ?>" <?= $required ?>>
                                             <option value="">— चुनें / Select —</option>
-                                            <?php foreach ($f['options'] as $ov => $ol): $ov = (string)$ov; ?>
-                                                <option value="<?= $h($ov) ?>" <?= (string)($old[$k] ?? '') === $ov ? 'selected' : '' ?>><?= $h($ol[0]) ?> / <?= $h($ol[1]) ?></option>
-                                            <?php endforeach; ?>
+                                            <?php
+                                            // 'default' pre-selects a value; 'pinned' lists some options first in their own group (e.g. India above A–Z countries).
+                                            $selVal = (string)($old[$k] ?? ($f['default'] ?? ''));
+                                            $selOpt = static function (string $ov, array $ol) use ($h, $selVal): string {
+                                                return '<option value="' . $h($ov) . '"' . ($selVal === $ov ? ' selected' : '') . '>' . $h($ol[0]) . ($ol[0] !== $ol[1] ? ' / ' . $h($ol[1]) : '') . '</option>';
+                                            };
+                                            $pinned = array_values(array_intersect((array)($f['pinned'] ?? []), array_map('strval', array_keys($f['options']))));
+                                            if ($pinned): ?>
+                                                <optgroup label="<?= $h($f['pinned_label'][0] ?? '') ?> / <?= $h($f['pinned_label'][1] ?? '') ?>">
+                                                    <?php foreach ($pinned as $ov) { echo $selOpt($ov, $f['options'][$ov]); } ?>
+                                                </optgroup>
+                                                <optgroup label="<?= $h($f['others_label'][0] ?? 'अन्य') ?> / <?= $h($f['others_label'][1] ?? 'Others') ?>">
+                                            <?php endif; ?>
+                                            <?php foreach ($f['options'] as $ov => $ol) { $ov = (string)$ov; if (!in_array($ov, $pinned, true)) { echo $selOpt($ov, $ol); } } ?>
+                                            <?php if ($pinned): ?></optgroup><?php endif; ?>
                                         </select>
                                         <?= $hint($f) ?><?= $err($k) ?>
                                     </div>
