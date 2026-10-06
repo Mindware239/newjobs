@@ -1076,6 +1076,7 @@ class FormRegistry
 
         return [
             'type' => 'provider',
+            'international' => true,
             'prefix' => 'MEN',
             'fee' => 0.0,
             'side' => 'provider',
@@ -1102,6 +1103,7 @@ class FormRegistry
                 [
                     'title' => ['आप कौन हैं', 'Who Are You'],
                     'fields' => [
+                        self::residenceField(),
                         self::radio('provider_kind', ['रजिस्ट्रेशन का प्रकार', 'Registering As'], [
                             'individual' => ['व्यक्तिगत मेंटर / ट्रेनर', 'Individual Mentor / Trainer'],
                             'group' => ['ग्रुप मेंटरिंग', 'Group Mentoring'],
@@ -1144,9 +1146,9 @@ class FormRegistry
                     'title' => ['बैंक विवरण (भुगतान के लिए)', 'Bank Details (for payment)'],
                     'fields' => [
                         self::text('bank_holder', ['खाताधारक का नाम', 'Account Holder Name'], true, ['max' => 150]),
-                        ['key' => 'bank_account', 'type' => 'bank_account', 'label' => ['बैंक खाता संख्या', 'Bank Account Number'], 'required' => true,
+                        ['key' => 'bank_account', 'type' => 'bank_account', 'label' => ['बैंक खाता संख्या (भारत के बाहर: खाता संख्या / IBAN)', 'Bank Account Number (outside India: account number / IBAN)'], 'required' => true,
                             'hint' => ['सुरक्षा के लिए खाता संख्या एन्क्रिप्ट करके रखी जाती है।', 'Your account number is stored encrypted.']],
-                        ['key' => 'ifsc', 'type' => 'ifsc', 'label' => ['IFSC कोड', 'IFSC Code'], 'required' => true],
+                        ['key' => 'ifsc', 'type' => 'ifsc', 'label' => ['IFSC कोड (भारत के बाहर: SWIFT / BIC कोड)', 'IFSC Code (outside India: SWIFT / BIC code)'], 'required' => true],
                     ],
                 ],
             ],
@@ -1156,14 +1158,14 @@ class FormRegistry
                 ['मैं इन वीडियो का कहीं और उपयोग नहीं करूँगा/करूँगी।', 'I will not use these videos anywhere else.'],
                 ['मैं Jobsence के सभी नियमों का पालन करूँगा/करूँगी।', 'I will follow all rules of Jobsence.'],
                 ['मानदेय प्रति प्रशिक्षार्थी, सफल ट्रेनिंग के बाद ही दिया जाएगा।', 'I understand that emolument will be paid per candidate only after successful training.'],
-                ['रजिस्ट्रेशन मुफ़्त है। उम्मीदवारों से जुड़ने (पूरी प्रोफ़ाइल, समझौता, संपर्क) के लिए ₹155 (GST सहित) का पेड प्लान – 30 दिन, रोज़ 3 प्रोफ़ाइल।', 'Registration is free. To connect with candidates (full profile, agreement, contact) a paid plan of ₹155 (incl. GST) is needed – 30 days, 3 profiles a day.'],
+                ['रजिस्ट्रेशन मुफ़्त है। उम्मीदवारों से जुड़ने (पूरी प्रोफ़ाइल, समझौता, संपर्क) के लिए ₹155 (GST सहित) का पेड प्लान – 30 दिन, रोज़ 3 प्रोफ़ाइल; भारत के बाहर रहने वाले मेंटर के लिए USD 5।', 'Registration is free. To connect with candidates (full profile, agreement, contact) a paid plan of ₹155 (incl. GST) is needed – 30 days, 3 profiles a day; USD 5 for mentors living outside India.'],
                 self::agreementRule(),
                 ['चयन या काम मिलने की कोई गारंटी नहीं है; काम ज़रूरत के अनुसार दिया जाएगा।', 'There is no guarantee of selection; work will be given as per requirement.'],
                 self::notGovt(),
             ],
             'next_steps' => [
                 ['Jobsence टीम आपके फॉर्म और वीडियो की समीक्षा करेगी – सत्यापन के बाद उम्मीदवार आपको देख सकेंगे।', 'The Jobsence team will review your form and video – after verification candidates can see you.'],
-                ['अभी “मेरा मेंटरिंग डैशबोर्ड” खोलें: कौन कौन सा स्किल सीखना चाहता है देखें और ₹155 का प्लान लें।', 'Open “My mentoring dashboard” now: see who wants to learn which skill and get the ₹155 plan.'],
+                ['अभी “मेरा मेंटरिंग डैशबोर्ड” खोलें: कौन कौन सा स्किल सीखना चाहता है देखें और ₹155 का प्लान लें (भारत के बाहर USD 5)।', 'Open “My mentoring dashboard” now: see who wants to learn which skill and get the ₹155 plan (USD 5 outside India).'],
                 ['चयन होने पर आपको Jobsence मेंटर टीम में जोड़ा जाएगा; काम ज़रूरत के अनुसार दिया जाएगा।', 'If selected, you will be added to the Jobsence Mentor Team; work will be given as per requirement.'],
                 ['भुगतान प्रति प्रशिक्षार्थी, ट्रेनिंग पूरी होने के बाद जारी किया जाएगा।', 'Payment will be released per candidate after training completion.'],
             ],
@@ -1178,6 +1180,9 @@ class FormRegistry
 
     /** Paid provider plans: ₹155 incl. GST. */
     public const PROVIDER_PLAN_FEE = 155.00;
+
+    /** Mentors / internship providers living outside India: USD 5 (no Indian GST – export of services), payable in ₹ too. */
+    public const PROVIDER_PLAN_FEE_USD = 5.00;
 
     /**
      * Hiring plans for companies (3 full profiles a day). India (round totals incl. 18% GST): 3, 7, 15 days, 1 month, 6 months (5 months' price), 1 year (9 months' price).
@@ -1218,6 +1223,7 @@ class FormRegistry
     {
         return [
             'type' => 'internpro',
+            'international' => true,
             'prefix' => 'INP',
             'side' => 'provider',
             'icon' => '🏢',
@@ -1225,12 +1231,13 @@ class FormRegistry
             'fee' => 0.0,
             'title' => ['इंटर्नशिप प्रदाता रजिस्ट्रेशन (मुफ़्त)', 'Internship Provider Registration (free)'],
             'button' => ['इंटर्नशिप देने वाली कंपनियाँ – मुफ़्त रजिस्टर करें', 'Companies offering Internship – Register free'],
-            'intro' => ['मुफ़्त रजिस्टर करें और देखें कौन किस डोमेन में इंटर्नशिप चाहता है। जुड़ने के लिए ₹155 का प्लान – 10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20 उम्मीदवार।', 'Register free and see who wants an internship in which domain. To connect: ₹155 plan – 10 days, 3 profiles a day, up to 20 candidates.'],
+            'intro' => ['मुफ़्त रजिस्टर करें और देखें कौन किस डोमेन में इंटर्नशिप चाहता है। जुड़ने के लिए ₹155 का प्लान (भारत के बाहर USD 5) – 10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20 उम्मीदवार।', 'Register free and see who wants an internship in which domain. To connect: ₹155 plan (USD 5 outside India) – 10 days, 3 profiles a day, up to 20 candidates.'],
             'categories_label' => ['इंटर्नशिप डोमेन – जो आप देते हैं (सूची में खोजें)', 'Internship domains you offer (search the list)'],
             'sections' => [
                 [
                     'title' => ['आपकी संस्था', 'Organisation'],
                     'fields' => [
+                        self::residenceField(),
                         self::radio('provider_kind', ['आप कौन हैं', 'You are'], [
                             'company' => ['कंपनी', 'Company'], 'startup' => ['स्टार्टअप', 'Startup'], 'ngo' => ['NGO', 'NGO'],
                             'institute' => ['संस्थान', 'Institute'], 'individual' => ['व्यक्ति / प्रोफ़ेशनल', 'Individual / Professional'],
@@ -1263,7 +1270,7 @@ class FormRegistry
             ],
             'next_steps' => [
                 ['Jobsence टीम आपकी जानकारी सत्यापित करेगी – उसके बाद उम्मीदवार आपको देख सकेंगे।', 'The Jobsence team will verify your details – after that candidates can see you.'],
-                ['अभी “मेरा मेंटरिंग डैशबोर्ड” खोलें और ₹155 का प्लान लें (10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20)।', 'Open “My mentoring dashboard” now and get the ₹155 plan (10 days, 3 profiles a day, up to 20).'],
+                ['अभी “मेरा मेंटरिंग डैशबोर्ड” खोलें और ₹155 का प्लान लें (भारत के बाहर USD 5; 10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20)।', 'Open “My mentoring dashboard” now and get the ₹155 plan (USD 5 outside India; 10 days, 3 profiles a day, up to 20).'],
             ],
         ];
     }
@@ -1488,8 +1495,8 @@ class FormRegistry
             'title' => $mentor ? ['मेंटर प्लान – 30 दिन', 'Mentor Plan – 30 days'] : ['इंटर्नशिप प्रदाता प्लान – 10 दिन', 'Internship Provider Plan – 10 days'],
             'button' => $mentor ? ['मेंटर प्लान', 'Mentor Plan'] : ['इंटर्नशिप प्लान', 'Internship Plan'],
             'intro' => $mentor
-                ? ['₹155 (GST सहित): 30 दिन तक रोज़ 3 उम्मीदवारों की पूरी प्रोफ़ाइल और समझौता।', '₹155 (incl. GST): full profile and agreement for 3 candidates a day for 30 days.']
-                : ['₹155 (GST सहित): 10 दिन तक रोज़ 3 उम्मीदवारों की पूरी प्रोफ़ाइल, अधिकतम 20।', '₹155 (incl. GST): full profile for 3 candidates a day for 10 days, up to 20 in total.'],
+                ? ['₹155 (GST सहित; भारत के बाहर USD 5): 30 दिन तक रोज़ 3 उम्मीदवारों की पूरी प्रोफ़ाइल और समझौता।', '₹155 (incl. GST; USD 5 outside India): full profile and agreement for 3 candidates a day for 30 days.']
+                : ['₹155 (GST सहित; भारत के बाहर USD 5): 10 दिन तक रोज़ 3 उम्मीदवारों की पूरी प्रोफ़ाइल, अधिकतम 20।', '₹155 (incl. GST; USD 5 outside India): full profile for 3 candidates a day for 10 days, up to 20 in total.'],
             'sections' => [],
             'declaration' => [self::agreementRule(), self::platformDisclaimer()],
             'next_steps' => [

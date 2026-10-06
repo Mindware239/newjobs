@@ -220,7 +220,8 @@ class MentoringController extends BaseController
             return;
         }
         if (!Mentoring::activePlan($me)) {
-            $this->flash(false, ['प्रोफ़ाइल देखने के लिए सक्रिय ₹155 प्लान ज़रूरी है', 'An active ₹155 plan is needed to see profiles']);
+            $price = Mentoring::planOptions($me) ? '' : Mentoring::planPrice($me) . ' ';
+            $this->flash(false, ["प्रोफ़ाइल देखने के लिए सक्रिय {$price}प्लान ज़रूरी है", "An active {$price}plan is needed to see profiles"]);
             $response->redirect('/mentoring');
             return;
         }

@@ -20,8 +20,9 @@ class MentoringMailer
         $to = $toRole === 'provider' ? $provider : $seeker;
         $from = $toRole === 'provider' ? $seeker['full_name'] : Mentoring::displayName(Mentoring::decode($provider));
         $url = MentorMailer::base() . Mentoring::linkFor($a, $toRole);
+        $price = Mentoring::planPrice($provider);
         $planNote = $toRole === 'provider'
-            ? '<p style="font-size:13px;color:#4b5563">साइन करने के लिए सक्रिय ₹155 प्लान ज़रूरी है। / An active ₹155 plan is needed to sign.</p>' : '';
+            ? "<p style=\"font-size:13px;color:#4b5563\">साइन करने के लिए सक्रिय {$price} प्लान ज़रूरी है। / An active {$price} plan is needed to sign.</p>" : '';
         $body = MentorMailer::layout("
             <p>प्रिय / Dear {$h($to['full_name'])},</p>
             <p><b>{$h($from)}</b> ने आपके साथ <b>{$h($a['skill'])}</b> ({$h(self::what($a))}) के लिए Jobsence त्रिपक्षीय समझौते पर साइन किया है।</p>
@@ -64,6 +65,8 @@ class MentoringMailer
                 <p>" . MentorMailer::button($renew, 'लिस्टिंग रिन्यू करें / Renew listing', '#138808') . '</p>'));
         }
         $signUrl = $a ? MentorMailer::base() . Mentoring::linkFor($a, 'provider') : '';
+        $price = Mentoring::planPrice($to);
+        $gstNote = Mentoring::livesAbroad($to) ? ['', ''] : [' (GST सहित)', ' (incl. GST)'];
         $body = MentorMailer::layout("
             <p>प्रिय / Dear {$h($to['full_name'])},</p>
             <p>उम्मीदवार <b>{$h($masked)}</b> आपसे <b>{$h($skills)}</b> के लिए जुड़ना चाहते हैं और उन्होंने समझौते पर साइन कर दिया है।<br>
@@ -72,11 +75,11 @@ class MentoringMailer
                 ? "<p>उम्मीदवार देखने और साइन करने के लिए भर्ती प्लान लें – 3 दिन (₹216) से 1 साल (₹19,424) तक; भारत के बाहर USD 12 से। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
                    Get a hiring plan to see candidates and sign – 3 days (₹216) to 1 year (₹19,424); outside India from USD 12. The fee is mandatory for both parties.</p>
                    <p>" . MentorMailer::button($url, 'भर्ती प्लान लें / Get a hiring plan', '#138808') . '</p>'
-                : "<p>उम्मीदवार देखने और साइन करने के लिए एक बार का शुल्क ₹155 (GST सहित) भरें – " . ($intern ? '10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20' : '30 दिन, रोज़ 3 प्रोफ़ाइल') . "। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
-                   Pay the one-time fee of ₹155 (incl. GST) to see candidates and sign – " . ($intern ? '10 days, 3 profiles a day, up to 20' : '30 days, 3 profiles a day') . ". The fee is mandatory for both parties.</p>
-                   <p>" . MentorMailer::button($url, '₹155 प्लान लें / Get the ₹155 plan', '#138808') . '</p>') . "
+                : "<p>उम्मीदवार देखने और साइन करने के लिए एक बार का शुल्क {$price}{$gstNote[0]} भरें – " . ($intern ? '10 दिन, रोज़ 3 प्रोफ़ाइल, अधिकतम 20' : '30 दिन, रोज़ 3 प्रोफ़ाइल') . "। शुल्क दोनों पक्षों के लिए ज़रूरी है।<br>
+                   Pay the one-time fee of {$price}{$gstNote[1]} to see candidates and sign – " . ($intern ? '10 days, 3 profiles a day, up to 20' : '30 days, 3 profiles a day') . ". The fee is mandatory for both parties.</p>
+                   <p>" . MentorMailer::button($url, "{$price} प्लान लें / Get the {$price} plan", '#138808') . '</p>') . "
             " . ($signUrl !== '' ? "<p style='font-size:13px;color:#4b5563'>भुगतान के बाद समझौता यहाँ साइन करें / After paying, sign here: <a href='{$h($signUrl)}'>{$h($signUrl)}</a></p>" : ''));
-        return MentorMailer::send((string)$to['email'], 'A candidate wants to connect – ' . ($kind === 'job' ? 'get a hiring plan' : 'pay ₹155') . ' to see candidates | Jobsence', $body);
+        return MentorMailer::send((string)$to['email'], 'A candidate wants to connect – ' . ($kind === 'job' ? 'get a hiring plan' : 'pay ' . $price) . ' to see candidates | Jobsence', $body);
     }
 
     /** Both signed: each party gets the other's contact details; the owner gets a copy. */

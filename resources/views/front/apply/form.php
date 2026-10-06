@@ -279,7 +279,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                 case 'bank_account': ?>
                                     <div class="<?= $cls($k, $full) ?>">
                                         <?= $label($f, $id) ?>
-                                        <input type="text" id="<?= $id ?>" name="bank_account" value="<?= $val('bank_account') ?>" inputmode="numeric" maxlength="20" autocomplete="off" <?= $required ?>>
+                                        <input type="text" id="<?= $id ?>" name="bank_account" value="<?= $val('bank_account') ?>" inputmode="numeric" maxlength="<?= !empty($form['international']) ? 34 : 20 ?>" autocomplete="off" <?= $required ?>>
                                         <?= $hint($f) ?><?= $err($k) ?>
                                     </div>
                                 <?php break;
@@ -398,8 +398,14 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
         var res = form.querySelector('[name="residence_country"]'), codes = <?= json_encode(\App\Services\Registration\FormRegistry::OPEN_COUNTRIES) ?>;
         if (!res) return;
         var st = form.querySelector('select[name="state"]'), pin = form.querySelector('[name="pincode"]'), mob = form.querySelector('[name="mobile"]');
+        var aad = form.querySelector('[name="aadhaar"]'), ifsc = form.querySelector('[name="ifsc"]'), bank = form.querySelector('[name="bank_account"]');
+        [aad, ifsc].forEach(function (el) { if (el) el.dataset.req = el.required ? '1' : ''; });
         function apply() {
             var c = res.value || 'India', foreign = c !== 'India';
+            // Aadhaar / IFSC are Indian: optional abroad; foreign banks give an account number / IBAN and SWIFT code.
+            [aad, ifsc].forEach(function (el) { if (el) el.required = !foreign && el.dataset.req === '1'; });
+            if (ifsc) { ifsc.placeholder = foreign ? 'SWIFT / BIC' : 'SBIN0001234'; }
+            if (bank) { bank.inputMode = foreign ? 'text' : 'numeric'; }
             if (pin) { pin.required = !foreign; pin.pattern = foreign ? '[0-9]{3,6}' : '[1-9][0-9]{5}'; pin.placeholder = foreign ? 'Postal code (optional)' : ''; }
             if (st && foreign) { st.value = c; }
             if (st && !foreign && Object.prototype.hasOwnProperty.call(codes, st.value) && st.value !== 'India') { st.value = ''; }

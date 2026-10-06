@@ -15,7 +15,7 @@ use App\Services\VerificationService;
  *  - Seekers pay the ₹155 form fee; the registration stays valid until they are matched.
  *  - Both sides see each other's name, location, skills / domains, qualification, timing –
  *    never phone or email.
- *  - A provider with a paid plan (₹155: mentors 30 days, internship providers 10 days, max 20)
+ *  - A provider with a paid plan (₹155 / USD 5 outside India: mentors 30 days, internship providers 10 days, max 20)
  *    can open 3 full profiles a day and send / sign agreements.
  *  - Phone and email are shown only after the tripartite agreement (seeker + provider + Jobsence)
  *    is signed by both with an email OTP; Jobsence countersigns automatically.
@@ -190,6 +190,28 @@ class Mentoring
         return array_filter(FormRegistry::HIRING_PLANS, static fn($o) => $o['abroad'] === $abroad);
     }
 
+    /** Provider living outside India (mentors / internship providers pay their plan in USD). */
+    public static function livesAbroad(array $provider): bool
+    {
+        $d = $provider['details'] ?? [];
+        if (is_string($d)) {
+            $d = json_decode($d, true) ?: [];
+        }
+        return ($d['residence_country'] ?? 'India') !== 'India';
+    }
+
+    /** Price of this provider's plan: "₹155" or "USD 5" (hiring companies: the cheapest option, e.g. "₹216"). */
+    public static function planPrice(array $provider): string
+    {
+        if ($opts = self::planOptions($provider)) {
+            $o = reset($opts);
+            return $o['currency'] === 'USD' ? 'USD ' . number_format($o['fee'], 0) : '₹' . number_format($o['fee'], 0);
+        }
+        return self::livesAbroad($provider)
+            ? 'USD ' . rtrim(rtrim(number_format(FormRegistry::PROVIDER_PLAN_FEE_USD, 2), '0'), '.')
+            : '₹' . number_format(FormRegistry::PROVIDER_PLAN_FEE, 0);
+    }
+
     // ------------------------------------------------------------------
     // Jobs abroad: unlock a country (₹1,180 or USD 10, one-time)
     // ------------------------------------------------------------------
@@ -293,6 +315,10 @@ class Mentoring
             if ($opt['currency'] === 'USD') {
                 $details['usd_price'] = (float)$opt['fee']; // payable in ₹ too, at the admin rate
             }
+        } elseif (self::livesAbroad($provider)) {
+            // Mentors / internship providers outside India: USD 5, payable in ₹ too at the admin rate.
+            $opt = ['currency' => 'USD', 'fee' => FormRegistry::PROVIDER_PLAN_FEE_USD];
+            $details['usd_price'] = FormRegistry::PROVIDER_PLAN_FEE_USD;
         }
         return PortalRegistration::create([
             'type' => $planType,
@@ -360,7 +386,7 @@ class Mentoring
 
     private static function needPlanMsg(): array
     {
-        return ['पूरी प्रोफ़ाइल और समझौते के लिए प्लान लें (मेंटर / इंटर्नशिप ₹155, भर्ती ₹216 से)', 'Get a plan to open full profiles and sign agreements (mentors / internships ₹155, hiring from ₹216)'];
+        return ['पूरी प्रोफ़ाइल और समझौते के लिए प्लान लें (मेंटर / इंटर्नशिप ₹155 – भारत के बाहर USD 5, भर्ती ₹216 से)', 'Get a plan to open full profiles and sign agreements (mentors / internships ₹155 – USD 5 outside India, hiring from ₹216)'];
     }
 
     // ------------------------------------------------------------------

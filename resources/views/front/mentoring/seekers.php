@@ -41,11 +41,11 @@ $canSeeNames = $isProvider;
                     <?php if ($plan): ?>
                         ✅ <?= $t('प्लान सक्रिय · आज बची प्रोफ़ाइल: ', 'Plan active · profiles left today: ') ?><b><?= (int)$quota['today'] ?></b><?= $quota['total'] !== null ? ' · ' . $t('प्लान में बची: ', 'left in plan: ') . (int)$quota['total'] . '/20' : '' ?>
                     <?php else: ?>
-                        <?= $t('आप नाम, स्थान और स्किल देख रहे हैं। पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ₹155 का प्लान लें।', 'You can see names, places and skills. Get the ₹155 plan for full profiles, resumes and agreements.') ?>
+                        <?= $t('आप नाम, स्थान और स्किल देख रहे हैं। पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ' . Mentoring::planPrice($me) . ' का प्लान लें।', 'You can see names, places and skills. Get the ' . Mentoring::planPrice($me) . ' plan for full profiles, resumes and agreements.') ?>
                         <?php if (Mentoring::planOptions($me)): ?>
                         <a class="sd-btn mt-green" style="padding:6px 12px;margin-left:6px" href="/mentoring#plan"><?= $t('भर्ती प्लान चुनें', 'Choose a hiring plan') ?></a>
                         <?php else: ?>
-                        <form method="POST" action="/mentoring/plan" style="display:inline"><?= $mtCsrf() ?><button class="sd-btn mt-green" style="padding:6px 12px;margin-left:6px" type="submit"><?= $t('₹155 प्लान लें', 'Get ₹155 plan') ?></button></form>
+                        <form method="POST" action="/mentoring/plan" style="display:inline"><?= $mtCsrf() ?><button class="sd-btn mt-green" style="padding:6px 12px;margin-left:6px" type="submit"><?= $t(Mentoring::planPrice($me) . ' प्लान लें', 'Get ' . Mentoring::planPrice($me) . ' plan') ?></button></form>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>
@@ -84,7 +84,7 @@ $canSeeNames = $isProvider;
                                         <form method="POST" action="/mentoring/open/<?= (int)$r['id'] ?>"><?= $mtCsrf() ?><input type="hidden" name="back" value="<?= $h($here) ?>">
                                             <button class="sd-btn mt-green" type="submit" <?= $quota['can'] ? '' : 'disabled' ?>><?= $t('पूरी प्रोफ़ाइल खोलें (आज के 3 में से 1)', 'Open full profile (1 of today’s 3)') ?></button></form>
                                     <?php else: ?>
-                                        <span class="mt-lock">🔒 <?= $t('पूरी प्रोफ़ाइल व रिज़्यूमे – ₹155 प्लान', 'Full profile & resume – ₹155 plan') ?></span>
+                                        <span class="mt-lock">🔒 <?= $t('पूरी प्रोफ़ाइल व रिज़्यूमे – ' . Mentoring::planPrice($me) . ' प्लान', 'Full profile & resume – ' . Mentoring::planPrice($me) . ' plan') ?></span>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
@@ -113,7 +113,7 @@ $canSeeNames = $isProvider;
                             <div class="mt-act">
                                 <?php if ($plan): ?>
                                     <form method="POST" action="/mentoring/invite/<?= (int)$r['id'] ?>"><?= $mtCsrf() ?><input type="hidden" name="back" value="<?= $h($here) ?>"><button class="sd-btn" type="submit"><?= $t('आमंत्रित करें', 'Invite to pay') ?></button></form>
-                                <?php else: ?><span class="mt-lock">🔒 <?= $t('आमंत्रण के लिए ₹155 प्लान', '₹155 plan needed to invite') ?></span><?php endif; ?>
+                                <?php else: ?><span class="mt-lock">🔒 <?= $t('आमंत्रण के लिए ' . Mentoring::planPrice($me) . ' प्लान', Mentoring::planPrice($me) . ' plan needed to invite') ?></span><?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>

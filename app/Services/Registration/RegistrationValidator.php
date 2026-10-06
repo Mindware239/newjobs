@@ -33,6 +33,9 @@ class RegistrationValidator
 
         foreach (FormRegistry::fields($form) as $key => $f) {
             $required = (bool)$f['required'];
+            if ($foreign && in_array($f['type'], ['aadhaar', 'gst', 'ifsc'], true)) {
+                $required = false; // Indian IDs: not available to residents of other countries
+            }
             $raw = $in[$key] ?? null;
             $value = null;
 
@@ -264,13 +267,15 @@ class RegistrationValidator
                     continue 2;
 
                 case 'bank_account':
-                    $acct = preg_replace('/\s+/', '', is_scalar($raw) ? (string)$raw : '');
+                    $acct = strtoupper(preg_replace('/[\s-]+/', '', is_scalar($raw) ? (string)$raw : ''));
                     if ($acct === '') {
                         if ($required) {
                             $errors[$key] = ['बैंक खाता संख्या भरें', 'Enter bank account number'];
                         }
-                    } elseif (!preg_match('/^\d{9,18}$/', $acct)) {
-                        $errors[$key] = ['सही खाता संख्या भरें (9–18 अंक)', 'Enter a valid account number (9–18 digits)'];
+                    } elseif ($foreign ? !preg_match('/^[A-Z0-9]{6,34}$/', $acct) : !preg_match('/^\d{9,18}$/', $acct)) {
+                        $errors[$key] = $foreign
+                            ? ['सही खाता संख्या / IBAN भरें', 'Enter a valid account number / IBAN']
+                            : ['सही खाता संख्या भरें (9–18 अंक)', 'Enter a valid account number (9–18 digits)'];
                     } else {
                         $details['bank_account_enc'] = DataCipher::encrypt($acct);
                         $details['bank_account_last4'] = substr($acct, -4);
@@ -282,6 +287,11 @@ class RegistrationValidator
                     if ($value === '') {
                         if ($required) {
                             $errors[$key] = ['IFSC कोड भरें', 'Enter IFSC code'];
+                        }
+                    } elseif ($foreign) {
+                        if (!preg_match('/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/', $value)) {
+                            $errors[$key] = ['सही SWIFT / BIC कोड भरें', 'Enter a valid SWIFT / BIC code'];
+                            $value = null;
                         }
                     } elseif (!preg_match('/^[A-Z]{4}0[A-Z0-9]{6}$/', $value)) {
                         $errors[$key] = ['सही IFSC कोड भरें (जैसे SBIN0001234)', 'Enter a valid IFSC code (e.g. SBIN0001234)'];

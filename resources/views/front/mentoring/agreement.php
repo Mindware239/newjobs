@@ -90,7 +90,7 @@ $statusText = [
                         <p class="sd-alert err" style="margin:0 0 10px"><?= $tp($blocker) ?></p>
                         <?php if ($role === 'provider' && !Mentoring::activePlan($provider) && Mentoring::isVerified($provider)): ?>
                             <?php if (Mentoring::planOptions($provider)): ?><a class="sd-btn mt-green" href="/mentoring#plan"><?= $tb('भर्ती प्लान चुनें – फिर यहीं साइन करें', 'Choose a hiring plan – then sign here') ?></a><?php else: ?>
-                            <form method="POST" action="/mentoring/plan"><?= $mtCsrf() ?><button class="sd-btn mt-green" type="submit"><?= $tb('₹155 प्लान लें – फिर यहीं साइन करें', 'Get the ₹155 plan – then sign here') ?></button></form><?php endif; ?>
+                            <form method="POST" action="/mentoring/plan"><?= $mtCsrf() ?><button class="sd-btn mt-green" type="submit"><?php $pp = Mentoring::planPrice($provider); ?><?= $tb("{$pp} प्लान लें – फिर यहीं साइन करें", "Get the {$pp} plan – then sign here") ?></button></form><?php endif; ?>
                         <?php endif; ?>
                     <?php else: ?>
                         <h2 style="font-size:1.1rem;margin-top:0"><?= $t('ईमेल OTP से साइन करें', 'Sign with an email OTP') ?></h2>

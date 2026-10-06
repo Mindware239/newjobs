@@ -90,13 +90,13 @@ $statusLabel = [
                                 <p class="sd-alert err" style="margin:10px 0 0"><?= $kind === 'job'
                                     ? $t('नौकरी चाहने वालों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए नीचे भर्ती प्लान चुनें।', 'Choose a hiring plan below for full job-seeker profiles, resumes and agreements.')
                                     : ($kind === 'internship'
-                                    ? $t('उम्मीदवारों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ₹155 का प्लान लें – 10 दिन, रोज़ 3, अधिकतम 20।', 'Get the ₹155 plan for full candidate profiles, resumes and agreements – 10 days, 3 a day, up to 20.')
-                                    : $t('उम्मीदवारों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ₹155 का प्लान लें – 30 दिन, रोज़ 3 प्रोफ़ाइल।', 'Get the ₹155 plan for full candidate profiles, resumes and agreements – 30 days, 3 profiles a day.')) ?></p>
+                                    ? $t('उम्मीदवारों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ' . Mentoring::planPrice($me) . ' का प्लान लें – 10 दिन, रोज़ 3, अधिकतम 20।', 'Get the ' . Mentoring::planPrice($me) . ' plan for full candidate profiles, resumes and agreements – 10 days, 3 a day, up to 20.')
+                                    : $t('उम्मीदवारों की पूरी प्रोफ़ाइल, रिज़्यूमे और समझौते के लिए ' . Mentoring::planPrice($me) . ' का प्लान लें – 30 दिन, रोज़ 3 प्रोफ़ाइल।', 'Get the ' . Mentoring::planPrice($me) . ' plan for full candidate profiles, resumes and agreements – 30 days, 3 profiles a day.')) ?></p>
                             <?php endif; ?>
                             <div class="mt-act">
                                 <a class="sd-btn mt-green" href="<?= $h((string)$k['seekers_page']) ?>"><?= $t($k['seekers_label'][0] . ' देखें', 'See ' . strtolower($k['seekers_label'][1])) ?></a>
                                 <?php if (!Mentoring::planOptions($me)): ?>
-                                <form method="POST" action="/mentoring/plan"><?= $mtCsrf() ?><button class="sd-btn" type="submit"><?= $plan ? $tb('प्लान बढ़ाएँ – ₹155', 'Extend plan – ₹155') : $tb('₹155 प्लान लें', 'Get the ₹155 plan') ?></button></form>
+                                <form method="POST" action="/mentoring/plan"><?= $mtCsrf() ?><button class="sd-btn" type="submit"><?php $pp = Mentoring::planPrice($me); ?><?= $plan ? $tb("प्लान बढ़ाएँ – {$pp}", "Extend plan – {$pp}") : $tb("{$pp} प्लान लें", "Get the {$pp} plan") ?></button></form>
                                 <?php endif; ?>
                             </div>
                             <?php if ($opts = Mentoring::planOptions($me)): ?>
