@@ -16,6 +16,7 @@ use App\Core\RedisClient;
 use App\Repositories\AuthRepository;
 use App\Services\AuthService;
 use App\Services\TrustedDeviceService;
+use App\Services\LoginPinService;
 use App\Services\AuthFlowService;
 use App\Services\VerificationService;
 use App\Services\GoogleOAuthService;
@@ -2297,7 +2298,8 @@ class AuthController extends BaseController
 
     /**
      * POST /login/identify {identifier, redirect}
-     * → {status: 'logged_in', redirect} on a remembered device, {status: 'otp_sent', email} or {status: 'not_found'}.
+     * → {status: 'logged_in', redirect} on a remembered device, {status: 'pin_required'} when the account has a
+     * login PIN (unless method=otp), {status: 'otp_sent', email} or {status: 'not_found'}.
      */
     public function loginIdentify(Request $request, Response $response): void
     {
@@ -2321,6 +2323,13 @@ class AuthController extends BaseController
             $this->signInUser($user);
             TrustedDeviceService::trust((int)$user->id);
             $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => $this->afterLoginUrl($user, $redirect)]);
+            return;
+        }
+
+        // Optional login PIN: ask for it instead of an email OTP (the OTP stays one click away).
+        if ($request->post('method') !== 'otp' && !$this->isStaffUser($user) && LoginPinService::has((int)$user->id) && !LoginPinService::isLocked((int)$user->id)) {
+            $_SESSION['login_pin_user'] = (int)$user->id;
+            $response->json(['success' => true, 'status' => 'pin_required']);
             return;
         }
 
@@ -2370,6 +2379,37 @@ class AuthController extends BaseController
         try {
             \App\Core\Database::getInstance()->execute('UPDATE users SET is_email_verified = 1 WHERE id = ?', [(int)$user->id]);
         } catch (\Throwable $e) {
+        }
+        $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => $this->afterLoginUrl($user, (string)($request->post('redirect') ?? ''))]);
+    }
+
+    /** POST /login/pin {identifier, pin, remember, redirect} – login PIN → signed in (+ remember this device). */
+    public function loginPin(Request $request, Response $response): void
+    {
+        $user = $this->findLoginUser((string)($request->post('identifier') ?? ''));
+        if (!$user || (int)($_SESSION['login_pin_user'] ?? 0) !== (int)$user->id || $this->isStaffUser($user)) {
+            $response->json(['success' => false, 'error' => 'दोबारा शुरू करें / Please start again'], 422);
+            return;
+        }
+        if (($user->status ?? '') !== 'active') {
+            $response->json(['success' => false, 'error' => 'यह खाता सक्रिय नहीं है / This account is not active'], 403);
+            return;
+        }
+        $check = LoginPinService::verify((int)$user->id, trim((string)($request->post('pin') ?? '')));
+        if (empty($check['ok'])) {
+            if (!empty($check['locked'])) {
+                unset($_SESSION['login_pin_user']);
+                $response->json(['success' => false, 'status' => 'pin_locked',
+                    'error' => 'बहुत बार गलत PIN – PIN ' . LoginPinService::LOCK_MINUTES . ' मिनट के लिए बंद है। ईमेल OTP से लॉगिन करें। / Too many wrong PINs – PIN locked for ' . LoginPinService::LOCK_MINUTES . ' minutes. Log in with the email OTP.'], 429);
+                return;
+            }
+            $response->json(['success' => false, 'error' => 'PIN सही नहीं है – ' . $check['left'] . ' प्रयास बाकी / Incorrect PIN – ' . $check['left'] . ' tries left'], 422);
+            return;
+        }
+        unset($_SESSION['login_pin_user']);
+        $this->signInUser($user);
+        if (filter_var($request->post('remember') ?? true, FILTER_VALIDATE_BOOLEAN)) {
+            TrustedDeviceService::trust((int)$user->id);
         }
         $response->json(['success' => true, 'status' => 'logged_in', 'redirect' => $this->afterLoginUrl($user, (string)($request->post('redirect') ?? ''))]);
     }
@@ -2442,6 +2482,9 @@ class AuthController extends BaseController
         $response->view('auth/security', [
             'user' => $user,
             'devices' => TrustedDeviceService::listFor((int)$user->id),
+            'hasPin' => LoginPinService::has((int)$user->id),
+            'pinAllowed' => !$this->isStaffUser($user),
+            'pinError' => $this->takePinError(),
             'flash' => $this->takeSecurityFlash(),
             'title' => 'Login & devices – Jobsence',
         ], 200, 'layout');
@@ -2464,6 +2507,81 @@ class AuthController extends BaseController
             $_SESSION['security_flash'] = 'सभी डिवाइस भूले गए – अगली बार हर डिवाइस पर ईमेल OTP लगेगा / All devices forgotten – every device needs an email OTP next time';
         }
         $response->redirect('/account/security');
+    }
+
+    /** POST /account/pin {pin, pin_confirm} – set or change the optional login PIN. */
+    public function savePin(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login?redirect=' . rawurlencode('/account/security'));
+            return;
+        }
+        if ($this->isStaffUser($user)) {
+            $_SESSION['pin_error'] = 'स्टाफ़ खाते हमेशा ईमेल OTP से लॉगिन करते हैं / Staff accounts always log in with an email OTP';
+            $response->redirect('/account/security');
+            return;
+        }
+        $pin = trim((string)$request->post('pin', ''));
+        $problem = LoginPinService::problem($pin);
+        if ($problem === null && $pin !== trim((string)$request->post('pin_confirm', ''))) {
+            $problem = ['दोनों PIN एक जैसे नहीं हैं', 'The two PINs do not match'];
+        }
+        if ($problem !== null) {
+            $_SESSION['pin_error'] = $problem[0] . ' / ' . $problem[1];
+            $response->redirect('/account/security#pin');
+            return;
+        }
+        $had = LoginPinService::has((int)$user->id);
+        LoginPinService::set((int)$user->id, $pin);
+        $this->notifyPinChange($user, $had ? 'changed' : 'set');
+        $_SESSION['security_flash'] = $had ? 'आपका लॉगिन PIN बदल दिया गया / Your login PIN was changed' : 'लॉगिन PIN सेट हो गया – अब मोबाइल / ईमेल + PIN से लॉगिन करें / Login PIN set – you can now log in with mobile / email + PIN';
+        $response->redirect('/account/security');
+    }
+
+    /** POST /account/pin/remove – back to email OTP only. */
+    public function removePin(Request $request, Response $response): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $response->redirect('/login');
+            return;
+        }
+        if (LoginPinService::has((int)$user->id)) {
+            LoginPinService::remove((int)$user->id);
+            $this->notifyPinChange($user, 'removed');
+        }
+        $_SESSION['security_flash'] = 'लॉगिन PIN हटा दिया गया – अब ईमेल OTP से लॉगिन होगा / Login PIN removed – you will log in with the email OTP';
+        $response->redirect('/account/security');
+    }
+
+    /** Security notice to the account email whenever the PIN is set, changed or removed. */
+    private function notifyPinChange(User $user, string $what): void
+    {
+        $email = strtolower(trim((string)($user->email ?? '')));
+        if ($email === '' || str_ends_with($email, '@mobile.local')) {
+            return;
+        }
+        $hi = ['set' => 'सेट किया गया', 'changed' => 'बदला गया', 'removed' => 'हटाया गया'][$what] ?? $what;
+        try {
+            MailService::sendEmail(
+                $email,
+                'Jobsence: login PIN ' . $what,
+                '<p>आपके Jobsence खाते का लॉगिन PIN ' . $hi . ' – ' . date('d M Y, h:i A') . '.</p>'
+                . '<p>Your Jobsence login PIN was ' . $what . ' on ' . date('d M Y, h:i A') . '.</p>'
+                . '<p>अगर यह आपने नहीं किया, तो तुरंत ईमेल OTP से लॉगिन करके <a href="https://jobsence.com/account/security">Login &amp; devices</a> में PIN हटाएँ और सभी डिवाइस भूल जाएँ, और gm@jobsence.com पर लिखें।<br>'
+                . 'If this was not you, log in with the email OTP, remove the PIN and forget all devices at <a href="https://jobsence.com/account/security">Login &amp; devices</a>, and write to gm@jobsence.com.</p>'
+            );
+        } catch (\Throwable $e) {
+            error_log('PIN notice mail: ' . $e->getMessage());
+        }
+    }
+
+    private function takePinError(): ?string
+    {
+        $e = $_SESSION['pin_error'] ?? null;
+        unset($_SESSION['pin_error']);
+        return $e;
     }
 
     private function takeSecurityFlash(): ?string

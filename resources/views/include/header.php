@@ -290,6 +290,9 @@ window.MWMarketing = (function(){
         .hdr-desktop { display: flex; }
         .hdr-burger { display: none !important; }
     }
+    .hdr-auth { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 14px; white-space: nowrap; border: 2px solid #f05537; color: #f05537; background: #fff; }
+    .hdr-auth:hover { background: #fff7f5; }
+    .hdr-auth.out { border-color: #fecaca; color: #b91c1c; }
     .hdr-btn { white-space: nowrap; font-size: 14px !important; line-height: 1.2; padding: 9px 14px !important; gap: 6px !important; border-radius: 10px !important; flex: none; }
     .hdr-btn svg { width: 17px; height: 17px; flex: none; }
     .hdr-btn.btn-outline-orange { padding: 7px 12px !important; }
@@ -365,6 +368,15 @@ window.MWMarketing = (function(){
             </a>
         </div>
         
+        <!-- Mobile: Login / Logout always visible without opening the menu -->
+        <div class="hdr-burger" style="order:3">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="<?php echo $base; ?>logout" class="hdr-auth out" aria-label="Logout"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg><span>Logout</span></a>
+            <?php else: ?>
+                <a href="<?php echo $base; ?>login" class="hdr-auth"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span>Login</span></a>
+            <?php endif; ?>
+        </div>
+
         <!-- Desktop Navigation -->
         <?php if (!isset($_SESSION['user_id'])): ?>
         <nav class="hdr-desktop items-center gap-2">
@@ -537,10 +549,10 @@ window.MWMarketing = (function(){
                             
                             <div class="border-t border-gray-100 my-1"></div>
                             
-                            <a href="/account/security" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors">🔐 Login &amp; devices</a>
+                            <a href="/account/security" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors">🔐 Login PIN &amp; devices</a>
                             <a href="<?php echo $base; ?>logout" class="flex items-center gap-3 px-6 py-3 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                <span>Sign Out</span>
+                                <span>Logout · लॉग आउट</span>
                             </a>
                         </div>
                     </div>
@@ -550,9 +562,12 @@ window.MWMarketing = (function(){
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                         <span>Dashboard</span>
                     </a>
+                    <a href="/account/security" class="hdr-btn btn-outline-orange flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 font-medium transition-all duration-200" title="Login PIN &amp; devices">🔐 <span>Login PIN</span></a>
+                    <a href="<?php echo $base; ?>logout" class="hdr-btn flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-600 bg-white hover:bg-red-50 font-semibold transition-all duration-200"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg><span>Logout</span></a>
                 <?php endif; ?>
             <?php else: ?>
                 <!-- Not Logged In Actions -->
+                <a href="<?php echo $base; ?>login" class="hdr-btn btn-outline-orange flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 font-bold transition-all duration-200"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span>Login / Register</span></a>
                 <a href="<?php echo $base; ?>login?role=employer&redirect=/employer/jobs/create" class="hdr-btn btn-brand-green flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium shadow-lg transition-all duration-200">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -707,6 +722,7 @@ window.MWMarketing = (function(){
                                 <a href="<?php echo $dashboardLink; ?>" class="block w-full py-3 bg-primary text-white text-center rounded-xl font-semibold shadow-md hover:bg-[#f58220] transition-colors">
                                     <span class="text-white">Go to Dashboard</span>
                                 </a>
+                                <a href="/account/security" class="block w-full mt-3 py-3 border border-gray-200 text-gray-700 text-center rounded-xl font-semibold hover:bg-gray-50 transition-colors">🔐 Login PIN &amp; devices</a>
                              </div>
                         <?php endif; ?>
                     <?php else: ?>
@@ -747,6 +763,7 @@ window.MWMarketing = (function(){
                 <!-- Footer Buttons -->
                 <div class="p-5 border-t border-gray-100 bg-gray-50/50 space-y-3 shrink-0">
                     <?php if (!isset($_SESSION['user_id'])): ?>
+                        <a href="<?php echo $base; ?>login" class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-primary text-white text-base font-bold shadow-md transition-all"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span class="text-white">Login / Register · लॉगिन</span></a>
                         <div class="grid grid-cols-2 gap-3">
                              <a href="<?php echo $base; ?>login?role=employer&redirect=/employer/jobs/create" class="btn-brand-orange flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all">
                                  Post a Job
@@ -760,7 +777,7 @@ window.MWMarketing = (function(){
                         </a>
                     <?php else: ?>
                         <a href="<?php echo $base; ?>logout" class="flex items-center justify-center w-full px-4 py-2.5 rounded-xl bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors">
-                            Sign Out
+                            Logout · लॉग आउट
                         </a>
                     <?php endif; ?>
                 </div>

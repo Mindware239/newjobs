@@ -274,7 +274,7 @@
     </div>
 
     <!-- Quick login: mobile or email → (remembered device ? in : email OTP) -->
-    <form x-show="authMode === 'quick'" @submit.prevent="step === 1 ? identify() : verifyOtp()" novalidate>
+    <form x-show="authMode === 'quick'" @submit.prevent="step === 1 ? identify() : (step === 3 ? verifyPin() : verifyOtp())" novalidate>
         <div class="fields">
             <div x-show="step === 1">
                 <label for="identifier" class="f-label">मोबाइल नंबर या ईमेल · Mobile number or email</label>
@@ -285,6 +285,23 @@
                     <input id="identifier" type="text" x-model.trim="quick.identifier" class="f-input" placeholder="98XXXXXXXX / you@example.com" autocomplete="username" inputmode="email" autofocus>
                 </div>
                 <p style="font-size:12px;color:#64748b;margin:8px 2px 0">इस डिवाइस पर पहले ईमेल OTP से लॉगिन किया है तो सीधे अंदर। / Logged in on this device before? You go straight in.</p>
+            </div>
+
+            <!-- Optional login PIN (set in Login & devices) – email OTP is always one click away -->
+            <div x-show="step === 3" x-cloak>
+                <p style="font-size:13px;color:#334155;margin:0 0 10px"><b x-text="quick.identifier"></b>
+                    <button type="button" @click="step = 1; quick.pin = ''; error = ''" style="border:0;background:none;color:#f05537;font-weight:700;cursor:pointer">बदलें · Change</button></p>
+                <label for="pin" class="f-label">🔒 अपना लॉगिन PIN · Your login PIN</label>
+                <div class="f-wrap">
+                    <input id="pin" type="password" x-ref="pin" x-model.trim="quick.pin" class="f-input" style="padding-left:14px;letter-spacing:.4em;font-size:20px;text-align:center" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="••••">
+                </div>
+                <div class="options-row" style="margin-top:10px">
+                    <label class="rem-label" for="remember_device_pin">
+                        <input id="remember_device_pin" type="checkbox" x-model="quick.remember" class="rem-check">
+                        <span class="rem-text">इस डिवाइस को याद रखें · Remember this device</span>
+                    </label>
+                    <button type="button" class="forgot" style="border:0;background:none;cursor:pointer" @click="identify(false, true)">PIN भूल गए? ईमेल OTP · Forgot PIN? Email OTP</button>
+                </div>
             </div>
 
             <div x-show="step === 2" x-cloak>
@@ -310,7 +327,7 @@
                     <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
                     <path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                <span x-show="!isSubmitting" x-text="step === 1 ? 'आगे बढ़ें · Continue' : 'लॉगिन करें · Log in'"></span>
+                <span x-show="!isSubmitting" x-text="step === 1 ? 'आगे बढ़ें · Continue' : (step === 3 ? 'PIN से लॉगिन करें · Log in with PIN' : 'लॉगिन करें · Log in')"></span>
                 <span x-show="isSubmitting" x-cloak>…</span>
             </button>
             <p x-show="notFound" x-cloak style="font-size:13px;margin:4px 0 0;text-align:center">
@@ -426,7 +443,7 @@
             registrationMessage: urlParams.get('email') ? `Account created for ${urlParams.get('email')}. Please login.` : 'Account created successfully.',
             formData: { email: urlParams.get('email') || '', password: '', remember: true },
             step: 1, notFound: false, maskedEmail: '', wait: 0, timer: null,
-            quick: { identifier: urlParams.get('email') || '', otp: '', remember: true },
+            quick: { identifier: urlParams.get('email') || '', otp: '', pin: '', remember: true },
             redirectTo: urlParams.get('redirect') || '',
             async post(url, body) {
                 const res = await fetch(url, {
@@ -442,13 +459,18 @@
                 this.wait = sec; clearInterval(this.timer);
                 this.timer = setInterval(() => { if (--this.wait <= 0) clearInterval(this.timer); }, 1000);
             },
-            async identify(resend) {
+            async identify(resend, useOtp) {
                 this.error = ''; this.notFound = false;
                 if (!this.quick.identifier) { this.error = 'मोबाइल नंबर या ईमेल भरें · Enter your mobile number or email'; return; }
                 this.isSubmitting = true;
                 try {
-                    const { ok, data } = await this.post('/login/identify', { identifier: this.quick.identifier });
+                    const { ok, data } = await this.post('/login/identify', { identifier: this.quick.identifier, method: (useOtp || resend) ? 'otp' : '' });
                     if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
+                    if (ok && data.status === 'pin_required') {
+                        this.step = 3; this.quick.pin = '';
+                        this.$nextTick(() => this.$refs.pin && this.$refs.pin.focus());
+                        this.isSubmitting = false; return;
+                    }
                     if (ok && data.status === 'otp_sent') {
                         this.maskedEmail = data.email; this.step = 2; this.countdown(data.wait || 30);
                         this.$nextTick(() => this.$refs.otp && this.$refs.otp.focus());
@@ -468,6 +490,19 @@
                     const { ok, data } = await this.post('/login/verify', { identifier: this.quick.identifier, otp: this.quick.otp, remember: this.quick.remember });
                     if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
                     this.error = data.error || 'OTP सही नहीं है · Incorrect OTP';
+                } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
+                this.isSubmitting = false;
+            },
+            async verifyPin() {
+                this.error = '';
+                if (!/^\d{4,6}$/.test(this.quick.pin)) { this.error = '4–6 अंकों का PIN भरें · Enter your 4–6 digit PIN'; return; }
+                this.isSubmitting = true;
+                try {
+                    const { ok, data } = await this.post('/login/pin', { identifier: this.quick.identifier, pin: this.quick.pin, remember: this.quick.remember });
+                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/'; return; }
+                    this.quick.pin = '';
+                    this.error = data.error || 'PIN सही नहीं है · Incorrect PIN';
+                    if (data.status === 'pin_locked') { this.isSubmitting = false; await this.identify(false, true); return; }
                 } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
                 this.isSubmitting = false;
             },
