@@ -418,6 +418,7 @@ $totalCompanies = $stats['companies'] ?? 0;
     </div>
     <div class="home-wide">
         <?php require __DIR__ . '/front/apply/_buttons.php'; ?>
+        <?php $quotesMode = 'rotate'; require __DIR__ . '/include/_skill_quotes.php'; ?>
         <?php $sdShowcaseLimit = 12; require __DIR__ . '/front/skill-development/_skills_showcase.php'; ?>
         <section class="relative hero-height bg-white text-gray-800">
             <div class="relative container mx-auto px-4 lg:px-8 pt-16 md:pt-20 pb-6">

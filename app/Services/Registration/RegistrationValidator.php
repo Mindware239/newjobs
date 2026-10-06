@@ -26,7 +26,7 @@ class RegistrationValidator
         // Afghanistan, Bangladesh, China and Thailand give a mobile with country code, their country
         // instead of an Indian state, and their local postal code.
         $residence = 'India';
-        if (!empty($form['international']) && is_string($in['residence_country'] ?? null) && isset(FormRegistry::OPEN_COUNTRIES[$in['residence_country']])) {
+        if (!empty($form['international']) && is_string($in['residence_country'] ?? null) && isset(FormRegistry::residenceCountries($form)[$in['residence_country']])) {
             $residence = $in['residence_country'];
         }
         $foreign = $residence !== 'India';
@@ -35,6 +35,12 @@ class RegistrationValidator
             $required = (bool)$f['required'];
             if ($foreign && in_array($f['type'], ['aadhaar', 'gst', 'ifsc'], true)) {
                 $required = false; // Indian IDs: not available to residents of other countries
+            }
+            // e.g. GST: optional when "Registering As" is an individual mentor.
+            foreach ($f['optional_when'] ?? [] as $other => $values) {
+                if (is_string($in[$other] ?? null) && in_array($in[$other], $values, true)) {
+                    $required = false;
+                }
             }
             $raw = $in[$key] ?? null;
             $value = null;
@@ -59,7 +65,7 @@ class RegistrationValidator
 
                 case 'mobile':
                     $s = trim((string)$raw);
-                    $value = $s === '' ? '' : (($foreign ? self::intlMobile($s, $residence) : self::mobile($s)) ?? '');
+                    $value = $s === '' ? '' : (($foreign ? self::intlMobile($s, $residence, FormRegistry::residenceCountries($form)[$residence] ?? null) : self::mobile($s)) ?? '');
                     if ($s !== '' && $value === '') {
                         $errors[$key] = ['सही 10 अंकों का मोबाइल नंबर भरें', 'Enter a valid 10-digit mobile number'];
                     } elseif ($required && $value === '') {
@@ -406,10 +412,10 @@ class RegistrationValidator
         return ($n < 0 ? '-' : '') . $s;
     }
 
-    /** Mobile of a resident of $country (open countries): "+977…" (country code + 6–12 digits). */
-    public static function intlMobile(string $raw, string $country): ?string
+    /** Mobile of a resident of $country: "+977…" (country code + 6–12 digits); $code for countries outside the open list. */
+    public static function intlMobile(string $raw, string $country, ?string $code = null): ?string
     {
-        $code = FormRegistry::OPEN_COUNTRIES[$country] ?? null;
+        $code ??= FormRegistry::OPEN_COUNTRIES[$country] ?? null;
         if ($code === null) {
             return null;
         }

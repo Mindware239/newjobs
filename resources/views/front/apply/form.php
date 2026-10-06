@@ -20,6 +20,9 @@ $isChecked = static function (string $k, string $v) use ($old): bool {
 $label = static fn(array $f, string $for = ''): string => '<' . ($for !== '' ? 'label for="' . $for . '"' : 'span') . ' class="lbl">'
     . Lang::t($f['label'][0], $f['label'][1]) . ($f['required'] ? ' ' . '<span class="req" aria-hidden="true">*</span>' : '')
     . '</' . ($for !== '' ? 'label' : 'span') . '>';
+// Fields that become optional for some choices (e.g. Aadhaar / GST by "Registering As") – toggled by script below.
+$optWhen = static fn(array $f): string => !empty($f['optional_when'])
+    ? " data-optional-when='" . htmlspecialchars((string)json_encode($f['optional_when']), ENT_QUOTES, 'UTF-8') . "'" : '';
 $hint = static fn(array $f): string => !empty($f['hint']) ? '<div class="hint">' . Lang::t($f['hint'][0], $f['hint'][1]) . '</div>' : '';
 $oldCategories = array_values(array_filter(array_map('strval', (array)($old['categories'] ?? []))));
 ?>
@@ -41,6 +44,8 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                     : $t("एकमुश्त प्रोसेसिंग शुल्क: ₹{$feeLabel} (GST सहित, किसी भी स्थिति में वापसी योग्य नहीं)", "One-time processing fee: ₹{$feeLabel} (including GST, non-refundable in any condition)") ?></p>
                 <p style="margin:4px 0 0;font-size:.9rem;color:#4b5563">(<?= $t('यह भारत सरकार की योजना नहीं है', 'This is NOT a Government of India scheme') ?>)</p>
             </div>
+
+            <?php if (!empty($form['quotes'])) { $quotesMode = 'grid'; require dirname(__DIR__, 2) . '/include/_skill_quotes.php'; } ?>
 
             <?php if (!empty($form['info'])): ?>
                 <div class="sd-alert info sd-declare">
@@ -134,7 +139,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                     </div>
                                 <?php break;
                                 case 'aadhaar': ?>
-                                    <div class="<?= $cls($k, $full) ?>">
+                                    <div class="<?= $cls($k, $full) ?>"<?= $optWhen($f) ?>>
                                         <?= $label($f, $id) ?>
                                         <input type="text" id="<?= $id ?>" name="aadhaar" value="<?= $val('aadhaar') ?>" inputmode="numeric" maxlength="14" autocomplete="off" <?= $required ?>>
                                         <?= $hint($f) ?><?= $err('aadhaar') ?>
@@ -167,7 +172,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                             <?php endforeach; ?>
                                             <?php if (!empty($form['international'])): ?></optgroup>
                                                 <optgroup label="भारत के बाहर / Outside India">
-                                                    <?php foreach (array_slice(array_keys(\App\Services\Registration\FormRegistry::OPEN_COUNTRIES), 1) as $oc): ?>
+                                                    <?php foreach (array_slice(array_keys(\App\Services\Registration\FormRegistry::residenceCountries($form)), 1) as $oc): ?>
                                                         <option value="<?= $h($oc) ?>" <?= ($old['state'] ?? '') === $oc ? 'selected' : '' ?>><?= $h($oc) ?></option>
                                                     <?php endforeach; ?>
                                                 </optgroup>
@@ -261,10 +266,11 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                                     </div>
                                 <?php break;
                                 case 'gst': ?>
-                                    <div class="<?= $cls('gstin', true) ?>">
+                                    <div class="<?= $cls('gstin', true) ?>"<?= $optWhen($f) ?>>
                                         <?= $label($f, $id) ?>
                                         <input type="text" id="<?= $id ?>" name="gstin" value="<?= $val('gstin') ?>" maxlength="15" style="text-transform:uppercase" placeholder="22AAAAA0000A1Z5" data-unique="gstin" <?= !empty($old['no_gst']) ? 'disabled' : '' ?>>
                                         <label class="sd-opt" style="margin-top:8px;display:inline-flex"><input type="checkbox" name="no_gst" value="1" id="sd-no-gst" <?= !empty($old['no_gst']) ? 'checked' : '' ?>> <span class="opt-txt"><?= $t('मेरे पास GST नहीं है', 'I don’t have GST') ?></span></label>
+                                        <?= $hint($f) ?>
                                         <div class="sd-err" data-unique-msg="gstin"></div>
                                         <?= $err('gstin') ?>
                                     </div>
@@ -395,7 +401,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
 <?php if (!empty($form['international'])): ?>
     // ---- country of residence: outside India → country code mobile, country instead of state, local postal code ----
     (function () {
-        var res = form.querySelector('[name="residence_country"]'), codes = <?= json_encode(\App\Services\Registration\FormRegistry::OPEN_COUNTRIES) ?>;
+        var res = form.querySelector('[name="residence_country"]'), codes = <?= json_encode(\App\Services\Registration\FormRegistry::residenceCountries($form)) ?>;
         if (!res) return;
         var st = form.querySelector('select[name="state"]'), pin = form.querySelector('[name="pincode"]'), mob = form.querySelector('[name="mobile"]');
         var aad = form.querySelector('[name="aadhaar"]'), ifsc = form.querySelector('[name="ifsc"]'), bank = form.querySelector('[name="bank_account"]');
@@ -403,7 +409,7 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
         function apply() {
             var c = res.value || 'India', foreign = c !== 'India';
             // Aadhaar / IFSC are Indian: optional abroad; foreign banks give an account number / IBAN and SWIFT code.
-            [aad, ifsc].forEach(function (el) { if (el) el.required = !foreign && el.dataset.req === '1'; });
+            [aad, ifsc].forEach(function (el) { if (el) el.required = !foreign && el.dataset.req === '1' && !el.closest('[data-optional-active="1"]'); });
             if (ifsc) { ifsc.placeholder = foreign ? 'SWIFT / BIC' : 'SBIN0001234'; }
             if (bank) { bank.inputMode = foreign ? 'text' : 'numeric'; }
             if (pin) { pin.required = !foreign; pin.pattern = foreign ? '[0-9]{3,6}' : '[1-9][0-9]{5}'; pin.placeholder = foreign ? 'Postal code (optional)' : ''; }
@@ -518,6 +524,27 @@ $oldCategories = array_values(array_filter(array_map('strval', (array)($old['cat
                 openBtn.textContent = 'दोबारा लें / Retake';
             }, 'image/jpeg', 0.88);
         });
+    });
+
+    // ---- fields that become optional for some choices (GST for an individual mentor) ----
+    form.querySelectorAll('[data-optional-when]').forEach(function (box) {
+        var rules = JSON.parse(box.dataset.optionalWhen), star = box.querySelector('.req'), input = box.querySelector('input:not([type="checkbox"])');
+        if (input && input.dataset.req === undefined) input.dataset.req = input.required ? '1' : '';
+        var res = form.querySelector('[name="residence_country"]');
+        function apply() {
+            var optional = Object.keys(rules).some(function (name) {
+                var picked = form.querySelector('[name="' + name + '"]:checked');
+                return picked && rules[name].indexOf(picked.value) !== -1;
+            });
+            var foreign = res && res.value && res.value !== 'India';
+            box.dataset.optionalActive = optional ? '1' : '';
+            if (star) star.style.display = optional ? 'none' : '';
+            if (input) input.required = input.dataset.req === '1' && !optional && !foreign;
+        }
+        Object.keys(rules).forEach(function (name) {
+            form.querySelectorAll('[name="' + name + '"]').forEach(function (el) { el.addEventListener('change', apply); });
+        });
+        apply();
     });
 
     // ---- GST "I don't have GST" ----

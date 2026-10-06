@@ -1072,11 +1072,18 @@ class FormRegistry
 
     private static function skillProvider(): array
     {
-        $personal = self::personalSection(['name_label' => ['पूरा नाम / संपर्क व्यक्ति', 'Full Name / Contact Person'], 'dob' => false, 'gender' => false, 'aadhaar_required' => true]);
+        // Aadhaar belongs to a person: mandatory for an individual mentor only. A group, institute, PSU or
+        // Govt body has no Aadhaar of its own – its contact person may still give theirs.
+        $personal = self::personalSection(['name_label' => ['पूरा नाम / संपर्क व्यक्ति', 'Full Name / Contact Person'], 'dob' => false, 'gender' => false, 'aadhaar_required' => true,
+            'aadhaar_label' => ['आधार नंबर (व्यक्तिगत मेंटर / संपर्क व्यक्ति)', 'Aadhaar Number (individual mentor / contact person)'],
+            'aadhaar_hint' => ['केवल व्यक्तिगत मेंटर / ट्रेनर के लिए ज़रूरी। ग्रुप, संस्थान, PSU व सरकारी विभाग के लिए वैकल्पिक। हम केवल आख़िरी 4 अंक सेव करते हैं।', 'Mandatory only for an individual mentor / trainer; optional for groups, institutes, PSUs and Govt bodies. We store only the last 4 digits.'],
+            'aadhaar_optional_when' => ['provider_kind' => ['group', 'institute', 'psu', 'govt']]]);
 
         return [
             'type' => 'provider',
             'international' => true,
+            'any_country' => true, // mentors may live in any country (users: India + open countries elsewhere)
+            'quotes' => true, // "giving skill is punya" verses above the form
             'prefix' => 'MEN',
             'fee' => 0.0,
             'side' => 'provider',
@@ -1103,7 +1110,7 @@ class FormRegistry
                 [
                     'title' => ['आप कौन हैं', 'Who Are You'],
                     'fields' => [
-                        self::residenceField(),
+                        self::residenceField(true),
                         self::radio('provider_kind', ['रजिस्ट्रेशन का प्रकार', 'Registering As'], [
                             'individual' => ['व्यक्तिगत मेंटर / ट्रेनर', 'Individual Mentor / Trainer'],
                             'group' => ['ग्रुप मेंटरिंग', 'Group Mentoring'],
@@ -1112,7 +1119,9 @@ class FormRegistry
                             'govt' => ['सरकारी विभाग / संस्था', 'Government Department / Body'],
                         ], true, ['full' => true]),
                         self::text('institute_name', ['संस्थान / PSU / विभाग का नाम (व्यक्तिगत मेंटर के लिए नहीं)', 'Institute / PSU / Department name (not for individual mentors)'], false),
-                        ['key' => 'gstin', 'type' => 'gst', 'label' => ['GST नंबर', 'GST Number'], 'required' => true],
+                        ['key' => 'gstin', 'type' => 'gst', 'label' => ['GST नंबर', 'GST Number'], 'required' => true,
+                            'optional_when' => ['provider_kind' => ['individual', 'group']], // individuals and mentor groups usually have no GST
+                            'hint' => ['व्यक्तिगत मेंटर / ट्रेनर और ग्रुप मेंटरिंग के लिए GST ज़रूरी नहीं है।', 'GST is not mandatory for an individual mentor / trainer or group mentoring.']],
                     ],
                 ],
                 $personal,
@@ -1345,11 +1354,64 @@ class FormRegistry
         'Bangladesh' => '880', 'China' => '86', 'Thailand' => '66',
     ];
 
-    /** Bilingual "country of residence" field for international forms. */
-    private static function residenceField(): array
+    /**
+     * "Giving skill is punya": classic lines on sharing knowledge – home page (rotating) and mentor form.
+     * Original script, meaning in Hindi / English and the source as traditionally cited (public-domain classics).
+     */
+    public static function skillGivingQuotes(): array
+    {
+        return [
+            ['lang' => 'sa', 'text' => "न चोरहार्यं न च राजहार्यं न भ्रातृभाज्यं न च भारकारि।\nव्यये कृते वर्धत एव नित्यं विद्याधनं सर्वधनप्रधानम्॥",
+             'meaning' => ['विद्या को न चोर चुरा सकता है, न राजा छीन सकता है, न भाई बाँट सकता है, न यह बोझ है। बाँटने से यह रोज़ बढ़ती ही है – विद्या-धन सब धनों में श्रेष्ठ है।', 'Knowledge cannot be stolen by a thief, seized by a king or divided among brothers, and it is no burden. The more you give it, the more it grows – the wealth of knowledge is the greatest of all wealth.'],
+             'source' => ['संस्कृत सुभाषित (पारंपरिक श्लोक)', 'Sanskrit Subhashita (traditional verse)']],
+            ['lang' => 'sa', 'text' => "सर्वेषामेव दानानां ब्रह्मदानं विशिष्यते।",
+             'meaning' => ['सभी दानों में ज्ञान का दान (विद्या-दान) सबसे श्रेष्ठ है।', 'Of all gifts, the gift of knowledge is the highest.'],
+             'source' => ['मनुस्मृति 4.233', 'Manusmriti 4.233']],
+            ['lang' => 'sa', 'text' => "न हि ज्ञानेन सदृशं पवित्रमिह विद्यते।",
+             'meaning' => ['इस संसार में ज्ञान के समान पवित्र करने वाला कुछ भी नहीं है।', 'In this world there is nothing as purifying as knowledge.'],
+             'source' => ['श्रीमद्भगवद्गीता 4.38', 'Bhagavad Gita 4.38']],
+            ['lang' => 'hi', 'text' => "सब धरती कागद करूँ, लेखनी सब बनराय।\nसात समुद की मसि करूँ, गुरु गुन लिखा न जाय॥",
+             'meaning' => ['सारी धरती को कागज़, सारे जंगल को कलम और सातों समुद्र को स्याही बना लूँ, तब भी गुरु के गुण नहीं लिखे जा सकते।', 'Were the whole earth paper, every forest a pen and the seven seas ink, the virtues of a teacher still could not be written.'],
+             'source' => ['संत कबीर, साखी (गुरुदेव को अंग)', 'Sant Kabir, Sakhi (Gurudev ko Ang)']],
+            ['lang' => 'en', 'text' => "The quality of mercy is not strain'd…\nIt blesseth him that gives and him that takes.",
+             'meaning' => ['सच्चा दान देने वाले और पाने वाले – दोनों को आशीर्वाद देता है।', 'True giving blesses both the one who gives and the one who receives.'],
+             'source' => ['विलियम शेक्सपियर, द मर्चेंट ऑफ़ वेनिस, अंक 4 दृश्य 1 (पोर्शिया)', 'William Shakespeare, The Merchant of Venice, Act IV Scene 1 (Portia)']],
+            ['lang' => 'en', 'text' => "He who receives an idea from me, receives instruction himself without lessening mine; as he who lights his taper at mine, receives light without darkening me.",
+             'meaning' => ['जो मुझसे ज्ञान लेता है वह सीखता है, पर मेरा ज्ञान कम नहीं होता – जैसे मेरे दीये से दीया जलाने वाले को रोशनी मिलती है और मेरा दीया मंद नहीं होता।', 'Sharing knowledge takes nothing from the giver – like lighting another candle from your own.'],
+             'source' => ['थॉमस जेफ़र्सन, आइज़ैक मैकफ़र्सन को पत्र, 13 अगस्त 1813', 'Thomas Jefferson, letter to Isaac McPherson, 13 August 1813']],
+            ['lang' => 'zh', 'text' => "学而不厌，诲人不倦。",
+             'meaning' => ['सीखते हुए कभी तृप्त न होना, और दूसरों को सिखाते हुए कभी न थकना।', 'Never tire of learning, never weary of teaching others.'],
+             'source' => ['कन्फ़्यूशियस, लुनयू (論語) 7.2 – शुएर', 'Confucius, Analects (論語) 7.2 – Shu Er']],
+            ['lang' => 'zh', 'text' => "授人以鱼，不如授人以渔。",
+             'meaning' => ['किसी को मछली देने से अच्छा है, उसे मछली पकड़ना सिखा देना।', 'Giving someone a fish is not as good as teaching them to fish.'],
+             'source' => ['पारंपरिक चीनी कहावत', 'Traditional Chinese proverb']],
+            ['lang' => 'ur', 'dir' => 'rtl', 'text' => "نہیں ہے ناامید اقبالؔ اپنی کشتِ ویراں سے\nذرا نم ہو تو یہ مٹی بہت زرخیز ہے ساقی",
+             'meaning' => ['इक़बाल अपनी वीरान खेती से निराश नहीं है – ज़रा-सी नमी मिले तो यह मिट्टी बहुत उपजाऊ है। (थोड़ा-सा मार्गदर्शन मिले तो हमारे युवा बहुत कुछ कर सकते हैं।)', 'Iqbal does not despair of his barren field – with a little moisture this soil is very fertile. (Give our youth a little guidance and they will flourish.)'],
+             'source' => ['अल्लामा इक़बाल', 'Allama Iqbal']],
+            ['lang' => 'ar', 'dir' => 'rtl', 'text' => "إذا مات الإنسان انقطع عنه عمله إلا من ثلاثة: صدقة جارية، أو علم يُنتفع به، أو ولد صالح يدعو له",
+             'meaning' => ['मनुष्य के जाने के बाद उसके कर्म रुक जाते हैं, सिवाय तीन के: निरंतर चलने वाला दान, ऐसा ज्ञान जिससे लोग लाभ उठाते रहें, और नेक संतान जो उसके लिए दुआ करे।', 'When a person dies, their deeds end except three: a continuing charity, knowledge that others keep benefiting from, and a righteous child who prays for them.'],
+             'source' => ['हदीस, सहीह मुस्लिम 1631', 'Hadith, Sahih Muslim 1631']],
+        ];
+    }
+
+    /**
+     * Countries a resident of which may use $form, with dialling codes: India + the open countries, or
+     * every country (Pakistan excluded by policy) for forms marked 'any_country' such as mentors.
+     */
+    public static function residenceCountries(array $form = []): array
+    {
+        if (empty($form['any_country'])) {
+            return self::OPEN_COUNTRIES;
+        }
+        static $world = null;
+        return $world ??= ['India' => '91'] + (require dirname(__DIR__, 3) . '/resources/data/dial_codes.php');
+    }
+
+    /** Bilingual "country of residence" field; $anyCountry lists every country instead of the open ones. */
+    private static function residenceField(bool $anyCountry = false): array
     {
         $opts = [];
-        foreach (array_keys(self::OPEN_COUNTRIES) as $c) {
+        foreach (array_keys(self::residenceCountries(['any_country' => $anyCountry])) as $c) {
             $opts[$c] = $c === 'India' ? ['भारत', 'India'] : [$c, $c];
         }
         return ['key' => 'residence_country', 'type' => 'select', 'label' => ['आप किस देश में रहते हैं', 'Country of residence'], 'options' => $opts, 'required' => true, 'full' => true,
@@ -1554,8 +1616,9 @@ class FormRegistry
         $fields[] = ['key' => 'whatsapp', 'type' => 'mobile', 'label' => ['WhatsApp नंबर (अलग हो तो)', 'WhatsApp Number (if different)'], 'required' => false];
         $fields[] = ['key' => 'email', 'type' => 'email', 'label' => ['ईमेल', 'Email ID'], 'required' => true, 'autocomplete' => 'email',
             'hint' => ['पुष्टि ईमेल इसी पते पर आएगा।', 'Confirmation email will be sent here.']];
-        $fields[] = ['key' => 'aadhaar', 'type' => 'aadhaar', 'label' => ['आधार नंबर', 'Aadhaar Number'], 'required' => (bool)($opt['aadhaar_required'] ?? false),
-            'hint' => ['सुरक्षा के लिए हम केवल आख़िरी 4 अंक सेव करते हैं।', 'For your safety we store only the last 4 digits.']];
+        $fields[] = ['key' => 'aadhaar', 'type' => 'aadhaar', 'label' => $opt['aadhaar_label'] ?? ['आधार नंबर', 'Aadhaar Number'], 'required' => (bool)($opt['aadhaar_required'] ?? false),
+            'hint' => $opt['aadhaar_hint'] ?? ['सुरक्षा के लिए हम केवल आख़िरी 4 अंक सेव करते हैं।', 'For your safety we store only the last 4 digits.']]
+            + (isset($opt['aadhaar_optional_when']) ? ['optional_when' => $opt['aadhaar_optional_when']] : []);
 
         return ['title' => ['व्यक्तिगत जानकारी', 'Personal Details'], 'fields' => $fields];
     }
