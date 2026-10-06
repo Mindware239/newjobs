@@ -323,6 +323,15 @@ class ApplyController extends BaseController
         // Contact passes (Near Me, hospital, hirer) unlock in this browser straight away.
         $passPage = \App\Services\Registration\ContactPass::remember($reg);
 
+        // Honorary workshops: remember the learner in this browser and finish a "Join free" started before registering.
+        if ($reg['type'] === 'honorlearn') {
+            $_SESSION['honor_learner_token'] = $reg['token'];
+            if (!empty($_SESSION['honor_join'])) {
+                $_SESSION['honor_flash'] = HonoraryController::signupMessage(\App\Models\HonoraryWorkshop::signup((int)$_SESSION['honor_join'], (int)$reg['id']));
+                unset($_SESSION['honor_join']);
+            }
+        }
+
         $this->seo('Registration Successful – Jobsence', '', '/apply', false);
         $response->view('front/apply/status', ['reg' => $reg, 'form' => $form, 'fee' => (float)$reg['total_amount'], 'passPage' => $passPage] + $this->shared(), 200, 'layout');
     }

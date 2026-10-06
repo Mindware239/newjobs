@@ -181,6 +181,8 @@ class FormRegistry
             'senior-citizen-jobs' => self::seniorJobs(),
             'senior-citizen-hiring' => self::seniorHiring(),
             'extra-job-post' => self::extraJobPost(),
+            'honorary-mentor' => self::honoraryMentor(),
+            'honorary-learner' => self::honoraryLearner(),
         ];
     }
 
@@ -1767,6 +1769,123 @@ class FormRegistry
     }
 
     /** One country unlocked for a jobs-abroad seeker (bought from the dashboard). */
+    /** Honorary Mentorship: mentors teach free in 1-day 4-hour workshops and pay only a platform fee every 6 months. */
+    public const HONORARY_PLATFORM_FEE = 155.00;
+    /** User, 2026-10-06: honorary workshops only in Dwarka, Delhi (offline), for a few skills only – edit this list to change them. */
+    public const HONORARY_PLACE = ['द्वारका, नई दिल्ली', 'Dwarka, New Delhi'];
+    public const HONORARY_SKILLS = [
+        'computer_basics' => ['कंप्यूटर बेसिक्स', 'Computer Basics'],
+        'spoken_english' => ['स्पोकन इंग्लिश', 'Spoken English'],
+        'tally_gst' => ['टैली और GST', 'Tally & GST'],
+        'digital_marketing' => ['डिजिटल मार्केटिंग', 'Digital Marketing'],
+        'tailoring' => ['सिलाई', 'Tailoring'],
+        'mobile_repair' => ['मोबाइल रिपेयर', 'Mobile Repair'],
+        'interview_skills' => ['इंटरव्यू की तैयारी', 'Interview Preparation'],
+    ];
+
+    /** "Computer Basics, Spoken English, …" (for notices). */
+    public static function honorarySkillList(int $lang = 1): string
+    {
+        return implode(', ', array_column(self::HONORARY_SKILLS, $lang));
+    }
+
+    private static function honoraryMentor(): array
+    {
+        return [
+            'type' => 'honormentor',
+            'international' => true,
+            'any_country' => true,
+            'prefix' => 'HMT',
+            'side' => 'provider',
+            'icon' => '🎗️',
+            'otp' => true,
+            'fee' => self::HONORARY_PLATFORM_FEE,
+            'max_categories' => 5,
+            'title' => ['मानद मेंटरशिप – एक दिन, 4 घंटे की वर्कशॉप लें', 'Honorary Mentorship – Run One-Day 4-Hour Workshops'],
+            'button' => ['मानद मेंटर बनें – मुफ़्त सिखाएँ, 4 घंटे की वर्कशॉप', 'Become an Honorary Mentor – teach free in 4-hour workshops'],
+            'intro' => ['कौशल देना पुण्य है। मानद मेंटर एक दिन की 4 घंटे की वर्कशॉप में मुफ़्त सिखाते हैं – सीखने वालों से कोई शुल्क नहीं लिया जाता। आप केवल Jobsence का प्लेटफ़ॉर्म शुल्क देते हैं, साल में दो बार।', 'Giving skill is punya. Honorary mentors teach free in one-day, 4-hour workshops – learners are never charged. You only pay the Jobsence platform fee, twice a year.'],
+            'info' => [
+                'title' => ['कैसे काम करता है', 'How it works'],
+                'points' => [
+                    ['प्लेटफ़ॉर्म शुल्क ₹155 (GST सहित) हर 6 महीने – साल में दो बार। सीखने वालों के लिए सब मुफ़्त।', 'Platform fee ₹155 (incl. GST) every 6 months – twice a year. Everything is free for learners.'],
+                    ['वर्कशॉप केवल ' . self::HONORARY_PLACE[0] . ' में (ऑफ़लाइन), एक दिन, 4 घंटे की। आप तारीख, समय और सीटें तय करते हैं।', 'Workshops are held only in ' . self::HONORARY_PLACE[1] . ' (offline), one day, 4 hours. You choose the date, time and seats.'],
+                    ['अभी केवल इन स्किल्स के लिए: ' . self::honorarySkillList(0) . '।', 'For these skills only, for now: ' . self::honorarySkillList(1) . '.'],
+                    ['मानद (Honorary): आप सीखने वालों से कोई फ़ीस नहीं लेंगे और Jobsence भी आपको भुगतान नहीं करता।', 'Honorary: you take no fee from learners and Jobsence does not pay you either.'],
+                    self::platformDisclaimer(),
+                ],
+            ],
+            'sections' => [
+                ['title' => ['आप कहाँ से हैं', 'Where You Are'], 'fields' => [self::residenceField(true)]],
+                self::personalSection(['name_label' => ['पूरा नाम / संस्था', 'Full name / institute'], 'dob' => false, 'gender' => false, 'aadhaar_required' => false]),
+                self::addressSection(false),
+                [
+                    'title' => ['आपकी वर्कशॉप', 'Your Workshops'],
+                    'fields' => [
+                        self::checkboxes('honor_skills', ['आप किन स्किल्स की वर्कशॉप ले सकते हैं (' . self::HONORARY_PLACE[0] . ')', 'Skills you can run workshops for (' . self::HONORARY_PLACE[1] . ')'], self::HONORARY_SKILLS, true),
+                        self::number('years_experience', ['अनुभव (वर्ष)', 'Experience (years)'], true, 0, 70),
+                        self::languagesField(['आप किन भाषाओं में सिखा सकते हैं', 'Languages you can teach in'], false),
+                        self::textarea('education_experience', ['आपके बारे में – शिक्षा, अनुभव, आप क्या सिखाएँगे', 'About you – education, experience, what you will teach'], true),
+                        self::text('video_link', ['परिचय वीडियो लिंक (वैकल्पिक – YouTube / Google Drive)', 'Intro video link (optional – YouTube / Google Drive)'], false, ['full' => true, 'max' => 500]),
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
+                ['मैं वर्कशॉप मानद रूप से मुफ़्त लूँगा/लूँगी और सीखने वालों से किसी भी रूप में पैसे नहीं माँगूँगा/माँगूँगी।', 'I will run the workshops honorarily, free of charge, and will not ask learners for money in any form.'],
+                ['₹155 का प्लेटफ़ॉर्म शुल्क 6 महीने के लिए है और वापसी योग्य नहीं।', 'The ₹155 platform fee is for 6 months and is non-refundable.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['भुगतान के बाद इसी पेज पर अपनी पहली वर्कशॉप जोड़ें – तारीख, समय, ऑनलाइन या स्थान और सीटें।', 'After payment, add your first workshop on this page – date, time, online or venue, and seats.'],
+                ['आपकी वर्कशॉप /honorary-mentorship पर दिखेगी; सीखने वालों के नाम और नंबर यहीं दिखेंगे।', 'Your workshop is listed on /honorary-mentorship; learners’ names and numbers appear here.'],
+            ],
+        ];
+    }
+
+    private static function honoraryLearner(): array
+    {
+        return [
+            'type' => 'honorlearn',
+            'prefix' => 'HLR',
+            'side' => 'candidate',
+            'icon' => '🎓',
+            'otp' => true,
+            'fee' => 0.0,
+            'max_categories' => 5,
+            'title' => ['मानद वर्कशॉप में मुफ़्त सीखें – एक दिन, 4 घंटे', 'Learn Free in Honorary Workshops – One Day, 4 Hours'],
+            'button' => ['मुफ़्त वर्कशॉप में सीखें (मानद मेंटर)', 'Learn free in workshops (honorary mentors)'],
+            'intro' => ['अनुभवी मानद मेंटर ' . self::HONORARY_PLACE[0] . ' में एक दिन की 4 घंटे की वर्कशॉप में मुफ़्त सिखाते हैं। रजिस्ट्रेशन और वर्कशॉप दोनों मुफ़्त।', 'Experienced honorary mentors teach free in one-day, 4-hour workshops in ' . self::HONORARY_PLACE[1] . '. Registration and workshops are both free.'],
+            'info' => [
+                'title' => ['वर्कशॉप कहाँ और किन स्किल्स की', 'Where and which skills'],
+                'points' => [
+                    ['मुफ़्त स्किल डेवलपमेंट वर्कशॉप केवल ' . self::HONORARY_PLACE[0] . ' में होती हैं – एक दिन, 4 घंटे, स्थान पर (ऑफ़लाइन)।', 'Free skill development workshops are held only in ' . self::HONORARY_PLACE[1] . ' – one day, 4 hours, in person (offline).'],
+                    ['अभी केवल ये स्किल्स: ' . self::honorarySkillList(0) . '।', 'Only these skills for now: ' . self::honorarySkillList(1) . '.'],
+                    ['रजिस्ट्रेशन और वर्कशॉप दोनों मुफ़्त – मेंटर मानद रूप से सिखाते हैं।', 'Registration and workshops are both free – mentors teach honorarily.'],
+                ],
+            ],
+            'sections' => [
+                self::personalSection(['dob' => false, 'aadhaar_required' => false]),
+                self::addressSection(false),
+                [
+                    'title' => ['आप क्या सीखना चाहते हैं', 'What You Want to Learn'],
+                    'fields' => [
+                        self::checkboxes('honor_skills', ['आप क्या सीखना चाहते हैं (' . self::HONORARY_PLACE[0] . ' में)', 'What you want to learn (in ' . self::HONORARY_PLACE[1] . ')'], self::HONORARY_SKILLS, true),
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['रजिस्ट्रेशन और वर्कशॉप मुफ़्त हैं – कोई मेंटर पैसे माँगे तो gm@jobsence.com पर बताएँ।', 'Registration and workshops are free – report any mentor who asks for money to gm@jobsence.com.'],
+                ['मैं सहमत हूँ कि जिस वर्कशॉप में मैं जुड़ूँ उसका मेंटर मेरा नाम और संपर्क देख सके।', 'I agree that the mentor of a workshop I join can see my name and contact details.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['/honorary-mentorship पर आने वाली वर्कशॉप देखें और मुफ़्त जुड़ें।', 'See upcoming workshops on /honorary-mentorship and join free.'],
+            ],
+        ];
+    }
+
     /** Employers pay (user, 2026-10-06): free board posts beyond FreeJobPost::FREE_POSTS_PER_MONTH cost ₹200 + 18% GST each. */
     private static function extraJobPost(): array
     {

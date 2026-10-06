@@ -147,6 +147,11 @@ $router->get('/jobs', [CandidateJobController::class, 'index']);
 // See Jobs in India – Govt / Railways / Army / Police / PSU / company notifications (full view needs Jobs Pass)
 $router->get('/india-jobs', [\App\Controllers\Front\IndiaJobsController::class, 'index']);
 // Jobs by state & city (A–Z) + free job posting for companies (employer account, no fee)
+// Honorary Mentorship – free one-day 4-hour workshops in Dwarka (mentors pay a half-yearly platform fee)
+$router->get('/honorary-mentorship', [\App\Controllers\Front\HonoraryController::class, 'index']);
+$router->get('/honorary-mentorship/join/{id}', [\App\Controllers\Front\HonoraryController::class, 'join']);
+$router->post('/honorary-mentorship/workshop', [\App\Controllers\Front\HonoraryController::class, 'add'], [$formRateLimit, $csrfMiddleware]);
+$router->post('/honorary-mentorship/workshop/{id}/cancel', [\App\Controllers\Front\HonoraryController::class, 'cancel'], [$csrfMiddleware]);
 $router->get('/newsletter/unsubscribe', [\App\Controllers\Front\NewsletterController::class, 'unsubscribe']);
 $router->get('/jobsence-in/{country}', [\App\Controllers\Front\CountryPagesController::class, 'show']);
 $router->get('/jobs-by-state', [\App\Controllers\Front\StateJobsController::class, 'index']);
