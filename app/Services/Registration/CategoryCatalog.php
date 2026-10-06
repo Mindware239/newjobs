@@ -18,7 +18,9 @@ class CategoryCatalog
     public static function all(): array
     {
         $cache = self::cachePath();
-        if (is_file($cache) && filemtime($cache) > time() - self::TTL) {
+        // Rebuild when the cache is old or a category file was added / edited after it was written.
+        $newest = max(array_map('filemtime', glob(__DIR__ . '/../../../resources/data/categories/*.php') ?: [__FILE__]));
+        if (is_file($cache) && filemtime($cache) > time() - self::TTL && filemtime($cache) >= $newest) {
             $list = json_decode((string)file_get_contents($cache), true);
             if (is_array($list) && $list) {
                 return $list;

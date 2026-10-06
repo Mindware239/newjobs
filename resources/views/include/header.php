@@ -614,7 +614,7 @@ window.MWMarketing = (function(){
                 
                 <!-- Header: Logo & Close -->
                 <div class="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
-                     <img src="<?php echo $base; ?>uploads/jobsence.png" alt="jobsence" class="h-8 w-auto">
+                     <a href="<?php echo $base; ?>" aria-label="Jobsence home"><img src="<?php echo $base; ?>uploads/jobsence.png" alt="Jobsence" class="h-8 w-auto"></a>
                      <button @click="mobileMenuOpen = false" class="p-2 -mr-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                      </button>

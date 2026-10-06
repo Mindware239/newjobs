@@ -30,7 +30,7 @@ $sdProviders = [
             <<?= $sdButtonsHeadingTag ?> style="font-size:clamp(1.7rem,4.5vw,2.7rem);font-weight:900;margin:0 0 6px">Jobsence – <?= Lang::t('भारत का Job Portal', 'India’s Job Portal') ?></<?= $sdButtonsHeadingTag ?>>
             <p style="font-size:1.15rem;font-weight:800;color:#f05537;margin:0 0 6px">भारत को कुशल बनाने की Jobsence पहल</p>
             <div style="margin:14px 0"><?php $youngIndiaBanner(); ?></div>
-            <p style="margin:0 0 10px;font-weight:800;color:#3730a3;text-align:center">🤝 <?= Lang::t('Jobsence इनके लिए खुला है:', 'Jobsence is open for:') ?> <?= htmlspecialchars(implode(' · ', array_keys(FormRegistry::OPEN_COUNTRIES)), ENT_QUOTES, 'UTF-8') ?></p>
+            <?php $clStyle = 'text-align:center;margin:0 0 10px'; require dirname(__DIR__, 2) . '/include/_country_links.php'; ?>
             <nav aria-label="All categories" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 12px">
                 <?php foreach ([
                     ['/categories/skills', '🎓', ['सभी स्किल', 'All skills']],

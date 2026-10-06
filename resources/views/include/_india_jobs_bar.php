@@ -16,7 +16,9 @@ $ijItems = $ijTicker
     : array_map(static fn($l) => ['/india-jobs', $l], $ijFallback);
 ?>
 <style>
-.ijbar { position: relative; z-index: 11; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px; background: #111827; color: #fff; font-size: 13px; overflow: hidden; }
+.ijbar { position: relative; z-index: 11; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; padding: 8px 12px 6px; background: #111827; color: #fff; font-size: 13px; overflow: hidden; }
+.ijbar-main { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; width: 100%; }
+.ijbar-main a { font-size: 15px; padding: 7px 16px !important; letter-spacing: .2px; }
 .ijbar-cta { flex: none; display: inline-flex; align-items: center; gap: 7px; font-weight: 900; color: #fff !important; text-decoration: none; background: #dc2626; padding: 4px 10px; border-radius: 999px; animation: ijbarBlink 1.2s steps(2, start) infinite; }
 .ijbar-cta:hover { background: #f05537; animation-play-state: paused; }
 .ijbar-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
@@ -28,7 +30,7 @@ $ijItems = $ijTicker
 .ijbar-flag { display: inline-block; width: 16px; height: 11px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.2); background: linear-gradient(#FF9933 0 33%, #fff 33% 66%, #138808 66%); }
 @media (prefers-reduced-motion: reduce) { .ijbar-yi { animation: none; } }
 @media (max-width: 520px) { .ijbar-yi .l { display: none; } }
-.ijbar-track { flex: 1; min-width: 0; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+.ijbar-track { flex: 1 1 100%; min-width: 0; overflow: hidden; height: 22px; line-height: 22px; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
 .ijbar-run { display: inline-flex; gap: 28px; white-space: nowrap; animation: ijbarRun 60s linear infinite; padding-left: 100%; }
 .ijbar-track:hover .ijbar-run { animation-play-state: paused; }
 .ijbar-run a { color: #e5e7eb !important; text-decoration: none; }
@@ -36,13 +38,15 @@ $ijItems = $ijTicker
 .ijbar-run a::before { content: "●"; color: #f05537; margin-right: 8px; font-size: 10px; }
 @keyframes ijbarRun { to { transform: translateX(-100%); } }
 @media (prefers-reduced-motion: reduce) { .ijbar-cta, .ijbar-run { animation: none; } .ijbar-run { padding-left: 0; } }
-@media (max-width: 480px) { .ijbar { font-size: 12px; padding: 0 8px; } }
+@media (max-width: 480px) { .ijbar { font-size: 12px; padding: 6px 8px 4px; } .ijbar-main a { font-size: 13px; padding: 6px 11px !important; } }
 </style>
 <div class="ijbar" role="region" aria-label="See Jobs in India">
+    <div class="ijbar-main">
     <a class="ijbar-cta" href="/india-jobs"><span class="ijbar-dot" aria-hidden="true"></span><?= $ijHi ? 'भारत की नौकरियाँ देखें' : 'See Jobs in India' ?></a>
     <a class="ijbar-yi" href="/mentoring"><span class="ijbar-flag" aria-hidden="true"></span> <span class="l"><?= $ijHi ? 'युवा भारत मेंटरिंग' : 'Young India Mentoring' ?></span></a>
     <a class="ijbar-near" href="/jobs-by-state" style="background:#f59e0b">📍 <?= $ijHi ? 'राज्य अनुसार नौकरियाँ' : 'Jobs by State A–Z' ?></a>
     <a class="ijbar-near" href="/near-me">📍 <?= $ijHi ? 'मेरे पास सेवा' : 'Near Me' ?></a>
+    </div>
     <div class="ijbar-track">
         <div class="ijbar-run">
             <?php foreach ($ijItems as [$u, $label]): ?>

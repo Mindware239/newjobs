@@ -63,6 +63,7 @@ class FeedFetcher
                 'upsc' => UpscFetcher::listings($body, $url),
                 'icsil' => IcsilFetcher::listings($body, $url),
                 'govtlist' => GovtListFetcher::listings($body, $url),
+                'htmllinks' => GovtListFetcher::genericLinks($body, $url, $source),
                 default => self::parseXml($body),
             };
             $counts = ['new' => 0, 'updated' => 0, 'skipped' => 0];
@@ -73,7 +74,7 @@ class FeedFetcher
                 }
                 // Official sites often publish one feed for all news: keep only recruitment items
                 // (the Employment News table and UPSC advertisements / examinations list only vacancies).
-                if (!in_array($type, ['employmentnews', 'upsc', 'icsil', 'govtlist'], true) && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
+                if (!in_array($type, ['employmentnews', 'upsc', 'icsil', 'govtlist', 'htmllinks'], true) && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
                     $skipped++;
                     continue;
                 }
@@ -86,7 +87,7 @@ class FeedFetcher
                 ])]++;
             }
             $status = sprintf('ok: %d items, %d new, %d updated, %d non-recruitment skipped', count($items), $counts['new'], $counts['updated'], $skipped);
-            if ($type === 'govtlist') {
+            if ($type === 'govtlist' || $type === 'htmllinks') {
                 GovtListFetcher::retire((int)$source['id']); // no closing date: hide once too old
             }
             if ($type === 'upsc') {

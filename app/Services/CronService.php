@@ -62,6 +62,10 @@ class CronService
             case 'notify_low_match_suggestions':
                 $this->notifyLowMatchSuggestions();
                 break;
+            case 'monthly_newsletter':
+                // Run hourly: sends this month's issue to paid members in batches (see NewsletterService).
+                echo \App\Services\NewsletterService::runMonthly() . "\n";
+                break;
             case 'india_jobs_fetch':
                 foreach (\App\Services\IndiaJobs\FeedFetcher::runDue() as $line) {
                     echo $line . "\n";

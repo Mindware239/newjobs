@@ -173,6 +173,106 @@ class GovtListFetcher
         return $items;
     }
 
+    private const GENERIC_KEEP = '/recruit|vacanc|advertis|advt|notification|walk[\s-]?in|engagement of|appointment of|posts? of|hiring|openings?|bharti|भर्ती|रिक्ति|विज्ञापन|विज्ञप्ति|नियुक्ति/iu';
+    private const GENERIC_DROP = '/result|admit card|answer key|syllabus|tender|auction|e-?auction|quotation|interview schedule|merit list|selection list|selected candidates|provisionally selected|shortlist|final result|marks of|score card|cut.?off|corrigendum to tender|\brti\b|annual report|परिणाम|चयन सूची/iu';
+
+    /**
+     * Any job page an admin adds (feed_type 'htmllinks'): every table row / list item whose text reads like a
+     * recruitment notice and that has a link becomes a listing, with a date taken from the row when one is shown.
+     * Undated items get their first-seen date and the note "date not shown on the official page".
+     */
+    public static function genericLinks(string $html, string $pageUrl, array $source): array
+    {
+        $html = (string)preg_replace('#<(script|style|nav|header|footer)\b.*?</\1>#is', ' ', $html);
+        if (!preg_match_all('#<(tr|li)\b[^>]*>(.*?)</\1>#is', $html, $blocks, PREG_SET_ORDER)) {
+            return [];
+        }
+        $items = [];
+        $seen = [];
+        $cutoff = strtotime('-' . self::MAX_AGE_DAYS . ' days');
+        foreach ($blocks as $b) {
+            $inner = $b[2];
+            if (substr_count($inner, '<' . $b[1]) > 0 || !preg_match('#<a\s[^>]*href="([^"\#][^"]*)"[^>]*>(.*?)</a>#is', $inner, $a)) {
+                continue; // nested lists / rows without a link
+            }
+            $text = self::text($inner);
+            $anchor = self::text($a[2]);
+            $title = mb_strlen($anchor) >= 15 ? $anchor : $text;
+            $title = trim((string)preg_replace('/\s*(click here|view|download|details|read more|new)\s*$/i', '', $title));
+            if (mb_strlen($title) < 12 || mb_strlen($title) > 400 || !preg_match(self::GENERIC_KEEP, $title . ' ' . $text) || preg_match(self::GENERIC_DROP, $title)) {
+                continue;
+            }
+            $link = self::abs(html_entity_decode($a[1]), $pageUrl);
+            if (!preg_match('#^https?://#i', $link) || isset($seen[$link . '|' . $title])) {
+                continue;
+            }
+            $seen[$link . '|' . $title] = true;
+            $dates = self::datesIn($text);
+            $last = null;
+            if (preg_match('/(last date|closing date|last day|apply (?:by|before)|अंतिम तिथि)[^0-9]{0,40}/iu', $text, $m, PREG_OFFSET_CAPTURE)) {
+                $last = self::datesIn(substr($text, $m[0][1]))[0] ?? null;
+            }
+            $posted = null;
+            foreach ($dates as $d) {
+                if ($d !== $last) {
+                    $posted = $d;
+                    break;
+                }
+            }
+            $posted ??= self::monthFromPath($link);
+            if ($last !== null ? strtotime($last) < strtotime('today') : ($posted !== null && strtotime($posted) < $cutoff)) {
+                continue;
+            }
+            $lines = array_filter([
+                $title,
+                'Organisation: ' . $source['name'],
+                !empty($source['state']) ? 'State: ' . $source['state'] : 'Location: All India',
+                $posted ? 'Posted on: ' . date('d M Y', strtotime($posted)) : 'Date not shown on the official page – first seen on Jobsence ' . date('d M Y'),
+                $last ? 'Last date: ' . date('d M Y', strtotime($last)) : 'Last date: see the official notification',
+                'Read the official notification before applying. Apply only on the official website.',
+            ]);
+            $items[] = [
+                'title' => mb_substr($title, 0, 255),
+                'org_name' => $source['name'],
+                'org_type' => $source['org_type'] ?? 'other',
+                'state' => $source['state'] ?? null,
+                'last_date' => $last,
+                'published_at' => $posted ? $posted . ' 09:00:00' : null,
+                'summary' => mb_substr($title . ' – ' . $source['name'] . '.' . ($last ? ' Last date ' . date('d M Y', strtotime($last)) . '.' : ''), 0, 1000),
+                'details' => implode("\n", $lines),
+                'source_url' => $link,
+                'apply_url' => $source['website'] ?: $link,
+                'guid_hash' => sha1('htmllinks|' . $pageUrl . '|' . $link . '|' . mb_strtolower($title)),
+            ];
+            if (count($items) >= 100) {
+                break;
+            }
+        }
+        return $items;
+    }
+
+    /** Every date in a text, as Y-m-d (dd-mm-yyyy, dd/mm/yyyy, dd.mm.yyyy, yyyy-mm-dd, "5 Oct 2026", "October 5, 2026"). */
+    private static function datesIn(string $text): array
+    {
+        $out = [];
+        if (preg_match_all('/\b(\d{1,2})[-\/.](\d{1,2})[-\/.](20\d\d)\b|\b(20\d\d)-(\d{2})-(\d{2})\b|\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?,?\s+(20\d\d)\b|\b([A-Za-z]{3,9})\s+(\d{1,2}),\s+(20\d\d)\b/', $text, $m, PREG_SET_ORDER)) {
+            foreach ($m as $x) {
+                if (!empty($x[3])) {
+                    $d = checkdate((int)$x[2], (int)$x[1], (int)$x[3]) ? sprintf('%04d-%02d-%02d', $x[3], $x[2], $x[1]) : null;
+                } elseif (!empty($x[4])) {
+                    $d = checkdate((int)$x[5], (int)$x[6], (int)$x[4]) ? sprintf('%04d-%02d-%02d', $x[4], $x[5], $x[6]) : null;
+                } else {
+                    $ts = !empty($x[9]) ? strtotime($x[7] . ' ' . $x[8] . ' ' . $x[9]) : strtotime($x[10] . ' ' . $x[11] . ' ' . $x[12]);
+                    $d = $ts ? date('Y-m-d', $ts) : null;
+                }
+                if ($d !== null && $d >= '2000-01-01') {
+                    $out[] = $d;
+                }
+            }
+        }
+        return $out;
+    }
+
     /** Hide this source's listings that have no closing date once they are MAX_AGE_DAYS old. */
     public static function retire(int $sourceId): void
     {

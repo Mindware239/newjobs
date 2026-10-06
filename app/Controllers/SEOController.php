@@ -309,7 +309,13 @@ class SEOController
 
     public function robots(Request $request, Response $response): void
     {
-        $content = "User-agent: *\n";
+        // AI-training and SEO-scraping crawlers are not welcome (ScraperGuardMiddleware also refuses them).
+        $content = '';
+        foreach (['GPTBot', 'ChatGPT-User', 'CCBot', 'ClaudeBot', 'anthropic-ai', 'Google-Extended', 'PerplexityBot', 'Bytespider', 'Amazonbot',
+                  'PetalBot', 'SemrushBot', 'AhrefsBot', 'MJ12bot', 'DotBot', 'DataForSeoBot', 'BLEXBot', 'Diffbot', 'ImagesiftBot'] as $bot) {
+            $content .= "User-agent: {$bot}\nDisallow: /\n\n";
+        }
+        $content .= "User-agent: *\n";
         $content .= "Allow: /\n";
         $content .= "Disallow: /candidate/\n";
         $content .= "Disallow: /employer/\n";

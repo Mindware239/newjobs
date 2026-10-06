@@ -32,6 +32,7 @@ if (!$task) {
     echo " - notify_expiring_subscriptions\n";
     echo " - registration_payment_reminders (run every 15 minutes)\n";
     echo " - india_jobs_fetch (run every hour – imports enabled Jobs in India feeds)\n";
+    echo " - monthly_newsletter (run every hour – monthly update to paid members, sent in batches)\n";
     exit(1);
 }
 

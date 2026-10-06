@@ -15,6 +15,8 @@ class FreeJobPost
 {
     public const LIVE_DAYS = 30;
     public const MAX_PER_DAY = 10;
+    /** Contact reveals per user per day (contacts are never in the page HTML – see StateJobsController::contact). */
+    public const CONTACTS_PER_DAY = 30;
 
     public const COMPANY_TYPES = [
         'pvt_ltd' => ['प्राइवेट लिमिटेड कंपनी', 'Private Limited Company'],
@@ -84,6 +86,22 @@ class FreeJobPost
         }
     }
 
+    /** Record a contact reveal; false when the user is over today's limit (re-opening the same post is free). */
+    public static function revealContact(int $userId, int $postId): bool
+    {
+        self::ensureSchema();
+        $db = Database::getInstance();
+        if ($db->fetchOne('SELECT id FROM free_job_contact_views WHERE user_id = ? AND post_id = ? AND created_at >= CURDATE()', [$userId, $postId])) {
+            return true;
+        }
+        $n = (int)($db->fetchOne('SELECT COUNT(*) AS n FROM free_job_contact_views WHERE user_id = ? AND created_at >= CURDATE()', [$userId])['n'] ?? 0);
+        if ($n >= self::CONTACTS_PER_DAY) {
+            return false;
+        }
+        $db->execute('INSERT INTO free_job_contact_views (user_id, post_id, ip_address) VALUES (?, ?, ?)', [$userId, $postId, substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45)]);
+        return true;
+    }
+
     public static function countView(int $id): void
     {
         Database::getInstance()->execute('UPDATE free_job_posts SET views = views + 1 WHERE id = ?', [$id]);
@@ -151,6 +169,16 @@ class FreeJobPost
                 PRIMARY KEY (id),
                 KEY idx_fjp_live (status, expires_at, state, city),
                 KEY idx_fjp_user (user_id, created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS free_job_contact_views (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                post_id BIGINT UNSIGNED NOT NULL,
+                ip_address VARCHAR(45) NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY idx_fjcv_user (user_id, created_at),
+                KEY idx_fjcv_post (post_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         }
         $done = true;

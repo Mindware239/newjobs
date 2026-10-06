@@ -307,8 +307,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
 
     <!-- Brand -->
     <div class="brand">
-        <div class="brand-logo"><span>JS</span></div>
-        <h1 class="brand-name">Jobsence</h1>
+        <a href="/" class="brand-logo-link" aria-label="Jobsence home"><img src="/uploads/jobsence.png" alt="Jobsence" style="height:56px;width:auto;display:block;margin:0 auto"></a>
     </div>
 
     <!-- Header -->

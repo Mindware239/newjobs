@@ -17,8 +17,12 @@ use App\Core\Database;
 class ExternalJob
 {
     public const ORG_TYPES = ['railways', 'defence', 'police', 'central_govt', 'state_govt', 'psu', 'bank', 'private', 'other'];
-    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews', 'upsc', 'icsil', 'govtlist'];
-    private const FEED_ENUM = "ENUM('rss','json','manual','employmentnews','upsc','icsil','govtlist') NOT NULL DEFAULT 'manual'";
+    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews', 'upsc', 'icsil', 'govtlist', 'htmllinks'];
+    private const FEED_ENUM = "ENUM('rss','json','manual','employmentnews','upsc','icsil','govtlist','htmllinks') NOT NULL DEFAULT 'manual'";
+
+    /** Job sites the admin adds are re-read every 7 days for 5 years unless set otherwise. */
+    public const ADDED_SITE_EVERY_DAYS = 7;
+    public const ADDED_SITE_YEARS = 5;
 
     /** UPSC Recruitment Advertisements page (PDFs) – the UPSC reader also reads Active Examinations and What's New. */
     public const UPSC_ADVT_URL = 'https://www.upsc.gov.in/recruitment/recruitment-advertisement';
@@ -297,8 +301,9 @@ class ExternalJob
     {
         self::ensureSchema();
         return Database::getInstance()->fetchAll(
-            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews','upsc','icsil','govtlist') AND feed_url IS NOT NULL AND feed_url <> ''
-               AND (last_fetched_at IS NULL OR last_fetched_at < NOW() - INTERVAL 50 MINUTE)
+            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews','upsc','icsil','govtlist','htmllinks') AND feed_url IS NOT NULL AND feed_url <> ''
+               AND (crawl_until IS NULL OR crawl_until >= CURDATE())
+               AND (last_fetched_at IS NULL OR last_fetched_at < NOW() - INTERVAL IF(crawl_every_days > 0, crawl_every_days * 1440 - 10, 50) MINUTE)
              ORDER BY last_fetched_at IS NOT NULL, last_fetched_at ASC LIMIT " . (int)$limit
         );
     }
@@ -316,6 +321,11 @@ class ExternalJob
             'feed_type' => in_array($s['feed_type'] ?? '', self::FEED_TYPES, true) ? $s['feed_type'] : 'manual',
             'enabled' => !empty($s['enabled']) ? 1 : 0,
             'kind' => in_array($s['kind'] ?? '', self::KINDS, true) ? $s['kind'] : 'job',
+            // How often to re-read the site (0 = every hour) and until when (empty = no end).
+            'crawl_every_days' => max(0, min(365, (int)($s['crawl_every_days'] ?? ($id ? 0 : self::ADDED_SITE_EVERY_DAYS)))),
+            'crawl_until' => !empty($s['crawl_until']) && strtotime((string)$s['crawl_until'])
+                ? date('Y-m-d', strtotime((string)$s['crawl_until']))
+                : ($id ? null : date('Y-m-d', strtotime('+' . self::ADDED_SITE_YEARS . ' years'))),
         ];
         if ($id) {
             $set = implode(', ', array_map(static fn($k) => "$k = ?", array_keys($cols)));
@@ -449,7 +459,8 @@ class ExternalJob
 
         // Older installs: add the columns introduced later.
         foreach ([
-            'external_job_sources' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'suggested_feed' => 'VARCHAR(500) NULL', 'checked_at' => 'DATETIME NULL'],
+            'external_job_sources' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'suggested_feed' => 'VARCHAR(500) NULL', 'checked_at' => 'DATETIME NULL',
+                'crawl_every_days' => 'SMALLINT UNSIGNED NOT NULL DEFAULT 0', 'crawl_until' => 'DATE NULL'],
             'external_jobs' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'pdf_path' => 'VARCHAR(255) NULL', 'is_featured' => 'TINYINT(1) NOT NULL DEFAULT 0'],
         ] as $table => $cols) {
             foreach ($cols as $col => $def) {
@@ -468,7 +479,7 @@ class ExternalJob
             $ft = Database::getInstance()->fetchOne(
                 "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'external_job_sources' AND COLUMN_NAME = 'feed_type'"
             );
-            if ($ft && !str_contains((string)$ft['t'], "'govtlist'")) {
+            if ($ft && !str_contains((string)$ft['t'], "'htmllinks'")) {
                 $pdo->exec('ALTER TABLE external_job_sources MODIFY feed_type ' . self::FEED_ENUM);
             }
         } catch (\Throwable $e) {

@@ -49,7 +49,7 @@ $applyUrl = static fn(string $country, string $role = '') => '/apply/internation
 
     <section class="sd-section" style="padding-top:18px">
         <div class="sd-wrap">
-            <p style="margin:0 0 14px;font-weight:800;color:#3730a3">🤝 <?= $t('Jobsence इनके लिए खुला है:', 'Jobsence is open for:') ?> <?= $h(implode(' · ', array_keys(FormRegistry::OPEN_COUNTRIES))) ?></p>
+            <?php $clStyle = 'margin:0 0 14px'; require dirname(__DIR__, 2) . '/include/_country_links.php'; ?>
             <?php if ($level === 'all'): ?>
                 <h2 style="font-size:1.15rem"><?= $t('लोकप्रिय देश', 'Top destinations') ?></h2>
                 <div class="ja-grid">

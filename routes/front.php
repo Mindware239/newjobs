@@ -147,11 +147,14 @@ $router->get('/jobs', [CandidateJobController::class, 'index']);
 // See Jobs in India – Govt / Railways / Army / Police / PSU / company notifications (full view needs Jobs Pass)
 $router->get('/india-jobs', [\App\Controllers\Front\IndiaJobsController::class, 'index']);
 // Jobs by state & city (A–Z) + free job posting for companies (employer account, no fee)
+$router->get('/newsletter/unsubscribe', [\App\Controllers\Front\NewsletterController::class, 'unsubscribe']);
+$router->get('/jobsence-in/{country}', [\App\Controllers\Front\CountryPagesController::class, 'show']);
 $router->get('/jobs-by-state', [\App\Controllers\Front\StateJobsController::class, 'index']);
 $router->get('/jobs-by-state/{state}', [\App\Controllers\Front\StateJobsController::class, 'state']);
 $router->get('/post-job-free', [\App\Controllers\Front\StateJobsController::class, 'postForm']);
 $router->post('/post-job-free', [\App\Controllers\Front\StateJobsController::class, 'postSave'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/free-job/{id}/close', [\App\Controllers\Front\StateJobsController::class, 'close'], [$csrfMiddleware]);
+$router->post('/free-job/{id}/contact', [\App\Controllers\Front\StateJobsController::class, 'contact'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/free-job/{id}', [\App\Controllers\Front\StateJobsController::class, 'show']);
 $router->get('/india-jobs/{id}', [\App\Controllers\Front\IndiaJobsController::class, 'show']);
 

@@ -15,6 +15,7 @@ use App\Core\Router;
 use App\Middlewares\CorsMiddleware;
 use App\Middlewares\CsrfMiddleware;
 use App\Middlewares\RateLimitMiddleware;
+use App\Middlewares\ScraperGuardMiddleware;
 
 try {
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
@@ -92,6 +93,7 @@ try {
 
     $app = new Application();
 
+    $app->addMiddleware(new ScraperGuardMiddleware()); // scraper tools / AI crawlers, per-IP page limits
     $app->addMiddleware(new CorsMiddleware());
     $app->addMiddleware(new CsrfMiddleware());
     $app->addMiddleware(new RateLimitMiddleware());

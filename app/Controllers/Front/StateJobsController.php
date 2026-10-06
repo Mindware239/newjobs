@@ -168,6 +168,26 @@ class StateJobsController extends BaseController
         $response->view('front/state-jobs/show', ['post' => $post, 'mine' => $mine, 'live' => $live, 'flash' => $flash], 200, 'layout');
     }
 
+    /** POST /free-job/{id}/contact – phone / email of a live post, for logged-in users within the daily limit. */
+    public function contact(Request $request, Response $response): void
+    {
+        $post = FreeJobPost::find((int)$request->param('id'));
+        if (!$post || $post['status'] !== 'live' || strtotime((string)$post['expires_at']) <= time()) {
+            $response->json(['success' => false, 'error' => 'यह नौकरी अब उपलब्ध नहीं है / This job is no longer available'], 404);
+            return;
+        }
+        if (!$this->currentUser) {
+            $response->json(['success' => false, 'login' => '/login/job-seeker?redirect=' . rawurlencode(FreeJobPost::url($post)),
+                'error' => 'संपर्क देखने के लिए लॉगिन करें / Log in to see the contact'], 401);
+            return;
+        }
+        if (!FreeJobPost::revealContact((int)$this->currentUser->id, (int)$post['id'])) {
+            $response->json(['success' => false, 'error' => 'आज की सीमा (' . FreeJobPost::CONTACTS_PER_DAY . ' संपर्क) पूरी – कल फिर देखें / Daily limit of ' . FreeJobPost::CONTACTS_PER_DAY . ' contacts reached – try again tomorrow'], 429);
+            return;
+        }
+        $response->json(['success' => true, 'phone' => (string)$post['phone'], 'email' => (string)$post['email']]);
+    }
+
     /** POST /free-job/{id}/close – the poster (or admin) closes a post. */
     public function close(Request $request, Response $response): void
     {

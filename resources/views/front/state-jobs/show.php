@@ -51,11 +51,38 @@ $posting = [
                 <?php if ($live): ?>
                     <h2 style="font-size:1.1rem;margin-top:16px"><?= $t('आवेदन कैसे करें', 'How to apply') ?></h2>
                     <?php if ($p['how_to_apply']): ?><p><?= $h($p['how_to_apply']) ?></p><?php endif; ?>
-                    <div class="sd-cta-row">
-                        <?php if ($p['phone']): ?><a class="sd-btn" href="tel:+91<?= $h($p['phone']) ?>">📞 <?= $h($p['phone']) ?></a>
-                            <a class="sd-btn ghost" href="https://wa.me/91<?= $h($p['phone']) ?>" target="_blank" rel="noopener nofollow">WhatsApp</a><?php endif; ?>
-                        <?php if ($p['email']): ?><a class="sd-btn ghost" href="mailto:<?= $h($p['email']) ?>?subject=<?= rawurlencode('Application: ' . $p['title']) ?>">✉️ <?= $h($p['email']) ?></a><?php endif; ?>
+                    <?php // Phone / email are not in the page (scrapers): fetched after a click, for logged-in users. ?>
+                    <div class="sd-cta-row" id="fj-contact" data-url="/free-job/<?= (int)$p['id'] ?>/contact" data-title="<?= $h($p['title']) ?>" data-token="<?= $h($_SESSION['csrf_token'] ?? '') ?>">
+                        <button type="button" class="sd-btn" id="fj-show">📞 <?= $tb('संपर्क देखें', 'Show contact') ?></button>
                     </div>
+                    <p id="fj-msg" style="font-size:.85rem;color:#4b5563;margin:6px 0 0"><?= $t('लॉगिन करके संपर्क देखें – मुफ़्त।', 'Log in to see the contact – free.') ?></p>
+                    <script>
+                    (function () {
+                        var box = document.getElementById('fj-contact'), btn = document.getElementById('fj-show'), msg = document.getElementById('fj-msg');
+                        var meta = document.querySelector('meta[name="csrf-token"]'), token = (meta && meta.content) || box.dataset.token;
+                        function link(href, text, ghost) {
+                            var a = document.createElement('a'); a.className = 'sd-btn' + (ghost ? ' ghost' : ''); a.href = href; a.textContent = text;
+                            if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener nofollow'; }
+                            return a;
+                        }
+                        btn.addEventListener('click', function () {
+                            btn.disabled = true;
+                            fetch(box.dataset.url, { method: 'POST', credentials: 'same-origin',
+                                headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': token },
+                                body: '_token=' + encodeURIComponent(token) })
+                                .then(function (r) { return r.json(); })
+                                .then(function (d) {
+                                    if (d.login) { window.location.href = d.login; return; }
+                                    if (!d.success) { msg.textContent = d.error || 'Error'; btn.disabled = false; return; }
+                                    box.innerHTML = '';
+                                    if (d.phone) { box.appendChild(link('tel:+91' + d.phone, '📞 ' + d.phone)); box.appendChild(link('https://wa.me/91' + d.phone, 'WhatsApp', true)); }
+                                    if (d.email) { box.appendChild(link('mailto:' + d.email + '?subject=' + encodeURIComponent('Application: ' + box.dataset.title), '✉️ ' + d.email, true)); }
+                                    msg.textContent = '';
+                                })
+                                .catch(function () { msg.textContent = 'Network error – please retry'; btn.disabled = false; });
+                        });
+                    })();
+                    </script>
                 <?php endif; ?>
             </article>
             <div class="ij-note"><?= $t(
