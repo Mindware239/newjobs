@@ -44,6 +44,9 @@ $row = static function (string $hi, string $en, $value) use ($t, $h): void {
                         <?php if ($job['apply_url']): ?>
                             <a class="sd-btn" href="<?= $h($job['apply_url']) ?>" target="_blank" rel="noopener nofollow"><?= $tb('आधिकारिक वेबसाइट पर आवेदन करें ↗', 'Apply on the official website ↗') ?></a>
                         <?php endif; ?>
+                        <?php if (!empty($job['pdf_path']) && is_file(dirname(__DIR__, 4) . '/' . $job['pdf_path'])): ?>
+                            <a class="sd-btn ghost" href="/<?= $h($job['pdf_path']) ?>" target="_blank" rel="noopener" download><?= $tb('अधिसूचना PDF डाउनलोड करें', 'Download notification PDF') ?></a>
+                        <?php endif; ?>
                         <?php if ($job['source_url'] && $job['source_url'] !== $job['apply_url']): ?>
                             <a class="sd-btn ghost" href="<?= $h($job['source_url']) ?>" target="_blank" rel="noopener nofollow"><?= $tb('आधिकारिक सूचना ↗', 'Official notification ↗') ?></a>
                         <?php endif; ?>

@@ -11,7 +11,8 @@ use App\Models\ExternalJob;
  * organisations publish, and stores them as "Jobs in India" listings.
  *
  * Rules kept on purpose:
- *  - only feeds an admin has added and enabled (no crawling or scraping of HTML pages);
+ *  - only feeds an admin has added and enabled; HTML pages are read only for the official
+ *    Employment News table and UPSC (advertisements, examinations, What's New – see UpscFetcher);
  *  - robots.txt is honoured, one polite request per source per run, identified user agent;
  *  - public http(s) hosts only (no private / loopback addresses – SSRF guard);
  *  - every listing keeps the official source link; full text stays a short summary.
@@ -19,6 +20,9 @@ use App\Models\ExternalJob;
 class FeedFetcher
 {
     private const UA = 'JobsenceBot/1.0 (+https://jobsence.com/india-jobs; gm@jobsence.com)';
+    /** Hosts whose firewall rejects the full agent string (brackets / contact): still identified as Jobsence. */
+    private const SHORT_UA_HOSTS = ['upsc.gov.in', 'www.upsc.gov.in'];
+    private const SHORT_UA = 'Jobsence/1.0 jobsence.com';
     private const MAX_BYTES = 3_000_000;
     private const MAX_ITEMS = 200;
 
@@ -55,6 +59,7 @@ class FeedFetcher
             $items = match ($type) {
                 'json' => self::parseJson($body),
                 'employmentnews' => self::parseEmploymentNews($body, $url),
+                'upsc' => UpscFetcher::listings($body, $url),
                 default => self::parseXml($body),
             };
             $counts = ['new' => 0, 'updated' => 0, 'skipped' => 0];
@@ -64,8 +69,8 @@ class FeedFetcher
                     continue;
                 }
                 // Official sites often publish one feed for all news: keep only recruitment items
-                // (the Employment News table lists only vacancies).
-                if ($type !== 'employmentnews' && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
+                // (the Employment News table and UPSC advertisements / examinations list only vacancies).
+                if (!in_array($type, ['employmentnews', 'upsc'], true) && !self::isRecruitment($item['title'] . ' ' . mb_substr($item['summary'], 0, 300))) {
                     $skipped++;
                     continue;
                 }
@@ -78,6 +83,9 @@ class FeedFetcher
                 ])]++;
             }
             $status = sprintf('ok: %d items, %d new, %d updated, %d non-recruitment skipped', count($items), $counts['new'], $counts['updated'], $skipped);
+            if ($type === 'upsc') {
+                $status .= sprintf(', %d new notices', UpscFetcher::notices((int)$source['id']));
+            }
             ExternalJob::markFetched((int)$source['id'], $status, count($items));
             return $status;
         } catch (\Throwable $e) {
@@ -419,7 +427,7 @@ class FeedFetcher
     }
 
     /** @return array{0:int,1:string} */
-    private static function get(string $url, int $maxBytes = self::MAX_BYTES): array
+    public static function get(string $url, int $maxBytes = self::MAX_BYTES): array
     {
         // Follow redirects by hand so every hop passes the public-host check.
         for ($hop = 0; $hop < 4; $hop++) {
@@ -447,8 +455,8 @@ class FeedFetcher
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
             CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_TIMEOUT => 20,
-            CURLOPT_USERAGENT => self::UA,
+            CURLOPT_TIMEOUT => $maxBytes > self::MAX_BYTES ? 90 : 20, // official PDFs can be several MB
+            CURLOPT_USERAGENT => in_array(strtolower((string)parse_url($url, PHP_URL_HOST)), self::SHORT_UA_HOSTS, true) ? self::SHORT_UA : self::UA,
             CURLOPT_HTTPHEADER => ['Accept: application/rss+xml, application/atom+xml, application/json, text/xml;q=0.9, */*;q=0.5'],
             CURLOPT_WRITEFUNCTION => static function ($ch, string $chunk) use (&$body, $maxBytes): int {
                 $body .= $chunk;

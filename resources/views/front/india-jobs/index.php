@@ -91,6 +91,30 @@ require __DIR__ . '/_styles.php';
                 </div>
             <?php endif; ?>
 
+            <?php if (!empty($notices)): ?>
+                <h2 style="font-size:1.2rem;margin:28px 0 10px"><?= $tb('ताज़ा सरकारी सूचनाएँ – परिणाम, परीक्षा, साक्षात्कार', 'Latest Govt notices – results, tests, interviews') ?></h2>
+                <div class="ij-list">
+                    <?php foreach ($notices as $n): ?>
+                        <article class="ij-job">
+                            <div class="ij-job-top">
+                                <span class="ij-badge t-central_govt"><?= $n['doc_type'] ? $h($n['doc_type']) : $t('सूचना', 'Notice') ?></span>
+                                <?php if ($n['published_at']): ?><span class="ij-date"><?= $h(date('d M Y', strtotime((string)$n['published_at']))) ?></span><?php endif; ?>
+                            </div>
+                            <h2 style="font-size:1rem"><?= $h($n['title']) ?></h2>
+                            <div class="ij-org"><?= $h($n['source_name'] ?: 'Govt of India') ?></div>
+                            <?php if ($unlocked): ?>
+                                <?php foreach (array_slice($n['documents'], 0, 3) as $d): ?>
+                                    <a class="ij-more" href="<?= $h($d['local'] ? '/' . $d['local'] : $d['url']) ?>" target="_blank" rel="noopener nofollow">📄 <?= $h($d['label']) ?></a>
+                                <?php endforeach; ?>
+                                <?php if ($n['page_url']): ?><a class="ij-more" href="<?= $h($n['page_url']) ?>" target="_blank" rel="noopener nofollow"><?= $tb('आधिकारिक सूचना ↗', 'Official notice ↗') ?></a><?php endif; ?>
+                            <?php else: ?>
+                                <span class="ij-more">🔒 <?= $tb('PDF के लिए Jobs Pass', 'Jobs Pass for the PDF') ?></span>
+                            <?php endif; ?>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
             <?php if ($employerJobs): ?>
                 <h2 style="font-size:1.2rem;margin:28px 0 10px"><?= $tb('Jobsence पर कंपनियों की ताज़ा नौकरियाँ (मुफ़्त)', 'Latest jobs posted by companies on Jobsence (free)') ?></h2>
                 <div class="ij-list">

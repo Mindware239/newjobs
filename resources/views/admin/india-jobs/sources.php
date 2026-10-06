@@ -31,7 +31,7 @@ $kinds = ['job' => 'Job', 'internship' => 'Internship', 'skill' => 'Skill develo
             <select class="<?= $input ?>" name="state"><option value="">All India</option><?php foreach ($states as $st): ?><option value="<?= $h($st) ?>"><?= $h($st) ?></option><?php endforeach; ?></select>
             <input class="<?= $input ?> md:col-span-2" name="website" placeholder="https://official-website">
             <input class="<?= $input ?> md:col-span-4" name="feed_url" placeholder="Feed URL (optional) – https://…/rss.xml">
-            <select class="<?= $input ?>" name="feed_type"><option value="rss">RSS / Atom</option><option value="json">JSON</option><option value="employmentnews">Employment News table</option></select>
+            <select class="<?= $input ?>" name="feed_type"><option value="rss">RSS / Atom</option><option value="json">JSON</option><option value="employmentnews">Employment News table</option><option value="upsc">UPSC website</option></select>
             <select class="<?= $input ?>" name="kind"><?php foreach ($kinds as $k => $l): ?><option value="<?= $h($k) ?>"><?= $h($l) ?></option><?php endforeach; ?></select>
             <button type="submit" class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white">Add source</button>
         </form>
@@ -59,7 +59,7 @@ $kinds = ['job' => 'Job', 'internship' => 'Internship', 'skill' => 'Skill develo
                     <?php endif; ?>
                 </div>
                 <select class="<?= $input ?>" name="kind"><?php foreach ($kinds as $k => $l): ?><option value="<?= $h($k) ?>" <?= ($s['kind'] ?? 'job') === $k ? 'selected' : '' ?>><?= $h($l) ?></option><?php endforeach; ?></select>
-                <select class="<?= $input ?>" name="feed_type"><option value="rss" <?= $s['feed_type'] === 'rss' ? 'selected' : '' ?>>RSS / Atom</option><option value="json" <?= $s['feed_type'] === 'json' ? 'selected' : '' ?>>JSON</option><option value="manual" <?= $s['feed_type'] === 'manual' ? 'selected' : '' ?>>Manual only</option><option value="employmentnews" <?= $s['feed_type'] === 'employmentnews' ? 'selected' : '' ?>>Employment News table</option></select>
+                <select class="<?= $input ?>" name="feed_type"><option value="rss" <?= $s['feed_type'] === 'rss' ? 'selected' : '' ?>>RSS / Atom</option><option value="json" <?= $s['feed_type'] === 'json' ? 'selected' : '' ?>>JSON</option><option value="manual" <?= $s['feed_type'] === 'manual' ? 'selected' : '' ?>>Manual only</option><option value="employmentnews" <?= $s['feed_type'] === 'employmentnews' ? 'selected' : '' ?>>Employment News table</option><option value="upsc" <?= $s['feed_type'] === 'upsc' ? 'selected' : '' ?>>UPSC website</option></select>
                 <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><input type="checkbox" name="enabled" value="1" <?= $s['enabled'] ? 'checked' : '' ?>> Auto-fetch</label>
                 <div class="flex gap-2">
                     <button type="submit" class="rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white">Save</button>

@@ -46,6 +46,7 @@ class IndiaJobsController extends BaseController
             'filters' => $filters,
             'counts' => ExternalJob::countsByType(),
             'employerJobs' => $page === 1 && $filters['type'] === '' && $filters['kind'] === '' ? $this->employerJobs() : [],
+            'notices' => $page === 1 && $filters['kind'] === '' && $filters['q'] === '' && in_array($filters['type'], ['', 'central_govt'], true) ? ExternalJob::latestNotices(8) : [],
             'kinds' => [
                 'job' => ['नौकरियाँ', 'Jobs'],
                 'internship' => ['इंटर्नशिप', 'Internships'],

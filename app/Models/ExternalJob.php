@@ -11,12 +11,17 @@ use App\Core\Database;
  * State Govts, PSUs, banks, large companies) through their published RSS / Atom / JSON feeds,
  * or added by the Jobsence admin team. Every listing keeps a link to its official source.
  *
- * Tables: external_job_sources (where we read from) and external_jobs (the listings).
+ * Tables: external_job_sources (where we read from), external_jobs (the listings) and
+ * external_notices (official notices that are not openings – results, tests, interviews).
  */
 class ExternalJob
 {
     public const ORG_TYPES = ['railways', 'defence', 'police', 'central_govt', 'state_govt', 'psu', 'bank', 'private', 'other'];
-    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews'];
+    public const FEED_TYPES = ['rss', 'json', 'manual', 'employmentnews', 'upsc'];
+    private const FEED_ENUM = "ENUM('rss','json','manual','employmentnews','upsc') NOT NULL DEFAULT 'manual'";
+
+    /** UPSC Recruitment Advertisements page (PDFs) – the UPSC reader also reads Active Examinations and What's New. */
+    public const UPSC_ADVT_URL = 'https://www.upsc.gov.in/recruitment/recruitment-advertisement';
 
     /** Employment News (Govt of India) "All Jobs" table – read hourly, new issue weekly. */
     public const EMPLOYMENT_NEWS_URL = 'https://employmentnews.gov.in/newemp/AllJobs.aspx?k=All';
@@ -154,11 +159,12 @@ class ExternalJob
         self::ensureSchema();
         $db = Database::getInstance();
         $hash = $job['guid_hash'] ?? sha1((string)($job['source_url'] ?: $job['title'] . '|' . $job['org_name']));
-        $existing = $db->fetchOne('SELECT id, title, summary, last_date FROM external_jobs WHERE guid_hash = ?', [$hash]);
+        $existing = $db->fetchOne('SELECT id, title, summary, details, last_date, pdf_path FROM external_jobs WHERE guid_hash = ?', [$hash]);
         $cols = self::columns($job);
 
         if ($existing) {
-            if ($existing['title'] === $cols['title'] && (string)$existing['summary'] === (string)$cols['summary'] && (string)$existing['last_date'] === (string)$cols['last_date']) {
+            if ($existing['title'] === $cols['title'] && (string)$existing['summary'] === (string)$cols['summary'] && (string)$existing['last_date'] === (string)$cols['last_date']
+                && (string)$existing['details'] === (string)$cols['details'] && (string)$existing['pdf_path'] === (string)$cols['pdf_path']) {
                 return 'skipped';
             }
             unset($cols['published_at']);
@@ -194,6 +200,7 @@ class ExternalJob
             'details' => (string)($job['details'] ?? '') ?: null,
             'apply_url' => mb_substr((string)($job['apply_url'] ?? ''), 0, 500) ?: null,
             'source_url' => mb_substr((string)($job['source_url'] ?? ''), 0, 500) ?: null,
+            'pdf_path' => mb_substr((string)($job['pdf_path'] ?? ''), 0, 255) ?: null,
             'kind' => in_array($job['kind'] ?? '', self::KINDS, true) ? $job['kind'] : 'job',
             'published_at' => !empty($job['published_at']) && strtotime((string)$job['published_at']) ? date('Y-m-d H:i:s', strtotime((string)$job['published_at'])) : date('Y-m-d H:i:s'),
         ];
@@ -258,7 +265,7 @@ class ExternalJob
     {
         self::ensureSchema();
         return Database::getInstance()->fetchAll(
-            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews') AND feed_url IS NOT NULL AND feed_url <> ''
+            "SELECT * FROM external_job_sources WHERE enabled = 1 AND feed_type IN ('rss','json','employmentnews','upsc') AND feed_url IS NOT NULL AND feed_url <> ''
                AND (last_fetched_at IS NULL OR last_fetched_at < NOW() - INTERVAL 50 MINUTE)
              ORDER BY last_fetched_at IS NOT NULL, last_fetched_at ASC LIMIT " . (int)$limit
         );
@@ -290,6 +297,51 @@ class ExternalJob
         return (int)$db->lastInsertId();
     }
 
+    // ------------------------------------------------------------------
+    // Notices (results, recruitment tests, interview schedules …) – not openings
+    // ------------------------------------------------------------------
+
+    public static function noticeExists(string $hash): bool
+    {
+        self::ensureSchema();
+        return (bool)Database::getInstance()->fetchOne('SELECT id FROM external_notices WHERE guid_hash = ?', [$hash]);
+    }
+
+    /**
+     * Store a notice once (by hash). $n: title, doc_type, page_url, link_url, documents (list of
+     * ['label', 'url' official, 'local' copy or null]), published_at. Returns true when it was new.
+     */
+    public static function addNotice(int $sourceId, array $n): bool
+    {
+        self::ensureSchema();
+        $hash = (string)($n['guid_hash'] ?? sha1((string)$n['title'] . '|' . ($n['page_url'] ?? '')));
+        if (self::noticeExists($hash)) {
+            return false;
+        }
+        Database::getInstance()->execute(
+            'INSERT INTO external_notices (source_id, title, doc_type, page_url, link_url, documents, guid_hash, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [$sourceId, mb_substr((string)$n['title'], 0, 255), mb_substr((string)($n['doc_type'] ?? ''), 0, 80) ?: null,
+             mb_substr((string)($n['page_url'] ?? ''), 0, 500) ?: null, mb_substr((string)($n['link_url'] ?? ''), 0, 500) ?: null,
+             json_encode(array_values($n['documents'] ?? []), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $hash,
+             $n['published_at'] ?? date('Y-m-d H:i:s')]
+        );
+        return true;
+    }
+
+    /** Latest notices with their source name; documents decoded. */
+    public static function latestNotices(int $limit = 10): array
+    {
+        self::ensureSchema();
+        $rows = Database::getInstance()->fetchAll(
+            'SELECT n.*, s.name AS source_name FROM external_notices n LEFT JOIN external_job_sources s ON s.id = n.source_id
+             ORDER BY n.published_at DESC, n.id DESC LIMIT ' . max(1, min(100, $limit))
+        );
+        foreach ($rows as &$r) {
+            $r['documents'] = json_decode((string)$r['documents'], true) ?: [];
+        }
+        return $rows;
+    }
+
     public static function markFetched(int $id, string $status, int $items): void
     {
         Database::getInstance()->execute(
@@ -317,7 +369,7 @@ class ExternalJob
             state VARCHAR(80) NULL,
             website VARCHAR(255) NULL,
             feed_url VARCHAR(500) NULL,
-            feed_type ENUM('rss','json','manual','employmentnews') NOT NULL DEFAULT 'manual',
+            feed_type " . self::FEED_ENUM . ",
             kind ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job',
             suggested_feed VARCHAR(500) NULL,
             checked_at DATETIME NULL,
@@ -348,6 +400,7 @@ class ExternalJob
             details MEDIUMTEXT NULL,
             apply_url VARCHAR(500) NULL,
             source_url VARCHAR(500) NULL,
+            pdf_path VARCHAR(255) NULL,
             guid_hash CHAR(40) NOT NULL,
             kind ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job',
             is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -365,7 +418,7 @@ class ExternalJob
         // Older installs: add the columns introduced later.
         foreach ([
             'external_job_sources' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'suggested_feed' => 'VARCHAR(500) NULL', 'checked_at' => 'DATETIME NULL'],
-            'external_jobs' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'"],
+            'external_jobs' => ['kind' => "ENUM('job','internship','skill','apprenticeship') NOT NULL DEFAULT 'job'", 'pdf_path' => 'VARCHAR(255) NULL'],
         ] as $table => $cols) {
             foreach ($cols as $col => $def) {
                 $has = Database::getInstance()->fetchOne(
@@ -383,8 +436,8 @@ class ExternalJob
             $ft = Database::getInstance()->fetchOne(
                 "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'external_job_sources' AND COLUMN_NAME = 'feed_type'"
             );
-            if ($ft && !str_contains((string)$ft['t'], 'employmentnews')) {
-                $pdo->exec("ALTER TABLE external_job_sources MODIFY feed_type ENUM('rss','json','manual','employmentnews') NOT NULL DEFAULT 'manual'");
+            if ($ft && !str_contains((string)$ft['t'], "'upsc'")) {
+                $pdo->exec('ALTER TABLE external_job_sources MODIFY feed_type ' . self::FEED_ENUM);
             }
         } catch (\Throwable $e) {
             error_log('ExternalJob feed_type upgrade: ' . $e->getMessage());
@@ -398,6 +451,32 @@ class ExternalJob
             @mkdir(dirname($enMarker), 0775, true);
             @file_put_contents($enMarker, date('c'));
         }
+        // UPSC: advertisements (PDF), active examinations and What's New notices – switched on once.
+        $upscMarker = dirname(__DIR__, 2) . '/storage/cache/upsc.enabled';
+        if (!is_file($upscMarker)) {
+            $pdo->exec("INSERT IGNORE INTO external_job_sources (name, org_type, website, kind) VALUES ('Union Public Service Commission (UPSC)', 'central_govt', 'https://upsc.gov.in', 'job')");
+            $st = $pdo->prepare("UPDATE external_job_sources SET feed_url = ?, feed_type = 'upsc', enabled = 1
+                                 WHERE name = 'Union Public Service Commission (UPSC)' AND (feed_url IS NULL OR feed_url = '')");
+            $st->execute([self::UPSC_ADVT_URL]);
+            @mkdir(dirname($upscMarker), 0775, true);
+            @file_put_contents($upscMarker, date('c'));
+        }
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS external_notices (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            source_id INT UNSIGNED NULL,
+            title VARCHAR(255) NOT NULL,
+            doc_type VARCHAR(80) NULL,
+            page_url VARCHAR(500) NULL,
+            link_url VARCHAR(500) NULL,
+            documents TEXT NULL,
+            guid_hash CHAR(40) NOT NULL,
+            published_at DATETIME NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_en_hash (guid_hash),
+            KEY idx_en_source (source_id, published_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         // Seed / top up the directory of official sources whenever the data file changes
         // (new sources are added disabled; existing rows edited by admin are never overwritten).

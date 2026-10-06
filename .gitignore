@@ -43,3 +43,6 @@ uploads/careers/
 uploads/applications/
 uploads/messages/
 uploads/uploads/
+
+# Copies of official Govt notification PDFs (re-downloaded by the India jobs import)
+uploads/govt-notices/
