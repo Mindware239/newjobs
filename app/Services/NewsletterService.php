@@ -22,7 +22,7 @@ class NewsletterService
 
     /** Paid registration types → audience. */
     private const AUDIENCE = [
-        'fulltime' => 'jobs', 'parttime' => 'jobs', 'wfh' => 'jobs', 'intljob' => 'jobs', 'hospitality' => 'jobs', 'healthcare' => 'jobs', 'jobpass' => 'jobs',
+        'fulltime' => 'jobs', 'parttime' => 'jobs', 'wfh' => 'jobs', 'intljob' => 'jobs', 'hospitality' => 'jobs', 'healthcare' => 'jobs', 'jobpass' => 'jobs', 'senior' => 'jobs',
         'skill' => 'skill', 'internship' => 'internship',
         'mentorplan' => 'mentor', 'internplan' => 'internpro', 'jobplan' => 'hirer', 'hirer' => 'hirer', 'hospital' => 'hirer',
     ];

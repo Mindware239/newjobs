@@ -16,7 +16,7 @@ class PortalRegistration
     public const GST_RATE = 0.18;
     public const COURSE_FEE = 12000.00; // skill development course fee after selection (+ GST)
 
-    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan', 'intljob', 'intlcountry'];
+    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan', 'intljob', 'intlcountry', 'senior', 'seniorhire'];
     public const STATUSES = ['new', 'under_scrutiny', 'selected', 'rejected', 'completed', 'expired'];
 
     /** Skill-development registrations are valid for this many months after payment. */
@@ -44,6 +44,7 @@ class PortalRegistration
         'healthcare' => [1, 'MONTH'],   // hospital staff / doctors: 1 month
         'hospital' => [15, 'DAY'],      // hospitals & clinics hiring: 15 days
         'hirer' => [2, 'DAY'],          // part-time talent pass: 2 days
+        'senior' => [12, 'MONTH'],      // senior citizens (59+): once a year
     ];
 
     /** [n, 'MONTH'|'DAY'] or null when the registration never expires. */
@@ -250,7 +251,7 @@ class PortalRegistration
     }
 
     /** Types that can be renewed (skill development is 3 months only – never renewed). */
-    public const RENEWABLE = ['parttime', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer'];
+    public const RENEWABLE = ['parttime', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'senior'];
 
     /** Days before expiry at which the 3 renewal reminders go out. */
     public const EXPIRY_REMINDER_DAYS = [10, 5, 1];

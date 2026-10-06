@@ -90,6 +90,8 @@ class FormRegistry
             'healthcare-jobs' => self::healthcareJobs(),
             'hospital-hiring' => self::hospitalHiring(),
             'hire-part-time' => self::hirePartTime(),
+            'senior-citizen-jobs' => self::seniorJobs(),
+            'senior-citizen-hiring' => self::seniorHiring(),
         ];
     }
 
@@ -770,6 +772,131 @@ class FormRegistry
 
     /** Part-time talent pass for hirers: ₹5,000 + 18% GST, 2 days of resume / keyword search. */
     public const HIRER_FEE = 5900.00;
+
+    /** Senior citizens (59+): full-time / part-time work ₹500 + 18% GST once a year; community service free. */
+    public const SENIOR_FEES = ['full_time' => 590.00, 'part_time' => 590.00, 'community' => 0.00];
+    public const SENIOR_MIN_AGE = 59;
+
+    private static function seniorJobs(): array
+    {
+        return [
+            'type' => 'senior',
+            'prefix' => 'SNR',
+            'side' => 'candidate',
+            'icon' => '👴',
+            'otp' => true,
+            'multipart' => true,
+            'resume_search' => true,
+            'fee_by' => ['work_type', self::SENIOR_FEES],
+            'max_categories' => 5,
+            'title' => ['वरिष्ठ नागरिक (59+) – फ़ुल-टाइम / पार्ट-टाइम काम और सामुदायिक सेवा', 'Senior Citizens (59+) – Full-time / Part-time Work & Community Service'],
+            'button' => ['वरिष्ठ नागरिक (59+) – काम या सामुदायिक सेवा के लिए रजिस्टर करें', 'Senior citizens (59+) – register for work or community service'],
+            'intro' => ['अनुभव कभी रिटायर नहीं होता। 59 वर्ष या उससे अधिक उम्र के लोग फ़ुल-टाइम या पार्ट-टाइम काम के लिए, या समाज सेवा के लिए रजिस्टर करें – कंपनियाँ, स्कूल, अस्पताल और NGO आपके अनुभव से जुड़ेंगे।', 'Experience never retires. People aged 59 and above can register for full-time or part-time work, or for community service – companies, schools, hospitals and NGOs connect with your experience.'],
+            'categories_label' => ['आप क्या काम कर सकते हैं – अधिकतम 5 (जैसे Accountant, Teacher, Consultant, Supervisor)', 'Work you can do – up to 5 (e.g. Accountant, Teacher, Consultant, Supervisor)'],
+            'info' => [
+                'title' => ['शुल्क', 'Fees'],
+                'points' => [
+                    ['फ़ुल-टाइम या पार्ट-टाइम काम: ₹500 + 18% GST = ₹590, साल में एक बार (12 महीने मान्य)', 'Full-time or part-time work: ₹500 + 18% GST = ₹590, once a year (valid 12 months)'],
+                    ['सामुदायिक सेवा (समाज सेवा / स्वयंसेवा): पूरी तरह मुफ़्त', 'Community service (social service / volunteering): completely free'],
+                    ['न्यूनतम आयु 59 वर्ष – जन्म तिथि से जाँची जाती है', 'Minimum age 59 years – checked from your date of birth'],
+                    self::platformDisclaimer(),
+                ],
+            ],
+            'sections' => [
+                self::personalSection(['dob_mode' => 'senior']),
+                self::addressSection(false),
+                [
+                    'title' => ['आप क्या चाहते हैं', 'What You Are Looking For'],
+                    'fields' => [
+                        self::radio('work_type', ['काम का प्रकार', 'Type of work'], [
+                            'full_time' => ['फ़ुल-टाइम काम – ₹500 + GST / साल', 'Full-time work – ₹500 + GST / year'],
+                            'part_time' => ['पार्ट-टाइम काम – ₹500 + GST / साल', 'Part-time work – ₹500 + GST / year'],
+                            'community' => ['सामुदायिक सेवा – मुफ़्त', 'Community service – free'],
+                        ], true, ['full' => true]),
+                        self::categories(true),
+                        self::text('retired_from', ['आप कहाँ से रिटायर हुए (विभाग / कंपनी / पद)', 'Retired from (department / company / post)'], false, ['max' => 190]),
+                        self::radio('experience', ['कुल अनुभव', 'Total experience'], [
+                            '10_20' => ['10–20 साल', '10–20 years'], '20_30' => ['20–30 साल', '20–30 years'], '30_plus' => ['30+ साल', '30+ years'],
+                        ], true, ['full' => true]),
+                        self::radio('hours', ['कितना समय दे सकते हैं', 'Time you can give'], [
+                            'full_day' => ['पूरा दिन', 'Full day'], 'half_day' => ['आधा दिन', 'Half day'], 'few_hours' => ['रोज़ कुछ घंटे', 'A few hours a day'],
+                            'weekly' => ['हफ़्ते में कुछ दिन', 'A few days a week'], 'from_home' => ['घर से', 'From home'],
+                        ], true, ['full' => true]),
+                        ['key' => 'about_me', 'type' => 'textarea', 'label' => ['अपने अनुभव और स्किल के बारे में लिखें', 'About your experience and skills'], 'required' => true, 'full' => true, 'max' => 2000],
+                        self::text('preferred_location', ['पसंदीदा शहर / इलाका', 'Preferred city / area'], false, ['max' => 190]),
+                        self::number('expected_salary', ['अपेक्षित मानदेय (₹ प्रति माह, सामुदायिक सेवा के लिए खाली छोड़ें)', 'Expected pay (₹ per month, leave empty for community service)'], false, 0, 10000000),
+                        self::file('resume', ['रिज़्यूमे / अनुभव प्रमाणपत्र (PDF/DOC, अधिकतम 5MB, वैकल्पिक)', 'Resume / experience certificate (PDF/DOC, max 5MB, optional)']),
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है और मेरी आयु 59 वर्ष या उससे अधिक है।', 'The information I have given is true and I am 59 years of age or older.'],
+                ['काम के लिए शुल्क वापसी योग्य नहीं है और भुगतान से 12 महीने तक मान्य है। सामुदायिक सेवा मुफ़्त है।', 'The fee for work is non-refundable and valid for 12 months from payment. Community service is free.'],
+                ['मैं सहमत हूँ कि रजिस्टर्ड संस्थाएँ मेरा प्रोफ़ाइल और संपर्क देख सकें।', 'I agree that registered organisations can see my profile and contact details.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['आपका प्रोफ़ाइल वरिष्ठ नागरिकों को काम देने वाली संस्थाओं को दिखेगा।', 'Your profile is shown to organisations that want to engage senior citizens.'],
+                ['संस्थाएँ आपसे सीधे कॉल / ईमेल से संपर्क करेंगी।', 'Organisations will contact you directly by call / email.'],
+            ],
+        ];
+    }
+
+    /** Organisations that want to engage senior citizens (work or community service) – registration free. */
+    private static function seniorHiring(): array
+    {
+        return [
+            'type' => 'seniorhire',
+            'prefix' => 'SNH',
+            'side' => 'provider',
+            'icon' => '🤝',
+            'otp' => true,
+            'fee' => 0.0,
+            'max_categories' => 5,
+            'title' => ['वरिष्ठ नागरिकों को काम दें – संस्था रजिस्ट्रेशन (मुफ़्त)', 'Engage Senior Citizens – Organisation Registration (free)'],
+            'button' => ['कंपनी / स्कूल / अस्पताल / NGO – वरिष्ठ नागरिकों को काम दें', 'Company / school / hospital / NGO – engage senior citizens'],
+            'intro' => ['अनुभवी वरिष्ठ नागरिकों (59+) को फ़ुल-टाइम, पार्ट-टाइम या सामुदायिक सेवा के लिए जोड़ें। संस्था का रजिस्ट्रेशन मुफ़्त है।', 'Engage experienced senior citizens (59+) for full-time, part-time or community-service roles. Registration for organisations is free.'],
+            'categories_label' => ['आपको किस काम के लिए लोग चाहिए – अधिकतम 5', 'Work you need people for – up to 5'],
+            'sections' => [
+                [
+                    'title' => ['संस्था', 'Organisation'],
+                    'fields' => [
+                        self::text('business_name', ['संस्था / कंपनी का नाम', 'Organisation / company name'], true, ['max' => 150]),
+                        self::radio('org_kind', ['संस्था का प्रकार', 'Type of organisation'], [
+                            'company' => ['कंपनी', 'Company'], 'proprietorship' => ['प्रोप्राइटरशिप / दुकान', 'Proprietorship / shop'], 'school' => ['स्कूल / कॉलेज', 'School / college'],
+                            'hospital' => ['अस्पताल / क्लिनिक', 'Hospital / clinic'], 'ngo' => ['NGO / ट्रस्ट', 'NGO / trust'], 'rwa' => ['RWA / सोसाइटी', 'RWA / housing society'], 'other' => ['अन्य', 'Other'],
+                        ], true, ['full' => true]),
+                        ['key' => 'gstin', 'type' => 'gst', 'label' => ['GST नंबर', 'GST Number'], 'required' => false],
+                        self::text('website', ['वेबसाइट (यदि हो)', 'Website (if any)'], false, ['max' => 190]),
+                    ],
+                ],
+                self::personalSection(['name_label' => ['संपर्क व्यक्ति का नाम', 'Contact Person Name'], 'dob' => false, 'gender' => false, 'aadhaar_required' => false]),
+                self::locationSection(['कार्यस्थल का पता', 'Workplace address']),
+                [
+                    'title' => ['आपको क्या चाहिए', 'What You Need'],
+                    'fields' => [
+                        self::radio('work_type', ['काम का प्रकार', 'Type of work'], [
+                            'full_time' => ['फ़ुल-टाइम', 'Full-time'], 'part_time' => ['पार्ट-टाइम', 'Part-time'], 'community' => ['सामुदायिक सेवा (स्वयंसेवा)', 'Community service (volunteer)'],
+                        ], true, ['full' => true]),
+                        self::categories(true),
+                        self::number('vacancies', ['कितने लोग चाहिए', 'How many people'], false, 1, 10000),
+                        self::text('pay', ['मानदेय / वेतन (सामुदायिक सेवा के लिए खाली छोड़ें)', 'Pay / honorarium (leave empty for community service)'], false, ['max' => 120]),
+                        ['key' => 'about_need', 'type' => 'textarea', 'label' => ['काम का विवरण, समय और जगह', 'Describe the work, timings and place'], 'required' => true, 'full' => true, 'max' => 2000],
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
+                ['हम वरिष्ठ नागरिकों से कोई शुल्क या डिपॉज़िट नहीं माँगेंगे और उनसे सम्मानजनक व्यवहार करेंगे।', 'We will not ask senior citizens for any fee or deposit and will treat them with respect.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['Jobsence टीम आपका रजिस्ट्रेशन जाँचेगी और वरिष्ठ नागरिकों के प्रोफ़ाइल से मिलाएगी।', 'The Jobsence team will check your registration and match it with senior citizens’ profiles.'],
+            ],
+        ];
+    }
 
     /** Role options with the fee in the label, e.g. "Doctor – ₹4,500 + GST". */
     private static function pricedRoles(array $fees): array
@@ -1609,7 +1736,8 @@ class FormRegistry
             $fields[] = self::text('guardian_name', ['पिता / माता / अभिभावक का नाम', 'Father’s / Mother’s / Guardian’s Name'], false, ['max' => 150]);
         }
         if ($opt['dob'] ?? true) {
-            $fields[] = ['key' => 'dob', 'type' => 'date', 'label' => ['जन्म तिथि', 'Date of Birth'], 'required' => true];
+            $fields[] = ['key' => 'dob', 'type' => 'date', 'label' => ['जन्म तिथि', 'Date of Birth'], 'required' => true]
+                + (isset($opt['dob_mode']) ? ['date_mode' => $opt['dob_mode']] : []);
         }
         if ($opt['gender'] ?? true) {
             $fields[] = self::radio('gender', ['लिंग', 'Gender'], ['male' => ['पुरुष', 'Male'], 'female' => ['महिला', 'Female'], 'other' => ['अन्य', 'Other']], true);

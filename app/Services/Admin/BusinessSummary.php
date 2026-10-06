@@ -27,6 +27,7 @@ class BusinessSummary
         'nearme' => ['title' => 'Near Me (service providers & users)', 'types' => ['nearpro', 'nearseek']],
         'passes' => ['title' => 'Jobs in India Pass & Jobs Abroad unlocks', 'types' => ['jobpass', 'intlcountry']],
         'ngo' => ['title' => 'NGOs / social organisations', 'types' => ['ngo']],
+        'seniors' => ['title' => 'Senior citizens (59+) & organisations engaging them', 'types' => ['senior', 'seniorhire']],
     ];
 
     public const PERIODS = ['today' => 'Today', '7d' => 'Last 7 days', '30d' => 'Last 30 days', 'month' => 'This month', 'all' => 'All time', 'custom' => 'Custom'];

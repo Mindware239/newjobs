@@ -104,6 +104,15 @@ class RegistrationValidator
                         }
                         break;
                     }
+                    if (($f['date_mode'] ?? '') === 'senior') {
+                        // Senior citizen forms: 59 years or older.
+                        if ($t && $t <= strtotime('-' . FormRegistry::SENIOR_MIN_AGE . ' years') && $t >= strtotime('-105 years')) {
+                            $value = date('Y-m-d', $t);
+                        } elseif ($required || $raw) {
+                            $errors[$key] = ['यह फ़ॉर्म 59 वर्ष या उससे अधिक आयु के लिए है – सही जन्म तिथि भरें', 'This form is for people aged 59 or above – enter your correct date of birth'];
+                        }
+                        break;
+                    }
                     if ($t && $t <= strtotime('-14 years') && $t >= strtotime('-100 years')) {
                         $value = date('Y-m-d', $t);
                     } elseif ($required || $raw) {
