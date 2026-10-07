@@ -303,8 +303,22 @@ class TopBidding
     public static function monthPaid(int $monthId, int $regId): void
     {
         self::ensureSchema();
-        Database::getInstance()->execute(
-            "UPDATE top_months SET status = 'paid', registration_id = ?, paid_at = NOW() WHERE id = ? AND status = 'pending'", [$regId, $monthId]
+        $db = Database::getInstance();
+        $m = $db->fetchOne("SELECT * FROM top_months WHERE id = ? AND status = 'pending'", [$monthId]);
+        if (!$m) {
+            return;
+        }
+        // Paid after the 2-hour hold and someone else booked meanwhile: move to the next free 30 days (no double place 1).
+        $start = (string)$m['start_date'];
+        while ($clash = $db->fetchOne(
+            "SELECT end_date FROM top_months WHERE status = 'paid' AND id <> ? AND start_date <= ? AND end_date >= ? ORDER BY end_date DESC LIMIT 1",
+            [$monthId, date('Y-m-d', strtotime($start . ' +' . (self::MONTH_DAYS - 1) . ' day')), $start]
+        )) {
+            $start = date('Y-m-d', strtotime($clash['end_date'] . ' +1 day'));
+        }
+        $db->execute(
+            "UPDATE top_months SET status = 'paid', registration_id = ?, paid_at = NOW(), start_date = ?, end_date = ? WHERE id = ?",
+            [$regId, $start, date('Y-m-d', strtotime($start . ' +' . (self::MONTH_DAYS - 1) . ' day')), $monthId]
         );
     }
 
