@@ -499,9 +499,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
         $isEmployerContext = ($roleParam === 'employer') || (is_string($redirectParam) && strpos($redirectParam, '/employer/') === 0);
         $oauthRedirect = $isEmployerContext ? '/employer/dashboard' : '/candidate/dashboard';
     ?>
-    <div class="social-grid" style="grid-template-columns:1fr">
-        <a href="/auth/google?redirect=<?= $oauthRedirect ?>" class="social-btn" style="gap:10px;font-weight:700;color:#334155;text-decoration:none"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" alt="">Google</a>
-    </div>
+    <?php $socialRedirect = $oauthRedirect; $socialClass = 'social-btn'; require __DIR__ . '/_social_buttons.php'; ?>
     </div><!-- /social -->
 
     <!-- Sign Up -->

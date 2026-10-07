@@ -1146,43 +1146,7 @@ class AuthController extends BaseController
                 throw new \Exception('Failed to create or find user account');
             }
             
-            // Update last login
-            $user->last_login = date('Y-m-d H:i:s');
-            $user->save();
-            
-            // Set session
-            $_SESSION['user_id'] = $user->id;
-            $_SESSION['user_role'] = $user->role;
-            TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Apple)
-            if ($user->role === 'candidate') {
-                $candidate = \App\Models\Candidate::findByUserId($user->id);
-                if (!$candidate) {
-                    $candidate = \App\Models\Candidate::createForUser($user->id);
-                }
-                if ($candidate && isset($candidate->attributes['id'])) {
-                    $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
-                }
-            }
-            try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
-            
-            // Determine redirect URL
-            $redirect = $_SESSION['oauth_redirect'] ?? null;
-            unset($_SESSION['oauth_redirect']);
-            
-            // Validate redirect against user role
-            if ($redirect) {
-                if ($user->role === 'employer' && strpos($redirect, '/candidate/') === 0) {
-                    $redirect = '/employer/dashboard';
-                } elseif ($user->role === 'candidate' && strpos($redirect, '/employer/') === 0) {
-                    $redirect = '/candidate/dashboard';
-                }
-            }
-            
-            if (!$redirect) {
-                $redirect = $this->getDefaultRedirectUrl($user);
-            }
-            
-            $response->redirect($redirect);
+            $this->finishOAuthLogin($user, $response);
             
         } catch (\Exception $e) {
             error_log("Google callback error: " . $e->getMessage());
@@ -1194,6 +1158,128 @@ class AuthController extends BaseController
         }
     }
     
+    /** Session, trusted device and role-aware redirect after any social login (Google, Facebook, LinkedIn). */
+    private function finishOAuthLogin(User $user, Response $response): void
+    {
+        // Update last login
+        $user->last_login = date('Y-m-d H:i:s');
+        $user->save();
+        
+        // Set session (new session id at login – no fixation)
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['user_role'] = $user->role;
+        TrustedDeviceService::trust((int)$user->id); // email proven on this device (sign-up OTP / Google / Facebook / LinkedIn)
+        if ($user->role === 'candidate') {
+            $candidate = \App\Models\Candidate::findByUserId($user->id);
+            if (!$candidate) {
+                $candidate = \App\Models\Candidate::createForUser($user->id);
+            }
+            if ($candidate && isset($candidate->attributes['id'])) {
+                $_SESSION['candidate_id'] = (int)$candidate->attributes['id'];
+            }
+        }
+        try { CookieService::linkAnonymousConsent((int)$user->id, (string)($user->email ?? ''), session_id(), $_COOKIE['anon_id'] ?? null); } catch (\Throwable $e) {}
+        
+        // Determine redirect URL
+        $redirect = $_SESSION['oauth_redirect'] ?? null;
+        unset($_SESSION['oauth_redirect']);
+        
+        // Validate redirect against user role
+        if ($redirect) {
+            if ($user->role === 'employer' && strpos($redirect, '/candidate/') === 0) {
+                $redirect = '/employer/dashboard';
+            } elseif ($user->role === 'candidate' && strpos($redirect, '/employer/') === 0) {
+                $redirect = '/candidate/dashboard';
+            }
+        }
+        
+        if (!$redirect) {
+            $redirect = $this->getDefaultRedirectUrl($user);
+        }
+        
+        // Mobile number is mandatory for everyone: social accounts without one add it straight after login.
+        if (trim((string)($user->phone ?? '')) === '') {
+            $redirect = '/account/mobile?next=' . rawurlencode($redirect);
+        }
+        $response->redirect($redirect);
+    }
+
+    /** GET /auth/{facebook|linkedin} – start a social login (only when the provider is configured). */
+    public function socialLogin(Request $request, Response $response): void
+    {
+        $provider = self::socialProvider();
+        if (!$provider || !\App\Services\SocialOAuthService::enabled($provider)) {
+            $response->redirect('/login?message=' . rawurlencode('This login option is not available yet – use Google or your mobile / email.'));
+            return;
+        }
+        $redirect = $request->get('redirect');
+        if ($redirect && $this->isValidRedirectUrl($redirect)) {
+            $_SESSION['oauth_redirect'] = $redirect;
+        }
+        $state = bin2hex(random_bytes(32));
+        $_SESSION['oauth_state'] = $state;
+        $_SESSION['oauth_provider'] = $provider;
+        $_SESSION['oauth_state_time'] = time();
+        $response->redirect((new \App\Services\SocialOAuthService($provider))->authUrl($state));
+    }
+
+    /** GET /auth/{facebook|linkedin}/callback */
+    public function socialCallback(Request $request, Response $response): void
+    {
+        $provider = self::socialProvider();
+        $label = ['facebook' => 'Facebook', 'linkedin' => 'LinkedIn'][$provider] ?? 'Social';
+        $fail = function (string $msg) use ($response): void {
+            $this->clearOAuthSession();
+            $response->view('auth/login', ['title' => 'Login', 'error' => $msg]);
+        };
+        if (!$provider || !\App\Services\SocialOAuthService::enabled($provider)) {
+            $fail('This login option is not available.');
+            return;
+        }
+        if ($request->get('error')) {
+            $fail($label . ' login was cancelled. Please try again.');
+            return;
+        }
+        $state = (string)$request->get('state', '');
+        if ($state === '' || !hash_equals((string)($_SESSION['oauth_state'] ?? ''), $state)
+            || ($_SESSION['oauth_provider'] ?? '') !== $provider || time() - (int)($_SESSION['oauth_state_time'] ?? 0) > 600) {
+            $fail('Security verification failed or the login took too long. Please try again.');
+            return;
+        }
+        $this->clearOAuthSession();
+        try {
+            $info = (new \App\Services\SocialOAuthService($provider))->userFromCode((string)$request->get('code', ''));
+        } catch (\Throwable $e) {
+            error_log($label . ' callback error: ' . $e->getMessage());
+            $fail('Failed to sign in with ' . $label . '. Please try again.');
+            return;
+        }
+        if ($info['id'] === '' || !filter_var($info['email'], FILTER_VALIDATE_EMAIL)) {
+            $fail('Your ' . $label . ' account did not share an email address. Please log in with Google or your mobile number / email instead.');
+            return;
+        }
+        if (empty($info['verified_email'])) {
+            $fail('Your ' . $label . ' email address is not verified. Please verify it with ' . $label . ', or log in with your mobile number / email.');
+            return;
+        }
+        \App\Services\SocialOAuthService::ensureSchema();
+        $user = $this->findOrCreateOAuthUser($provider, $info);
+        if (!$user) {
+            $fail('Failed to create or find your account. Please try again.');
+            return;
+        }
+        $this->finishOAuthLogin($user, $response);
+    }
+
+    private static function socialProvider(): ?string
+    {
+        $path = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+        return preg_match('#^/auth/(facebook|linkedin)(/callback)?/?$#', $path, $m) ? $m[1] : null;
+    }
+
     public function appleLogin(Request $request, Response $response): void
     {
         try {
@@ -1513,7 +1599,7 @@ class AuthController extends BaseController
             if ($provider === 'google' && !empty($userData['picture'])) {
                 $linkData['google_picture'] = $userData['picture'];
             }
-            if ($provider === 'google' && !empty($userData['verified_email'])) {
+            if (in_array($provider, ['google', 'facebook', 'linkedin'], true) && !empty($userData['verified_email'])) {
                 $linkData['is_email_verified'] = 1;
             } elseif ($provider === 'apple' && strpos($userData['email'], '@privaterelay.appleid.com') === false) {
                 $linkData['is_email_verified'] = 1;
@@ -1554,7 +1640,7 @@ class AuthController extends BaseController
         }
         
         // Set email verification status
-        if ($provider === 'google' && !empty($userData['verified_email'])) {
+        if (in_array($provider, ['google', 'facebook', 'linkedin'], true) && !empty($userData['verified_email'])) {
             $newUserData['is_email_verified'] = 1;
         } elseif ($provider === 'apple' && strpos($userData['email'], '@privaterelay.appleid.com') === false) {
             $newUserData['is_email_verified'] = 1;

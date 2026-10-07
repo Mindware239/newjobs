@@ -133,6 +133,10 @@ $router->post('/verify-account', [AuthController::class, 'processVerification'])
 // Auth - Social Logins
 $router->get('/auth/google', [AuthController::class, 'googleLogin']);
 $router->get('/auth/google/callback', [AuthController::class, 'googleCallback']);
+$router->get('/auth/facebook', [AuthController::class, 'socialLogin']);
+$router->get('/auth/facebook/callback', [AuthController::class, 'socialCallback']);
+$router->get('/auth/linkedin', [AuthController::class, 'socialLogin']);
+$router->get('/auth/linkedin/callback', [AuthController::class, 'socialCallback']);
 $router->get('/auth/apple', [AuthController::class, 'appleLogin']);
 $router->post('/auth/apple/callback', [AuthController::class, 'appleCallback']);
 $router->get('/auth/apple/callback', [AuthController::class, 'appleCallback']);

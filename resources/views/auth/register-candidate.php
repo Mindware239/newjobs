@@ -921,11 +921,7 @@
                     <span class="div-text">Or continue with</span>
                     <div class="div-line"></div>
                 </div>
-                <div class="social-grid" style="grid-template-columns:1fr"><!-- Only real sign-in providers: Google (Facebook / LinkedIn / Microsoft were never wired) -->
-                    <a href="/auth/google?redirect=/candidate/dashboard" class="soc-btn" aria-label="Continue with Google">
-                        <img alt="Google" src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png">
-                    </a>
-                </div>
+                <?php $socialRedirect = '/candidate/dashboard'; $socialClass = 'soc-btn'; require __DIR__ . '/_social_buttons.php'; ?>
 
                 <!-- Terms -->
                 <div class="terms-row">
