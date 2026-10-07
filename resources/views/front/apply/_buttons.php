@@ -80,6 +80,8 @@ $sdProviders = [
                 </form>
                 <div class="act">
                     <a href="/apply/near-me-provider">🛠️ <?= Lang::t('दुकान / सेवा देते हैं? ₹590 में 6 महीने', 'Shop or service? Enrol – ₹590 for 6 months') ?></a>
+                    <a href="/apply/near-me-job-giver">🏪 <?= Lang::t('दुकान पर काम देना है? ₹590 / 6 महीने', 'Hiring for your shop? ₹590 / 6 months') ?></a>
+                    <a href="/apply/near-me-job-seeker">🧑‍🔧 <?= Lang::t('घर के पास काम चाहिए? ₹295 / 3 महीने', 'Work near home? ₹295 / 3 months') ?></a>
                     <a href="/apply/near-me-seeker">🔎 <?= Lang::t('सेवा चाहिए? ₹295 में 3 महीने', 'Need a service? ₹295 for 3 months') ?></a>
                 </div>
             </div>

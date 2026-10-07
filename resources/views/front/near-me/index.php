@@ -71,6 +71,8 @@ $unlocked = $pass !== null;
             <div class="nm-cta">
                 <a href="/apply/near-me-seeker"><span class="ico" aria-hidden="true">🔎</span><span><b><?= $t('मुझे सेवा चाहिए', 'I need a service') ?></b><small><?= $t("{$seekerFeeLabel} (₹250 + GST) एक बार – 3 महीने तक प्रदाता चुनें; दोनों के साइन के बाद नंबर", "{$seekerFeeLabel} (₹250 + GST) once – choose providers for 3 months; number after both sign") ?></small></span></a>
                 <a href="/apply/near-me-provider"><span class="ico" aria-hidden="true">🛠️</span><span><b><?= $t('मैं सेवा देता/देती हूँ – रजिस्टर करें', 'I provide a service – enrol') ?></b><small><?= $t("{$feeLabel} (₹500 + GST) एक बार – 6 महीने, किराना / दुकान / सेवा; फोटो + सेल्फ़ी ज़रूरी", "{$feeLabel} (₹500 + GST) once – 6 months, kirana / shop / service; photo + selfie required") ?></small></span></a>
+                <a href="/apply/near-me-job-giver"><span class="ico" aria-hidden="true">🏪</span><span><b><?= $t('दुकान / किराना पर काम देना है', 'Hiring for your shop / kirana') ?></b><small><?= $t('₹590 (₹500 + GST) एक बार – 6 महीने, पास रहने वाले लोग मोबाइल नंबर के साथ', '₹590 (₹500 + GST) once – 6 months, people living nearby with mobile numbers') ?></small></span></a>
+                <a href="/apply/near-me-job-seeker"><span class="ico" aria-hidden="true">🧑‍🔧</span><span><b><?= $t('घर के पास काम चाहिए', 'I want work near home') ?></b><small><?= $t('₹295 (₹250 + GST) एक बार – 3 महीने, पास की दुकानों का काम', '₹295 (₹250 + GST) once – 3 months, work in shops near you') ?></small></span></a>
             </div>
 
             <?php if (!empty($flash)): ?><div class="sd-alert ok" role="status"><?= $tp($flash) ?></div><?php endif; ?>

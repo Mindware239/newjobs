@@ -180,6 +180,8 @@ class FormRegistry
             'hire-part-time' => self::hirePartTime(),
             'senior-citizen-jobs' => self::seniorJobs(),
             'senior-citizen-hiring' => self::seniorHiring(),
+            'near-me-job-giver' => self::nearJobGiver(),
+            'near-me-job-seeker' => self::nearJobSeeker(),
             'extra-job-post' => self::extraJobPost(),
             'employer-job-post' => self::employerJobPost(),
             'free-job-contact' => self::freeJobContact(),
@@ -968,6 +970,124 @@ class FormRegistry
             'next_steps' => [
                 ['आपका प्रोफ़ाइल वरिष्ठ नागरिकों को काम देने वाली संस्थाओं को दिखेगा।', 'Your profile is shown to organisations that want to engage senior citizens.'],
                 ['संस्थाएँ आपसे सीधे कॉल / ईमेल से संपर्क करेंगी।', 'Organisations will contact you directly by call / email.'],
+            ],
+        ];
+    }
+
+    /** Near Me local jobs (user, 2026-10-07): kirana shops / small businesses hiring near the shop – ₹500 + 18% GST once, 6 months. */
+    public const NEAR_JOB_GIVER_FEE = 590.00;
+    /** Near Me local job seekers – ₹250 + 18% GST once, 3 months. */
+    public const NEAR_JOB_SEEKER_FEE = 295.00;
+    public const NEAR_JOB_WORK_TYPES = [
+        'full_time' => ['फ़ुल-टाइम', 'Full-time'], 'part_time' => ['पार्ट-टाइम', 'Part-time'],
+        'daily' => ['दिहाड़ी / रोज़ का काम', 'Daily wage'], 'helper' => ['हेल्पर / सहायक', 'Helper'],
+    ];
+
+    private static function nearJobGiver(): array
+    {
+        return [
+            'type' => 'nearjobpro', 'prefix' => 'NJP', 'side' => 'provider', 'icon' => '🏪', 'otp' => true,
+            'fee' => self::NEAR_JOB_GIVER_FEE,
+            'max_categories' => 5,
+            'title' => ['पास में काम दें – दुकान / किराना / छोटा व्यवसाय', 'Give Work Nearby – Shop / Kirana / Small Business'],
+            'button' => ['किराना, दुकान, ढाबा, सैलून – पास के लोगों को काम दें', 'Kirana, shop, dhaba, salon – hire people living nearby'],
+            'intro' => ['अपनी दुकान या व्यवसाय के पास रहने वाले लोगों को काम दें। ₹500 + GST (₹590) एक बार – 6 महीने तक पास के काम ढूँढने वाले मोबाइल नंबर के साथ दिखेंगे।', 'Hire people who live near your shop or business. ₹500 + GST (₹590) once – for 6 months you see nearby job seekers with their mobile numbers.'],
+            'categories_label' => ['आपको किस काम के लिए लोग चाहिए – अधिकतम 5', 'Work you need people for – up to 5'],
+            'info' => [
+                'title' => ['शुल्क', 'Fee'],
+                'points' => [
+                    ['₹500 + 18% GST = ₹590, एक बार – भुगतान से 6 महीने तक मान्य।', '₹500 + 18% GST = ₹590, once – valid for 6 months from payment.'],
+                    ['काम ढूँढने वालों से कभी कोई पैसा या डिपॉज़िट न माँगें।', 'Never ask job seekers for any money or deposit.'],
+                    self::platformDisclaimer(),
+                ],
+            ],
+            'sections' => [
+                [
+                    'title' => ['दुकान / व्यवसाय', 'Shop / Business'],
+                    'fields' => [
+                        self::text('business_name', ['दुकान / व्यवसाय का नाम', 'Shop / business name'], true, ['max' => 150]),
+                        self::radio('business_kind', ['व्यवसाय का प्रकार', 'Type of business'], [
+                            'kirana' => ['किराना / जनरल स्टोर', 'Kirana / general store'], 'shop' => ['दुकान / शोरूम', 'Shop / showroom'],
+                            'food' => ['ढाबा / रेस्टोरेंट / मिठाई', 'Dhaba / restaurant / sweets'], 'salon' => ['सैलून / ब्यूटी पार्लर', 'Salon / beauty parlour'],
+                            'workshop' => ['वर्कशॉप / गैराज / फ़ैक्टरी', 'Workshop / garage / factory'], 'home' => ['घर का काम (घरेलू)', 'Household work'],
+                            'other' => ['अन्य', 'Other'],
+                        ], true, ['full' => true]),
+                        ['key' => 'gstin', 'type' => 'gst', 'label' => ['GST नंबर (यदि हो)', 'GST Number (if any)'], 'required' => false],
+                    ],
+                ],
+                self::personalSection(['name_label' => ['मालिक / संपर्क व्यक्ति का नाम', 'Owner / contact person name'], 'dob' => false, 'gender' => false, 'aadhaar_required' => false]),
+                self::locationSection(['दुकान / काम की जगह का पता – पास रहने वाले लोग दिखेंगे', 'Shop / workplace address – people living nearby are shown'],
+                    ['दुकान पर रहते हुए बटन दबाएँ – केवल पास रहने वाले लोग मिलाए जाते हैं।', 'Tap the button at the shop – only people living nearby are matched.']),
+                [
+                    'title' => ['आपको क्या चाहिए', 'What You Need'],
+                    'fields' => [
+                        self::radio('work_type', ['काम का प्रकार', 'Type of work'], self::NEAR_JOB_WORK_TYPES, true, ['full' => true]),
+                        self::categories(true),
+                        self::number('vacancies', ['कितने लोग चाहिए', 'How many people'], false, 1, 1000),
+                        self::text('pay', ['वेतन / मज़दूरी (जैसे ₹12,000 महीना या ₹500 रोज़)', 'Pay (e.g. ₹12,000 a month or ₹500 a day)'], true, ['max' => 120]),
+                        self::text('timings', ['काम का समय', 'Working hours'], false, ['max' => 120]),
+                        ['key' => 'about_need', 'type' => 'textarea', 'label' => ['काम का विवरण', 'Describe the work'], 'required' => true, 'full' => true, 'max' => 2000],
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
+                ['मैं काम ढूँढने वालों से कोई शुल्क या डिपॉज़िट नहीं माँगूँगा/माँगूँगी।', 'I will not ask job seekers for any fee or deposit.'],
+                ['₹590 (₹500 + GST) का शुल्क वापसी योग्य नहीं है; भुगतान से 6 महीने तक मान्य।', 'The fee of ₹590 (₹500 + GST) is non-refundable; valid for 6 months from payment.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['इस पेज पर आपके पास रहने वाले काम ढूँढने वाले मोबाइल नंबर के साथ दिखेंगे – इसे सेव कर लें।', 'Job seekers living near you appear on this page with their mobile numbers – bookmark it.'],
+            ],
+        ];
+    }
+
+    private static function nearJobSeeker(): array
+    {
+        return [
+            'type' => 'nearjobseek', 'prefix' => 'NJS', 'side' => 'candidate', 'icon' => '🧑‍🔧', 'otp' => true, 'multipart' => true,
+            'fee' => self::NEAR_JOB_SEEKER_FEE,
+            'max_categories' => 5,
+            'title' => ['घर के पास काम चाहिए – Near Me नौकरी', 'Work Near Home – Near Me Jobs'],
+            'button' => ['घर के पास काम चाहिए? दुकान, किराना, ढाबा में नौकरी', 'Want work near home? Jobs in shops, kirana, dhabas'],
+            'intro' => ['अपने घर के पास की दुकानों और व्यवसायों में काम पाएँ। ₹250 + GST (₹295) एक बार – 3 महीने तक पास के काम मोबाइल नंबर के साथ दिखेंगे।', 'Get work in shops and businesses near your home. ₹250 + GST (₹295) once – for 3 months you see nearby work with the employer\'s mobile number.'],
+            'categories_label' => ['आप कौन सा काम कर सकते हैं – अधिकतम 5', 'Work you can do – up to 5'],
+            'info' => [
+                'title' => ['शुल्क', 'Fee'],
+                'points' => [
+                    ['₹250 + 18% GST = ₹295, एक बार – भुगतान से 3 महीने तक मान्य।', '₹250 + 18% GST = ₹295, once – valid for 3 months from payment.'],
+                    ['नौकरी के बदले किसी दुकान या व्यक्ति को कभी पैसा न दें।', 'Never pay a shop or anyone else for a job.'],
+                    self::platformDisclaimer(),
+                ],
+            ],
+            'sections' => [
+                self::personalSection([]),
+                self::locationSection(['घर का पता – काम घर के पास ही मिलेगा', 'Home address – work is matched near your home'],
+                    ['घर पर रहते हुए बटन दबाएँ – आपको केवल घर के पास का काम दिखाया जाएगा।', 'Tap the button while at home – you are only matched with work near your home.']),
+                [
+                    'title' => ['आप क्या चाहते हैं', 'What You Are Looking For'],
+                    'fields' => [
+                        self::radio('work_type', ['काम का प्रकार', 'Type of work'], self::NEAR_JOB_WORK_TYPES, true, ['full' => true]),
+                        self::categories(true),
+                        self::radio('max_distance', ['घर से अधिकतम कितनी दूरी तक काम कर सकते हैं', 'How far from home can you work'], [
+                            '1' => ['1 किमी के भीतर', 'Within 1 km'], '3' => ['3 किमी के भीतर', 'Within 3 km'], '5' => ['5 किमी के भीतर', 'Within 5 km'], '10' => ['10 किमी के भीतर', 'Within 10 km'],
+                        ], true, ['full' => true]),
+                        self::number('expected_salary', ['अपेक्षित वेतन (₹ प्रति माह)', 'Expected pay (₹ per month)'], false, 0, 10000000),
+                        ['key' => 'about_me', 'type' => 'textarea', 'label' => ['अपने अनुभव और काम के बारे में लिखें', 'About your experience and work'], 'required' => true, 'full' => true, 'max' => 2000],
+                        self::file('resume', ['रिज़्यूमे (PDF/DOC, अधिकतम 5MB, वैकल्पिक)', 'Resume (PDF/DOC, max 5MB, optional)']),
+                    ],
+                ],
+            ],
+            'declaration' => [
+                ['मेरे द्वारा दी गई जानकारी सही है।', 'The information I have given is true.'],
+                ['मैं सहमत हूँ कि पास के रजिस्टर्ड व्यवसाय मेरा प्रोफ़ाइल और मोबाइल नंबर देख सकें।', 'I agree that registered businesses near me can see my profile and mobile number.'],
+                ['₹295 (₹250 + GST) का शुल्क वापसी योग्य नहीं है; भुगतान से 3 महीने तक मान्य। यह नौकरी की गारंटी नहीं है।', 'The fee of ₹295 (₹250 + GST) is non-refundable; valid for 3 months from payment. It is not a job guarantee.'],
+                self::platformDisclaimer(),
+                self::notGovt(),
+            ],
+            'next_steps' => [
+                ['इस पेज पर आपके घर के पास का काम मालिक के मोबाइल नंबर के साथ दिखेगा – इसे सेव कर लें।', 'Work near your home appears on this page with the owner\'s mobile number – bookmark it.'],
             ],
         ];
     }

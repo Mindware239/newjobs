@@ -24,7 +24,7 @@ class BusinessSummary
         'mentors' => ['title' => 'Skill providers / mentors / institutes', 'types' => ['provider', 'mentorplan']],
         'interns' => ['title' => 'Internship providers', 'types' => ['internpro', 'internplan']],
         'employers' => ['title' => 'Employers / hiring companies', 'types' => ['jobpro', 'jobplan', 'hospital', 'hirer']],
-        'nearme' => ['title' => 'Near Me (service providers & users)', 'types' => ['nearpro', 'nearseek']],
+        'nearme' => ['title' => 'Near Me (service providers & users)', 'types' => ['nearpro', 'nearseek', 'nearjobpro', 'nearjobseek']],
         'passes' => ['title' => 'Jobs in India Pass & Jobs Abroad unlocks', 'types' => ['jobpass', 'intlcountry']],
         'ngo' => ['title' => 'NGOs / social organisations', 'types' => ['ngo']],
         'seniors' => ['title' => 'Senior citizens (59+) & organisations engaging them', 'types' => ['senior', 'seniorhire']],
