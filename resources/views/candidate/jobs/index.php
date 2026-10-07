@@ -1252,7 +1252,7 @@ $base = $base ?? '/';
                     if (this.filters.location) count++;
                     if (this.filters.salary_min || this.filters.salary_max) count++;
                     if (this.filters.experience) count++;
-                    if (this.filters.job_type) count++;
+                    if (this.filters.job_type && this.filters.job_type.length > 0) count++; // an empty array is truthy in JS
                     if (this.filters.is_remote) count++;
                     if (this.filters.work_mode && this.filters.work_mode.length > 0) count++;
                     if (this.filters.location_filter && this.filters.location_filter.length > 0) count++;
