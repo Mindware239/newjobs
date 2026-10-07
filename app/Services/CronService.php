@@ -70,6 +70,15 @@ class CronService
                 foreach (\App\Services\IndiaJobs\FeedFetcher::runDue() as $line) {
                     echo $line . "\n";
                 }
+                // Same hourly cron publishes blog posts added as files (content/blogs/*.html) by the daily routine.
+                foreach (\App\Services\BlogFileImporter::run() as $line) {
+                    echo $line . "\n";
+                }
+                break;
+            case 'blog_import':
+                foreach (\App\Services\BlogFileImporter::run() as $line) {
+                    echo $line . "\n";
+                }
                 break;
             case 'registration_payment_reminders':
             case 'skill_payment_reminders':
