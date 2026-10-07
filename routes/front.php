@@ -104,6 +104,11 @@ $router->post('/login/mentoring/verify', [\App\Controllers\Front\MentoringContro
 $router->get('/login/job-seeker', [AuthController::class, 'login']);
 $router->get('/login/employer', [AuthController::class, 'login']);
 $router->get('/login/mentor', [AuthController::class, 'login']);
+$router->get('/login/senior', [AuthController::class, 'login']);
+$router->post('/login/senior/identify', [\App\Controllers\Front\SeniorController::class, 'identify'], [$loginRateLimit, $csrfMiddleware]);
+$router->post('/login/senior/verify', [\App\Controllers\Front\SeniorController::class, 'verify'], [$loginRateLimit, $csrfMiddleware]);
+$router->get('/senior', [\App\Controllers\Front\SeniorController::class, 'index']);
+$router->get('/senior/logout', [\App\Controllers\Front\SeniorController::class, 'logout']);
 $router->get('/account/mobile', [AuthController::class, 'mobileForm']);
 $router->post('/account/mobile', [AuthController::class, 'mobileSave'], [$formRateLimit, $csrfMiddleware]);
 $router->get('/account/security', [AuthController::class, 'security']);
@@ -160,6 +165,7 @@ $router->get('/post-job-free', [\App\Controllers\Front\StateJobsController::clas
 $router->post('/post-job-free', [\App\Controllers\Front\StateJobsController::class, 'postSave'], [$formRateLimit, $csrfMiddleware]);
 $router->post('/free-job/{id}/close', [\App\Controllers\Front\StateJobsController::class, 'close'], [$csrfMiddleware]);
 $router->post('/free-job/{id}/contact', [\App\Controllers\Front\StateJobsController::class, 'contact'], [$formRateLimit, $csrfMiddleware]);
+$router->get('/free-job/{id}/unlock', [\App\Controllers\Front\StateJobsController::class, 'unlock']);
 $router->get('/free-job/{id}', [\App\Controllers\Front\StateJobsController::class, 'show']);
 $router->get('/india-jobs/{id}', [\App\Controllers\Front\IndiaJobsController::class, 'show']);
 

@@ -35,4 +35,5 @@ $smWork = ['full_time' => ['फ़ुल-टाइम', 'Full-time'], 'part_time
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    <p style="margin:10px 0 0;font-size:.85rem;color:#4b5563">🔑 <?= $t('यह पेज कभी भी खोलें:', 'Open this any time:') ?> <a href="/senior"><b>jobsence.com/senior</b></a> – <?= $t('वरिष्ठ नागरिक लॉगिन (मोबाइल या ईमेल → OTP)', 'Senior Citizen Login (mobile or email → OTP)') ?></p>
 </div>

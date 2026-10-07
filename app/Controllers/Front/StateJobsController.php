@@ -200,11 +200,61 @@ class StateJobsController extends BaseController
                 'error' => 'संपर्क देखने के लिए लॉगिन करें / Log in to see the contact'], 401);
             return;
         }
-        if (!FreeJobPost::revealContact((int)$this->currentUser->id, (int)$post['id'])) {
+        $uid = (int)$this->currentUser->id;
+        $own = (int)$post['user_id'] === $uid || $this->currentUser->isAdmin();
+        // Job seekers pay ₹185 + GST once per post to see the poster's contact (user, 2026-10-07).
+        if (!$own && !FreeJobPost::contactUnlocked($uid, (int)$post['id'])) {
+            $response->json(['success' => false, 'pay' => '/free-job/' . (int)$post['id'] . '/unlock',
+                'error' => 'इस नौकरी का संपर्क ₹185 + GST में देखें / See this job’s contact for ₹185 + GST'], 402);
+            return;
+        }
+        if (!FreeJobPost::revealContact($uid, (int)$post['id'])) {
             $response->json(['success' => false, 'error' => 'आज की सीमा (' . FreeJobPost::CONTACTS_PER_DAY . ' संपर्क) पूरी – कल फिर देखें / Daily limit of ' . FreeJobPost::CONTACTS_PER_DAY . ' contacts reached – try again tomorrow'], 429);
             return;
         }
         $response->json(['success' => true, 'phone' => (string)$post['phone'], 'email' => (string)$post['email']]);
+    }
+
+    /** GET /free-job/{id}/unlock – start the ₹185 + GST payment for this post's contact (reuses an unpaid one). */
+    public function unlock(Request $request, Response $response): void
+    {
+        $post = FreeJobPost::find((int)$request->param('id'));
+        if (!$post || $post['status'] !== 'live' || strtotime((string)$post['expires_at']) <= time()) {
+            $response->view('errors/404', [], 404);
+            return;
+        }
+        if (!$this->currentUser) {
+            $response->redirect('/login/job-seeker?redirect=' . rawurlencode('/free-job/' . (int)$post['id'] . '/unlock'));
+            return;
+        }
+        $uid = (int)$this->currentUser->id;
+        if ((int)$post['user_id'] === $uid || FreeJobPost::contactUnlocked($uid, (int)$post['id'])) {
+            $response->redirect(FreeJobPost::url($post));
+            return;
+        }
+        $db = \App\Core\Database::getInstance();
+        $open = $db->fetchOne(
+            "SELECT token FROM portal_registrations WHERE type = 'jobcontact' AND payment_status <> 'paid'
+               AND JSON_UNQUOTE(JSON_EXTRACT(details, '$.post_id')) = ? AND JSON_UNQUOTE(JSON_EXTRACT(details, '$.user_id')) = ? ORDER BY id DESC LIMIT 1",
+            [(string)(int)$post['id'], (string)$uid]
+        );
+        if ($open) {
+            $response->redirect('/apply/pay/' . $open['token']);
+            return;
+        }
+        $u = $this->currentUser;
+        $reg = \App\Models\PortalRegistration::create([
+            'type' => 'jobcontact',
+            'full_name' => mb_substr(trim((string)($u->name ?? '')) ?: (string)($u->email ?? 'Job seeker'), 0, 120),
+            'mobile' => substr((string)preg_replace('/\D/', '', (string)($u->phone ?? '')), -10),
+            'email' => (string)($u->email ?? ''),
+            'city' => $post['city'],
+            'state' => $post['state'],
+            'categories' => mb_substr((string)$post['title'], 0, 190),
+            'details' => json_encode(['post_id' => (int)$post['id'], 'user_id' => $uid, 'company' => $post['company_name'], 'return_to' => FreeJobPost::url($post)], JSON_UNESCAPED_UNICODE),
+            'declaration_accepted' => 1,
+        ], 'FJC', FreeJobPost::CONTACT_FEE);
+        $response->redirect($reg ? '/apply/pay/' . $reg['token'] : FreeJobPost::url($post));
     }
 
     /** POST /free-job/{id}/close – the poster (or admin) closes a post. */

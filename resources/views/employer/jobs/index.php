@@ -97,6 +97,8 @@ $subscription = $subscription ?? null;
         'pending_review' => ['Job submitted for review', 'Our team will review it and it will go live soon – usually within 24 hours. We will notify you when it is published.', 'bg-yellow-50 border-yellow-300 text-yellow-900'],
         'published' => ['Your job is live!', 'Candidates can now find and apply to it.', 'bg-green-50 border-green-300 text-green-900'],
         'draft' => ['Draft saved', 'You can finish it and publish any time.', 'bg-blue-50 border-blue-300 text-blue-900'],
+        'paid' => ['Payment received – job submitted', 'Thank you. Your ₹200 + GST job post is paid and the job has been submitted – it goes live after our check, usually within 24 hours. The receipt is in your email.', 'bg-green-50 border-green-300 text-green-900'],
+        'pay' => ['Pay ₹200 + GST to post this job', 'Your job is saved as a draft. Your free job / plan credits are used – pay ₹200 + GST for this one job, or choose a plan for more jobs.', 'bg-yellow-50 border-yellow-300 text-yellow-900'],
         'updated' => ['Job updated', 'Your changes have been saved.', 'bg-green-50 border-green-300 text-green-900'],
     ];
     if (isset($savedMessages[$savedState])): [$sTitle, $sText, $sCls] = $savedMessages[$savedState]; ?>
@@ -439,14 +441,14 @@ function applyFilters() {
     window.location.href = '/employer/jobs?' + params.toString();
 }
 
-function jobActionNotice(message, type, link) {
+function jobActionNotice(message, type, link, linkText) {
     const box = document.getElementById('job-action-notice');
     const cls = { error: 'bg-red-50 border-red-300 text-red-900', warning: 'bg-yellow-50 border-yellow-300 text-yellow-900', success: 'bg-green-50 border-green-300 text-green-900' };
     box.className = 'rounded-lg border px-4 py-3 ' + (cls[type] || cls.error);
     box.textContent = message;
     if (link) {
         const a = document.createElement('a');
-        a.href = link; a.textContent = ' View plans →'; a.className = 'font-bold underline ml-1';
+        a.href = link; a.textContent = ' ' + (linkText || 'View plans →'); a.className = 'font-bold underline ml-1';
         box.appendChild(a);
     }
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -469,7 +471,7 @@ function updateJobStatus(jobRef, status) {
     jobRequest('/employer/jobs/' + encodeURIComponent(jobRef) + '/status', 'POST', { status })
         .then(({ ok, status: code, data }) => {
             if (ok) { window.location.href = '/employer/jobs?saved=' + encodeURIComponent(data.status === 'pending_review' || data.status === 'published' ? data.status : 'updated'); return; }
-            jobActionNotice(data.message || 'Could not update the job. Please try again.', code === 402 ? 'warning' : 'error', code === 402 ? data.redirect : null);
+            jobActionNotice(data.message || 'Could not update the job. Please try again.', code === 402 ? 'warning' : 'error', code === 402 ? data.redirect : null, data.pay_per_post ? 'Pay ₹200 + GST for this job →' : null);
         })
         .catch(() => jobActionNotice('Could not reach the server. Please check your connection and try again.'));
 }

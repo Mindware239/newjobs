@@ -805,12 +805,13 @@ class AuthController extends BaseController
         if ($request->getMethod() === 'GET') {
             $redirect = $request->get('redirect');
             \App\Middlewares\CsrfMiddleware::generateToken();
-            // Separate logins on one page: /login/job-seeker, /login/employer, /login/mentor (or ?role= / ?as=).
+            // Separate logins on one page: /login/job-seeker, /login/employer, /login/mentor, /login/senior (or ?role= / ?as=).
             $path = rtrim((string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH), '/');
             $as = (string)($request->get('as') ?? $request->get('role') ?? '');
             $tab = match (true) {
                 str_ends_with($path, '/login/employer'), $as === 'employer' => 'employer',
                 str_ends_with($path, '/login/mentor'), in_array($as, ['mentor', 'provider'], true) => 'mentor',
+                str_ends_with($path, '/login/senior'), $as === 'senior' => 'senior',
                 default => 'candidate',
             };
             $response->view('auth/login', [

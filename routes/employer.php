@@ -142,6 +142,7 @@ $router->post('/employer/jobs', [JobsController::class, 'store'], [$authMiddlewa
 $router->post('/employer/jobs/generate-description', [JobsController::class, 'generateDescription'], [$authMiddleware]);
 $router->put('/employer/jobs/{slug}', [JobsController::class, 'update'], [$authMiddleware, $spamMiddleware]);
 $router->delete('/employer/jobs/{slug}', [JobsController::class, 'destroy'], [$authMiddleware]);
+$router->get('/employer/jobs/{slug}/pay-post', [JobsController::class, 'payPost'], [$authMiddleware]);
 $router->post('/employer/jobs/{slug}/publish', [JobsController::class, 'publish'], [$authMiddleware]);
 $router->post('/employer/jobs/{slug}/status', [JobsController::class, 'changeStatus'], [$authMiddleware]);
 $router->post('/employer/jobs/bulk-import', [JobsController::class, 'bulkImport'], [$authMiddleware]);

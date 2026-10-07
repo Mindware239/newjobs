@@ -331,6 +331,12 @@ $userArray = isset($user) && method_exists($user, 'toArray') ? $user->toArray() 
     </div>
 
     <div class="jwiz-container" x-show="!isLoading" x-transition.opacity.duration.400ms>
+        <?php if (!empty($payPerPost) && !$isEditMode): ?>
+        <div style="margin:0 0 16px;padding:12px 16px;border-radius:12px;background:#fffbeb;border:1px solid #fcd34d;color:#78350f;font-size:14px;line-height:1.5">
+            <b>₹200 + GST for this job.</b> Your free job / plan credits are used. Fill in the job and submit – you will then pay ₹200 + GST (₹236) for this one job and it goes for review.
+            Posting many jobs? <a href="/employer/subscription/plans?upgrade=1&amp;feature=job_posting&amp;hide_free=1" style="color:#b45309;font-weight:700;text-decoration:underline">Choose a plan</a>.
+        </div>
+        <?php endif; ?>
 
         <!-- Language/Country Modal -->
         <div x-show="showLanguageModal" x-cloak class="jwiz-modal-bg">
@@ -1739,7 +1745,7 @@ document.addEventListener('alpine:init', () => {
                 this.showNotice(data.message || 'Please fix the highlighted fields.', 'error', { errors: data.errors });
             } else if ((res.status === 402 || res.status === 403) && data.redirect) {
                 this.showNotice(data.message || 'Action required before you can post this job.', 'warning',
-                    { link: data.redirect, linkText: res.status === 402 ? 'View subscription plans →' : 'Continue →' });
+                    { link: data.redirect, linkText: res.status === 402 ? (data.pay_per_post ? 'Pay ₹200 + GST for this job →' : 'View subscription plans →') : 'Continue →' });
             } else if (res.status === 401 || res.status === 419) {
                 this.showNotice('Your session has expired. Please log in again – your form will need to be re-submitted.', 'warning', { link: '/login?redirect=/employer/jobs/create', linkText: 'Log in →' });
             } else {

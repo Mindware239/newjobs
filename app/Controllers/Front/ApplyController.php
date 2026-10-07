@@ -320,6 +320,13 @@ class ApplyController extends BaseController
             return;
         }
 
+        // Pay-per-use payments go straight back to where they started (receipt is emailed).
+        $back = (string)($reg['details']['return_to'] ?? '');
+        if (in_array($reg['type'], ['jobpostpaid', 'jobcontact'], true) && str_starts_with($back, '/') && !str_starts_with($back, '//')) {
+            $response->redirect($back);
+            return;
+        }
+
         // Contact passes (Near Me, hospital, hirer) unlock in this browser straight away.
         $passPage = \App\Services\Registration\ContactPass::remember($reg);
 

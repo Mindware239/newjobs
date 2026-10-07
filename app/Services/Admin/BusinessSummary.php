@@ -28,6 +28,8 @@ class BusinessSummary
         'passes' => ['title' => 'Jobs in India Pass & Jobs Abroad unlocks', 'types' => ['jobpass', 'intlcountry']],
         'ngo' => ['title' => 'NGOs / social organisations', 'types' => ['ngo']],
         'seniors' => ['title' => 'Senior citizens (59+) & organisations engaging them', 'types' => ['senior', 'seniorhire']],
+        'honorary' => ['title' => 'Honorary Mentorship (Dwarka workshops)', 'types' => ['honormentor', 'honorlearn']],
+        'payperuse' => ['title' => 'Pay per use – job posts (₹200 + GST) & job contact unlocks (₹185 + GST)', 'types' => ['jobpost', 'jobpostpaid', 'jobcontact']],
     ];
 
     public const PERIODS = ['today' => 'Today', '7d' => 'Last 7 days', '30d' => 'Last 30 days', 'month' => 'This month', 'all' => 'All time', 'custom' => 'Custom'];

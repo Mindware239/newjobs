@@ -23,7 +23,7 @@ class HonoraryController extends BaseController
         $base = rtrim((string)($_ENV['APP_URL'] ?? 'https://jobsence.com'), '/');
         SeoService::getInstance()->setMeta([
             'title' => 'Honorary Mentorship – Free One-Day 4-Hour Skill Workshops | Jobsence',
-            'description' => 'Experienced honorary mentors teach free in one-day, 4-hour skill workshops – online and at venues across India. Learners join free.',
+            'description' => 'Experienced honorary mentors teach free in one-day, 4-hour skill workshops held in person in Dwarka, New Delhi. Learners join free.',
             'canonical' => $base . '/honorary-mentorship',
             'robots' => 'index, follow',
         ]);

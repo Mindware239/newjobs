@@ -55,7 +55,7 @@ $posting = [
                     <div class="sd-cta-row" id="fj-contact" data-url="/free-job/<?= (int)$p['id'] ?>/contact" data-title="<?= $h($p['title']) ?>" data-token="<?= $h($_SESSION['csrf_token'] ?? '') ?>">
                         <button type="button" class="sd-btn" id="fj-show">📞 <?= $tb('संपर्क देखें', 'Show contact') ?></button>
                     </div>
-                    <p id="fj-msg" style="font-size:.85rem;color:#4b5563;margin:6px 0 0"><?= $t('लॉगिन करके संपर्क देखें – मुफ़्त।', 'Log in to see the contact – free.') ?></p>
+                    <p id="fj-msg" style="font-size:.85rem;color:#4b5563;margin:6px 0 0"><?= $mine ? '' : $t('लॉगिन करें – संपर्क ₹185 + GST में एक बार खुलता है, फिर इस नौकरी के लिए हमेशा खुला रहता है।', 'Log in – the contact unlocks once for ₹185 + GST and stays open for this job.') ?></p>
                     <script>
                     (function () {
                         var box = document.getElementById('fj-contact'), btn = document.getElementById('fj-show'), msg = document.getElementById('fj-msg');
@@ -73,6 +73,12 @@ $posting = [
                                 .then(function (r) { return r.json(); })
                                 .then(function (d) {
                                     if (d.login) { window.location.href = d.login; return; }
+                                    if (d.pay) {
+                                        msg.textContent = d.error || '';
+                                        box.innerHTML = '';
+                                        box.appendChild(link(d.pay, '🔓 ₹185 + GST देकर संपर्क देखें · Pay ₹185 + GST to see the contact'));
+                                        return;
+                                    }
                                     if (!d.success) { msg.textContent = d.error || 'Error'; btn.disabled = false; return; }
                                     box.innerHTML = '';
                                     if (d.phone) { box.appendChild(link('tel:+91' + d.phone, '📞 ' + d.phone)); box.appendChild(link('https://wa.me/91' + d.phone, 'WhatsApp', true)); }
@@ -86,8 +92,8 @@ $posting = [
                 <?php endif; ?>
             </article>
             <div class="ij-note"><?= $t(
-                'यह नौकरी कंपनी ने ख़ुद मुफ़्त पोस्ट की है – Jobsence ने इसकी पुष्टि नहीं की है। नौकरी के बदले कभी कोई पैसा न दें; गड़बड़ लगे तो gm@jobsence.com पर बताएँ।',
-                'This job was posted free by the company itself – Jobsence has not verified it. Never pay anyone for a job; report anything suspicious to gm@jobsence.com.'
+                'यह नौकरी कंपनी ने ख़ुद पोस्ट की है – Jobsence ने इसकी पुष्टि नहीं की है। संपर्क देखने का ₹185 + GST शुल्क केवल Jobsence को जाता है; नौकरी के बदले कंपनी या किसी व्यक्ति को कभी पैसा न दें; गड़बड़ लगे तो gm@jobsence.com पर बताएँ।',
+                'This job was posted by the company itself – Jobsence has not verified it. The ₹185 + GST contact fee goes only to Jobsence; never pay the company or anyone else for a job, and report anything suspicious to gm@jobsence.com.'
             ) ?> <?= $t('पोस्ट', 'Post') ?> #<?= (int)$p['id'] ?></div>
             <?php if ($mine && $live): ?>
                 <form method="POST" action="/free-job/<?= (int)$p['id'] ?>/close" style="margin-top:10px"><input type="hidden" name="_token" value="<?= $h($_SESSION['csrf_token'] ?? '') ?>">

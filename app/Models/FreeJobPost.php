@@ -20,6 +20,8 @@ class FreeJobPost
     public const EXTRA_POST_FEE = 236.00;
     /** Contact reveals per user per day (contacts are never in the page HTML – see StateJobsController::contact). */
     public const CONTACTS_PER_DAY = 30;
+    /** A job seeker pays ₹185 + 18% GST once per post to see its phone / email (user, 2026-10-07). */
+    public const CONTACT_FEE = 218.30;
 
     public const COMPANY_TYPES = [
         'pvt_ltd' => ['प्राइवेट लिमिटेड कंपनी', 'Private Limited Company'],
@@ -124,6 +126,22 @@ class FreeJobPost
         return true;
     }
 
+    /** Has this user paid to see the contact of this post? */
+    public static function contactUnlocked(int $userId, int $postId): bool
+    {
+        self::ensureSchema();
+        return (bool)Database::getInstance()->fetchOne('SELECT id FROM free_job_contact_unlocks WHERE user_id = ? AND post_id = ?', [$userId, $postId]);
+    }
+
+    /** Called once the ₹185 + GST contact fee is paid (RegistrationPayments::completePayment). */
+    public static function unlockContact(int $userId, int $postId, int $regId): void
+    {
+        self::ensureSchema();
+        Database::getInstance()->execute(
+            'INSERT IGNORE INTO free_job_contact_unlocks (user_id, post_id, registration_id) VALUES (?, ?, ?)', [$userId, $postId, $regId]
+        );
+    }
+
     public static function countView(int $id): void
     {
         Database::getInstance()->execute('UPDATE free_job_posts SET views = views + 1 WHERE id = ?', [$id]);
@@ -209,6 +227,15 @@ class FreeJobPost
                 PRIMARY KEY (id),
                 KEY idx_fjcv_user (user_id, created_at),
                 KEY idx_fjcv_post (post_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            $pdo->exec("CREATE TABLE IF NOT EXISTS free_job_contact_unlocks (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                user_id BIGINT UNSIGNED NOT NULL,
+                post_id BIGINT UNSIGNED NOT NULL,
+                registration_id BIGINT UNSIGNED NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uq_fjcu (user_id, post_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         }
         $done = true;

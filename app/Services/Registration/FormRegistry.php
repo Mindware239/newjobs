@@ -181,6 +181,8 @@ class FormRegistry
             'senior-citizen-jobs' => self::seniorJobs(),
             'senior-citizen-hiring' => self::seniorHiring(),
             'extra-job-post' => self::extraJobPost(),
+            'employer-job-post' => self::employerJobPost(),
+            'free-job-contact' => self::freeJobContact(),
             'honorary-mentor' => self::honoraryMentor(),
             'honorary-learner' => self::honoraryLearner(),
         ];
@@ -873,6 +875,8 @@ class FormRegistry
     public const SENIOR_MIN_AGE = 59;
     /** Organisations offering a senior-citizen job: ₹500 per job (GST included), job live for 7 days. */
     public const SENIOR_JOB_FEE = 500.00;
+    /** Community service by retired people is free for both sides (user, 2026-10-07); paid work ₹500 per job. */
+    public const SENIOR_JOB_FEES = ['full_time' => self::SENIOR_JOB_FEE, 'part_time' => self::SENIOR_JOB_FEE, 'community' => 0.00];
 
     private static function seniorJobs(): array
     {
@@ -970,14 +974,16 @@ class FormRegistry
             'otp' => true,
             // Employers pay (user, 2026-10-06): a nominal ₹500 per senior-citizen job, live for 7 days (PortalRegistration::VALIDITY).
             'fee' => self::SENIOR_JOB_FEE,
+            'fee_by' => ['work_type', self::SENIOR_JOB_FEES],
             'max_categories' => 5,
             'title' => ['वरिष्ठ नागरिकों के लिए नौकरी दें – ₹500 प्रति नौकरी, 7 दिन', 'Offer a Job to Senior Citizens – ₹500 per job, 7 days'],
             'button' => ['कंपनी / स्कूल / अस्पताल / NGO – वरिष्ठ नागरिकों को काम दें', 'Company / school / hospital / NGO – engage senior citizens'],
-            'intro' => ['अनुभवी वरिष्ठ नागरिकों (59+) को फ़ुल-टाइम, पार्ट-टाइम या सामुदायिक सेवा के लिए जोड़ें। हर नौकरी के लिए नाममात्र शुल्क ₹500 (GST सहित) – नौकरी 7 दिन तक वरिष्ठ नागरिकों को दिखेगी।', 'Engage experienced senior citizens (59+) for full-time, part-time or community-service roles. A nominal ₹500 (incl. GST) per job – the job is shown to senior citizens for 7 days.'],
+            'intro' => ['अनुभवी वरिष्ठ नागरिकों (59+) को फ़ुल-टाइम, पार्ट-टाइम या सामुदायिक सेवा के लिए जोड़ें। हर पेड नौकरी के लिए नाममात्र शुल्क ₹500 (GST सहित) – नौकरी 7 दिन तक वरिष्ठ नागरिकों को दिखेगी। सामुदायिक सेवा (स्वयंसेवा) मुफ़्त है।', 'Engage experienced senior citizens (59+) for full-time, part-time or community-service roles. A nominal ₹500 (incl. GST) per paid job – the job is shown to senior citizens for 7 days. Community service (volunteer) requests are free.'],
             'info' => [
                 'title' => ['शुल्क', 'Fee'],
                 'points' => [
                     ['हर नौकरी के लिए ₹500 (GST सहित), 7 दिन के लिए। एक और नौकरी के लिए यह फ़ॉर्म दोबारा भरें।', '₹500 (including GST) per job, for 7 days. Fill this form again for another job.'],
+                    ['सामुदायिक सेवा (स्वयंसेवा) के लिए रिटायर लोगों को जोड़ना मुफ़्त है – कोई शुल्क नहीं।', 'Engaging retired people for community service (volunteer) is free – no fee.'],
                     ['वरिष्ठ नागरिकों के लिए रजिस्ट्रेशन मुफ़्त है – वरिष्ठ नागरिकों से कोई शुल्क न माँगें।', 'Registration is free for senior citizens – never ask them for any fee.'],
                     self::platformDisclaimer(),
                 ],
@@ -1003,7 +1009,7 @@ class FormRegistry
                     'title' => ['आपको क्या चाहिए', 'What You Need'],
                     'fields' => [
                         self::radio('work_type', ['काम का प्रकार', 'Type of work'], [
-                            'full_time' => ['फ़ुल-टाइम', 'Full-time'], 'part_time' => ['पार्ट-टाइम', 'Part-time'], 'community' => ['सामुदायिक सेवा (स्वयंसेवा)', 'Community service (volunteer)'],
+                            'full_time' => ['फ़ुल-टाइम – ₹500', 'Full-time – ₹500'], 'part_time' => ['पार्ट-टाइम – ₹500', 'Part-time – ₹500'], 'community' => ['सामुदायिक सेवा (स्वयंसेवा) – मुफ़्त', 'Community service (volunteer) – free'],
                         ], true, ['full' => true]),
                         self::categories(true),
                         self::number('vacancies', ['कितने लोग चाहिए', 'How many people'], false, 1, 10000),
@@ -1015,7 +1021,7 @@ class FormRegistry
             'declaration' => [
                 ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
                 ['हम वरिष्ठ नागरिकों से कोई शुल्क या डिपॉज़िट नहीं माँगेंगे और उनसे सम्मानजनक व्यवहार करेंगे।', 'We will not ask senior citizens for any fee or deposit and will treat them with respect.'],
-                ['₹500 का शुल्क प्रति नौकरी है, 7 दिन तक मान्य और वापसी योग्य नहीं।', 'The ₹500 fee is per job, valid for 7 days and non-refundable.'],
+                ['₹500 का शुल्क प्रति पेड नौकरी है, 7 दिन तक मान्य और वापसी योग्य नहीं; सामुदायिक सेवा मुफ़्त है।', 'The ₹500 fee is per paid job, valid for 7 days and non-refundable; community service is free.'],
                 self::platformDisclaimer(),
                 self::notGovt(),
             ],
@@ -1899,6 +1905,42 @@ class FormRegistry
             'declaration' => [self::platformDisclaimer()],
             'next_steps' => [
                 ['आपकी नौकरी अब राज्य और शहर की सूची में लाइव है।', 'Your job is now live in the state & city list.'],
+            ],
+        ];
+    }
+
+    /** Regular job posts from the employer dashboard (user, 2026-10-06): ₹200 + 18% GST per job when no plan credit is left. */
+    public const EMPLOYER_JOB_POST_FEE = 236.00;
+
+    private static function employerJobPost(): array
+    {
+        return [
+            'type' => 'jobpostpaid', 'prefix' => 'JPE', 'side' => 'service', 'icon' => '💼', 'internal' => true, 'hidden_from_hub' => true,
+            'fee' => self::EMPLOYER_JOB_POST_FEE,
+            'title' => ['नौकरी पोस्ट – ₹200 + GST', 'Job post – ₹200 + GST'],
+            'button' => ['नौकरी पोस्ट', 'Job post'],
+            'intro' => ['आपकी मुफ़्त पोस्ट / प्लान की पोस्ट पूरी हो गई हैं – यह एक नौकरी ₹200 + GST में पोस्ट होगी।', 'Your free / plan job posts are used – this one job is posted for ₹200 + GST.'],
+            'sections' => [],
+            'declaration' => [self::platformDisclaimer()],
+            'next_steps' => [
+                ['आपकी नौकरी जाँच के बाद (आमतौर पर 24 घंटे में) लाइव होगी – My Jobs में स्थिति देखें।', 'Your job goes live after our check (usually within 24 hours) – see its status in My Jobs.'],
+            ],
+        ];
+    }
+
+    /** A job seeker pays ₹185 + 18% GST to see the phone / email of one free-board job post (user, 2026-10-07). */
+    private static function freeJobContact(): array
+    {
+        return [
+            'type' => 'jobcontact', 'prefix' => 'FJC', 'side' => 'service', 'icon' => '📞', 'internal' => true, 'hidden_from_hub' => true,
+            'fee' => \App\Models\FreeJobPost::CONTACT_FEE,
+            'title' => ['नौकरी का संपर्क – ₹185 + GST', 'Job contact – ₹185 + GST'],
+            'button' => ['नौकरी का संपर्क', 'Job contact'],
+            'intro' => ['इस नौकरी को पोस्ट करने वाले का मोबाइल और ईमेल ₹185 + GST में देखें। यह शुल्क Jobsence का है – कंपनी को नौकरी के लिए कभी पैसे न दें।', 'See the mobile and email of the person who posted this job for ₹185 + GST. This is Jobsence’s fee – never pay the company for a job.'],
+            'sections' => [],
+            'declaration' => [self::platformDisclaimer()],
+            'next_steps' => [
+                ['नौकरी के पेज पर “संपर्क देखें” दबाएँ – संपर्क अब हमेशा खुला रहेगा।', 'Tap “Show contact” on the job page – the contact stays unlocked for you.'],
             ],
         ];
     }

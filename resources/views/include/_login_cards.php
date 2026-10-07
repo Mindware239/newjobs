@@ -1,6 +1,6 @@
 <?php
 /**
- * Homepage: the three separate logins (Job Seeker / Employer / Mentor) side by side with bold captions,
+ * Homepage: the four separate logins (Job Seeker / Employer / Mentor / Senior Citizen) side by side with bold captions,
  * what each gets and register links. Hidden for visitors who are already logged in.
  */
 use App\Helpers\Lang;
@@ -30,7 +30,8 @@ $lcH = static fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 <style>
     .lc { max-width: 1100px; width: calc(100% - 32px); margin: 16px auto; box-sizing: border-box; }
     .lc-title { text-align: center; font-size: 1.35rem; font-weight: 900; color: #111827; margin: 0 0 12px; }
-    .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .lc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    @media (max-width: 1100px) { .lc-grid { grid-template-columns: repeat(2, 1fr); } }
     .lc-card { background: #fff; border: 1px solid #e5e7eb; border-top: 6px solid var(--rc); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
     .lc-cap { margin: 0; font-size: 1.3rem; font-weight: 900; color: var(--rc); line-height: 1.25; }
     .lc-tag { margin: 0; font-size: .9rem; font-weight: 600; color: #4b5563; }

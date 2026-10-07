@@ -1,6 +1,6 @@
 <?php
 /**
- * The three separate logins – Job Seeker, Employer, Mentor – with what each one gets.
+ * The four separate logins – Job Seeker, Employer, Mentor, Senior Citizen – with what each one gets.
  * Shared by the login page (tabs) and the homepage (cards). Returns key => role info.
  */
 return [
@@ -55,5 +55,23 @@ return [
         ],
         'href' => '/login/mentor',
         'color' => '#7c3aed',
+    ],
+    'senior' => [
+        'icon' => '👴',
+        'title' => ['वरिष्ठ नागरिक लॉगिन', 'Senior Citizen Login'],
+        'tagline' => ['59+ उम्र के रिटायर लोग और उन्हें जोड़ने वाली संस्थाएँ – काम या सामुदायिक सेवा', 'Retired people aged 59+ and the organisations that engage them – work or community service'],
+        'points' => [
+            ['सामुदायिक सेवा (स्वयंसेवा) – दोनों के लिए मुफ़्त', 'Community service (volunteer) – free for both sides'],
+            ['फ़ुल-टाइम / पार्ट-टाइम काम – हमेशा घर के पास', 'Full-time / part-time work – always near home'],
+            ['पास के स्कूल, अस्पताल, RWA, NGO और कंपनियाँ', 'Nearby schools, hospitals, RWAs, NGOs and companies'],
+            ['अपने सारे रजिस्ट्रेशन और पास के मिलान एक डैशबोर्ड पर', 'All your registrations and nearby matches on one dashboard'],
+        ],
+        'how' => ['रजिस्ट्रेशन वाला मोबाइल नंबर या ईमेल → ईमेल OTP', 'Mobile number or email used to register → email OTP'],
+        'register' => [
+            ['/apply/senior-citizen-jobs', ['वरिष्ठ नागरिक (59+) – मुफ़्त रजिस्टर करें', 'Senior citizen (59+) – register free']],
+            ['/apply/senior-citizen-hiring', ['संस्था – वरिष्ठ नागरिकों को जोड़ें', 'Organisation – engage senior citizens']],
+        ],
+        'href' => '/login/senior',
+        'color' => '#b45309',
     ],
 ];

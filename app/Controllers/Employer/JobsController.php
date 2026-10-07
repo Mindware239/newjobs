@@ -350,41 +350,8 @@ class JobsController extends BaseController
         $hasConsumedFree = $employer->hasConsumedFreeJob();
         $hasConsumedByIdentity = false; // Model method handles both direct and identity-based
         
-        // After first job OR once free job consumed, subscription is required
-        if ($postedJobsCount > 0 || $hasConsumedFree) {
-            $subscription = EmployerSubscription::getCurrentForEmployer($employer->id);
-            
-            if (!$subscription) {
-                // No subscription - redirect to plans (hide free plan)
-                $_SESSION['upgrade_message'] = 'You have used your free job posting. Please subscribe to a plan to post more jobs.';
-                $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                return;
-            }
-
-            // Verify subscription is actually active (not expired)
-            if (!$subscription->isActive() && !$subscription->isInGracePeriod()) {
-                $_SESSION['upgrade_message'] = 'Your subscription has expired. Please renew your subscription to post more jobs.';
-                $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                return;
-            }
-
-            // Verify subscription is actually active (not expired)
-            if (!$subscription->isActive() && !$subscription->isInGracePeriod()) {
-                $_SESSION['upgrade_message'] = 'Your subscription has expired. Please renew your subscription to post more jobs.';
-                $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                return;
-            }
-
-            // Check if can post more jobs
-            if (!$subscription->canUseFeature('max_job_posts')) {
-                $plan = $subscription->plan();
-                $used = (int)($subscription->attributes['job_posts_used'] ?? 0);
-                $limit = $plan ? $plan->getLimit('max_job_posts') : 1;
-                $_SESSION['upgrade_message'] = "You have reached your job posting limit ({$used}/{$limit}). Please upgrade your plan to post more jobs.";
-                $response->redirect('/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1');
-                return;
-            }
-        }
+        // Free job / plan credits used: the form still opens – this job is then posted for ₹200 + GST (PaidJobPost).
+        $payPerPost = $this->postingGate($employer) !== null;
 
         // Get counts for sidebar
         $activeJobsCount = Job::where('employer_id', '=', $employer->id)
@@ -435,6 +402,7 @@ class JobsController extends BaseController
             'jobCount' => $activeJobsCount,
             'applicationCount' => $totalApplications,
             'subscription' => $subscriptionInfo,
+            'payPerPost' => $payPerPost,
             'benefits' => $benefits,
             'jobBenefits' => [],
             'categories' => $categories
@@ -921,14 +889,11 @@ class JobsController extends BaseController
             return;
         }
 
-        if (!$isDraft && ($gate = $this->postingGate($employer))) {
-            if ($this->wantsJson($request)) {
-                $response->json($gate, 402);
-            } else {
-                $_SESSION['upgrade_message'] = $gate['message'];
-                $response->redirect($gate['redirect']);
-            }
-            return;
+        // No free job / plan credit left: the job is saved as a draft and the employer pays ₹200 + GST for it
+        // (PaidJobPost) – paying submits it. A plan stays available on the payment notice.
+        $payPerPost = !$isDraft && $this->postingGate($employer) !== null;
+        if ($payPerPost) {
+            $isDraft = true;
         }
 
         JobApprovalService::ensureStatusEnum();
@@ -1052,6 +1017,19 @@ class JobsController extends BaseController
         }
 
         $status = $isDraft ? 'draft' : $this->submitForPublication($jobRecord, $employer);
+
+        if ($payPerPost) {
+            $payReg = \App\Services\Registration\PaidJobPost::paymentFor($jobRecord, $employer, $this->currentUser);
+            $payUrl = $payReg ? '/apply/pay/' . $payReg['token'] : '/employer/jobs?saved=pay';
+            $payMsg = 'Your job is saved. Your free job / plan credits are used – pay ₹200 + GST to post this job, or choose a plan for more jobs.';
+            if ($this->wantsJson($request)) {
+                $response->json(['success' => true, 'job_id' => $jobId, 'slug' => $slug, 'status' => 'payment_required',
+                    'message' => $payMsg, 'redirect' => $payUrl, 'plans' => '/employer/subscription/plans?upgrade=1&feature=job_posting&hide_free=1'], 201);
+            } else {
+                $response->redirect($payUrl);
+            }
+            return;
+        }
 
         try {
             if (class_exists('\App\Workers\IndexJobWorker')) {
@@ -1301,6 +1279,32 @@ class JobsController extends BaseController
         }
     }
 
+    /** GET /employer/jobs/{slug}/pay-post – pay ₹200 + GST to submit this draft job (no plan credit needed). */
+    public function payPost(Request $request, Response $response): void
+    {
+        if (!$this->requireRole('employer', $request, $response)) {
+            return;
+        }
+        $employer = $this->currentUser->employer();
+        $job = Job::findBySlug((string)$request->param('slug'));
+        if (!$employer || !$job || (int)$job->attributes['employer_id'] !== (int)$employer->id) {
+            $response->redirect('/employer/jobs');
+            return;
+        }
+        if (!in_array((string)($job->attributes['status'] ?? 'draft'), ['draft', 'rejected', 'closed', ''], true)) {
+            $response->redirect('/employer/jobs');
+            return;
+        }
+        if ($this->postingGate($employer) === null) {
+            // A free job / plan credit is available after all – no payment needed, submit normally.
+            $status = $this->submitForPublication($job, $employer);
+            $response->redirect('/employer/jobs?saved=' . urlencode($status));
+            return;
+        }
+        $reg = \App\Services\Registration\PaidJobPost::paymentFor($job, $employer, $this->currentUser);
+        $response->redirect($reg ? '/apply/pay/' . $reg['token'] : '/employer/jobs?saved=pay');
+    }
+
     public function publish(Request $request, Response $response): void
     {
         if (!$this->requireRole('employer', $request, $response)) {
@@ -1394,7 +1398,10 @@ class JobsController extends BaseController
                         return ['error' => 'validation_failed', 'message' => 'Complete the job before publishing: ' . reset($errors), 'errors' => $errors, 'http' => 422];
                     }
                     if ($gate = $this->postingGate($employer)) {
-                        return $gate + ['http' => 402];
+                        // Pay per job (₹200 + GST) instead of a plan – the link opens the payment for this job.
+                        return ['redirect' => '/employer/jobs/' . rawurlencode((string)($job->attributes['slug'] ?? '')) . '/pay-post',
+                            'plans' => $gate['redirect'], 'pay_per_post' => true,
+                            'message' => $gate['message'] . ' Or pay ₹200 + GST to post just this job.'] + $gate + ['http' => 402];
                     }
                     return ['status' => $this->submitForPublication($job, $employer)];
                 }

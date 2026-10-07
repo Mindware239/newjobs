@@ -16,7 +16,7 @@ class PortalRegistration
     public const GST_RATE = 0.18;
     public const COURSE_FEE = 12000.00; // skill development course fee after selection (+ GST)
 
-    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan', 'intljob', 'intlcountry', 'senior', 'seniorhire', 'jobpost', 'honormentor', 'honorlearn'];
+    public const TYPES = ['skill', 'internship', 'fulltime', 'parttime', 'wfh', 'provider', 'ngo', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'internpro', 'mentorplan', 'internplan', 'jobpro', 'jobplan', 'intljob', 'intlcountry', 'senior', 'seniorhire', 'jobpost', 'honormentor', 'honorlearn', 'jobpostpaid', 'jobcontact'];
     public const STATUSES = ['new', 'under_scrutiny', 'selected', 'rejected', 'completed', 'expired'];
 
     /** Skill-development registrations are valid for this many months after payment. */

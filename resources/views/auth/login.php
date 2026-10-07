@@ -238,9 +238,9 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.7s linear infinite; }
-        /* ---- Three separate logins on one page ---- */
+        /* ---- Four separate logins on one page ---- */
         body { flex-direction: column; padding: 20px 16px 40px; }
-        .role-tabs { width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .role-tabs { width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
         .role-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px; border-radius: 16px; border: 2px solid var(--slate-200); background: #fff; cursor: pointer; font-family: var(--font-head); text-decoration: none; color: var(--slate-900); }
         .role-tab .ic { font-size: 26px; line-height: 1; }
         .role-tab b { font-size: 17px; font-weight: 800; }
@@ -263,6 +263,7 @@
             .login-shell { grid-template-columns: 1fr; }
             .role-info { order: 2; }
         }
+        @media (max-width: 600px) { .role-tabs { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 480px) {
             .role-tab b { font-size: 14px; }
             .role-tab small { display: none; }
@@ -312,8 +313,8 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
 
     <!-- Header -->
     <div class="header">
-        <h2 class="title" x-text="{candidate: 'Job Seeker Login', employer: 'Employer Login', mentor: 'Mentor Login'}[tab]">Login</h2>
-        <p class="subtitle" x-text="{candidate: 'जॉब सीकर लॉगिन · नौकरी, इंटर्नशिप, स्किल', employer: 'एम्प्लॉयर लॉगिन · कंपनी / HR', mentor: 'मेंटर लॉगिन · मेंटर, संस्थान, इंटर्नशिप प्रदाता, भर्ती कंपनी'}[tab]"></p>
+        <h2 class="title" x-text="{candidate: 'Job Seeker Login', employer: 'Employer Login', mentor: 'Mentor Login', senior: 'Senior Citizen Login'}[tab]">Login</h2>
+        <p class="subtitle" x-text="{candidate: 'जॉब सीकर लॉगिन · नौकरी, इंटर्नशिप, स्किल', employer: 'एम्प्लॉयर लॉगिन · कंपनी / HR', mentor: 'मेंटर लॉगिन · मेंटर, संस्थान, इंटर्नशिप प्रदाता, भर्ती कंपनी', senior: 'वरिष्ठ नागरिक लॉगिन · 59+ और उन्हें जोड़ने वाली संस्थाएँ'}[tab]"></p>
     </div>
 
     <!-- Alerts -->
@@ -328,7 +329,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
     </div>
 
     <!-- Mentor login (and job seekers who registered through a Jobsence form): mobile / email → email OTP -->
-    <form x-show="tab === 'mentor' || m.fallback" x-cloak @submit.prevent="m.step === 1 ? mIdentify() : mVerify()" novalidate>
+    <form x-show="tab === 'mentor' || tab === 'senior' || m.fallback" x-cloak @submit.prevent="m.step === 1 ? mIdentify() : mVerify()" novalidate>
         <div class="fields">
             <p x-show="m.fallback" style="font-size:13px;color:#334155;margin:0 0 4px;background:#f0fdf4;border-radius:10px;padding:10px">✅ आपका Jobsence रजिस्ट्रेशन मिला – ईमेल OTP से अपना डैशबोर्ड खोलें। · We found your Jobsence registration – open your dashboard with the email OTP.</p>
             <div x-show="m.step === 1">
@@ -357,7 +358,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
         </div>
     </form>
 
-    <div x-show="tab !== 'mentor' && !m.fallback">
+    <div x-show="tab !== 'mentor' && tab !== 'senior' && !m.fallback">
     <!-- Mode Toggle -->
     <div class="auth-toggle">
         <button type="button" @click="authMode = 'quick'; error = ''" :class="authMode === 'quick' ? 'active' : ''" class="auth-toggle-btn">मोबाइल / ईमेल · Mobile / Email</button>
@@ -485,7 +486,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
     </div><!-- /account login forms -->
 
     <!-- Social -->
-    <div x-show="tab !== 'mentor' && !m.fallback">
+    <div x-show="tab !== 'mentor' && tab !== 'senior' && !m.fallback">
     <div class="social-header">
         <div class="social-line"></div>
         <span class="social-text">or continue with</span>
@@ -509,9 +510,13 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
             $signupUrl  = $isEmployerContext ? '/register-employer' : '/register-candidate';
             $signupText = $isEmployerContext ? 'Create employer account' : 'Create candidate account';
         ?>
-        <p class="footer-text" x-show="tab !== 'mentor'">
+        <p class="footer-text" x-show="tab !== 'mentor' && tab !== 'senior'">
             Don't have an account? <br>
             <a :href="tab === 'employer' ? '/register-employer' : '/register-candidate'" class="footer-link" x-text="tab === 'employer' ? 'Create employer account' : 'Create job seeker account'"><?= $signupText ?></a>
+        </p>
+        <p class="footer-text" x-show="tab === 'senior'" x-cloak>
+            रजिस्टर नहीं किया? · Not registered yet? <br>
+            <a href="/apply/senior-citizen-jobs" class="footer-link">Register free as a senior citizen (59+)</a>
         </p>
         <p class="footer-text" x-show="tab === 'mentor'" x-cloak>
             मेंटर नहीं बने? · Not registered yet? <br>
@@ -546,7 +551,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
             m: { identifier: '', otp: '', step: 1, masked: '', role: 'provider', fallback: false },
             setTab(t) {
                 this.tab = t; this.error = ''; this.notFound = false; this.m.fallback = false; this.m.step = 1;
-                const paths = { candidate: '/login/job-seeker', employer: '/login/employer', mentor: '/login/mentor' };
+                const paths = { candidate: '/login/job-seeker', employer: '/login/employer', mentor: '/login/mentor', senior: '/login/senior' };
                 try { history.replaceState(null, '', paths[t] + window.location.search); } catch (e) {}
             },
             wrongTab(data) {
@@ -559,7 +564,7 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
                 this.isSubmitting = true;
                 let found = false;
                 try {
-                    const { ok, data } = await this.post('/login/mentoring/identify', { identifier: this.m.identifier, role: this.m.role });
+                    const { ok, data } = await this.post(this.tab === 'senior' ? '/login/senior/identify' : '/login/mentoring/identify', { identifier: this.m.identifier, role: this.m.role });
                     if (ok && data.status === 'otp_sent') {
                         found = true; this.m.masked = data.email; this.m.step = 2; this.countdown(data.wait || 30);
                         this.$nextTick(() => this.$refs.motp && this.$refs.motp.focus());
@@ -576,8 +581,8 @@ $bi = static fn(array $p): string => htmlspecialchars($p[0], ENT_QUOTES, 'UTF-8'
                 if (!/^\d{6}$/.test(this.m.otp)) { this.error = '6 अंकों का OTP भरें · Enter the 6-digit OTP'; return; }
                 this.isSubmitting = true;
                 try {
-                    const { ok, data } = await this.post('/login/mentoring/verify', { otp: this.m.otp });
-                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || '/mentoring'; return; }
+                    const { ok, data } = await this.post(this.tab === 'senior' ? '/login/senior/verify' : '/login/mentoring/verify', { otp: this.m.otp });
+                    if (ok && data.status === 'logged_in') { window.location.href = data.redirect || (this.tab === 'senior' ? '/senior' : '/mentoring'); return; }
                     this.error = data.error || 'OTP सही नहीं है · Incorrect OTP';
                 } catch (e) { this.error = 'नेटवर्क त्रुटि · Network error, please retry'; }
                 this.isSubmitting = false;

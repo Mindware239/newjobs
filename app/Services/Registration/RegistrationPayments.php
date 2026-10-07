@@ -106,6 +106,12 @@ class RegistrationPayments
         if ($fresh['type'] === 'jobpost' && !empty($fresh['details']['post_id'])) {
             \App\Models\FreeJobPost::activatePaid((int)$fresh['details']['post_id']); // paid extra post goes live
         }
+        if ($fresh['type'] === 'jobpostpaid') {
+            PaidJobPost::activate($fresh); // employer-dashboard job paid per post → moderation
+        }
+        if ($fresh['type'] === 'jobcontact' && !empty($fresh['details']['post_id']) && !empty($fresh['details']['user_id'])) {
+            \App\Models\FreeJobPost::unlockContact((int)$fresh['details']['user_id'], (int)$fresh['details']['post_id'], (int)$fresh['id']);
+        }
         RegistrationMailer::sendThankYou($fresh);
         RegistrationMailer::notifyOwner($fresh);
     }
