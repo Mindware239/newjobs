@@ -144,8 +144,12 @@ try {
                 </div>
 
                 <!-- Copyright (Center on Mobile, Right on Desktop) -->
-                <div class="text-gray-400 text-[13px] font-medium text-center lg:text-right">
-                    © <?= date('Y'); ?> <span class="text-slate-800 font-bold">Jobsence</span>. All Rights Reserved.
+                <div class="text-gray-400 text-[13px] font-medium text-center lg:text-right flex items-center justify-center lg:justify-end gap-3">
+                    <?php // Only real Jobsence accounts here (fake / unrelated social links got the site flagged in Oct 2026). ?>
+                    <a href="https://www.linkedin.com/in/job-sence-70b6aa428/" target="_blank" rel="noopener" aria-label="Jobsence on LinkedIn" title="Jobsence on LinkedIn" class="inline-flex text-[#0A66C2] hover:opacity-80">
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="4" fill="currentColor"/><path fill="#fff" d="M7.1 9.5h2.4V18H7.1V9.5zm1.2-3.9a1.4 1.4 0 110 2.8 1.4 1.4 0 010-2.8zM11 9.5h2.3v1.2c.3-.6 1.1-1.3 2.4-1.3 2.5 0 3 1.6 3 3.8V18h-2.4v-4.3c0-1 0-2.3-1.4-2.3s-1.6 1.1-1.6 2.2V18H11V9.5z"/></svg>
+                    </a>
+                    <span>© <?= date('Y'); ?> <span class="text-slate-800 font-bold">Jobsence</span>. All Rights Reserved.</span>
                 </div>
             </div>
         </div>
