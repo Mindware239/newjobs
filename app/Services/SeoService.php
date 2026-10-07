@@ -122,6 +122,9 @@ class SeoService
         });
         
         ksort($cacheData);
+        // The site address is part of the key: a cache written on localhost (canonical http://localhost:8081/…)
+        // must never be served on jobsence.com if storage/cache gets uploaded with the code.
+        $cacheData['__app_url'] = rtrim((string)($_ENV['APP_URL'] ?? ''), '/');
         $key = $pageType . '_' . md5(json_encode($cacheData));
         
         $cacheDir = __DIR__ . '/../../storage/cache/seo';

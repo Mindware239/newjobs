@@ -49,3 +49,6 @@ uploads/govt-notices/
 
 # Public Mozilla root-certificate bundle used by the job importers (no private keys)
 !resources/certs/cacert.pem
+
+# Runtime caches – generated per server, never deploy them (SEO cache once leaked localhost canonicals to live)
+storage/cache/
