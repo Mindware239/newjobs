@@ -79,8 +79,8 @@ $sdProviders = [
                     <button type="submit"><?= Lang::t('खोजें', 'Search') ?></button>
                 </form>
                 <div class="act">
-                    <a href="/apply/near-me-provider">🛠️ <?= Lang::t('सेवा देते हैं? ₹177 में जुड़ें', 'Provide a service? Enrol – ₹177') ?></a>
-                    <a href="/apply/near-me-seeker">🔎 <?= Lang::t('सेवा चाहिए? मुफ़्त', 'Need a service? Free') ?></a>
+                    <a href="/apply/near-me-provider">🛠️ <?= Lang::t('दुकान / सेवा देते हैं? ₹590 में 6 महीने', 'Shop or service? Enrol – ₹590 for 6 months') ?></a>
+                    <a href="/apply/near-me-seeker">🔎 <?= Lang::t('सेवा चाहिए? ₹295 में 3 महीने', 'Need a service? ₹295 for 3 months') ?></a>
                 </div>
             </div>
         </div>

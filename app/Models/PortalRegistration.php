@@ -40,7 +40,7 @@ class PortalRegistration
         'mentorplan' => [30, 'DAY'],    // mentor / institute plan: 30 days, 3 profiles a day
         'internplan' => [10, 'DAY'],    // internship provider plan: 10 days, 3 a day, max 20
         'jobplan' => [30, 'DAY'],       // hiring plan for companies: 30 days, 3 profiles a day
-        'nearpro' => [3, 'MONTH'], 'nearseek' => [3, 'MONTH'], 'hospitality' => [3, 'MONTH'],
+        'nearpro' => [6, 'MONTH'], 'nearseek' => [3, 'MONTH'],  // Near Me: providers 6 months, seekers 3 months 'hospitality' => [3, 'MONTH'],
         'healthcare' => [1, 'MONTH'],   // hospital staff / doctors: 1 month
         'hospital' => [15, 'DAY'],      // hospitals & clinics hiring: 15 days
         'hirer' => [2, 'DAY'],          // part-time talent pass: 2 days
@@ -256,7 +256,7 @@ class PortalRegistration
     public const RENEWABLE = ['parttime', 'jobpass', 'nearpro', 'nearseek', 'hospitality', 'healthcare', 'hospital', 'hirer', 'senior', 'seniorhire', 'honormentor'];
 
     /** Days before expiry at which the 3 renewal reminders go out. */
-    public const EXPIRY_REMINDER_DAYS = [10, 5, 1];
+    public const EXPIRY_REMINDER_DAYS = [15, 7, 1]; // 3 renewal reminders in the last 15 days (user, 2026-10-07)
 
     /** Renewing after the term has ended costs 10% extra. */
     public const LATE_RENEWAL_SURCHARGE = 0.10;
@@ -307,8 +307,8 @@ class PortalRegistration
     }
 
     /**
-     * Paid, renewable registrations ending within 10 days that are due their next reminder
-     * (10, 5 and 1 day before expiry – at most 3) and have not been renewed yet.
+     * Paid, renewable registrations ending within 15 days that are due their next reminder
+     * (15, 7 and 1 day before expiry – at most 3) and have not been renewed yet.
      */
     public static function dueForExpiryReminder(int $limit = 200): array
     {

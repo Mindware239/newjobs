@@ -62,7 +62,7 @@ class RegistrationMailer
         return self::send((string)$reg['email'], ($free ? 'Thank You – Your Jobsence ' . $form['title'][1] . ' is Received | Registered' : 'Payment Receipt ' . \App\Models\PortalRegistration::money($reg) . ' – Jobsence ' . $form['title'][1] . (!empty($reg['details']['country']) ? ' – ' . $reg['details']['country'] : '')) . ' (' . $reg['reg_no'] . ')', $body);
     }
 
-    /** "Your registration ends in N days – renew" (sent 10, 5 and 1 day before expiry). */
+    /** "Your registration ends in N days – renew" (sent 15, 7 and 1 day before expiry). */
     public static function sendExpiryReminder(array $reg, int $daysLeft): bool
     {
         $form = FormRegistry::byType((string)$reg['type']);

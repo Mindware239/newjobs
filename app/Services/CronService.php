@@ -117,7 +117,7 @@ class CronService
         }
         echo "Registration payment reminders sent: {$sent}\n";
 
-        // Renewal reminders: 10, 5 and 1 day before a registration / pass ends.
+        // Renewal reminders: 15, 7 and 1 day before a registration / pass ends.
         $renewals = 0;
         foreach (\App\Models\PortalRegistration::dueForExpiryReminder() as $reg) {
             if (\App\Services\Registration\RegistrationMailer::sendExpiryReminder($reg, (int)$reg['days_left'])) {

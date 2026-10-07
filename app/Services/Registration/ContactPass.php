@@ -10,7 +10,7 @@ use App\Models\PortalRegistration;
  * Paid "contact passes": a paid, still-valid registration of a payer type unlocks the contact
  * details (mobile, address) of registrations of the matching listed type during its validity.
  *
- *   nearseek  (₹177, 3 months) → Near Me service providers (nearpro), matched by PIN code
+ *   nearseek  (₹295 = ₹250 + GST, 3 months) → Near Me service providers (nearpro), matched by PIN code
  *   hospital  (per role)       → healthcare job seekers (healthcare) of the roles paid for
  *   hirer     (₹5,900, 2 days) → part-time / gig workers (parttime), keyword search
  *

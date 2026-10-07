@@ -102,7 +102,8 @@ class NearMeController extends BaseController
             'pinError' => trim($pinRaw) !== '' && !$byPin && $state === '' && $city === '',
             'results' => $byPin ? $this->search($pin, $q) : ($byPlace ? $this->searchPlace($state, $city, $q) : ($this->geo ? $this->searchGeo($q) : [])),
             'flash' => $this->takeFlash(),
-            'fee' => FormRegistry::NEAR_ME_FEE,
+            'fee' => FormRegistry::NEAR_ME_PROVIDER_FEE,
+            'seekerFee' => FormRegistry::NEAR_ME_SEEKER_FEE,
             'popular' => array_map(static fn($p) => $p[1], array_slice(FormRegistry::NEAR_ME_PROFESSIONS, 0, -1)),
         ], 200, 'layout');
     }

@@ -72,7 +72,7 @@ class FormRegistry
      */
     public const SEEKERS_FREE = true;
     public const SEEKER_FREE_SLUGS = ['skill-development', 'internship', 'full-time-job', 'part-time-job', 'work-from-home', 'jobs-pass',
-        'restaurant-chef-jobs', 'healthcare-jobs', 'senior-citizen-jobs', 'near-me-seeker', 'intl-country', 'international-job'];
+        'restaurant-chef-jobs', 'healthcare-jobs', 'senior-citizen-jobs', 'intl-country', 'international-job'];
 
     /** Is this registration type free because it is on the job-seeker side? */
     public static function seekerIsFree(string $type): bool
@@ -526,6 +526,7 @@ class FormRegistry
 
     /** Near Me professions (main profession of a provider; also the search shortcuts). */
     public const NEAR_ME_PROFESSIONS = [
+        'kirana' => ['किराना / जनरल स्टोर', 'Kirana / General Store'],
         'plumber' => ['प्लंबर', 'Plumber'],
         'electrician' => ['इलेक्ट्रीशियन', 'Electrician'],
         'carpenter' => ['कारपेंटर / बढ़ई', 'Carpenter'],
@@ -605,8 +606,10 @@ class FormRegistry
         'other' => ['अन्य', 'Other'],
     ];
 
-    /** Near Me services: provider listing and seeker contact pass – ₹150 + 18% GST, valid 3 months. */
-    public const NEAR_ME_FEE = 177.00;
+    /** Near Me (user, 2026-10-07): providers incl. kirana shops / local job givers ₹500 + 18% GST once for 6 months;
+     *  seekers ₹250 + 18% GST once for 3 months. */
+    public const NEAR_ME_PROVIDER_FEE = 590.00;
+    public const NEAR_ME_SEEKER_FEE = 295.00;
     /** Restaurant / chef job seekers: ₹250 + 18% GST, valid 3 months. */
     public const RESTAURANT_FEE = 295.00;
 
@@ -643,17 +646,17 @@ class FormRegistry
             'otp' => true,
             'multipart' => true,
             'hidden_from_hub' => true,
-            'fee' => self::NEAR_ME_FEE,
+            'fee' => self::NEAR_ME_PROVIDER_FEE,
             'validity_months' => 3,
             'max_categories' => 5,
             'title' => ['Near Me सेवा प्रदाता रजिस्ट्रेशन', 'Near Me Service Provider Registration'],
             'button' => ['प्लंबर, इलेक्ट्रीशियन, कारपेंटर, हेयर ड्रेसर, सैलून – सेवा प्रदाता के रूप में जुड़ें', 'Plumber, electrician, carpenter, hair dresser, salon – enrol as a service provider'],
-            'intro' => ['अपने इलाके के ग्राहकों तक पहुँचें। ₹150 + GST (₹177) – 3 महीने के लिए। फोटो और लाइव सेल्फ़ी से पहचान सत्यापन ज़रूरी।', 'Reach customers near you. ₹150 + GST (₹177) for 3 months. Photo and a live selfie are mandatory for identity verification.'],
+            'intro' => ['अपने इलाके के ग्राहकों तक पहुँचें। ₹500 + GST (₹590) – 6 महीने के लिए, एक बार। फोटो और लाइव सेल्फ़ी से पहचान सत्यापन ज़रूरी।', 'Reach customers near you. ₹500 + GST (₹590), once, for 6 months. Photo and a live selfie are mandatory for identity verification.'],
             'categories_label' => ['अन्य सेवाएँ (वैकल्पिक) – अधिकतम 5, 47,000+ की सूची से', 'Other services (optional) – up to 5, from a 47,000+ list'],
             'info' => [
                 'title' => ['ज़रूरी जानकारी', 'Important'],
                 'points' => [
-                    ['शुल्क ₹150 + 18% GST = ₹177, भुगतान की तारीख से 3 महीने तक मान्य।', 'Fee ₹150 + 18% GST = ₹177, valid for 3 months from payment.'],
+                    ['शुल्क ₹500 + 18% GST = ₹590, एक बार – भुगतान की तारीख से 6 महीने तक मान्य।', 'Fee ₹500 + 18% GST = ₹590, once – valid for 6 months from payment.'],
                     ['भुगतान करने वाले ग्राहकों को आपका नाम / दुकान का नाम, मोबाइल नंबर और पता दिखाया जाएगा।', 'Your name / shop name, mobile number and address will be shown to paying customers.'],
                     ['अपनी साफ़ फोटो और लाइव सेल्फ़ी देना ज़रूरी है – Jobsence टीम पहचान की जाँच करेगी।', 'A clear photo and a live selfie are mandatory – the Jobsence team verifies your identity.'],
                     self::platformDisclaimer(),
@@ -714,7 +717,7 @@ class FormRegistry
             ],
             'declaration' => [
                 ['मेरे द्वारा दी गई जानकारी, फोटो और सेल्फ़ी सही और मेरी अपनी है।', 'The information, photo and selfie provided are true and my own.'],
-                ['₹177 (₹150 + GST) का शुल्क वापसी योग्य नहीं है; रजिस्ट्रेशन भुगतान से 3 महीने तक मान्य है।', 'The fee of ₹177 (₹150 + GST) is non-refundable; registration is valid for 3 months from payment.'],
+                ['₹590 (₹500 + GST) का शुल्क वापसी योग्य नहीं है; रजिस्ट्रेशन भुगतान से 6 महीने तक मान्य है।', 'The fee of ₹590 (₹500 + GST) is non-refundable; registration is valid for 6 months from payment.'],
                 ['मैं सहमत हूँ कि भुगतान करने वाले ग्राहकों को मेरा नाम, मोबाइल नंबर और पता दिखाया जाए।', 'I agree that my name, mobile number and address are shown to paying customers.'],
                 ['मैं ग्राहकों से उचित शुल्क लूँगा/लूँगी और अच्छा व्यवहार करूँगा/करूँगी।', 'I will charge customers fairly and behave properly.'],
                 self::platformDisclaimer(),
@@ -736,17 +739,17 @@ class FormRegistry
             'icon' => '📍',
             'otp' => true,
             'hidden_from_hub' => true,
-            'fee' => self::NEAR_ME_FEE,
+            'fee' => self::NEAR_ME_SEEKER_FEE,
             'validity_months' => 3,
             'max_categories' => 5,
             'title' => ['Near Me सेवा चाहिए – रजिस्ट्रेशन', 'Near Me – Find a Service Provider'],
             'button' => ['अपने पास प्लंबर, इलेक्ट्रीशियन, कारपेंटर, सैलून ढूँढें', 'Find a plumber, electrician, carpenter or salon near you'],
-            'intro' => ['₹150 + GST (₹177) प्लेटफ़ॉर्म शुल्क देकर 3 महीने तक अपने पिन कोड के पास के सत्यापित सेवा प्रदाता चुनें; समझौते पर दोनों के साइन होते ही उनका मोबाइल नंबर और पता दिखेगा।', 'Pay a platform fee of ₹150 + GST (₹177) and choose verified service providers near your PIN code for 3 months; their mobile number and address appear once both of you sign the agreement.'],
+            'intro' => ['₹250 + GST (₹295) प्लेटफ़ॉर्म शुल्क देकर 3 महीने तक अपने पिन कोड के पास के सत्यापित सेवा प्रदाता चुनें; समझौते पर दोनों के साइन होते ही उनका मोबाइल नंबर और पता दिखेगा।', 'Pay a platform fee of ₹250 + GST (₹295) and choose verified service providers near your PIN code for 3 months; their mobile number and address appear once both of you sign the agreement.'],
             'categories_label' => ['आपको कौन सी सेवा चाहिए – अधिकतम 5', 'Services you need – up to 5'],
             'info' => [
                 'title' => ['ज़रूरी जानकारी', 'Important'],
                 'points' => [
-                    ['प्लेटफ़ॉर्म शुल्क ₹150 + 18% GST = ₹177, भुगतान से 3 महीने तक मान्य।', 'Platform fee ₹150 + 18% GST = ₹177, valid for 3 months from payment.'],
+                    ['प्लेटफ़ॉर्म शुल्क ₹250 + 18% GST = ₹295, एक बार – भुगतान से 3 महीने तक मान्य।', 'Platform fee ₹250 + 18% GST = ₹295, once – valid for 3 months from payment.'],
                     ['सेवा का भुगतान आप सीधे सेवा प्रदाता को करेंगे – Jobsence केवल संपर्क जोड़ता है।', 'You pay the service provider directly for the work – Jobsence only connects you.'],
                     self::platformDisclaimer(),
                 ],
@@ -775,7 +778,7 @@ class FormRegistry
             ],
             'declaration' => [
                 ['मेरे द्वारा दी गई जानकारी सही है।', 'The information provided by me is true and correct.'],
-                ['₹177 (₹150 + GST) प्लेटफ़ॉर्म शुल्क वापसी योग्य नहीं है; एक्सेस भुगतान से 3 महीने तक मान्य है।', 'The platform fee of ₹177 (₹150 + GST) is non-refundable; access is valid for 3 months from payment.'],
+                ['₹295 (₹250 + GST) प्लेटफ़ॉर्म शुल्क वापसी योग्य नहीं है; एक्सेस भुगतान से 3 महीने तक मान्य है।', 'The platform fee of ₹295 (₹250 + GST) is non-refundable; access is valid for 3 months from payment.'],
                 ['मैं सेवा प्रदाताओं की जानकारी केवल अपने काम के लिए उपयोग करूँगा/करूँगी और किसी के साथ साझा या बेचूँगा/बेचूँगी नहीं।', 'I will use service providers’ details only for my own work and will not share or sell them.'],
                 self::platformDisclaimer(),
             ],
