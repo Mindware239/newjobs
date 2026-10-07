@@ -136,6 +136,7 @@ try {
                     <a href="<?= $base ?>contact" class="hover:text-primary transition-colors whitespace-nowrap">Contact</a>
                     <a href="<?= $base ?>terms" class="hover:text-primary transition-colors whitespace-nowrap">Terms</a>
                     <a href="<?= $base ?>privacy" class="hover:text-primary transition-colors whitespace-nowrap">Privacy</a>
+                    <a href="<?= $base ?>data-deletion" class="hover:text-primary transition-colors whitespace-nowrap">Data Deletion</a>
                     <a href="<?= $base ?>refund-cancellation-policy" class="hover:text-primary transition-colors whitespace-nowrap">Refunds</a>
                     <a href="<?= $base ?>blog" class="hover:text-primary transition-colors whitespace-nowrap" target="_blank">Blog</a>
                     <a href="<?= $base ?>sitemap.xml" class="hover:text-primary transition-colors whitespace-nowrap">Sitemap</a>

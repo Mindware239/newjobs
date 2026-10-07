@@ -109,7 +109,18 @@ $base = $base ?? '/';
                 To assist us in analyzing how our Service is used.
             </p>
 
-            <h3 class="text-xl font-semibold mb-3 text-gray-900">5. Contact Us</h3>
+            <h3 class="text-xl font-semibold mb-3 text-gray-900">5. Login with Google, Facebook or LinkedIn</h3>
+            <p class="mb-6">
+                If you choose to log in with Google, Facebook or LinkedIn, we receive only your name, email address and profile picture from that service.
+                We use them to create or open your Jobsence account and never post anything on your behalf. Your mobile number is asked separately by Jobsence.
+            </p>
+
+            <h3 class="text-xl font-semibold mb-3 text-gray-900">6. Deleting Your Data</h3>
+            <p class="mb-6">
+                You can ask us to delete your account and personal data at any time – see <a href="/data-deletion" class="text-primary hover:underline">User Data Deletion</a> for how.
+            </p>
+
+            <h3 class="text-xl font-semibold mb-3 text-gray-900">7. Contact Us</h3>
             <p class="mb-6">
                 If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at <a href="mailto:gm@jobsence.com" class="text-primary hover:underline">gm@jobsence.com</a>.
             </p>

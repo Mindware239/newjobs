@@ -17,6 +17,12 @@ class LegalController
         $response->view('privacy');
     }
 
+    /** /data-deletion – how to get an account and its data deleted (Facebook Login "User Data Deletion" URL). */
+    public function dataDeletion(Request $request, Response $response): void
+    {
+        $response->view('data-deletion');
+    }
+
     public function grievances(Request $request, Response $response): void
     {
         $response->view('grievances');

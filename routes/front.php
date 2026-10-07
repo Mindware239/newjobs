@@ -474,6 +474,8 @@ $router->get('/interview/join', [InterviewRoomController::class, 'joinWithToken'
 // ==========================================
 $router->get('/terms', [LegalController::class, 'terms']);
 $router->get('/privacy', [LegalController::class, 'privacy']);
+$router->get('/privacy-policy', [LegalController::class, 'privacy']);
+$router->get('/data-deletion', [LegalController::class, 'dataDeletion']);
 $router->get('/grievances', [LegalController::class, 'grievances']);
 $router->get('/refund-cancellation-policy', [LegalController::class, 'refundCancellationPolicy']);
 
