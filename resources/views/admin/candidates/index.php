@@ -197,6 +197,12 @@
                             <option value="male" <?= ($filters['gender'] ?? '') === 'male' ? 'selected' : '' ?>>Male</option>
                             <option value="female" <?= ($filters['gender'] ?? '') === 'female' ? 'selected' : '' ?>>Female</option>
                         </select>
+                        <select name="signup_via" class="block w-full py-2 px-3 border border-gray-200 rounded-lg text-sm">
+                            <option value="">Any sign-in method</option>
+                            <?php foreach (['facebook' => 'Facebook login', 'google' => 'Google login', 'linkedin' => 'LinkedIn login', 'email' => 'Email / mobile OTP only'] as $sv => $sl): ?>
+                                <option value="<?= $sv ?>" <?= ($filters['signup_via'] ?? '') === $sv ? 'selected' : '' ?>><?= $sl ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
 
@@ -357,8 +363,19 @@
                                 </div>
                                 <div class="text-xs text-gray-700 flex items-center">
                                     <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                    <?= htmlspecialchars($candidate['mobile'] ?? '') ?>
+                                    <?php $cMobile = ($candidate['mobile'] ?? '') !== '' ? (string)$candidate['mobile'] : (string)($candidate['user_phone'] ?? ''); ?>
+                                    <?= $cMobile !== '' ? htmlspecialchars($cMobile) : '<span class="text-red-500">no mobile yet</span>' ?>
                                 </div>
+                                <?php // Social sign-in: which provider, and the email that provider gave us (shown when it differs from the account email). ?>
+                                <?php foreach (['facebook' => ['Facebook', 'bg-blue-50 text-blue-700'], 'google' => ['Google', 'bg-red-50 text-red-700'], 'linkedin' => ['LinkedIn', 'bg-sky-50 text-sky-700']] as $sp => [$spLabel, $spCls]): ?>
+                                    <?php if (!empty($candidate[$sp . '_id'])): ?>
+                                        <div class="text-xs"><span class="px-1.5 py-0.5 rounded font-semibold <?= $spCls ?>"><?= $spLabel ?></span>
+                                            <?php if (!empty($candidate[$sp . '_email']) && strcasecmp((string)$candidate[$sp . '_email'], (string)($candidate['email'] ?? '')) !== 0): ?>
+                                                <span class="text-gray-500"><?= htmlspecialchars((string)$candidate[$sp . '_email']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

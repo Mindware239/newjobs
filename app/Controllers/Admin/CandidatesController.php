@@ -32,6 +32,7 @@ class CandidatesController extends BaseController
         $search = $request->get('search', '');
         $status = $request->get('status', 'all');
         $source = $request->get('source', '');
+        $signupVia = (string)$request->get('signup_via', ''); // facebook | google | linkedin | email
         $gender = $request->get('gender', '');
         $verification_status = $request->get('verification_status', '');
         
@@ -81,6 +82,14 @@ class CandidatesController extends BaseController
         if ($source !== '') {
             $where[] = "c.source = :source";
             $params['source'] = $source;
+        }
+
+        // How the account signs in: Facebook / Google / LinkedIn login, or email / mobile OTP only.
+        \App\Services\SocialOAuthService::ensureSchema();
+        if (in_array($signupVia, ['facebook', 'google', 'linkedin'], true)) {
+            $where[] = "u.{$signupVia}_id IS NOT NULL";
+        } elseif ($signupVia === 'email') {
+            $where[] = "u.google_id IS NULL AND u.facebook_id IS NULL AND u.linkedin_id IS NULL";
         }
 
         if ($gender !== '') {
@@ -179,6 +188,7 @@ class CandidatesController extends BaseController
 
         $candidates = $db->fetchAll(
             "SELECT c.*, u.email, u.status as user_status, u.last_login, COALESCE(u.is_email_verified, 0) as email_verified,
+                    u.phone AS user_phone, u.google_id, u.google_email, u.facebook_id, u.facebook_email, u.linkedin_id, u.linkedin_email,
                     (SELECT COUNT(*) FROM applications a WHERE a.candidate_user_id = c.user_id) as applications_count,
                     (SELECT MAX(applied_at) FROM applications a WHERE a.candidate_user_id = c.user_id) as last_applied_at
              FROM candidates c
