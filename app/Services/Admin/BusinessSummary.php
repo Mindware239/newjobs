@@ -29,6 +29,7 @@ class BusinessSummary
         'ngo' => ['title' => 'NGOs / social organisations', 'types' => ['ngo']],
         'seniors' => ['title' => 'Senior citizens (59+) & organisations engaging them', 'types' => ['senior', 'seniorhire']],
         'honorary' => ['title' => 'Honorary Mentorship (Dwarka workshops)', 'types' => ['honormentor', 'honorlearn']],
+        'topplaces' => ['title' => 'Top places – company bids / month place 1 / logos, resume boosts (+GST)', 'types' => ['topslot', 'toplogo', 'resumeboost']],
         'payperuse' => ['title' => 'Pay per use – job posts (₹200 + GST) & job contact unlocks (₹185 + GST)', 'types' => ['jobpost', 'jobpostpaid', 'jobcontact']],
     ];
 

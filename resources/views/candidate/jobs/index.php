@@ -77,6 +77,7 @@ $base = $base ?? '/';
                 </div>
                 <?php endif; ?>
             </div>
+            <?php if (empty($_GET['page']) || (int)$_GET['page'] === 1) { require dirname(__DIR__, 2) . '/include/_top_companies.php'; } ?>
 
             <!-- Top Search Bar -->
             <div class="bg-white rounded-lg p-4 mb-4">

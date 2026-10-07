@@ -322,7 +322,7 @@ class ApplyController extends BaseController
 
         // Pay-per-use payments go straight back to where they started (receipt is emailed).
         $back = (string)($reg['details']['return_to'] ?? '');
-        if (in_array($reg['type'], ['jobpostpaid', 'jobcontact'], true) && str_starts_with($back, '/') && !str_starts_with($back, '//')) {
+        if (in_array($reg['type'], ['jobpostpaid', 'jobcontact', 'topslot', 'toplogo', 'resumeboost'], true) && str_starts_with($back, '/') && !str_starts_with($back, '//')) {
             $response->redirect($back);
             return;
         }

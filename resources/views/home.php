@@ -418,6 +418,7 @@ $totalCompanies = $stats['companies'] ?? 0;
     </div>
     <div class="home-wide">
         <?php require __DIR__ . '/front/apply/_buttons.php'; ?>
+        <?php require __DIR__ . '/include/_top_companies.php'; ?>
         <?php require __DIR__ . '/include/_featured.php'; ?>
         <?php require __DIR__ . '/include/_login_cards.php'; ?>
         <?php $quotesMode = 'rotate'; require __DIR__ . '/include/_skill_quotes.php'; ?>

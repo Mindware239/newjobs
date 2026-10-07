@@ -146,6 +146,30 @@ $currentDate = date('M d, Y');
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column -->
         <div class="lg:col-span-2 space-y-6">
+            <?php if (!empty($topCandidates)): ?>
+            <!-- Top Candidates: job seekers' paid resume boosts (TopBidding) -->
+            <div class="bg-white rounded-xl border-2 border-amber-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50">
+                    <h2 class="text-lg font-bold text-gray-900">⭐ Top Candidates</h2>
+                    <span class="text-xs text-gray-500">Sponsored resumes</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                    <?php foreach ($topCandidates as $tcand): ?>
+                        <a href="/employer/candidates/<?= (int)$tcand['id'] ?>" class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-amber-300">
+                            <?php if (!empty($tcand['profile_picture'])): ?>
+                                <img src="<?= htmlspecialchars((string)$tcand['profile_picture']) ?>" alt="" class="w-10 h-10 rounded-full object-cover">
+                            <?php else: ?>
+                                <span class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center"><?= htmlspecialchars(mb_strtoupper(mb_substr((string)$tcand['full_name'], 0, 1))) ?></span>
+                            <?php endif; ?>
+                            <span class="min-w-0">
+                                <span class="block font-semibold text-gray-900 truncate"><?= htmlspecialchars((string)$tcand['full_name']) ?></span>
+                                <span class="block text-xs text-gray-500 truncate"><?= htmlspecialchars(trim(($tcand['professional_title'] ?? '') . ' · ' . $tcand['category'], ' ·')) ?><?= !empty($tcand['city']) ? ' · ' . htmlspecialchars((string)$tcand['city']) : '' ?></span>
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
             <!-- Recent Jobs List -->
              <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">

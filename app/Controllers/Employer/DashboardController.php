@@ -14,6 +14,20 @@ use App\Core\RedisClient;
 
 class DashboardController extends BaseController
 {
+    /** Paid resume boosts ("Top Candidates"), the employer's own job categories first; counts this employer's view. */
+    private function topCandidates(int $employerId): array
+    {
+        try {
+            $cats = array_values(array_filter(array_column(\App\Core\Database::getInstance()->fetchAll(
+                "SELECT DISTINCT category FROM jobs WHERE employer_id = ? AND category IS NOT NULL AND category <> ''", [$employerId]
+            ), 'category')));
+            return \App\Services\TopPlaces\TopBidding::topCandidatesFor($employerId, $cats, 6);
+        } catch (\Throwable $e) {
+            error_log('Top candidates: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     public function index(Request $request, Response $response): void
     {
         if (!$this->requireRole('employer', $request, $response)) {
@@ -227,7 +241,8 @@ class DashboardController extends BaseController
             'hiringTeam' => $hiringTeam,
             'documents' => $documents,
             'performanceMetrics' => $performanceMetrics,
-            'notifications' => $notifications
+            'notifications' => $notifications,
+            'topCandidates' => $this->topCandidates((int)$employer->id)
         ], 200, 'employer/layout');
     }
 

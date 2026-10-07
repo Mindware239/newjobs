@@ -109,6 +109,15 @@ class RegistrationPayments
         if ($fresh['type'] === 'jobpostpaid') {
             PaidJobPost::activate($fresh); // employer-dashboard job paid per post → moderation
         }
+        if (in_array($fresh['type'], ['topslot', 'resumeboost'], true) && !empty($fresh['details']['bid_id'])) {
+            \App\Services\TopPlaces\TopBidding::markPaid((int)$fresh['details']['bid_id'], (int)$fresh['id']);
+        }
+        if ($fresh['type'] === 'topslot' && !empty($fresh['details']['month_id'])) {
+            \App\Services\TopPlaces\TopBidding::monthPaid((int)$fresh['details']['month_id'], (int)$fresh['id']);
+        }
+        if ($fresh['type'] === 'toplogo' && !empty($fresh['details']['employer_id'])) {
+            \App\Services\TopPlaces\TopBidding::logoPaid((int)$fresh['details']['employer_id'], (int)$fresh['id']);
+        }
         if ($fresh['type'] === 'jobcontact' && !empty($fresh['details']['post_id']) && !empty($fresh['details']['user_id'])) {
             \App\Models\FreeJobPost::unlockContact((int)$fresh['details']['user_id'], (int)$fresh['details']['post_id'], (int)$fresh['id']);
         }

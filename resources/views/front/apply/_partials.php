@@ -109,6 +109,9 @@ if (!isset($sdPartialsLoaded)) {
     .sd-field .req { color: var(--sd-primary); }
     .sd-field input[type=text], .sd-field input[type=email], .sd-field input[type=tel], .sd-field input[type=date], .sd-field input[type=number], .sd-field input[type=file], .sd-field select, .sd-field textarea { width: 100%; padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 10px; background: #f9fafb; font: inherit; font-weight: 600; color: var(--sd-ink); }
     .sd-field input:focus, .sd-field select:focus, .sd-field textarea:focus { outline: 2px solid var(--sd-primary); outline-offset: 1px; background: #fff; }
+    .sd-input { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 10px; background: #f9fafb; font: inherit; font-weight: 600; color: var(--sd-ink); }
+    .sd-input:focus { outline: 2px solid var(--sd-primary); outline-offset: 1px; background: #fff; }
+    .sd .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .sd-field .err, .sd-err { color: #b91c1c; font-size: .85rem; margin-top: 4px; }
     .sd-field.has-err input, .sd-field.has-err select, .sd-field.has-err textarea { border-color: #b91c1c; }
     .sd-field .hint { color: var(--sd-muted); font-size: .82rem; margin-top: 4px; }

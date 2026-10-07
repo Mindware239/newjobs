@@ -70,9 +70,20 @@ class CronService
                 foreach (\App\Services\IndiaJobs\FeedFetcher::runDue() as $line) {
                     echo $line . "\n";
                 }
+                // Top places auctions: close at 18:00, lapse unpaid wins, offer places to the next bidders.
+                foreach (\App\Services\TopPlaces\TopBidding::runCron() as $line) {
+                    echo $line . "
+";
+                }
                 // Same hourly cron publishes blog posts added as files (content/blogs/*.html) by the daily routine.
                 foreach (\App\Services\BlogFileImporter::run() as $line) {
                     echo $line . "\n";
+                }
+                break;
+            case 'top_auctions':
+                foreach (\App\Services\TopPlaces\TopBidding::runCron() as $line) {
+                    echo $line . "
+";
                 }
                 break;
             case 'blog_import':

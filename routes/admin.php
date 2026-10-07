@@ -61,6 +61,8 @@ $router->post('/admin/india-jobs/{id}/toggle', [App\Controllers\Admin\IndiaJobsC
 $router->post('/admin/india-jobs/{id}/delete', [App\Controllers\Admin\IndiaJobsController::class, 'delete'], [$adminMiddleware, $csrfMiddleware]);
 $router->post('/admin/india-jobs/{id}', [App\Controllers\Admin\IndiaJobsController::class, 'save'], [$adminMiddleware, $csrfMiddleware]);
 
+$router->get('/admin/top-places', [App\Controllers\Front\TopPlacesController::class, 'admin'], [$adminMiddleware]);
+$router->post('/admin/top-places/logo/{id}', [App\Controllers\Front\TopPlacesController::class, 'adminLogo'], [$adminMiddleware, $csrfMiddleware]);
 $router->get('/admin/free-jobs', [App\Controllers\Front\StateJobsController::class, 'adminIndex'], [$adminMiddleware]);
 $router->post('/admin/free-jobs/{id}/status', [App\Controllers\Front\StateJobsController::class, 'adminStatus'], [$adminMiddleware, $csrfMiddleware]);
 $router->get('/admin/business-summary', [App\Controllers\Admin\BusinessSummaryController::class, 'index'], [$adminMiddleware]);

@@ -183,6 +183,12 @@ class FormRegistry
             'extra-job-post' => self::extraJobPost(),
             'employer-job-post' => self::employerJobPost(),
             'free-job-contact' => self::freeJobContact(),
+            'top-place' => self::topPayment('topslot', 'TPB', '🏆', ['टॉप हायरिंग कंपनी स्थान', 'Top Hiring Companies place'],
+                ['आपकी कंपनी चुने गए दिन / महीने में होमपेज और नौकरियों के पेज पर सबसे ऊपर दिखेगी।', 'Your company appears at the top of the homepage and the Jobs page on the chosen day / month.']),
+            'top-logo' => self::topPayment('toplogo', 'TPL', '🖼️', ['टॉप जगहों में लोगो', 'Logo in top places'],
+                ['आपकी कंपनी प्रोफ़ाइल का लोगो अब आपकी सभी टॉप जगहों में दिखेगा।', 'Your company profile logo now shows in all your top places.']),
+            'resume-boost' => self::topPayment('resumeboost', 'RBS', '🚀', ['रिज़्यूमे बूस्ट', 'Resume boost'],
+                ['आपका रिज़्यूमे 15 दिन तक (अधिकतम 500 कंपनियों को) “टॉप कैंडिडेट्स” में दिखेगा।', 'Your resume shows in “Top Candidates” for 15 days (to up to 500 employers).']),
             'honorary-mentor' => self::honoraryMentor(),
             'honorary-learner' => self::honoraryLearner(),
         ];
@@ -1942,6 +1948,21 @@ class FormRegistry
             'next_steps' => [
                 ['नौकरी के पेज पर “संपर्क देखें” दबाएँ – संपर्क अब हमेशा खुला रहेगा।', 'Tap “Show contact” on the job page – the contact stays unlocked for you.'],
             ],
+        ];
+    }
+
+    /** Paid top places (TopBidding): amount is set per payment (bid + 18% GST), so the form has no fixed fee. */
+    private static function topPayment(string $type, string $prefix, string $icon, array $title, array $done): array
+    {
+        return [
+            'type' => $type, 'prefix' => $prefix, 'side' => 'service', 'icon' => $icon, 'internal' => true, 'hidden_from_hub' => true,
+            'fee' => 0.0,
+            'title' => $title,
+            'button' => $title,
+            'intro' => ['राशि + 18% GST, वापसी योग्य नहीं।', 'Amount + 18% GST, non-refundable.'],
+            'sections' => [],
+            'declaration' => [self::platformDisclaimer()],
+            'next_steps' => [$done],
         ];
     }
 
